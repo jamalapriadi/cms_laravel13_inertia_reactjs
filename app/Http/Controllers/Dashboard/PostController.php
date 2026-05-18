@@ -1,0 +1,126 @@
+<?php
+
+namespace App\Http\Controllers\Dashboard;
+
+use Inertia\Inertia;
+use App\Models\Post;
+use App\Models\TermTaxonomy;
+use App\Services\PostService;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
+
+class PostController extends Controller
+{
+    public function index(Request $request)
+    {
+        $posts = Post::with(['author'])
+            ->when($request->search, function ($q) use ($request) {
+                $q->where('title', 'like', "%{$request->search}%");
+            })
+            ->latest();
+            
+        if($request->filled('status')){
+            $status = $request->status;
+
+            if($status != "all"){
+                $posts = $posts->where('status', $request->status);
+            }
+            
+        }else{
+            $posts = $posts->where('status','!=','trash');
+        }
+            
+        $posts = $posts->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('Dashboard/Posts/Index', [
+            'posts' => $posts,
+            'filters' => $request->only('search'),
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Dashboard/Posts/Create', [
+            'categories' => TermTaxonomy::with('term')
+                ->where('taxonomy', 'categories')
+                ->get(),
+            'tags' => TermTaxonomy::with('term')
+                ->where('taxonomy', 'tags')
+                ->get(),
+        ]);
+    }
+
+    public function store(StorePostRequest $request, PostService $service)
+    {
+        $service->create($request->validated(), auth()->id());
+
+        return redirect()->route('posts.index');
+    }
+
+    public function edit(Post $post)
+    {
+        $post->load(['categories', 'tags', 'featuredImage']);
+
+        $blocks = $this->buildTree(
+            $post->blocks()->orderBy('order')->get()
+        );
+
+        return Inertia::render('Dashboard/Posts/Edit', [
+            'post' => $post,
+            'blocks' => $blocks,
+            'categories' => TermTaxonomy::with('term')
+                ->where('taxonomy', 'categories')
+                ->get(),
+            'tags' => TermTaxonomy::with('term')
+                ->where('taxonomy', 'tags')
+                ->get(),
+        ]);
+    }
+
+    public function update(UpdatePostRequest $request, Post $post, PostService $service)
+    {
+        $service->update($post, $request->validated());
+
+        return redirect()->route('posts.index');
+    }
+
+    public function destroy(Post $post, PostService $service)
+    {
+        $service->trash($post);
+
+        return back();
+    }
+
+    public function restore(Post $post, PostService $service)
+    {
+        $service->restore($post);
+
+        return back();
+    }
+
+    public function forceDelete(Post $post, PostService $service)
+    {
+        $service->forceDelete($post);
+
+        return back();
+    }
+
+    private function buildTree($blocks, $parentId = null)
+    {
+        return $blocks
+            ->where('parent_id', $parentId)
+            ->map(function ($block) use ($blocks) {
+                return [
+                    'id' => $block->id,
+                    'type' => $block->type,
+                    'data' => $block->props ?? [],
+                    'styles' => $block->styles ?? [],
+                    'children' => $this->buildTree($blocks, $block->id)->values(),
+                ];
+            })
+            ->values();
+    }
+}

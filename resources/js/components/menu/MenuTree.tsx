@@ -1,0 +1,188 @@
+import {
+    DndContext,
+    closestCenter,
+    useSensor,
+    useSensors,
+    PointerSensor,
+} from '@dnd-kit/core';
+
+import {
+    SortableContext,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+
+import { useMemo, useState } from 'react';
+import { flattenTree, buildTree, getProjection } from '@/utils/tree';
+import MenuItemNode from './MenuItemNode';
+
+export default function MenuTree({ data = [], setData, locale }) {
+    const [activeId, setActiveId] = useState(null);
+    const [offsetX, setOffsetX] = useState(0);
+    const [overId, setOverId] = useState(null);
+
+    const sensors = useSensors(useSensor(PointerSensor));
+
+    // 🔥 FLATTEN + FILTER (hanya item yang punya translation)
+    const flat = useMemo(() => {
+        const normalizedLocale = locale?.replace('_', '-');
+
+        return flattenTree(data || []).filter((item) => {
+            return (
+                item.translations?.[normalizedLocale]?.title ||
+                item.translations?.[locale]?.title
+            );
+        });
+    }, [data, locale]);
+
+    function handleDragStart(event) {
+        setActiveId(event.active.id);
+    }
+
+    function handleDragMove(event) {
+        setOffsetX(event.delta.x);
+    }
+
+    function handleDragOver(event) {
+        setOverId(event.over?.id || null);
+    }
+
+    function updateItem(tree, id, payload) {
+        return tree.map((item) => {
+            if (String(item.id) === String(id)) {
+                return {
+                    ...item,
+                    ...payload,
+                    translations: {
+                        ...item.translations,
+                        ...payload.translations,
+                    },
+                };
+            }
+
+            if (item.children?.length) {
+                return {
+                    ...item,
+                    children: updateItem(item.children, id, payload),
+                };
+            }
+
+            return item;
+        });
+    }
+
+    function deleteItem(tree, id) {
+        return tree
+            .filter((item) => String(item.id) !== String(id))
+            .map((item) => ({
+                ...item,
+                children: item.children ? deleteItem(item.children, id) : [],
+            }));
+    }
+
+    function handleDragEnd(event) {
+        const { active, over } = event;
+
+        if (!over) return;
+
+        const projection = getProjection(flat, active.id, over.id, offsetX);
+
+        if (!projection) return;
+
+        const { depth, parentId, newItems } = projection;
+
+        const movedItems = newItems.map((item) => {
+            if (String(item.id) === String(active.id)) {
+                return { ...item, depth, parentId };
+            }
+            return item;
+        });
+
+        const normalized = movedItems.map((item, index, arr) => {
+            if (item.depth === 0) {
+                return { ...item, parentId: null };
+            }
+
+            for (let i = index - 1; i >= 0; i--) {
+                if (arr[i].depth === item.depth - 1) {
+                    return { ...item, parentId: arr[i].id };
+                }
+            }
+
+            return item;
+        });
+
+        setData(buildTree(normalized));
+
+        setActiveId(null);
+        setOverId(null);
+        setOffsetX(0);
+    }
+
+    return (
+        <div className="rounded-xl border p-4">
+            <h2 className="mb-4 font-semibold">Menu Structure</h2>
+
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragMove={handleDragMove}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEnd}
+            >
+                <SortableContext
+                    items={flat.map((i) => i.id)}
+                    strategy={verticalListSortingStrategy}
+                >
+                    {flat.map((item) => {
+                        const normalizedLocale = locale?.replace('_', '-');
+
+                        const hasTranslation =
+                            item.translations?.[normalizedLocale]?.title ||
+                            item.translations?.[locale]?.title;
+
+                        return (
+                            <div key={item.id} className="relative opacity-80">
+                                {overId === item.id && (
+                                    <div className="absolute -top-1 right-0 left-0 h-1 rounded bg-blue-500" />
+                                )}
+
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1">
+                                        <MenuItemNode
+                                            item={item}
+                                            locale={locale}
+                                            onChange={(
+                                                id: any,
+                                                payload: any,
+                                            ) => {
+                                                setData((prev: any) =>
+                                                    updateItem(
+                                                        prev,
+                                                        id,
+                                                        payload,
+                                                    ),
+                                                );
+                                            }}
+                                            onDelete={(id: any) => {
+                                                setData((prev: any) =>
+                                                    deleteItem(prev, id),
+                                                );
+                                            }}
+                                        />
+                                    </div>
+
+                                    {!hasTranslation && (
+                                        <span className="text-xs whitespace-nowrap text-red-500">
+                                            No translation
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </SortableContext>
+            </DndContext>
+        </div>
+    );
+}

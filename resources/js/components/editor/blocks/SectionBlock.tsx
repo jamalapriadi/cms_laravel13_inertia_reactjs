@@ -1,0 +1,67 @@
+import type { BlockComponent } from '../types/block';
+
+type SectionData = {
+    padding?: string;
+    background?: string;
+};
+
+export const SectionBlock: BlockComponent<SectionData> = {
+    type: 'section',
+
+    create: () => ({
+        padding: '40px',
+        background: '#ffffff',
+    }),
+
+    render: ({ data, children }) => {
+        const padding = data?.padding || '40px';
+        const background = data?.background || '#ffffff';
+
+        return (
+            <div
+                style={{ padding, background }}
+                className="space-y-4 rounded border border-dashed"
+            >
+                {children && children.length > 0 ? (
+                    children
+                ) : (
+                    <div className="text-xs text-muted-foreground">
+                        Drop column here...
+                    </div>
+                )}
+            </div>
+        );
+    },
+
+    editor: ({ data, onChange }) => {
+        return (
+            <div className="space-y-3">
+                <div>
+                    <label className="text-xs text-muted-foreground">
+                        Padding
+                    </label>
+                    <input
+                        className="input w-full border"
+                        value={data.padding || ''}
+                        onChange={(e) => onChange({ padding: e.target.value })}
+                        placeholder="e.g. 40px"
+                    />
+                </div>
+
+                <div>
+                    <label className="text-xs text-muted-foreground">
+                        Background
+                    </label>
+                    <input
+                        className="input w-full border"
+                        value={data.background || ''}
+                        onChange={(e) =>
+                            onChange({ background: e.target.value })
+                        }
+                        placeholder="#ffffff"
+                    />
+                </div>
+            </div>
+        );
+    },
+};
