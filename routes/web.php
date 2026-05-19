@@ -17,10 +17,17 @@ use App\Http\Controllers\Dashboard\PostCategoryController;
 use App\Http\Controllers\Dashboard\TaxonomyController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\PackageController;
+use App\Http\Controllers\Store\BrandController;
+use App\Http\Controllers\Store\CategoryController;
+use App\Http\Controllers\Store\ProductController;
+use App\Http\Controllers\Store\ProductVariantController;
+use App\Http\Controllers\Store\ProductImageController;
+use App\Http\Controllers\Store\ProductSpecificationController;
 
 use App\Http\Controllers\User\RoleController;
 use App\Http\Controllers\User\PermissionController;
 use App\Http\Controllers\User\UserController;
+
 
 // Route::inertia('/', 'welcome', [
 //     'canRegister' => Features::enabled(Features::registration()),
@@ -65,6 +72,12 @@ Route::group(['middleware'=>['auth','verified'],'prefix'=>'dashboard'], function
     Route::resource('posts', PostController::class);
 
     Route::resource('packages', PackageController::class);
+    Route::resource('brands', BrandController::class);
+    Route::resource('ecommerce/categories', CategoryController::class)->names('categories');
+    Route::resource('ecommerce/products', ProductController::class)->names('products');
+    Route::resource('ecommerce/product-variants', ProductVariantController::class)->names('product-variants');
+    Route::resource('ecommerce/product-images', ProductImageController::class)->names('product-images');
+    Route::resource('ecommerce/product-specifications', ProductSpecificationController::class)->names('product-specifications');
 
     Route::group(['prefix'=>'config'], function(){
         Route::controller(SettingController::class)->group(function(){

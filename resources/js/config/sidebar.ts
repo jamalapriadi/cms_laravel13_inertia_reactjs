@@ -6,13 +6,21 @@ import {
     FileText,
     FolderTree,
     Tags,
+    ShoppingBag,
+    Package,
+    Boxes,
+    ClipboardList,
+    BadgeDollarSign,
+    Warehouse,
+    Truck,
+    ShoppingCart,
 } from 'lucide-react';
 
 export interface SidebarItem {
     title: string;
     href: string;
     icon?: React.ElementType;
-    permission?: string; // 🔥 pakai permission, bukan role
+    permission?: string;
 }
 
 export interface SidebarGroup {
@@ -21,6 +29,11 @@ export interface SidebarGroup {
 }
 
 export const sidebarConfig: SidebarGroup[] = [
+    /*
+    |--------------------------------------------------------------------------
+    | Main
+    |--------------------------------------------------------------------------
+    */
     {
         label: 'Main',
         items: [
@@ -32,6 +45,11 @@ export const sidebarConfig: SidebarGroup[] = [
         ],
     },
 
+    /*
+    |--------------------------------------------------------------------------
+    | Blogs
+    |--------------------------------------------------------------------------
+    */
     {
         label: 'Blogs',
         items: [
@@ -56,6 +74,76 @@ export const sidebarConfig: SidebarGroup[] = [
         ],
     },
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ecommerce
+    |--------------------------------------------------------------------------
+    */
+    {
+        label: 'Ecommerce',
+        items: [
+            {
+                title: 'Brands',
+                href: '/dashboard/brands',
+                icon: BadgeDollarSign,
+                permission: 'brand.view',
+            },
+            {
+                title: 'Product Categories',
+                href: '/dashboard/ecommerce/categories',
+                icon: FolderTree,
+                permission: 'product-category.view',
+            },
+            {
+                title: 'Products',
+                href: '/dashboard/ecommerce/products',
+                icon: Package,
+                permission: 'product.view',
+            },
+            {
+                title: 'Product Variants',
+                href: '/dashboard/ecommerce/product-variants',
+                icon: Boxes,
+                permission: 'product-variant.view',
+            },
+            {
+                title: 'Orders',
+                href: '/dashboard/ecommerce/orders',
+                icon: ClipboardList,
+                permission: 'order.view',
+            },
+            {
+                title: 'Carts',
+                href: '/dashboard/ecommerce/carts',
+                icon: ShoppingCart,
+                permission: 'cart.view',
+            },
+            {
+                title: 'Payments',
+                href: '/dashboard/ecommerce/payments',
+                icon: ShoppingBag,
+                permission: 'payment.view',
+            },
+            {
+                title: 'Stock Movements',
+                href: '/dashboard/ecommerce/stock-movements',
+                icon: Warehouse,
+                permission: 'stock-movement.view',
+            },
+            {
+                title: 'Shipping',
+                href: '/dashboard/ecommerce/shipping',
+                icon: Truck,
+                permission: 'shipping.view',
+            },
+        ],
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Settings
+    |--------------------------------------------------------------------------
+    */
     {
         label: 'Settings',
         items: [
