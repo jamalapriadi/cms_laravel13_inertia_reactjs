@@ -17,12 +17,20 @@ interface Product {
     name: string;
 }
 
+interface Unit {
+    id: string;
+    name: string;
+    code: string;
+}
+
 interface Props {
     products: Product[];
+    units: Unit[];
 }
 
 const variantSchema = z.object({
     product_id: z.string().min(1, 'Product is required'),
+    unit_id: z.string().nullable().optional(),
     name: z.string().min(1, 'Variant name is required'),
     sku: z.string().min(1, 'SKU is required'),
     price: z.coerce.number().min(0, 'Price must be >= 0').default(0),
@@ -35,7 +43,7 @@ const variantSchema = z.object({
 });
 
 type VariantFormData = z.infer<typeof variantSchema>;
-
+, units
 export default function Create({ products }: Props) {
     const [processing, setProcessing] = useState(false);
 
@@ -53,6 +61,7 @@ export default function Create({ products }: Props) {
         resolver: zodResolver(variantSchema),
         defaultValues: {
             price: 0,
+            unit_id: null,
             track_stock: true,
             stock: 0,
             min_stock_alert: null,
@@ -120,6 +129,35 @@ export default function Create({ products }: Props) {
                                 {errors.product_id && (
                                     <p className="text-sm text-destructive">
                                         {errors.product_id.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* UNIT */}
+                            <div className="flex flex-col gap-1 md:col-span-2">
+                                <Label>Unit (Optional)</Label>
+                                <select
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                    {...register('unit_id')}
+                                    onChange={(e) =>
+                                        setValue(
+                                            'unit_id',
+                                            e.target.value === ''
+                                                ? null
+                                                : e.target.value,
+                                        )
+                                    }
+                                >
+                                    <option value="">-- No Unit --</option>
+                                    {units.map((unit) => (
+                                        <option key={unit.id} value={unit.id}>
+                                            {unit.name} ({unit.code})
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.unit_id && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.unit_id.message}
                                     </p>
                                 )}
                             </div>

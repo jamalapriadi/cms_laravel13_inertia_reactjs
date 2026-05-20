@@ -24,6 +24,7 @@ use App\Http\Controllers\Store\ProductSpecificationController;
 use App\Http\Controllers\Store\ProductVariantController;
 use App\Http\Controllers\Store\ShippingController;
 use App\Http\Controllers\Store\StockMovementController;
+use App\Http\Controllers\Store\UnitController;
 use App\Http\Controllers\User\PermissionController;
 use App\Http\Controllers\User\RoleController;
 use App\Http\Controllers\User\UserController;
@@ -74,6 +75,7 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
 
     Route::resource('packages', PackageController::class);
     Route::resource('brands', BrandController::class);
+    Route::resource('units', UnitController::class);
     Route::resource('ecommerce/categories', CategoryController::class)->names('categories');
     Route::resource('ecommerce/products', ProductController::class)->names('products');
     Route::resource('ecommerce/product-variants', ProductVariantController::class)->names('product-variants');

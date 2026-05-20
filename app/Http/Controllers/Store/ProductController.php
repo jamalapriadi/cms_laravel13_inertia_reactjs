@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Store\Product\ProductRequest;
 use App\Http\Requests\Store\Product\ProductUpdateRequest;
 use App\Models\Brand;
+use App\Models\Unit;
 use App\Models\Shop\Category;
 use App\Models\Shop\Product;
 use Illuminate\Http\Request;
@@ -25,11 +26,15 @@ class ProductController extends Controller
         $brandId = $request->query('brand_id');
 
         $products = Product::query()
-            ->with(['category', 'brand'])
+            ->with(['category', 'brand', 'variants'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('meta_title', 'like', "%{$search}%");
+                        ->orWhere('meta_title', 'like', "%{$search}%")
+                        ->orWhere('imei_serial_number', 'like', "%{$search}%")
+                        ->orWhereHas('variants', function ($qv) use ($search) {
+                            $qv->where('sku', 'like', "%{$search}%");
+                        });
                 });
             })
             ->when($categoryId, function ($query, $categoryId) {
@@ -64,10 +69,12 @@ class ProductController extends Controller
     {
         $categories = Category::select('id', 'name')->get();
         $brands = Brand::select('id', 'name')->where('is_active', true)->get();
+        $units = Unit::select('id', 'name', 'code')->where('is_active', true)->get();
 
         return Inertia::render('Dashboard/Store/Product/Create', [
             'categories' => $categories,
             'brands' => $brands,
+            'units' => $units,
         ]);
     }
 
@@ -122,13 +129,23 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
+        $product->load(['category', 'brand', 'variants']);
+
         $categories = Category::select('id', 'name')->get();
-        $brands = Brand::select('id', 'name')->where('is_active', true)->get();
+
+        $brands = Brand::select('id', 'name')
+            ->where('is_active', true)
+            ->get();
+
+        $units = Unit::select('id', 'name', 'code')
+            ->where('is_active', true)
+            ->get();
 
         return Inertia::render('Dashboard/Store/Product/Edit', [
             'product' => $product,
             'categories' => $categories,
             'brands' => $brands,
+            'units' => $units,
         ]);
     }
 

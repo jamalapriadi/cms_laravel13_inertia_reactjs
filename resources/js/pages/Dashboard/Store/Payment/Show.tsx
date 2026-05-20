@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/master-data-layout';
+// import AppLayout from '@/layouts/master-data-layout';
 
 interface OrderItem {
     id: string;
@@ -122,103 +122,153 @@ export default function Show({ payment }: Props) {
     const banner = getStatusBanner(payment.status);
 
     return (
-        <AppLayout>
-            <Head title={`Payment Detail - ${payment.transaction_id || payment.id.substring(0, 8)}`} />
+        <>
+            <Head
+                title={`Payment Detail - ${payment.transaction_id || payment.id.substring(0, 8)}`}
+            />
 
             <div className="container mx-auto space-y-6 px-4 py-6">
                 {/* HEADER & NAVIGATION */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Link href="/dashboard/ecommerce/payments" className="hover:text-foreground hover:underline">
+                            <Link
+                                href="/dashboard/ecommerce/payments"
+                                className="hover:text-foreground hover:underline"
+                            >
                                 Payments
                             </Link>
                             <span>/</span>
-                            <span className="font-mono text-[10px]">{payment.id}</span>
+                            <span className="font-mono text-[10px]">
+                                {payment.id}
+                            </span>
                         </div>
-                        <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
+                        <h1 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-foreground">
                             <span>Transaction Detail</span>
-                            <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold border ${getStatusBadge(payment.status)}`}>
+                            <span
+                                className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold ${getStatusBadge(payment.status)}`}
+                            >
                                 {payment.status.toUpperCase()}
                             </span>
                         </h1>
                     </div>
 
                     <Link href="/dashboard/ecommerce/payments">
-                        <Button variant="outline">
-                            ← Back to Payments
-                        </Button>
+                        <Button variant="outline">← Back to Payments</Button>
                     </Link>
                 </div>
 
                 {/* STATUS SUMMARY BANNER */}
-                <div className={`rounded-xl border p-4 flex flex-col gap-1 ${banner.bg}`}>
-                    <h3 className={`text-sm font-bold ${banner.text}`}>{banner.title}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{banner.desc}</p>
+                <div
+                    className={`flex flex-col gap-1 rounded-xl border p-4 ${banner.bg}`}
+                >
+                    <h3 className={`text-sm font-bold ${banner.text}`}>
+                        {banner.title}
+                    </h3>
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                        {banner.desc}
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     {/* LEFT / MAIN COLUMN */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="space-y-6 lg:col-span-2">
                         {/* PAYMENT INFORMATION */}
-                        <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
-                            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        <div className="space-y-4 rounded-xl border bg-card p-6 shadow-sm">
+                            <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
                                 Transaction details
                             </h2>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <span className="text-xs text-muted-foreground block">Transaction ID</span>
-                                    <span className="text-sm font-mono font-semibold text-foreground">
+                                    <span className="block text-xs text-muted-foreground">
+                                        Transaction ID
+                                    </span>
+                                    <span className="font-mono text-sm font-semibold text-foreground">
                                         {payment.transaction_id || 'N/A'}
                                     </span>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-xs text-muted-foreground block">Payment Method</span>
+                                    <span className="block text-xs text-muted-foreground">
+                                        Payment Method
+                                    </span>
                                     <span className="text-sm font-medium text-foreground">
-                                        {formatMethodLabel(payment.payment_method)}
+                                        {formatMethodLabel(
+                                            payment.payment_method,
+                                        )}
                                     </span>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-xs text-muted-foreground block">Settled Amount</span>
+                                    <span className="block text-xs text-muted-foreground">
+                                        Settled Amount
+                                    </span>
                                     <span className="text-base font-bold text-foreground">
-                                        Rp {Number(payment.amount).toLocaleString('id-ID')}
+                                        Rp{' '}
+                                        {Number(payment.amount).toLocaleString(
+                                            'id-ID',
+                                        )}
                                     </span>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-xs text-muted-foreground block">Created Date</span>
+                                    <span className="block text-xs text-muted-foreground">
+                                        Created Date
+                                    </span>
                                     <span className="text-sm font-medium text-foreground">
-                                        {new Date(payment.created_at).toLocaleString('id-ID')}
+                                        {new Date(
+                                            payment.created_at,
+                                        ).toLocaleString('id-ID')}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
                         {/* ORDER ITEMS LIST */}
-                        <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
-                            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        <div className="space-y-4 rounded-xl border bg-card p-6 shadow-sm">
+                            <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
                                 Associated Order Items
                             </h2>
                             {payment.order ? (
                                 <div className="overflow-x-auto">
-                                    <table className="w-full text-left border-collapse">
+                                    <table className="w-full border-collapse text-left">
                                         <thead>
                                             <tr className="border-b text-xs font-semibold text-muted-foreground">
-                                                <th className="py-3">Product Name</th>
-                                                <th className="py-3 text-right">Price</th>
-                                                <th className="py-3 text-center">Qty</th>
-                                                <th className="py-3 text-right">Subtotal</th>
+                                                <th className="py-3">
+                                                    Product Name
+                                                </th>
+                                                <th className="py-3 text-right">
+                                                    Price
+                                                </th>
+                                                <th className="py-3 text-center">
+                                                    Qty
+                                                </th>
+                                                <th className="py-3 text-right">
+                                                    Subtotal
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y text-sm">
                                             {payment.order.items.map((item) => (
                                                 <tr key={item.id}>
-                                                    <td className="py-3 font-medium text-foreground">{item.product_name}</td>
-                                                    <td className="py-3 text-right text-muted-foreground">
-                                                        Rp {Number(item.price).toLocaleString('id-ID')}
+                                                    <td className="py-3 font-medium text-foreground">
+                                                        {item.product_name}
                                                     </td>
-                                                    <td className="py-3 text-center text-foreground">{item.qty}</td>
+                                                    <td className="py-3 text-right text-muted-foreground">
+                                                        Rp{' '}
+                                                        {Number(
+                                                            item.price,
+                                                        ).toLocaleString(
+                                                            'id-ID',
+                                                        )}
+                                                    </td>
+                                                    <td className="py-3 text-center text-foreground">
+                                                        {item.qty}
+                                                    </td>
                                                     <td className="py-3 text-right font-semibold text-foreground">
-                                                        Rp {Number(item.subtotal).toLocaleString('id-ID')}
+                                                        Rp{' '}
+                                                        {Number(
+                                                            item.subtotal,
+                                                        ).toLocaleString(
+                                                            'id-ID',
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -226,16 +276,16 @@ export default function Show({ payment }: Props) {
                                     </table>
                                 </div>
                             ) : (
-                                <div className="text-center py-4 text-sm text-muted-foreground">
+                                <div className="py-4 text-center text-sm text-muted-foreground">
                                     No order items linked to this payment log.
                                 </div>
                             )}
                         </div>
 
                         {/* GATEWAY PAYLOAD INSPECTOR */}
-                        <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
-                            <div className="flex justify-between items-center">
-                                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        <div className="space-y-4 rounded-xl border bg-card p-6 shadow-sm">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
                                     Gateway Payload Logs
                                 </h2>
                                 <Button
@@ -243,15 +293,18 @@ export default function Show({ payment }: Props) {
                                     variant="outline"
                                     onClick={() => setShowPayload(!showPayload)}
                                 >
-                                    {showPayload ? 'Hide Logs' : 'View Payload Logs'}
+                                    {showPayload
+                                        ? 'Hide Logs'
+                                        : 'View Payload Logs'}
                                 </Button>
                             </div>
-                            
+
                             {showPayload && (
                                 <div className="space-y-3">
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex items-center justify-between">
                                         <span className="text-xs text-muted-foreground">
-                                            Raw API webhook or response payload returned by checkout gateway.
+                                            Raw API webhook or response payload
+                                            returned by checkout gateway.
                                         </span>
                                         <Button
                                             size="sm"
@@ -260,17 +313,24 @@ export default function Show({ payment }: Props) {
                                             onClick={handleCopyPayload}
                                             disabled={!payment.payload}
                                         >
-                                            {copied ? 'Copied!' : 'Copy to Clipboard'}
+                                            {copied
+                                                ? 'Copied!'
+                                                : 'Copy to Clipboard'}
                                         </Button>
                                     </div>
                                     <div className="relative">
                                         {payment.payload ? (
-                                            <pre className="bg-slate-950 text-slate-200 text-[11px] p-4 rounded-lg overflow-x-auto font-mono max-h-[300px] border border-slate-800 leading-relaxed">
-                                                {JSON.stringify(payment.payload, null, 2)}
+                                            <pre className="max-h-[300px] overflow-x-auto rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-[11px] leading-relaxed text-slate-200">
+                                                {JSON.stringify(
+                                                    payment.payload,
+                                                    null,
+                                                    2,
+                                                )}
                                             </pre>
                                         ) : (
-                                            <div className="text-center py-8 text-xs text-muted-foreground border border-dashed rounded-lg">
-                                                No metadata payload stored for this payment.
+                                            <div className="rounded-lg border border-dashed py-8 text-center text-xs text-muted-foreground">
+                                                No metadata payload stored for
+                                                this payment.
                                             </div>
                                         )}
                                     </div>
@@ -282,19 +342,24 @@ export default function Show({ payment }: Props) {
                     {/* RIGHT COLUMN */}
                     <div className="space-y-6">
                         {/* CUSTOMER & INVOICE CARD */}
-                        <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6">
+                        <div className="space-y-6 rounded-xl border bg-card p-6 shadow-sm">
                             <div>
-                                <h2 className="text-base font-bold text-foreground tracking-tight">Order Context</h2>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                    Detailed invoice mapping and customer profiles.
+                                <h2 className="text-base font-bold tracking-tight text-foreground">
+                                    Order Context
+                                </h2>
+                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                    Detailed invoice mapping and customer
+                                    profiles.
                                 </p>
                             </div>
 
                             {payment.order ? (
-                                <div className="space-y-4 text-xs divide-y divide-slate-100">
+                                <div className="space-y-4 divide-y divide-slate-100 text-xs">
                                     {/* INVOICE LINK */}
-                                    <div className="py-3 first:pt-0 space-y-1">
-                                        <span className="text-muted-foreground uppercase tracking-wider block">Invoice ID</span>
+                                    <div className="space-y-1 py-3 first:pt-0">
+                                        <span className="block tracking-wider text-muted-foreground uppercase">
+                                            Invoice ID
+                                        </span>
                                         <Link
                                             href={`/dashboard/orders/${payment.order.id}`}
                                             className="text-sm font-bold text-primary hover:underline"
@@ -304,46 +369,82 @@ export default function Show({ payment }: Props) {
                                     </div>
 
                                     {/* CUSTOMER INFORMATION */}
-                                    <div className="py-3 space-y-2">
-                                        <span className="text-muted-foreground uppercase tracking-wider block">Customer profile</span>
+                                    <div className="space-y-2 py-3">
+                                        <span className="block tracking-wider text-muted-foreground uppercase">
+                                            Customer profile
+                                        </span>
                                         <div className="space-y-1 text-foreground">
-                                            <div className="font-semibold">{payment.order.customer_name}</div>
-                                            <div className="text-muted-foreground">{payment.order.customer_email}</div>
-                                            <div className="text-muted-foreground">{payment.order.customer_phone}</div>
+                                            <div className="font-semibold">
+                                                {payment.order.customer_name}
+                                            </div>
+                                            <div className="text-muted-foreground">
+                                                {payment.order.customer_email}
+                                            </div>
+                                            <div className="text-muted-foreground">
+                                                {payment.order.customer_phone}
+                                            </div>
                                         </div>
                                     </div>
 
                                     {/* SHIPPING ADDRESS */}
-                                    <div className="py-3 space-y-1">
-                                        <span className="text-muted-foreground uppercase tracking-wider block">Shipping Address</span>
-                                        <p className="text-foreground leading-relaxed">{payment.order.shipping_address}</p>
+                                    <div className="space-y-1 py-3">
+                                        <span className="block tracking-wider text-muted-foreground uppercase">
+                                            Shipping Address
+                                        </span>
+                                        <p className="leading-relaxed text-foreground">
+                                            {payment.order.shipping_address}
+                                        </p>
                                     </div>
 
                                     {/* ORDER TOTAL SUMMARY */}
-                                    <div className="py-3 space-y-2">
-                                        <span className="text-muted-foreground uppercase tracking-wider block">Billing Summary</span>
+                                    <div className="space-y-2 py-3">
+                                        <span className="block tracking-wider text-muted-foreground uppercase">
+                                            Billing Summary
+                                        </span>
                                         <div className="space-y-1.5 text-muted-foreground">
                                             <div className="flex justify-between">
                                                 <span>Subtotal:</span>
-                                                <span className="text-foreground">Rp {Number(payment.order.subtotal).toLocaleString('id-ID')}</span>
+                                                <span className="text-foreground">
+                                                    Rp{' '}
+                                                    {Number(
+                                                        payment.order.subtotal,
+                                                    ).toLocaleString('id-ID')}
+                                                </span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span>Shipping Cost:</span>
-                                                <span className="text-foreground">Rp {Number(payment.order.shipping_cost).toLocaleString('id-ID')}</span>
+                                                <span className="text-foreground">
+                                                    Rp{' '}
+                                                    {Number(
+                                                        payment.order
+                                                            .shipping_cost,
+                                                    ).toLocaleString('id-ID')}
+                                                </span>
                                             </div>
                                             <div className="flex justify-between text-rose-600">
                                                 <span>Discount:</span>
-                                                <span>-Rp {Number(payment.order.discount).toLocaleString('id-ID')}</span>
+                                                <span>
+                                                    -Rp{' '}
+                                                    {Number(
+                                                        payment.order.discount,
+                                                    ).toLocaleString('id-ID')}
+                                                </span>
                                             </div>
-                                            <div className="flex justify-between text-sm font-bold text-foreground border-t pt-1.5">
+                                            <div className="flex justify-between border-t pt-1.5 text-sm font-bold text-foreground">
                                                 <span>Grand Total:</span>
-                                                <span>Rp {Number(payment.order.grand_total).toLocaleString('id-ID')}</span>
+                                                <span>
+                                                    Rp{' '}
+                                                    {Number(
+                                                        payment.order
+                                                            .grand_total,
+                                                    ).toLocaleString('id-ID')}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="text-center py-6 text-sm text-muted-foreground">
+                                <div className="py-6 text-center text-sm text-muted-foreground">
                                     No customer/order reference linked.
                                 </div>
                             )}
@@ -351,6 +452,6 @@ export default function Show({ payment }: Props) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }

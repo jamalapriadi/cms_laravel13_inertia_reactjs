@@ -1,7 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/master-data-layout';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -12,6 +10,8 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+// import AppLayout from '@/layouts/master-data-layout';
 
 interface Product {
     id: string;
@@ -65,9 +65,12 @@ export default function Show({ cart }: Props) {
         if (!deletingItemId) {
             return;
         }
-        router.delete(`/dashboard/ecommerce/carts/${cart.id}/items/${deletingItemId}`, {
-            onFinish: () => setDeletingItemId(null),
-        });
+        router.delete(
+            `/dashboard/ecommerce/carts/${cart.id}/items/${deletingItemId}`,
+            {
+                onFinish: () => setDeletingItemId(null),
+            },
+        );
     };
 
     const handleClearCart = () => {
@@ -77,7 +80,7 @@ export default function Show({ cart }: Props) {
     };
 
     return (
-        <AppLayout>
+        <>
             <Head title={`Cart Details - ${cart.id.substring(0, 8)}`} />
 
             <div className="container mx-auto space-y-8 px-4 py-6">
@@ -85,23 +88,26 @@ export default function Show({ cart }: Props) {
                 <div>
                     <Link
                         href="/dashboard/ecommerce/carts"
-                        className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 w-fit"
+                        className="flex w-fit items-center gap-1 text-xs font-semibold text-primary hover:underline"
                     >
                         &larr; Back to Carts List
                     </Link>
                 </div>
 
                 {/* HEADER INFO */}
-                <div className="flex flex-wrap justify-between items-start gap-4">
+                <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Cart Details</h1>
-                            <span className="font-mono text-sm bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-semibold">
+                            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+                                Cart Details
+                            </h1>
+                            <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-sm font-semibold text-slate-700">
                                 {cart.id}
                             </span>
                         </div>
-                        <p className="text-muted-foreground text-sm">
-                            Inspect items added by the customer and edit or clear the cart status.
+                        <p className="text-sm text-muted-foreground">
+                            Inspect items added by the customer and edit or
+                            clear the cart status.
                         </p>
                     </div>
 
@@ -118,55 +124,90 @@ export default function Show({ cart }: Props) {
 
                 <hr className="border-slate-100" />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     {/* CART ITEMS TABLE */}
-                    <div className="lg:col-span-2 space-y-4">
-                        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-                            <div className="px-5 py-4 border-b">
-                                <h2 className="font-bold text-base text-foreground">Cart Items ({cart.items.length})</h2>
+                    <div className="space-y-4 lg:col-span-2">
+                        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+                            <div className="border-b px-5 py-4">
+                                <h2 className="text-base font-bold text-foreground">
+                                    Cart Items ({cart.items.length})
+                                </h2>
                             </div>
 
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
+                                <table className="w-full border-collapse text-left">
                                     <thead>
-                                        <tr className="border-b bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                                            <th className="px-5 py-3">Product Name</th>
-                                            <th className="px-5 py-3 text-right">Unit Price</th>
-                                            <th className="px-5 py-3 text-center">Quantity</th>
-                                            <th className="px-5 py-3 text-right">Subtotal</th>
-                                            <th className="px-5 py-3 text-center">Action</th>
+                                        <tr className="border-b bg-slate-50 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                            <th className="px-5 py-3">
+                                                Product Name
+                                            </th>
+                                            <th className="px-5 py-3 text-right">
+                                                Unit Price
+                                            </th>
+                                            <th className="px-5 py-3 text-center">
+                                                Quantity
+                                            </th>
+                                            <th className="px-5 py-3 text-right">
+                                                Subtotal
+                                            </th>
+                                            <th className="px-5 py-3 text-center">
+                                                Action
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 text-sm">
                                         {cart.items.map((item) => (
-                                            <tr key={item.id} className="hover:bg-slate-50/50 transition">
+                                            <tr
+                                                key={item.id}
+                                                className="transition hover:bg-slate-50/50"
+                                            >
                                                 <td className="px-5 py-4">
                                                     <div className="flex flex-col">
                                                         <span className="font-semibold text-foreground">
                                                             {item.product.name}
                                                         </span>
                                                         {item.variant && (
-                                                            <span className="text-xs text-primary font-medium mt-0.5">
-                                                                Variant: {item.variant.name} (SKU: {item.variant.sku})
+                                                            <span className="mt-0.5 text-xs font-medium text-primary">
+                                                                Variant:{' '}
+                                                                {
+                                                                    item.variant
+                                                                        .name
+                                                                }{' '}
+                                                                (SKU:{' '}
+                                                                {
+                                                                    item.variant
+                                                                        .sku
+                                                                }
+                                                                )
                                                             </span>
                                                         )}
                                                     </div>
                                                 </td>
                                                 <td className="px-5 py-4 text-right font-medium text-foreground">
-                                                    Rp {Number(item.price).toLocaleString('id-ID')}
+                                                    Rp{' '}
+                                                    {Number(
+                                                        item.price,
+                                                    ).toLocaleString('id-ID')}
                                                 </td>
                                                 <td className="px-5 py-4 text-center font-semibold text-slate-700">
                                                     {item.qty}
                                                 </td>
                                                 <td className="px-5 py-4 text-right font-bold text-foreground">
-                                                    Rp {Number(item.subtotal).toLocaleString('id-ID')}
+                                                    Rp{' '}
+                                                    {Number(
+                                                        item.subtotal,
+                                                    ).toLocaleString('id-ID')}
                                                 </td>
                                                 <td className="px-5 py-4 text-center">
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"
-                                                        onClick={() => setDeletingItemId(item.id)}
-                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1.5 h-auto"
+                                                        onClick={() =>
+                                                            setDeletingItemId(
+                                                                item.id,
+                                                            )
+                                                        }
+                                                        className="h-auto p-1.5 text-red-600 hover:bg-red-50 hover:text-red-700"
                                                     >
                                                         Remove
                                                     </Button>
@@ -182,24 +223,26 @@ export default function Show({ cart }: Props) {
                     {/* OWNER & SUMMARY PANEL */}
                     <div className="space-y-6">
                         {/* OWNER INFO CARD */}
-                        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
-                            <h2 className="font-bold text-base text-foreground">Cart Owner</h2>
+                        <div className="space-y-4 rounded-xl border bg-card p-5 shadow-sm">
+                            <h2 className="text-base font-bold text-foreground">
+                                Cart Owner
+                            </h2>
                             <hr className="border-slate-100" />
                             {cart.user ? (
                                 <div className="space-y-3">
                                     <div>
-                                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                                        <label className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
                                             Name
                                         </label>
-                                        <p className="text-sm font-semibold text-foreground mt-0.5">
+                                        <p className="mt-0.5 text-sm font-semibold text-foreground">
                                             {cart.user.name}
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                                        <label className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
                                             Email Address
                                         </label>
-                                        <p className="text-sm text-foreground mt-0.5">
+                                        <p className="mt-0.5 text-sm text-foreground">
                                             {cart.user.email}
                                         </p>
                                     </div>
@@ -210,7 +253,8 @@ export default function Show({ cart }: Props) {
                             ) : (
                                 <div className="space-y-2">
                                     <p className="text-sm text-muted-foreground">
-                                        This cart belongs to a guest user who has not signed in.
+                                        This cart belongs to a guest user who
+                                        has not signed in.
                                     </p>
                                     <div className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
                                         Guest Session
@@ -220,40 +264,59 @@ export default function Show({ cart }: Props) {
                         </div>
 
                         {/* SUMMARY CALCULATIONS */}
-                        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
-                            <h2 className="font-bold text-base text-foreground">Potential Invoice</h2>
+                        <div className="space-y-4 rounded-xl border bg-card p-5 shadow-sm">
+                            <h2 className="text-base font-bold text-foreground">
+                                Potential Invoice
+                            </h2>
                             <hr className="border-slate-100" />
                             <div className="space-y-2.5">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Total Quantity</span>
-                                    <span className="font-semibold text-foreground">{cart.total_qty} items</span>
+                                    <span className="text-muted-foreground">
+                                        Total Quantity
+                                    </span>
+                                    <span className="font-semibold text-foreground">
+                                        {cart.total_qty} items
+                                    </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Unique Products</span>
-                                    <span className="font-semibold text-foreground">{cart.items.length} items</span>
+                                    <span className="text-muted-foreground">
+                                        Unique Products
+                                    </span>
+                                    <span className="font-semibold text-foreground">
+                                        {cart.items.length} items
+                                    </span>
                                 </div>
                                 <hr className="border-slate-100" />
-                                <div className="flex justify-between items-baseline pt-2">
-                                    <span className="font-bold text-sm text-foreground">Total Value</span>
+                                <div className="flex items-baseline justify-between pt-2">
+                                    <span className="text-sm font-bold text-foreground">
+                                        Total Value
+                                    </span>
                                     <span className="text-xl font-extrabold text-emerald-600">
-                                        Rp {Number(cart.total_price).toLocaleString('id-ID')}
+                                        Rp{' '}
+                                        {Number(
+                                            cart.total_price,
+                                        ).toLocaleString('id-ID')}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
                         {/* TIMESTAMPS */}
-                        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-2.5 text-xs text-muted-foreground">
+                        <div className="space-y-2.5 rounded-xl border bg-card p-5 text-xs text-muted-foreground shadow-sm">
                             <div className="flex justify-between">
                                 <span>Created At:</span>
                                 <span className="font-medium text-foreground">
-                                    {new Date(cart.created_at).toLocaleString('id-ID')}
+                                    {new Date(cart.created_at).toLocaleString(
+                                        'id-ID',
+                                    )}
                                 </span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Last Updated:</span>
                                 <span className="font-medium text-foreground">
-                                    {new Date(cart.updated_at).toLocaleString('id-ID')}
+                                    {new Date(cart.updated_at).toLocaleString(
+                                        'id-ID',
+                                    )}
                                 </span>
                             </div>
                         </div>
@@ -262,17 +325,26 @@ export default function Show({ cart }: Props) {
             </div>
 
             {/* DELETE SINGLE ITEM DIALOG */}
-            <AlertDialog open={!!deletingItemId} onOpenChange={() => setDeletingItemId(null)}>
+            <AlertDialog
+                open={!!deletingItemId}
+                onOpenChange={() => setDeletingItemId(null)}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Remove Item from Cart?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Remove Item from Cart?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to remove this item from the shopping cart?
+                            Are you sure you want to remove this item from the
+                            shopping cart?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteItem} className="bg-red-600 hover:bg-red-700 text-white">
+                        <AlertDialogAction
+                            onClick={handleDeleteItem}
+                            className="bg-red-600 text-white hover:bg-red-700"
+                        >
                             Yes, Remove
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -283,19 +355,25 @@ export default function Show({ cart }: Props) {
             <AlertDialog open={clearingCart} onOpenChange={setClearingCart}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Shopping Cart?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Delete Shopping Cart?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to clear and delete this customer cart? This action cannot be undone.
+                            Are you sure you want to clear and delete this
+                            customer cart? This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleClearCart} className="bg-red-600 hover:bg-red-700 text-white">
+                        <AlertDialogAction
+                            onClick={handleClearCart}
+                            className="bg-red-600 text-white hover:bg-red-700"
+                        >
                             Yes, Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </AppLayout>
+        </>
     );
 }

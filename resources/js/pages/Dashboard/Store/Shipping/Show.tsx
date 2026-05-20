@@ -1,19 +1,19 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/master-data-layout';
 import { Button } from '@/components/ui/button';
-import { 
-    ArrowLeft, 
-    Truck, 
-    Calendar, 
-    MapPin, 
-    FileText, 
-    Printer, 
-    ExternalLink, 
+import {
+    ArrowLeft,
+    Truck,
+    Calendar,
+    MapPin,
+    FileText,
+    Printer,
+    ExternalLink,
     AlertTriangle,
     CheckCircle2,
     Clock,
     Compass,
-    PackageOpen
+    PackageOpen,
 } from 'lucide-react';
 
 interface OrderOption {
@@ -29,7 +29,13 @@ interface Shipping {
     order_id: string;
     courier: string;
     tracking_number: string | null;
-    status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'failed' | 'returned';
+    status:
+        | 'pending'
+        | 'processing'
+        | 'shipped'
+        | 'delivered'
+        | 'failed'
+        | 'returned';
     shipping_cost: number;
     shipping_address: string | null;
     shipped_at: string | null;
@@ -64,15 +70,30 @@ export default function Show({ shipping }: Props) {
 
     const timelineSteps = [
         { label: 'Pending', desc: 'Shipment created', step: 1, icon: Clock },
-        { label: 'Processing', desc: 'Packing & sorting', step: 2, icon: PackageOpen },
-        { label: 'Shipped', desc: 'Dispatched in transit', step: 3, icon: Compass },
-        { label: 'Delivered', desc: 'Received at destination', step: 4, icon: CheckCircle2 },
+        {
+            label: 'Processing',
+            desc: 'Packing & sorting',
+            step: 2,
+            icon: PackageOpen,
+        },
+        {
+            label: 'Shipped',
+            desc: 'Dispatched in transit',
+            step: 3,
+            icon: Compass,
+        },
+        {
+            label: 'Delivered',
+            desc: 'Received at destination',
+            step: 4,
+            icon: CheckCircle2,
+        },
     ];
 
     const currentStep = getStatusStep();
 
     return (
-        <AppLayout>
+        <>
             <Head title={`Shipment Details - ${shipping.courier}`} />
 
             <div className="container mx-auto max-w-5xl space-y-8 px-6 py-8">
@@ -80,26 +101,38 @@ export default function Show({ shipping }: Props) {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <Link href="/dashboard/ecommerce/shipping">
-                            <Button variant="outline" size="sm" className="h-9 w-9 p-0">
-                                <ArrowLeft className="w-4 h-4" />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 w-9 p-0"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
                             </Button>
                         </Link>
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-foreground uppercase">
                                 {shipping.courier} Shipment
                             </h1>
-                            <p className="text-sm text-muted-foreground mt-0.5">
-                                Resi / Airway Bill: <span className="font-mono font-semibold">{shipping.tracking_number || 'N/A'}</span>
+                            <p className="mt-0.5 text-sm text-muted-foreground">
+                                Resi / Airway Bill:{' '}
+                                <span className="font-mono font-semibold">
+                                    {shipping.tracking_number || 'N/A'}
+                                </span>
                             </p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Link href={`/dashboard/ecommerce/shipping/${shipping.id}/edit`}>
+                        <Link
+                            href={`/dashboard/ecommerce/shipping/${shipping.id}/edit`}
+                        >
                             <Button variant="outline">Edit Details</Button>
                         </Link>
-                        <Button onClick={handlePrintReceipt} className="flex items-center gap-2">
-                            <Printer className="w-4 h-4" />
+                        <Button
+                            onClick={handlePrintReceipt}
+                            className="flex items-center gap-2"
+                        >
+                            <Printer className="h-4 w-4" />
                             Print Receipt / Resi
                         </Button>
                     </div>
@@ -109,24 +142,31 @@ export default function Show({ shipping }: Props) {
 
                 {/* DANGER BANNERS FOR ERROR STATES */}
                 {shipping.status === 'failed' && (
-                    <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-4 text-rose-800 flex items-start gap-3">
-                        <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/50 p-4 text-rose-800">
+                        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" />
                         <div>
-                            <h4 className="font-bold">Shipment Delivery Failed</h4>
-                            <p className="text-sm text-rose-700 mt-0.5">
-                                This shipment could not be successfully delivered. Please check the destination address or contact the carrier.
+                            <h4 className="font-bold">
+                                Shipment Delivery Failed
+                            </h4>
+                            <p className="mt-0.5 text-sm text-rose-700">
+                                This shipment could not be successfully
+                                delivered. Please check the destination address
+                                or contact the carrier.
                             </p>
                         </div>
                     </div>
                 )}
 
                 {shipping.status === 'returned' && (
-                    <div className="rounded-xl border border-orange-200 bg-orange-50/50 p-4 text-orange-800 flex items-start gap-3">
-                        <AlertTriangle className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-3 rounded-xl border border-orange-200 bg-orange-50/50 p-4 text-orange-800">
+                        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-orange-600" />
                         <div>
-                            <h4 className="font-bold">Shipment Returned to Sender</h4>
-                            <p className="text-sm text-orange-700 mt-0.5">
-                                This shipment has been returned back to the warehouse by the courier.
+                            <h4 className="font-bold">
+                                Shipment Returned to Sender
+                            </h4>
+                            <p className="mt-0.5 text-sm text-orange-700">
+                                This shipment has been returned back to the
+                                warehouse by the courier.
                             </p>
                         </div>
                     </div>
@@ -135,30 +175,41 @@ export default function Show({ shipping }: Props) {
                 {/* DELIVERY TIMELINE */}
                 {currentStep > 0 && (
                     <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-                        <h3 className="font-bold text-foreground mb-6">Delivery Progress</h3>
-                        <div className="relative flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4">
+                        <h3 className="mb-6 font-bold text-foreground">
+                            Delivery Progress
+                        </h3>
+                        <div className="relative flex flex-col items-center justify-between gap-6 md:flex-row md:gap-4">
                             {/* Connector Line */}
-                            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 dark:bg-slate-800 -translate-y-1/2 hidden md:block z-0" />
-                            
+                            <div className="absolute top-1/2 right-0 left-0 z-0 hidden h-0.5 -translate-y-1/2 bg-slate-200 md:block dark:bg-slate-800" />
+
                             {timelineSteps.map((step) => {
                                 const StepIcon = step.icon;
                                 const isCompleted = currentStep >= step.step;
                                 const isCurrent = currentStep === step.step;
 
                                 return (
-                                    <div key={step.step} className="flex flex-row md:flex-col items-center gap-4 md:gap-2.5 z-10 w-full md:w-auto">
-                                        <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
-                                            isCompleted 
-                                                ? 'bg-primary border-primary text-primary-foreground font-bold'
-                                                : 'bg-background border-slate-300 text-slate-400'
-                                        } ${isCurrent ? 'ring-4 ring-primary/20 scale-110' : ''}`}>
-                                            <StepIcon className="w-5 h-5" />
+                                    <div
+                                        key={step.step}
+                                        className="z-10 flex w-full flex-row items-center gap-4 md:w-auto md:flex-col md:gap-2.5"
+                                    >
+                                        <div
+                                            className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 ${
+                                                isCompleted
+                                                    ? 'border-primary bg-primary font-bold text-primary-foreground'
+                                                    : 'border-slate-300 bg-background text-slate-400'
+                                            } ${isCurrent ? 'scale-110 ring-4 ring-primary/20' : ''}`}
+                                        >
+                                            <StepIcon className="h-5 w-5" />
                                         </div>
                                         <div className="text-left md:text-center">
-                                            <h4 className={`text-sm font-bold ${isCompleted ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                            <h4
+                                                className={`text-sm font-bold ${isCompleted ? 'text-foreground' : 'text-muted-foreground'}`}
+                                            >
                                                 {step.label}
                                             </h4>
-                                            <p className="text-xs text-muted-foreground">{step.desc}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {step.desc}
+                                            </p>
                                         </div>
                                     </div>
                                 );
@@ -170,31 +221,48 @@ export default function Show({ shipping }: Props) {
                 {/* INFORMATION GRID */}
                 <div className="grid gap-6 md:grid-cols-3">
                     {/* LEFT TWO COLUMNS: DETAILS */}
-                    <div className="md:col-span-2 space-y-6">
+                    <div className="space-y-6 md:col-span-2">
                         {/* SHIPMENT INFO CARD */}
-                        <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
-                            <h3 className="font-bold text-foreground flex items-center gap-2">
-                                <Truck className="w-4 h-4 text-primary" />
+                        <div className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm">
+                            <h3 className="flex items-center gap-2 font-bold text-foreground">
+                                <Truck className="h-4 w-4 text-primary" />
                                 Shipment Specifications
                             </h3>
                             <hr className="border-border" />
-                            
+
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-1">
-                                    <span className="text-xs text-muted-foreground block">Courier Service</span>
-                                    <span className="text-sm font-semibold text-foreground uppercase">{shipping.courier}</span>
+                                    <span className="block text-xs text-muted-foreground">
+                                        Courier Service
+                                    </span>
+                                    <span className="text-sm font-semibold text-foreground uppercase">
+                                        {shipping.courier}
+                                    </span>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-xs text-muted-foreground block">Tracking Resi Number</span>
-                                    <span className="text-sm font-mono font-semibold text-foreground">{shipping.tracking_number || '-'}</span>
+                                    <span className="block text-xs text-muted-foreground">
+                                        Tracking Resi Number
+                                    </span>
+                                    <span className="font-mono text-sm font-semibold text-foreground">
+                                        {shipping.tracking_number || '-'}
+                                    </span>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-xs text-muted-foreground block">Logistic Shipping Cost</span>
-                                    <span className="text-sm font-semibold text-foreground">Rp {Number(shipping.shipping_cost).toLocaleString('id-ID')}</span>
+                                    <span className="block text-xs text-muted-foreground">
+                                        Logistic Shipping Cost
+                                    </span>
+                                    <span className="text-sm font-semibold text-foreground">
+                                        Rp{' '}
+                                        {Number(
+                                            shipping.shipping_cost,
+                                        ).toLocaleString('id-ID')}
+                                    </span>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-xs text-muted-foreground block">Current Status</span>
-                                    <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-semibold uppercase text-indigo-700 border border-indigo-200">
+                                    <span className="block text-xs text-muted-foreground">
+                                        Current Status
+                                    </span>
+                                    <span className="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 uppercase">
                                         {shipping.status}
                                     </span>
                                 </div>
@@ -202,16 +270,19 @@ export default function Show({ shipping }: Props) {
                         </div>
 
                         {/* DESTINATION ADDRESS CARD */}
-                        <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
-                            <h3 className="font-bold text-foreground flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-primary" />
+                        <div className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm">
+                            <h3 className="flex items-center gap-2 font-bold text-foreground">
+                                <MapPin className="h-4 w-4 text-primary" />
                                 Delivery Destination
                             </h3>
                             <hr className="border-border" />
                             <div className="space-y-1">
-                                <span className="text-xs text-muted-foreground block">Recipient Address</span>
-                                <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">
-                                    {shipping.shipping_address || 'No shipping address provided.'}
+                                <span className="block text-xs text-muted-foreground">
+                                    Recipient Address
+                                </span>
+                                <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+                                    {shipping.shipping_address ||
+                                        'No shipping address provided.'}
                                 </p>
                             </div>
                         </div>
@@ -220,32 +291,43 @@ export default function Show({ shipping }: Props) {
                     {/* RIGHT COLUMN: ASSOCIATED ORDER */}
                     <div className="space-y-6">
                         {/* ORDER METADATA */}
-                        <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
-                            <h3 className="font-bold text-foreground flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-primary" />
+                        <div className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm">
+                            <h3 className="flex items-center gap-2 font-bold text-foreground">
+                                <FileText className="h-4 w-4 text-primary" />
                                 Associated Order
                             </h3>
                             <hr className="border-border" />
 
                             <div className="space-y-3">
                                 <div className="space-y-0.5">
-                                    <span className="text-xs text-muted-foreground block">Invoice Number</span>
+                                    <span className="block text-xs text-muted-foreground">
+                                        Invoice Number
+                                    </span>
                                     <span className="text-sm font-semibold text-foreground">
-                                        {shipping.order?.invoice_number || 'N/A'}
+                                        {shipping.order?.invoice_number ||
+                                            'N/A'}
                                     </span>
                                 </div>
                                 <div className="space-y-0.5">
-                                    <span className="text-xs text-muted-foreground block">Customer Name</span>
+                                    <span className="block text-xs text-muted-foreground">
+                                        Customer Name
+                                    </span>
                                     <span className="text-sm font-semibold text-foreground">
-                                        {shipping.order?.customer_name || 'Walk-in Customer'}
+                                        {shipping.order?.customer_name ||
+                                            'Walk-in Customer'}
                                     </span>
                                 </div>
-                                
+
                                 <div className="pt-2">
-                                    <Link href={`/dashboard/orders/${shipping.order_id}`}>
-                                        <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                                    <Link
+                                        href={`/dashboard/orders/${shipping.order_id}`}
+                                    >
+                                        <Button
+                                            variant="outline"
+                                            className="flex w-full items-center justify-center gap-2"
+                                        >
                                             View Full Order Details
-                                            <ExternalLink className="w-3.5 h-3.5" />
+                                            <ExternalLink className="h-3.5 w-3.5" />
                                         </Button>
                                     </Link>
                                 </div>
@@ -253,9 +335,9 @@ export default function Show({ shipping }: Props) {
                         </div>
 
                         {/* TIMESTAMPS CARD */}
-                        <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
-                            <h3 className="font-bold text-foreground flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-primary" />
+                        <div className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm">
+                            <h3 className="flex items-center gap-2 font-bold text-foreground">
+                                <Calendar className="h-4 w-4 text-primary" />
                                 Logistics Timeline
                             </h3>
                             <hr className="border-border" />
@@ -264,22 +346,46 @@ export default function Show({ shipping }: Props) {
                                 <div className="flex justify-between">
                                     <span>Created</span>
                                     <span className="font-medium text-foreground">
-                                        {new Date(shipping.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        {new Date(
+                                            shipping.created_at,
+                                        ).toLocaleString('id-ID', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        })}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Shipped</span>
                                     <span className="font-medium text-foreground">
-                                        {shipping.shipped_at 
-                                            ? new Date(shipping.shipped_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                        {shipping.shipped_at
+                                            ? new Date(
+                                                  shipping.shipped_at,
+                                              ).toLocaleString('id-ID', {
+                                                  day: '2-digit',
+                                                  month: 'short',
+                                                  year: 'numeric',
+                                                  hour: '2-digit',
+                                                  minute: '2-digit',
+                                              })
                                             : 'Not shipped yet'}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Delivered</span>
                                     <span className="font-medium text-foreground">
-                                        {shipping.delivered_at 
-                                            ? new Date(shipping.delivered_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                        {shipping.delivered_at
+                                            ? new Date(
+                                                  shipping.delivered_at,
+                                              ).toLocaleString('id-ID', {
+                                                  day: '2-digit',
+                                                  month: 'short',
+                                                  year: 'numeric',
+                                                  hour: '2-digit',
+                                                  minute: '2-digit',
+                                              })
                                             : 'Not delivered yet'}
                                     </span>
                                 </div>
@@ -288,6 +394,6 @@ export default function Show({ shipping }: Props) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }

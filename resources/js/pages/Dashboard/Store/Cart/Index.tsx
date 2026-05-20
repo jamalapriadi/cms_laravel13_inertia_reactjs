@@ -1,9 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { DataTable } from '@/components/DataTable';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import AppLayout from '@/layouts/master-data-layout';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -14,6 +11,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import AppLayout from '@/layouts/master-data-layout';
+
 import type { LaravelPagination } from '@/types/LaravelPagination';
 
 interface Cart {
@@ -56,7 +57,12 @@ interface Props {
     };
 }
 
-export default function Index({ carts, summary, top_products, filters }: Props) {
+export default function Index({
+    carts,
+    summary,
+    top_products,
+    filters,
+}: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [userType, setUserType] = useState(filters.user_type || '');
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -71,7 +77,7 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
             {
                 preserveState: true,
                 replace: true,
-            }
+            },
         );
     };
 
@@ -84,7 +90,7 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
             {
                 preserveState: true,
                 replace: true,
-            }
+            },
         );
     };
 
@@ -102,11 +108,12 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
             label: 'Cart ID',
             render: (row: Cart) => (
                 <div className="flex flex-col">
-                    <span className="font-mono text-xs font-semibold text-foreground truncate max-w-[120px]">
+                    <span className="max-w-[120px] truncate font-mono text-xs font-semibold text-foreground">
                         {row.id}
                     </span>
-                    <span className="text-[10px] text-muted-foreground mt-0.5">
-                        Created: {new Date(row.created_at).toLocaleDateString('id-ID')}
+                    <span className="mt-0.5 text-[10px] text-muted-foreground">
+                        Created:{' '}
+                        {new Date(row.created_at).toLocaleDateString('id-ID')}
                     </span>
                 </div>
             ),
@@ -117,11 +124,15 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
                 <div className="flex flex-col">
                     {row.user ? (
                         <>
-                            <span className="font-semibold text-sm text-foreground">{row.user.name}</span>
-                            <span className="text-xs text-muted-foreground">{row.user.email}</span>
+                            <span className="text-sm font-semibold text-foreground">
+                                {row.user.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                                {row.user.email}
+                            </span>
                         </>
                     ) : (
-                        <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 w-fit">
+                        <span className="inline-flex w-fit items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
                             Guest / Anonymous
                         </span>
                     )}
@@ -131,7 +142,7 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
         {
             label: 'Total Items',
             render: (row: Cart) => (
-                <span className="text-sm text-foreground font-medium">
+                <span className="text-sm font-medium text-foreground">
                     {row.total_qty} pcs
                 </span>
             ),
@@ -148,7 +159,9 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
             label: 'Last Active',
             render: (row: Cart) => {
                 const date = new Date(row.updated_at);
-                const diffTime = Math.abs(new Date().getTime() - date.getTime());
+                const diffTime = Math.abs(
+                    new Date().getTime() - date.getTime(),
+                );
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
 
@@ -166,10 +179,16 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
 
                 return (
                     <div className="flex flex-col">
-                        <span className="text-sm text-foreground">{activeText}</span>
-                        <span className={`text-[10px] font-semibold uppercase tracking-wider mt-0.5 ${
-                            isAbandoned ? 'text-amber-600' : 'text-emerald-600'
-                        }`}>
+                        <span className="text-sm text-foreground">
+                            {activeText}
+                        </span>
+                        <span
+                            className={`mt-0.5 text-[10px] font-semibold tracking-wider uppercase ${
+                                isAbandoned
+                                    ? 'text-amber-600'
+                                    : 'text-emerald-600'
+                            }`}
+                        >
                             {isAbandoned ? 'Abandoned' : 'Active'}
                         </span>
                     </div>
@@ -181,7 +200,11 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
             render: (row: Cart) => (
                 <div className="flex gap-2">
                     <Link href={`/dashboard/ecommerce/carts/${row.id}`}>
-                        <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/5">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-primary/50 text-primary hover:bg-primary/5"
+                        >
                             Details
                         </Button>
                     </Link>
@@ -197,64 +220,89 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
         },
     ];
 
-    const maxQty = top_products.length > 0 ? Math.max(...top_products.map((p) => p.qty)) : 1;
+    const maxQty =
+        top_products.length > 0
+            ? Math.max(...top_products.map((p) => p.qty))
+            : 1;
 
     return (
-        <AppLayout>
+        <>
             <Head title="Carts & E-Commerce Insights" />
 
             <div className="container mx-auto space-y-8 px-4 py-6">
                 {/* TITLE & HEADER */}
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Shopping Carts & Insights</h1>
-                    <p className="text-muted-foreground text-sm">
-                        Analyze shopping cart behavior, observe abandonment trends, and manage active customer carts.
+                    <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+                        Shopping Carts & Insights
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                        Analyze shopping cart behavior, observe abandonment
+                        trends, and manage active customer carts.
                     </p>
                 </div>
 
                 <hr className="border-slate-100" />
 
                 {/* INSIGHTS METRICS GRID */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {/* TOTAL CARTS */}
-                    <div className="rounded-xl border bg-card p-5 shadow-sm relative overflow-hidden group">
-                        <div className="absolute right-0 top-0 h-16 w-16 bg-primary/5 rounded-bl-full transition-transform group-hover:scale-110" />
-                        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Carts</span>
-                        <div className="flex items-baseline gap-2 mt-2">
-                            <span className="text-3xl font-bold tracking-tight text-foreground">{summary.total_carts}</span>
-                            <span className="text-xs text-muted-foreground">carts</span>
+                    <div className="group relative overflow-hidden rounded-xl border bg-card p-5 shadow-sm">
+                        <div className="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-primary/5 transition-transform group-hover:scale-110" />
+                        <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                            Total Carts
+                        </span>
+                        <div className="mt-2 flex items-baseline gap-2">
+                            <span className="text-3xl font-bold tracking-tight text-foreground">
+                                {summary.total_carts}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                                carts
+                            </span>
                         </div>
                     </div>
 
                     {/* TOTAL VALUE */}
-                    <div className="rounded-xl border bg-card p-5 shadow-sm relative overflow-hidden group">
-                        <div className="absolute right-0 top-0 h-16 w-16 bg-emerald-500/5 rounded-bl-full transition-transform group-hover:scale-110" />
-                        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Cumulative Value</span>
-                        <div className="flex flex-col mt-2">
+                    <div className="group relative overflow-hidden rounded-xl border bg-card p-5 shadow-sm">
+                        <div className="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-emerald-500/5 transition-transform group-hover:scale-110" />
+                        <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                            Cumulative Value
+                        </span>
+                        <div className="mt-2 flex flex-col">
                             <span className="text-xl font-bold tracking-tight text-emerald-600">
                                 Rp {summary.total_value.toLocaleString('id-ID')}
                             </span>
-                            <span className="text-[10px] text-muted-foreground mt-0.5">from {summary.total_items} items in carts</span>
+                            <span className="mt-0.5 text-[10px] text-muted-foreground">
+                                from {summary.total_items} items in carts
+                            </span>
                         </div>
                     </div>
 
                     {/* AVERAGE VALUE */}
-                    <div className="rounded-xl border bg-card p-5 shadow-sm relative overflow-hidden group">
-                        <div className="absolute right-0 top-0 h-16 w-16 bg-blue-500/5 rounded-bl-full transition-transform group-hover:scale-110" />
-                        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Average Cart Value</span>
-                        <div className="flex flex-col mt-2">
+                    <div className="group relative overflow-hidden rounded-xl border bg-card p-5 shadow-sm">
+                        <div className="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-blue-500/5 transition-transform group-hover:scale-110" />
+                        <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                            Average Cart Value
+                        </span>
+                        <div className="mt-2 flex flex-col">
                             <span className="text-xl font-bold tracking-tight text-blue-600">
-                                Rp {Math.round(summary.avg_cart_value).toLocaleString('id-ID')}
+                                Rp{' '}
+                                {Math.round(
+                                    summary.avg_cart_value,
+                                ).toLocaleString('id-ID')}
                             </span>
-                            <span className="text-[10px] text-muted-foreground mt-0.5">average order potential</span>
+                            <span className="mt-0.5 text-[10px] text-muted-foreground">
+                                average order potential
+                            </span>
                         </div>
                     </div>
 
                     {/* ABANDONMENT RATE */}
-                    <div className="rounded-xl border bg-card p-5 shadow-sm relative overflow-hidden group">
-                        <div className="absolute right-0 top-0 h-16 w-16 bg-amber-500/5 rounded-bl-full transition-transform group-hover:scale-110" />
-                        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Abandonment Rate</span>
-                        <div className="flex items-baseline gap-2 mt-2">
+                    <div className="group relative overflow-hidden rounded-xl border bg-card p-5 shadow-sm">
+                        <div className="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-amber-500/5 transition-transform group-hover:scale-110" />
+                        <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                            Abandonment Rate
+                        </span>
+                        <div className="mt-2 flex items-baseline gap-2">
                             <span className="text-3xl font-bold tracking-tight text-amber-600">
                                 {summary.abandonment_rate}%
                             </span>
@@ -265,41 +313,63 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     {/* FILTERS & CARTS TABLE */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
-                            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Filter Carts</h2>
-                            <div className="flex flex-wrap gap-3 items-end">
-                                <div className="flex-1 min-w-[200px] space-y-1.5">
-                                    <label className="text-xs font-medium text-foreground">Search Customer Name/ID</label>
+                    <div className="space-y-6 lg:col-span-2">
+                        <div className="space-y-4 rounded-xl border bg-card p-5 shadow-sm">
+                            <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+                                Filter Carts
+                            </h2>
+                            <div className="flex flex-wrap items-end gap-3">
+                                <div className="min-w-[200px] flex-1 space-y-1.5">
+                                    <label className="text-xs font-medium text-foreground">
+                                        Search Customer Name/ID
+                                    </label>
                                     <Input
                                         placeholder="Search..."
                                         value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && applyFilter()}
+                                        onChange={(e) =>
+                                            setSearch(e.target.value)
+                                        }
+                                        onKeyDown={(e) =>
+                                            e.key === 'Enter' && applyFilter()
+                                        }
                                     />
                                 </div>
 
                                 <div className="w-[180px] space-y-1.5">
-                                    <label className="text-xs font-medium text-foreground">User Type</label>
+                                    <label className="text-xs font-medium text-foreground">
+                                        User Type
+                                    </label>
                                     <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                         value={userType}
-                                        onChange={(e) => setUserType(e.target.value)}
+                                        onChange={(e) =>
+                                            setUserType(e.target.value)
+                                        }
                                     >
                                         <option value="">All Carts</option>
-                                        <option value="registered">Registered Only</option>
-                                        <option value="guest">Guest Only</option>
+                                        <option value="registered">
+                                            Registered Only
+                                        </option>
+                                        <option value="guest">
+                                            Guest Only
+                                        </option>
                                     </select>
                                 </div>
 
                                 <div className="flex gap-2">
-                                    <Button onClick={applyFilter} className="shadow-sm">
+                                    <Button
+                                        onClick={applyFilter}
+                                        className="shadow-sm"
+                                    >
                                         Apply Filter
                                     </Button>
                                     {(filters.search || filters.user_type) && (
-                                        <Button onClick={clearFilter} variant="outline">
+                                        <Button
+                                            onClick={clearFilter}
+                                            variant="outline"
+                                        >
                                             Reset
                                         </Button>
                                     )}
@@ -308,8 +378,11 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
                         </div>
 
                         {/* CARTS TABLE */}
-                        <div className="rounded-xl border bg-card p-1 shadow-sm overflow-hidden">
-                            <DataTable<Cart> data={carts.data} columns={columns} />
+                        <div className="overflow-hidden rounded-xl border bg-card p-1 shadow-sm">
+                            <DataTable<Cart>
+                                data={carts.data}
+                                columns={columns}
+                            />
                         </div>
 
                         {/* PAGINATION */}
@@ -318,14 +391,18 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
                                 {carts.links.map((link, idx) => (
                                     <button
                                         key={idx}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                        dangerouslySetInnerHTML={{
+                                            __html: link.label,
+                                        }}
                                         disabled={!link.url}
-                                        onClick={() => link.url && router.visit(link.url)}
+                                        onClick={() =>
+                                            link.url && router.visit(link.url)
+                                        }
                                         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
                                             link.active
                                                 ? 'bg-primary text-primary-foreground'
-                                                : 'hover:bg-muted text-muted-foreground'
-                                        } ${!link.url && 'opacity-40 cursor-not-allowed'}`}
+                                                : 'text-muted-foreground hover:bg-muted'
+                                        } ${!link.url && 'cursor-not-allowed opacity-40'}`}
                                     />
                                 ))}
                             </div>
@@ -333,39 +410,48 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
                     </div>
 
                     {/* TOP PRODUCT INSIGHTS PANEL */}
-                    <div className="rounded-xl border bg-card p-5 shadow-sm h-fit space-y-6">
+                    <div className="h-fit space-y-6 rounded-xl border bg-card p-5 shadow-sm">
                         <div>
-                            <h2 className="text-lg font-bold text-foreground tracking-tight">Top Added Products</h2>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                                Products with the highest quantities currently added to customer carts.
+                            <h2 className="text-lg font-bold tracking-tight text-foreground">
+                                Top Added Products
+                            </h2>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                                Products with the highest quantities currently
+                                added to customer carts.
                             </p>
                         </div>
-                        
+
                         <div className="space-y-4">
                             {top_products.length > 0 ? (
                                 top_products.map((product, index) => {
-                                    const percent = (product.qty / maxQty) * 100;
+                                    const percent =
+                                        (product.qty / maxQty) * 100;
                                     return (
-                                        <div key={product.id} className="space-y-1">
-                                            <div className="flex justify-between items-baseline text-xs">
-                                                <span className="font-semibold text-foreground truncate max-w-[180px]">
+                                        <div
+                                            key={product.id}
+                                            className="space-y-1"
+                                        >
+                                            <div className="flex items-baseline justify-between text-xs">
+                                                <span className="max-w-[180px] truncate font-semibold text-foreground">
                                                     {product.name}
                                                 </span>
-                                                <span className="font-medium text-muted-foreground shrink-0 ml-2">
+                                                <span className="ml-2 shrink-0 font-medium text-muted-foreground">
                                                     {product.qty} pcs
                                                 </span>
                                             </div>
-                                            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                                 <div
-                                                    className="bg-primary h-full rounded-full transition-all duration-500"
-                                                    style={{ width: `${percent}%` }}
+                                                    className="h-full rounded-full bg-primary transition-all duration-500"
+                                                    style={{
+                                                        width: `${percent}%`,
+                                                    }}
                                                 />
                                             </div>
                                         </div>
                                     );
                                 })
                             ) : (
-                                <div className="text-center py-8 text-sm text-muted-foreground">
+                                <div className="py-8 text-center text-sm text-muted-foreground">
                                     No products in carts.
                                 </div>
                             )}
@@ -373,12 +459,16 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
 
                         <hr className="border-slate-100" />
 
-                        <div className="rounded-lg bg-slate-50 p-4 space-y-2">
-                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <div className="space-y-2 rounded-lg bg-slate-50 p-4">
+                            <span className="text-xs font-bold tracking-wider text-slate-500 uppercase">
                                 Ecommerce Hint
                             </span>
-                            <p className="text-xs text-slate-600 leading-relaxed">
-                                High cart abandonment rates (typically &gt; 70%) may indicate friction during checkout, uncompetitive pricing, or high shipping fees. Consider launching email reminders or offering discounts on top carted items.
+                            <p className="text-xs leading-relaxed text-slate-600">
+                                High cart abandonment rates (typically &gt; 70%)
+                                may indicate friction during checkout,
+                                uncompetitive pricing, or high shipping fees.
+                                Consider launching email reminders or offering
+                                discounts on top carted items.
                             </p>
                         </div>
                     </div>
@@ -386,22 +476,32 @@ export default function Index({ carts, summary, top_products, filters }: Props) 
             </div>
 
             {/* DELETE ALERT DIALOG */}
-            <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
+            <AlertDialog
+                open={!!deletingId}
+                onOpenChange={() => setDeletingId(null)}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Customer Cart?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Delete Customer Cart?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this cart? All items inside the cart will be removed. This cannot be undone.
+                            Are you sure you want to delete this cart? All items
+                            inside the cart will be removed. This cannot be
+                            undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white">
+                        <AlertDialogAction
+                            onClick={handleDelete}
+                            className="bg-red-600 text-white hover:bg-red-700"
+                        >
                             Yes, Delete Cart
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </AppLayout>
+        </>
     );
 }

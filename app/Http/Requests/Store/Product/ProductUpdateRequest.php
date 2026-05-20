@@ -26,6 +26,7 @@ class ProductUpdateRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'category_id' => ['required', 'uuid', 'exists:categories,id'],
             'brand_id' => ['nullable', 'uuid', 'exists:brands,id'],
+            'unit_id' => ['nullable', 'string', 'exists:units,id'],
             'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048'],
             'description' => ['nullable', 'string'],
             'condition' => ['required', 'in:new,like_new,second'],

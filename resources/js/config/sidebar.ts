@@ -83,32 +83,14 @@ export const sidebarConfig: SidebarGroup[] = [
         label: 'Ecommerce',
         items: [
             {
-                title: 'Brands',
-                href: '/dashboard/brands',
-                icon: BadgeDollarSign,
-                permission: 'brand.view',
-            },
-            {
-                title: 'Product Categories',
-                href: '/dashboard/ecommerce/categories',
-                icon: FolderTree,
-                permission: 'product-category.view',
-            },
-            {
                 title: 'Products',
                 href: '/dashboard/ecommerce/products',
                 icon: Package,
                 permission: 'product.view',
             },
             {
-                title: 'Product Variants',
-                href: '/dashboard/ecommerce/product-variants',
-                icon: Boxes,
-                permission: 'product-variant.view',
-            },
-            {
                 title: 'Orders',
-                href: '/dashboard/ecommerce/orders',
+                href: '/dashboard/orders',
                 icon: ClipboardList,
                 permission: 'order.view',
             },

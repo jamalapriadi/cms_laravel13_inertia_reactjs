@@ -23,6 +23,7 @@ class ProductVariantRequest extends FormRequest
     {
         return [
             'product_id' => ['required', 'uuid', 'exists:products,id'],
+            'unit_id' => ['nullable', 'string', 'exists:units,id'],
             'name' => ['required', 'string', 'max:255'],
             'sku' => ['required', 'string', 'max:255', 'unique:product_variants,sku'],
             'price' => ['required', 'numeric', 'min:0'],
