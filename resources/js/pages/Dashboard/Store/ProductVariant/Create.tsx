@@ -6,9 +6,9 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -42,9 +42,9 @@ const variantSchema = z.object({
     is_active: z.boolean().default(true),
 });
 
-type VariantFormData = z.infer<typeof variantSchema>;
-, units
-export default function Create({ products }: Props) {
+type VariantFormData = z.output<typeof variantSchema>;
+
+export default function Create({ products, units }: Props) {
     const [processing, setProcessing] = useState(false);
 
     const {
@@ -53,15 +53,14 @@ export default function Create({ products }: Props) {
         setValue,
         watch,
         formState: { errors },
-    } = useForm<
-        z.input<typeof variantSchema>,
-        unknown,
-        z.output<typeof variantSchema>
-    >({
+    } = useForm<z.input<typeof variantSchema>, unknown, VariantFormData>({
         resolver: zodResolver(variantSchema),
         defaultValues: {
-            price: 0,
+            product_id: '',
             unit_id: null,
+            name: '',
+            sku: '',
+            price: 0,
             track_stock: true,
             stock: 0,
             min_stock_alert: null,
@@ -71,9 +70,6 @@ export default function Create({ products }: Props) {
         },
     });
 
-    /**
-     * SUBMIT
-     */
     const onSubmit = (data: VariantFormData) => {
         router.post('/dashboard/ecommerce/product-variants', data, {
             preserveScroll: true,
@@ -84,11 +80,14 @@ export default function Create({ products }: Props) {
             onSuccess: () => {
                 toast.success('Variant created successfully!', { id: 'save' });
             },
+            onError: () => {
+                toast.error(
+                    'Failed to create variant. Please check the inputs.',
+                    { id: 'save' },
+                );
+            },
             onFinish: () => {
                 setProcessing(false);
-            },
-            onError: () => {
-                toast.error('Failed to create variant. Please check the inputs.', { id: 'save' });
             },
         });
     };
@@ -98,34 +97,39 @@ export default function Create({ products }: Props) {
             <Head title="Create Product Variant" />
 
             <div className="container mx-auto space-y-10 px-6 py-10">
-                {/* HEADER */}
                 <div>
-                    <h1 className="text-2xl font-bold">Create Product Variant</h1>
-                    <p className="text-gray-500">Add a new variant (e.g. Size, Color) for a product</p>
+                    <h1 className="text-2xl font-bold">
+                        Create Product Variant
+                    </h1>
+                    <p className="text-gray-500">
+                        Add a new variant for a product
+                    </p>
                 </div>
 
                 <hr />
 
-                {/* FORM */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                     <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
-                        
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            {/* PRODUCT */}
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Product</Label>
                                 <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                     {...register('product_id')}
-                                    onChange={(e) => setValue('product_id', e.target.value)}
                                 >
-                                    <option value="">-- Select Product --</option>
+                                    <option value="">
+                                        -- Select Product --
+                                    </option>
                                     {products.map((product) => (
-                                        <option key={product.id} value={product.id}>
+                                        <option
+                                            key={product.id}
+                                            value={product.id}
+                                        >
                                             {product.name}
                                         </option>
                                     ))}
                                 </select>
+
                                 {errors.product_id && (
                                     <p className="text-sm text-destructive">
                                         {errors.product_id.message}
@@ -133,18 +137,16 @@ export default function Create({ products }: Props) {
                                 )}
                             </div>
 
-                            {/* UNIT */}
                             <div className="flex flex-col gap-1 md:col-span-2">
-                                <Label>Unit (Optional)</Label>
+                                <Label>Unit Optional</Label>
                                 <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                    {...register('unit_id')}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    value={watch('unit_id') ?? ''}
                                     onChange={(e) =>
                                         setValue(
                                             'unit_id',
-                                            e.target.value === ''
-                                                ? null
-                                                : e.target.value,
+                                            e.target.value || null,
+                                            { shouldValidate: true },
                                         )
                                     }
                                 >
@@ -155,6 +157,7 @@ export default function Create({ products }: Props) {
                                         </option>
                                     ))}
                                 </select>
+
                                 {errors.unit_id && (
                                     <p className="text-sm text-destructive">
                                         {errors.unit_id.message}
@@ -162,7 +165,6 @@ export default function Create({ products }: Props) {
                                 )}
                             </div>
 
-                            {/* NAME */}
                             <div className="flex flex-col gap-1">
                                 <Label>Variant Name</Label>
                                 <Input
@@ -178,7 +180,6 @@ export default function Create({ products }: Props) {
                                 )}
                             </div>
 
-                            {/* SKU */}
                             <div className="flex flex-col gap-1">
                                 <Label>SKU</Label>
                                 <Input
@@ -194,14 +195,13 @@ export default function Create({ products }: Props) {
                                 )}
                             </div>
 
-                            {/* PRICE */}
                             <div className="flex flex-col gap-1">
-                                <Label>Price (¥)</Label>
+                                <Label>Price ¥</Label>
                                 <Input
                                     type="number"
+                                    min="0"
                                     aria-invalid={!!errors.price}
                                     {...register('price')}
-                                    min="0"
                                 />
                                 {errors.price && (
                                     <p className="text-sm text-destructive">
@@ -210,14 +210,13 @@ export default function Create({ products }: Props) {
                                 )}
                             </div>
 
-                            {/* COST PRICE */}
                             <div className="flex flex-col gap-1">
-                                <Label>Cost Price (¥)</Label>
+                                <Label>Cost Price ¥</Label>
                                 <Input
                                     type="number"
+                                    min="0"
                                     aria-invalid={!!errors.cost_price}
                                     {...register('cost_price')}
-                                    min="0"
                                 />
                                 {errors.cost_price && (
                                     <p className="text-sm text-destructive">
@@ -226,14 +225,14 @@ export default function Create({ products }: Props) {
                                 )}
                             </div>
 
-                            {/* STOCK */}
                             <div className="flex flex-col gap-1">
                                 <Label>Stock</Label>
                                 <Input
                                     type="number"
+                                    min="0"
                                     aria-invalid={!!errors.stock}
                                     {...register('stock')}
-                                    min="0"
+                                    disabled={!watch('track_stock')}
                                 />
                                 {errors.stock && (
                                     <p className="text-sm text-destructive">
@@ -242,14 +241,14 @@ export default function Create({ products }: Props) {
                                 )}
                             </div>
 
-                            {/* MIN STOCK ALERT */}
                             <div className="flex flex-col gap-1">
                                 <Label>Min Stock Alert</Label>
                                 <Input
                                     type="number"
+                                    min="0"
                                     aria-invalid={!!errors.min_stock_alert}
                                     {...register('min_stock_alert')}
-                                    min="0"
+                                    disabled={!watch('track_stock')}
                                 />
                                 {errors.min_stock_alert && (
                                     <p className="text-sm text-destructive">
@@ -258,14 +257,13 @@ export default function Create({ products }: Props) {
                                 )}
                             </div>
 
-                            {/* WEIGHT */}
                             <div className="flex flex-col gap-1">
-                                <Label>Weight (grams)</Label>
+                                <Label>Weight grams</Label>
                                 <Input
                                     type="number"
+                                    min="0"
                                     aria-invalid={!!errors.weight}
                                     {...register('weight')}
-                                    min="0"
                                 />
                                 {errors.weight && (
                                     <p className="text-sm text-destructive">
@@ -278,38 +276,46 @@ export default function Create({ products }: Props) {
                         <hr className="my-6" />
 
                         <div className="space-y-4">
-                            {/* TRACK STOCK */}
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="track_stock"
                                     checked={watch('track_stock')}
                                     onCheckedChange={(checked) =>
-                                        setValue('track_stock', checked as boolean)
+                                        setValue(
+                                            'track_stock',
+                                            Boolean(checked),
+                                        )
                                     }
                                 />
-                                <Label htmlFor="track_stock">Track Inventory for this variant</Label>
+                                <Label htmlFor="track_stock">
+                                    Track Inventory for this variant
+                                </Label>
                             </div>
 
-                            {/* IS ACTIVE */}
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="is_active"
                                     checked={watch('is_active')}
                                     onCheckedChange={(checked) =>
-                                        setValue('is_active', checked as boolean)
+                                        setValue('is_active', Boolean(checked))
                                     }
                                 />
-                                <Label htmlFor="is_active">Variant is active</Label>
+                                <Label htmlFor="is_active">
+                                    Variant is active
+                                </Label>
                             </div>
                         </div>
                     </div>
 
-                    {/* ACTIONS */}
                     <div className="container flex justify-between">
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/dashboard/ecommerce/product-variants')}
+                            onClick={() =>
+                                router.visit(
+                                    '/dashboard/ecommerce/product-variants',
+                                )
+                            }
                         >
                             Cancel
                         </Button>

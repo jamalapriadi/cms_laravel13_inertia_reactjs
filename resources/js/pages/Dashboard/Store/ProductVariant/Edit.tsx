@@ -1,14 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -44,75 +44,111 @@ interface Props {
     units: Unit[];
 }
 
+const nullableNumber = z.preprocess((val) => {
+    if (val === '' || val === null || val === undefined) {
+        return null;
+    }
+
+    return Number(val);
+}, z.number().min(0).nullable());
+
 const variantSchema = z.object({
     product_id: z.string().min(1, 'Product is required'),
+
     unit_id: z.string().nullable().optional(),
+
     name: z.string().min(1, 'Variant name is required'),
+
     sku: z.string().min(1, 'SKU is required'),
+
     price: z.coerce.number().min(0, 'Price must be >= 0').default(0),
+
     track_stock: z.boolean().default(true),
+
     stock: z.coerce.number().min(0, 'Stock cannot be negative').default(0),
-    min_stock_alert: z.coerce.number().min(0).nullable().optional(),
-    weight: z.coerce.number().min(0).nullable().optional(),
-    cost_price: z.coerce.number().min(0).nullable().optional(),
+
+    min_stock_alert: nullableNumber.optional(),
+
+    weight: nullableNumber.optional(),
+
+    cost_price: nullableNumber.optional(),
+
     is_active: z.boolean().default(true),
 });
 
-type VariantFormData = z.infer<typeof variantSchema>;
+type VariantFormData = z.output<typeof variantSchema>;
 
-export default function Edit({ variant: initialVariant, products, units }: Props) {
+export default function Edit({
+    variant: initialVariant,
+    products,
+    units,
+}: Props) {
     const [processing, setProcessing] = useState(false);
 
-    /**
-     * FORM
-     */
     const {
         register,
         handleSubmit,
         setValue,
         watch,
         formState: { errors },
-    } = useForm<
-        z.input<typeof variantSchema>,
-        unknown,
-        z.output<typeof variantSchema>
-    >({
+    } = useForm<z.input<typeof variantSchema>, unknown, VariantFormData>({
         resolver: zodResolver(variantSchema),
+
         defaultValues: {
-            product_id: initialVariant.product_id,
-            unit_id: initialVariant.unit_id || null,
-            name: initialVariant.name,
-            sku: initialVariant.sku,
-            price: initialVariant.price,
-            track_stock: !!initialVariant.track_stock,
-            stock: initialVariant.stock,
-            min_stock_alert: initialVariant.min_stock_alert || null,
-            weight: initialVariant.weight || null,
-            cost_price: initialVariant.cost_price || null,
-            is_active: !!initialVariant.is_active,
+            product_id: initialVariant.product_id ?? '',
+            unit_id: initialVariant.unit_id ?? null,
+            name: initialVariant.name ?? '',
+            sku: initialVariant.sku ?? '',
+            price: Number(initialVariant.price ?? 0),
+            track_stock: Boolean(initialVariant.track_stock),
+            stock: Number(initialVariant.stock ?? 0),
+            min_stock_alert: initialVariant.min_stock_alert ?? null,
+            weight: initialVariant.weight ?? null,
+            cost_price: initialVariant.cost_price
+                ? Number(initialVariant.cost_price)
+                : null,
+            is_active: Boolean(initialVariant.is_active),
         },
     });
 
-    /**
-     * SUBMIT
-     */
     const onSubmit = (data: VariantFormData) => {
-        router.put(`/dashboard/ecommerce/product-variants/${initialVariant.id}`, data, {
-            preserveScroll: true,
-            onStart: () => {
-                setProcessing(true);
-                toast.loading('Updating variant...', { id: 'update' });
+        router.post(
+            `/dashboard/ecommerce/product-variants/${initialVariant.id}`,
+            {
+                _method: 'put',
+                ...data,
             },
-            onSuccess: () => {
-                toast.success('Variant updated successfully!', { id: 'update' });
+            {
+                preserveScroll: true,
+
+                onStart: () => {
+                    setProcessing(true);
+
+                    toast.loading('Updating variant...', {
+                        id: 'update',
+                    });
+                },
+
+                onSuccess: () => {
+                    toast.success('Variant updated successfully!', {
+                        id: 'update',
+                    });
+                },
+
+                onError: () => {
+                    toast.error(
+                        'Failed to update variant. Please check the inputs.',
+                        {
+                            id: 'update',
+                        },
+                    );
+                },
+
+                onFinish: () => {
+                    setProcessing(false);
+                },
             },
-            onFinish: () => {
-                setProcessing(false);
-            },
-            onError: () => {
-                toast.error('Failed to update variant. Please check the inputs.', { id: 'update' });
-            },
-        });
+        );
     };
 
     return (
@@ -120,34 +156,44 @@ export default function Edit({ variant: initialVariant, products, units }: Props
             <Head title="Edit Product Variant" />
 
             <div className="container mx-auto space-y-10 px-6 py-10">
-                {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Edit Product Variant</h1>
+
                     <p className="text-gray-500">Edit variant details</p>
                 </div>
 
                 <hr />
 
-                {/* FORM */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                     <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
-                        
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* PRODUCT */}
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Product</Label>
+
                                 <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    {...register('product_id')}
-                                    onChange={(e) => setValue('product_id', e.target.value)}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    value={watch('product_id')}
+                                    onChange={(e) =>
+                                        setValue('product_id', e.target.value, {
+                                            shouldValidate: true,
+                                        })
+                                    }
                                 >
-                                    <option value="">-- Select Product --</option>
+                                    <option value="">
+                                        -- Select Product --
+                                    </option>
+
                                     {products.map((product) => (
-                                        <option key={product.id} value={product.id}>
+                                        <option
+                                            key={product.id}
+                                            value={product.id}
+                                        >
                                             {product.name}
                                         </option>
                                     ))}
                                 </select>
+
                                 {errors.product_id && (
                                     <p className="text-sm text-destructive">
                                         {errors.product_id.message}
@@ -157,42 +203,41 @@ export default function Edit({ variant: initialVariant, products, units }: Props
 
                             {/* UNIT */}
                             <div className="flex flex-col gap-1 md:col-span-2">
-                                <Label>Unit (Optional)</Label>
+                                <Label>Unit Optional</Label>
+
                                 <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                    {...register('unit_id')}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    value={watch('unit_id') ?? ''}
                                     onChange={(e) =>
                                         setValue(
                                             'unit_id',
-                                            e.target.value === ''
-                                                ? null
-                                                : e.target.value,
+                                            e.target.value || null,
+                                            {
+                                                shouldValidate: true,
+                                            },
                                         )
                                     }
                                 >
                                     <option value="">-- No Unit --</option>
+
                                     {units.map((unit) => (
                                         <option key={unit.id} value={unit.id}>
                                             {unit.name} ({unit.code})
                                         </option>
                                     ))}
                                 </select>
-                                {errors.unit_id && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.unit_id.message}
-                                    </p>
-                                )}
                             </div>
 
                             {/* NAME */}
                             <div className="flex flex-col gap-1">
                                 <Label>Variant Name</Label>
+
                                 <Input
                                     type="text"
-                                    aria-invalid={!!errors.name}
                                     {...register('name')}
                                     placeholder="e.g., Red - XL"
                                 />
+
                                 {errors.name && (
                                     <p className="text-sm text-destructive">
                                         {errors.name.message}
@@ -203,12 +248,13 @@ export default function Edit({ variant: initialVariant, products, units }: Props
                             {/* SKU */}
                             <div className="flex flex-col gap-1">
                                 <Label>SKU</Label>
+
                                 <Input
                                     type="text"
-                                    aria-invalid={!!errors.sku}
                                     {...register('sku')}
                                     placeholder="e.g., IPH15-RED-XL"
                                 />
+
                                 {errors.sku && (
                                     <p className="text-sm text-destructive">
                                         {errors.sku.message}
@@ -218,82 +264,59 @@ export default function Edit({ variant: initialVariant, products, units }: Props
 
                             {/* PRICE */}
                             <div className="flex flex-col gap-1">
-                                <Label>Price (¥)</Label>
+                                <Label>Price ¥</Label>
+
                                 <Input
                                     type="number"
-                                    aria-invalid={!!errors.price}
-                                    {...register('price')}
                                     min="0"
+                                    {...register('price')}
                                 />
-                                {errors.price && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.price.message}
-                                    </p>
-                                )}
                             </div>
 
                             {/* COST PRICE */}
                             <div className="flex flex-col gap-1">
-                                <Label>Cost Price (¥)</Label>
+                                <Label>Cost Price ¥</Label>
+
                                 <Input
                                     type="number"
-                                    aria-invalid={!!errors.cost_price}
-                                    {...register('cost_price')}
                                     min="0"
+                                    {...register('cost_price')}
                                 />
-                                {errors.cost_price && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.cost_price.message}
-                                    </p>
-                                )}
                             </div>
 
                             {/* STOCK */}
                             <div className="flex flex-col gap-1">
                                 <Label>Stock</Label>
+
                                 <Input
                                     type="number"
-                                    aria-invalid={!!errors.stock}
-                                    {...register('stock')}
                                     min="0"
+                                    disabled={!watch('track_stock')}
+                                    {...register('stock')}
                                 />
-                                {errors.stock && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.stock.message}
-                                    </p>
-                                )}
                             </div>
 
                             {/* MIN STOCK ALERT */}
                             <div className="flex flex-col gap-1">
                                 <Label>Min Stock Alert</Label>
+
                                 <Input
                                     type="number"
-                                    aria-invalid={!!errors.min_stock_alert}
-                                    {...register('min_stock_alert')}
                                     min="0"
+                                    disabled={!watch('track_stock')}
+                                    {...register('min_stock_alert')}
                                 />
-                                {errors.min_stock_alert && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.min_stock_alert.message}
-                                    </p>
-                                )}
                             </div>
 
                             {/* WEIGHT */}
                             <div className="flex flex-col gap-1">
-                                <Label>Weight (grams)</Label>
+                                <Label>Weight grams</Label>
+
                                 <Input
                                     type="number"
-                                    aria-invalid={!!errors.weight}
-                                    {...register('weight')}
                                     min="0"
+                                    {...register('weight')}
                                 />
-                                {errors.weight && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.weight.message}
-                                    </p>
-                                )}
                             </div>
                         </div>
 
@@ -306,10 +329,16 @@ export default function Edit({ variant: initialVariant, products, units }: Props
                                     id="track_stock"
                                     checked={watch('track_stock')}
                                     onCheckedChange={(checked) =>
-                                        setValue('track_stock', checked as boolean)
+                                        setValue(
+                                            'track_stock',
+                                            Boolean(checked),
+                                        )
                                     }
                                 />
-                                <Label htmlFor="track_stock">Track Inventory for this variant</Label>
+
+                                <Label htmlFor="track_stock">
+                                    Track Inventory for this variant
+                                </Label>
                             </div>
 
                             {/* IS ACTIVE */}
@@ -318,20 +347,26 @@ export default function Edit({ variant: initialVariant, products, units }: Props
                                     id="is_active"
                                     checked={watch('is_active')}
                                     onCheckedChange={(checked) =>
-                                        setValue('is_active', checked as boolean)
+                                        setValue('is_active', Boolean(checked))
                                     }
                                 />
-                                <Label htmlFor="is_active">Variant is active</Label>
+
+                                <Label htmlFor="is_active">
+                                    Variant is active
+                                </Label>
                             </div>
                         </div>
                     </div>
 
-                    {/* ACTIONS */}
                     <div className="container flex justify-between">
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/dashboard/ecommerce/product-variants')}
+                            onClick={() =>
+                                router.visit(
+                                    '/dashboard/ecommerce/product-variants',
+                                )
+                            }
                         >
                             Cancel
                         </Button>
