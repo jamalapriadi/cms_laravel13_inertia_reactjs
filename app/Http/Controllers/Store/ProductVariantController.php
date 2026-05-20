@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
-use App\Models\Shop\ProductVariant;
-use App\Models\Shop\Product;
 use App\Http\Requests\Store\ProductVariant\ProductVariantRequest;
 use App\Http\Requests\Store\ProductVariant\ProductVariantUpdateRequest;
+use App\Models\Shop\Product;
+use App\Models\Shop\ProductVariant;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -24,7 +24,7 @@ class ProductVariantController extends Controller
             ->with(['product'])
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('sku', 'like', "%{$search}%");
+                    ->orWhere('sku', 'like', "%{$search}%");
             })
             ->when($productId, function ($query, $productId) {
                 $query->where('product_id', $productId);
@@ -51,9 +51,9 @@ class ProductVariantController extends Controller
     public function create()
     {
         $products = Product::select('id', 'name')->get();
-        
+
         return Inertia::render('Dashboard/Store/ProductVariant/Create', [
-            'products' => $products
+            'products' => $products,
         ]);
     }
 
@@ -63,10 +63,10 @@ class ProductVariantController extends Controller
     public function store(ProductVariantRequest $request)
     {
         $data = $request->validated();
-        
+
         ProductVariant::create($data);
 
-        return redirect()->route('product-variants.index')->with('success', 'Product Variant created successfully.');
+        return redirect()->back()->with('success', 'Product Variant created successfully.');
     }
 
     /**
@@ -83,7 +83,7 @@ class ProductVariantController extends Controller
     public function edit(ProductVariant $productVariant)
     {
         $products = Product::select('id', 'name')->get();
-            
+
         return Inertia::render('Dashboard/Store/ProductVariant/Edit', [
             'variant' => $productVariant,
             'products' => $products,
@@ -96,10 +96,10 @@ class ProductVariantController extends Controller
     public function update(ProductVariantUpdateRequest $request, ProductVariant $productVariant)
     {
         $data = $request->validated();
-        
+
         $productVariant->update($data);
 
-        return redirect()->route('product-variants.index')->with('success', 'Product Variant updated successfully.');
+        return redirect()->back()->with('success', 'Product Variant updated successfully.');
     }
 
     /**
@@ -109,6 +109,6 @@ class ProductVariantController extends Controller
     {
         $productVariant->delete();
 
-        return redirect()->route('product-variants.index')->with('success', 'Product Variant deleted successfully.');
+        return redirect()->back()->with('success', 'Product Variant deleted successfully.');
     }
 }

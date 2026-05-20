@@ -1,12 +1,19 @@
 import { Link, usePage } from '@inertiajs/react';
-
 import { cn } from '@/lib/utils';
-
 import type { BreadcrumbItem } from '@/types';
+import { 
+    Tag, 
+    FolderTree, 
+    Package, 
+    ClipboardList, 
+    ShoppingCart, 
+    CreditCard, 
+    TrendingUp, 
+    Truck 
+} from 'lucide-react';
 
 interface Props {
     children: React.ReactNode;
-
     breadcrumbs?: BreadcrumbItem[];
 }
 
@@ -17,72 +24,85 @@ export default function MasterDataLayout({ children }: Props) {
         {
             label: 'Brands',
             href: '/dashboard/brands',
+            icon: Tag,
         },
         {
             label: 'Product Categories',
             href: '/dashboard/ecommerce/categories',
+            icon: FolderTree,
         },
         {
             label: 'Products',
             href: '/dashboard/ecommerce/products',
-        },
-        {
-            label: 'Product Variants',
-            href: '/dashboard/ecommerce/product-variants',
+            icon: Package,
         },
         {
             label: 'Orders',
-            href: '/dashboard/ecommerce/orders',
+            href: '/dashboard/orders',
+            icon: ClipboardList,
         },
         {
             label: 'Carts',
             href: '/dashboard/ecommerce/carts',
+            icon: ShoppingCart,
         },
         {
             label: 'Payments',
             href: '/dashboard/ecommerce/payments',
+            icon: CreditCard,
         },
         {
             label: 'Stock Movements',
             href: '/dashboard/ecommerce/stock-movements',
+            icon: TrendingUp,
         },
         {
             label: 'Shipping',
             href: '/dashboard/ecommerce/shipping',
+            icon: Truck,
         },
     ];
 
     return (
         <div>
-            <div className="flex rounded-2xl border">
+            <div className="flex rounded-2xl border border-border bg-card shadow-sm overflow-hidden min-h-[calc(100vh-8rem)]">
                 {/* SECOND SIDEBAR */}
-                <aside className="min-h-screen w-64 rounded-tl-2xl rounded-bl-2xl border-r bg-white px-6 py-4">
-                    <h2 className="mb-4 text-sm font-semibold text-muted-foreground uppercase">
-                        Ecommerce
+                <aside className="w-64 border-r border-border bg-background px-4 py-6 shrink-0">
+                    <h2 className="mb-4 px-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Store Settings
                     </h2>
 
-                    {menus.map((menu) => {
-                        const active = url.startsWith(menu.href);
+                    <nav className="space-y-1">
+                        {menus.map((menu) => {
+                            const active = url.startsWith(menu.href);
+                            const Icon = menu.icon;
 
-                        return (
-                            <Link
-                                key={menu.href}
-                                href={menu.href}
-                                className={cn(
-                                    'block rounded-lg px-3 py-2 text-sm transition',
-                                    active
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'hover:bg-muted',
-                                )}
-                            >
-                                {menu.label}
-                            </Link>
-                        );
-                    })}
+                            return (
+                                <Link
+                                    key={menu.href}
+                                    href={menu.href}
+                                    className={cn(
+                                        'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 group',
+                                        active
+                                            ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/10'
+                                            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                                    )}
+                                >
+                                    <Icon className={cn(
+                                        "w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105", 
+                                        active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
+                                    )} />
+                                    <span>{menu.label}</span>
+                                </Link>
+                            );
+                        })}
+                    </nav>
                 </aside>
 
                 {/* PAGE CONTENT */}
-                <div className="flex-1 p-6">{children}</div>
+                <main className="flex-1 p-6 bg-slate-50/30 dark:bg-slate-900/10">
+                    {children}
+                </main>
             </div>
         </div>
     );
@@ -97,7 +117,6 @@ MasterDataLayout.layout = {
             title: 'Dashboard',
             href: '/dashboard',
         },
-
         {
             title: 'Ecommerce',
             href: '#',

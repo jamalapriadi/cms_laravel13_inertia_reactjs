@@ -123,7 +123,7 @@ export default function Index({ products, categories, brands, filters }: Props) 
             label: 'Base Price',
             render: (row: Product) => (
                 <span className="text-sm font-medium">
-                    Rp {Number(row.base_price).toLocaleString('id-ID')}
+                    ¥{Number(row.base_price).toLocaleString('ja-JP')}
                 </span>
             ),
         },
@@ -151,15 +151,9 @@ export default function Index({ products, categories, brands, filters }: Props) 
             label: 'Action',
             render: (row: Product) => (
                 <div className="flex gap-2 flex-wrap">
-                    <Link href={`/dashboard/ecommerce/product-images?product_id=${row.id}`}>
-                        <Button size="sm" variant="outline">
-                            Images
-                        </Button>
-                    </Link>
-
-                    <Link href={`/dashboard/ecommerce/product-specifications?product_id=${row.id}`}>
-                        <Button size="sm" variant="outline">
-                            Specs
+                    <Link href={`/dashboard/ecommerce/products/${row.id}`}>
+                        <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/5">
+                            Detail
                         </Button>
                     </Link>
 

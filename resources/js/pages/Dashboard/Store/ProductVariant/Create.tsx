@@ -158,7 +158,7 @@ export default function Create({ products }: Props) {
 
                             {/* PRICE */}
                             <div className="flex flex-col gap-1">
-                                <Label>Price (Rp)</Label>
+                                <Label>Price (¥)</Label>
                                 <Input
                                     type="number"
                                     aria-invalid={!!errors.price}
@@ -174,7 +174,7 @@ export default function Create({ products }: Props) {
 
                             {/* COST PRICE */}
                             <div className="flex flex-col gap-1">
-                                <Label>Cost Price (Rp)</Label>
+                                <Label>Cost Price (¥)</Label>
                                 <Input
                                     type="number"
                                     aria-invalid={!!errors.cost_price}

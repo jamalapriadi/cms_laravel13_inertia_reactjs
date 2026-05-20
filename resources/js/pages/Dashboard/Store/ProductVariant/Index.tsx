@@ -109,7 +109,7 @@ export default function Index({ variants, products, filters }: Props) {
             label: 'Price',
             render: (row: ProductVariant) => (
                 <span className="text-sm font-medium">
-                    Rp {Number(row.price).toLocaleString('id-ID')}
+                    ¥{Number(row.price).toLocaleString('ja-JP')}
                 </span>
             ),
         },

@@ -8,9 +8,9 @@
 
 namespace App\Models\Shop;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Product extends Model
 {
@@ -26,6 +26,9 @@ class Product extends Model
         'condition',
         'base_price',
         'has_variant',
+        'requires_imei',
+        'imei_serial_number',
+        'network_compatibility',
         'meta_title',
         'meta_description',
         'is_publish',
@@ -36,6 +39,7 @@ class Product extends Model
     protected $casts = [
         'base_price' => 'decimal:2',
         'has_variant' => 'boolean',
+        'requires_imei' => 'boolean',
         'is_publish' => 'boolean',
     ];
 

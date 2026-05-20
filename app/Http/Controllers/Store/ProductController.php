@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
-use App\Models\Shop\Product;
-use App\Models\Shop\Category;
-use App\Models\Brand;
 use App\Http\Requests\Store\Product\ProductRequest;
 use App\Http\Requests\Store\Product\ProductUpdateRequest;
+use App\Models\Brand;
+use App\Models\Shop\Category;
+use App\Models\Shop\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -29,7 +29,7 @@ class ProductController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('meta_title', 'like', "%{$search}%");
+                        ->orWhere('meta_title', 'like', "%{$search}%");
                 });
             })
             ->when($categoryId, function ($query, $categoryId) {
@@ -64,10 +64,10 @@ class ProductController extends Controller
     {
         $categories = Category::select('id', 'name')->get();
         $brands = Brand::select('id', 'name')->where('is_active', true)->get();
-        
+
         return Inertia::render('Dashboard/Store/Product/Create', [
             'categories' => $categories,
-            'brands' => $brands
+            'brands' => $brands,
         ]);
     }
 
@@ -78,7 +78,7 @@ class ProductController extends Controller
     {
         $data = $request->validated();
         $data['slug'] = Str::slug($data['name']);
-        
+
         if (auth()->check()) {
             $data['created_by'] = auth()->id();
             $data['updated_by'] = auth()->id();
@@ -87,7 +87,7 @@ class ProductController extends Controller
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
         }
-        
+
         Product::create($data);
 
         return redirect()->route('products.index')->with('success', 'Product created successfully.');
@@ -98,7 +98,23 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        //
+        $product->load([
+            'category',
+            'brand',
+            'images' => function ($query) {
+                $query->orderBy('sort_order', 'asc')->latest();
+            },
+            'specifications' => function ($query) {
+                $query->latest();
+            },
+            'variants' => function ($query) {
+                $query->latest();
+            },
+        ]);
+
+        return Inertia::render('Dashboard/Store/Product/Show', [
+            'product' => $product,
+        ]);
     }
 
     /**
@@ -108,7 +124,7 @@ class ProductController extends Controller
     {
         $categories = Category::select('id', 'name')->get();
         $brands = Brand::select('id', 'name')->where('is_active', true)->get();
-            
+
         return Inertia::render('Dashboard/Store/Product/Edit', [
             'product' => $product,
             'categories' => $categories,
@@ -122,7 +138,7 @@ class ProductController extends Controller
     public function update(ProductUpdateRequest $request, Product $product)
     {
         $data = $request->validated();
-        
+
         if (isset($data['name']) && $data['name'] !== $product->name) {
             $data['slug'] = Str::slug($data['name']);
         }
@@ -137,7 +153,7 @@ class ProductController extends Controller
             }
             $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
         }
-        
+
         $product->update($data);
 
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');

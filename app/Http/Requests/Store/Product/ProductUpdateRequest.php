@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Store\Product;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductUpdateRequest extends FormRequest
@@ -17,7 +18,7 @@ class ProductUpdateRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -30,12 +31,15 @@ class ProductUpdateRequest extends FormRequest
             'condition' => ['required', 'in:new,like_new,second'],
             'base_price' => ['required', 'numeric', 'min:0'],
             'has_variant' => ['nullable', 'boolean'],
+            'requires_imei' => ['nullable', 'boolean'],
+            'imei_serial_number' => ['nullable', 'string', 'max:255'],
+            'network_compatibility' => ['nullable', 'string', 'in:sim_free,docomo,au,softbank,rakuten,mineo'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
             'is_publish' => ['nullable', 'boolean'],
         ];
     }
-    
+
     /**
      * Prepare the data for validation.
      */
@@ -43,6 +47,7 @@ class ProductUpdateRequest extends FormRequest
     {
         $this->merge([
             'has_variant' => filter_var($this->has_variant, FILTER_VALIDATE_BOOLEAN),
+            'requires_imei' => filter_var($this->requires_imei, FILTER_VALIDATE_BOOLEAN),
             'is_publish' => filter_var($this->is_publish, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
         ]);
     }

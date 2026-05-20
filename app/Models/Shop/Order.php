@@ -8,8 +8,8 @@
 
 namespace App\Models\Shop;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
@@ -53,5 +53,10 @@ class Order extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function shipping()
+    {
+        return $this->hasOne(Shipping::class);
     }
 }

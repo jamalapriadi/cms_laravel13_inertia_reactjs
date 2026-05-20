@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
-use App\Models\Shop\ProductImage;
-use App\Models\Shop\Product;
 use App\Http\Requests\Store\ProductImage\ProductImageRequest;
 use App\Http\Requests\Store\ProductImage\ProductImageUpdateRequest;
+use App\Models\Shop\Product;
+use App\Models\Shop\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -47,6 +47,7 @@ class ProductImageController extends Controller
     public function create()
     {
         $products = Product::select('id', 'name')->get();
+
         return Inertia::render('Dashboard/Store/ProductImage/Create', [
             'products' => $products,
         ]);
@@ -64,7 +65,7 @@ class ProductImageController extends Controller
         }
 
         // If is_primary is true, un-primary others
-        if (!empty($data['is_primary'])) {
+        if (! empty($data['is_primary'])) {
             ProductImage::where('product_id', $data['product_id'])
                 ->where('is_primary', true)
                 ->update(['is_primary' => false]);
@@ -72,7 +73,7 @@ class ProductImageController extends Controller
 
         ProductImage::create($data);
 
-        return redirect()->route('product-images.index')->with('success', 'Product image added successfully.');
+        return redirect()->back()->with('success', 'Product image added successfully.');
     }
 
     /**
@@ -81,6 +82,7 @@ class ProductImageController extends Controller
     public function edit(ProductImage $productImage)
     {
         $products = Product::select('id', 'name')->get();
+
         return Inertia::render('Dashboard/Store/ProductImage/Edit', [
             'productImage' => $productImage,
             'products' => $products,
@@ -102,7 +104,7 @@ class ProductImageController extends Controller
         }
 
         // If is_primary is true, un-primary others
-        if (!empty($data['is_primary'])) {
+        if (! empty($data['is_primary'])) {
             ProductImage::where('product_id', $data['product_id'])
                 ->where('is_primary', true)
                 ->where('id', '!=', $productImage->id)
@@ -111,7 +113,7 @@ class ProductImageController extends Controller
 
         $productImage->update($data);
 
-        return redirect()->route('product-images.index')->with('success', 'Product image updated successfully.');
+        return redirect()->back()->with('success', 'Product image updated successfully.');
     }
 
     /**
@@ -125,6 +127,6 @@ class ProductImageController extends Controller
 
         $productImage->delete();
 
-        return redirect()->route('product-images.index')->with('success', 'Product image deleted successfully.');
+        return redirect()->back()->with('success', 'Product image deleted successfully.');
     }
 }

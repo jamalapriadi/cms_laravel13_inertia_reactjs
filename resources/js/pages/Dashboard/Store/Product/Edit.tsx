@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Textarea from '@/components/ui/textarea';
 
 import AppLayout from '@/layouts/master-data-layout';
+import { cn } from '@/lib/utils';
 
 interface Category {
     id: string;
@@ -33,6 +34,9 @@ interface Product {
     condition: 'new' | 'like_new' | 'second';
     base_price: string | number;
     has_variant: boolean;
+    requires_imei: boolean;
+    imei_serial_number?: string | null;
+    network_compatibility?: string | null;
     meta_title?: string | null;
     meta_description?: string | null;
     is_publish: boolean;
@@ -53,6 +57,9 @@ const productSchema = z.object({
     condition: z.enum(['new', 'like_new', 'second']).default('new'),
     base_price: z.coerce.number().min(0, 'Price must be greater than or equal to 0').default(0),
     has_variant: z.boolean().default(false),
+    requires_imei: z.boolean().default(false),
+    imei_serial_number: z.string().nullable().optional(),
+    network_compatibility: z.enum(['sim_free', 'docomo', 'au', 'softbank', 'rakuten', 'mineo']).nullable().optional(),
     meta_title: z.string().nullable().optional(),
     meta_description: z.string().nullable().optional(),
     is_publish: z.boolean().default(true),
@@ -87,6 +94,9 @@ export default function Edit({ product: initialProduct, categories, brands }: Pr
             condition: initialProduct.condition || 'new',
             base_price: initialProduct.base_price,
             has_variant: !!initialProduct.has_variant,
+            requires_imei: !!initialProduct.requires_imei,
+            imei_serial_number: initialProduct.imei_serial_number || '',
+            network_compatibility: initialProduct.network_compatibility || 'sim_free',
             meta_title: initialProduct.meta_title || '',
             meta_description: initialProduct.meta_description || '',
             is_publish: !!initialProduct.is_publish,
@@ -264,12 +274,12 @@ export default function Edit({ product: initialProduct, categories, brands }: Pr
 
                             {/* BASE PRICE */}
                             <div className="flex flex-col gap-1">
-                                <Label>Base Price (Rp)</Label>
+                                <Label>Base Price (¥)</Label>
                                 <Input
                                     type="number"
                                     aria-invalid={!!errors.base_price}
                                     {...register('base_price')}
-                                    placeholder="e.g., 15000000"
+                                    placeholder="e.g., 100000"
                                     min="0"
                                 />
                                 {errors.base_price && (
@@ -296,6 +306,129 @@ export default function Edit({ product: initialProduct, categories, brands }: Pr
                                         {errors.condition.message}
                                     </p>
                                 )}
+                            </div>
+                        </div>
+
+                        <hr className="my-6" />
+
+                        <div className="space-y-6">
+                            <h3 className="text-lg font-semibold text-gray-900">Device Settings</h3>
+                            
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                {/* REQUIRES IMEI */}
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="requires_imei"
+                                            checked={watch('requires_imei')}
+                                            onCheckedChange={(checked) =>
+                                                setValue('requires_imei', checked as boolean)
+                                            }
+                                        />
+                                        <Label htmlFor="requires_imei" className="font-medium cursor-pointer">
+                                            Product requires IMEI / Serial Number
+                                        </Label>
+                                    </div>
+                                    <p className="text-xs text-gray-500 pl-6">
+                                        Enable this if you need to track individual device identifiers for inventory or shipping.
+                                    </p>
+                                </div>
+
+                                {/* IMEI SERIAL NUMBER */}
+                                {watch('requires_imei') && (
+                                    <div className="flex flex-col gap-1 animate-in fade-in duration-200">
+                                        <Label>IMEI / Serial Number</Label>
+                                        <Input
+                                            type="text"
+                                            aria-invalid={!!errors.imei_serial_number}
+                                            {...register('imei_serial_number')}
+                                            placeholder="Enter IMEI or Serial Number..."
+                                        />
+                                        {errors.imei_serial_number && (
+                                            <p className="text-sm text-destructive">
+                                                {errors.imei_serial_number.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* NETWORK COMPATIBILITY */}
+                            <div className="flex flex-col gap-3">
+                                <Label className="font-semibold text-sm">Network Compatibility</Label>
+                                <p className="text-xs text-gray-500">
+                                    Select the network compatibility status for this device. Carrier locked options display with a red highlight.
+                                </p>
+
+                                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                                    {[
+                                        { value: 'sim_free', label: 'SIM Free', desc: 'Unlocked' },
+                                        { value: 'docomo', label: 'Docomo', desc: 'Carrier Locked' },
+                                        { value: 'au', label: 'AU', desc: 'Carrier Locked' },
+                                        { value: 'softbank', label: 'SoftBank', desc: 'Carrier Locked' },
+                                        { value: 'rakuten', label: 'Rakuten', desc: 'Carrier Locked' },
+                                        { value: 'mineo', label: 'Mineo', desc: 'Carrier Locked' },
+                                    ].map((opt) => {
+                                        const selected = watch('network_compatibility') === opt.value;
+                                        const isSimFree = opt.value === 'sim_free';
+                                        
+                                        // Dynamic active borders
+                                        // "Kalau salah satu di pilih, nanti border nya akan menjadi merah. Kalau nanti pilih sim free, tidak ada border merah nya"
+                                        const activeBorderClass = isSimFree 
+                                            ? 'border-emerald-500 bg-emerald-50/40 text-emerald-800 dark:bg-emerald-950/10' 
+                                            : 'border-red-500 bg-red-50/40 text-red-800 dark:bg-red-950/10';
+
+                                        return (
+                                            <button
+                                                key={opt.value}
+                                                type="button"
+                                                onClick={() => setValue('network_compatibility', opt.value as any)}
+                                                className={cn(
+                                                    "flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 cursor-pointer select-none",
+                                                    selected 
+                                                        ? cn("border-2 shadow-sm font-semibold", activeBorderClass)
+                                                        : "border-gray-200 hover:border-gray-300 text-gray-600 bg-white"
+                                                )}
+                                            >
+                                                {/* Graphical badge / indicator */}
+                                                <div className="mb-2">
+                                                    {opt.value === 'sim_free' && (
+                                                        <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase", selected ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-600")}>
+                                                            🔓 FREE
+                                                        </div>
+                                                    )}
+                                                    {opt.value === 'docomo' && (
+                                                        <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight uppercase", selected ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-600")}>
+                                                            docomo
+                                                        </div>
+                                                    )}
+                                                    {opt.value === 'au' && (
+                                                        <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight uppercase", selected ? "bg-orange-100 text-orange-800" : "bg-gray-100 text-gray-600")}>
+                                                            au
+                                                        </div>
+                                                    )}
+                                                    {opt.value === 'softbank' && (
+                                                        <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight uppercase", selected ? "bg-gray-200 text-gray-800" : "bg-gray-100 text-gray-600")}>
+                                                            Softbank
+                                                        </div>
+                                                    )}
+                                                    {opt.value === 'rakuten' && (
+                                                        <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight uppercase", selected ? "bg-pink-100 text-pink-800" : "bg-gray-100 text-gray-600")}>
+                                                            Rakuten
+                                                        </div>
+                                                    )}
+                                                    {opt.value === 'mineo' && (
+                                                        <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight uppercase", selected ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>
+                                                            mineo
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <span className="text-xs font-bold">{opt.label}</span>
+                                                <span className="text-[10px] text-gray-400 font-normal">{opt.desc}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
 

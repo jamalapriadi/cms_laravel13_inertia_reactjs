@@ -8,8 +8,8 @@
 
 namespace App\Models\Shop;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 class CartItem extends Model
 {
@@ -21,6 +21,25 @@ class CartItem extends Model
         'product_variant_id',
         'qty',
     ];
+
+    protected $appends = [
+        'price',
+        'subtotal',
+    ];
+
+    public function getPriceAttribute(): float
+    {
+        if ($this->product_variant_id && $this->variant && $this->variant->price !== null) {
+            return (float) $this->variant->price;
+        }
+
+        return (float) ($this->product->base_price ?? 0);
+    }
+
+    public function getSubtotalAttribute(): float
+    {
+        return $this->price * $this->qty;
+    }
 
     /*
     |--------------------------------------------------------------------------

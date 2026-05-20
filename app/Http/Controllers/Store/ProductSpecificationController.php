@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
-use App\Models\Shop\ProductSpecification;
-use App\Models\Shop\Product;
 use App\Http\Requests\Store\ProductSpecification\ProductSpecificationRequest;
 use App\Http\Requests\Store\ProductSpecification\ProductSpecificationUpdateRequest;
+use App\Models\Shop\Product;
+use App\Models\Shop\ProductSpecification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -24,7 +24,7 @@ class ProductSpecificationController extends Controller
             ->with(['product'])
             ->when($search, function ($query, $search) {
                 $query->where('spec_name', 'like', "%{$search}%")
-                      ->orWhere('spec_value', 'like', "%{$search}%");
+                    ->orWhere('spec_value', 'like', "%{$search}%");
             })
             ->when($productId, function ($query, $productId) {
                 $query->where('product_id', $productId);
@@ -51,6 +51,7 @@ class ProductSpecificationController extends Controller
     public function create()
     {
         $products = Product::select('id', 'name')->get();
+
         return Inertia::render('Dashboard/Store/ProductSpecification/Create', [
             'products' => $products,
         ]);
@@ -65,7 +66,7 @@ class ProductSpecificationController extends Controller
 
         ProductSpecification::create($data);
 
-        return redirect()->route('product-specifications.index')->with('success', 'Product specification added successfully.');
+        return redirect()->back()->with('success', 'Product specification added successfully.');
     }
 
     /**
@@ -74,6 +75,7 @@ class ProductSpecificationController extends Controller
     public function edit(ProductSpecification $productSpecification)
     {
         $products = Product::select('id', 'name')->get();
+
         return Inertia::render('Dashboard/Store/ProductSpecification/Edit', [
             'specification' => $productSpecification,
             'products' => $products,
@@ -89,7 +91,7 @@ class ProductSpecificationController extends Controller
 
         $productSpecification->update($data);
 
-        return redirect()->route('product-specifications.index')->with('success', 'Product specification updated successfully.');
+        return redirect()->back()->with('success', 'Product specification updated successfully.');
     }
 
     /**
@@ -99,6 +101,6 @@ class ProductSpecificationController extends Controller
     {
         $productSpecification->delete();
 
-        return redirect()->route('product-specifications.index')->with('success', 'Product specification deleted successfully.');
+        return redirect()->back()->with('success', 'Product specification deleted successfully.');
     }
 }
