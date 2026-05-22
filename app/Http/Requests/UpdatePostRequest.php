@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidPostBlocks;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePostRequest extends FormRequest
 {
@@ -17,31 +20,14 @@ class UpdatePostRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'title' => 'required|string|max:255',
-            // 'content' => 'nullable|json',
-            'blocks' => [
-                'nullable',
-                'json',
-                function ($attr, $value, $fail) {
-                    $blocks = json_decode($value, true);
-
-                    if (!is_array($blocks)) {
-                        return $fail('Invalid block format');
-                    }
-
-                    foreach ($blocks as $block) {
-                        if (!isset($block['type'])) {
-                            return $fail('Block type missing');
-                        }
-                    }
-                }
-            ],
-            'status' => 'required|string',
+            'blocks' => ['nullable', 'json', new ValidPostBlocks],
+            'status' => ['required', 'string', Rule::in(['draft', 'publish'])],
             // 'categories' => 'array',
             // 'tags' => 'array',
             'featured_image' => 'nullable|string',

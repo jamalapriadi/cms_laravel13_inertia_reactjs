@@ -2,41 +2,30 @@
 
 namespace App\Services;
 
-use App\Models\Post;
 use App\Models\Block;
+use App\Models\Post;
 use App\Models\TermTaxonomy;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
-
+use Illuminate\Support\Str;
 
 class PostService
 {
-    public function create(array $data, int $userId)
+    public function create(array $data, int $userId): Post
     {
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $userId) {
+            $blocks = $this->decodeBlocks($data['content'] ?? null);
 
-            // ✅ decode content
-            $content = isset($data['content'])
-                ? json_decode($data['content'], true)
-                : null;
-
-            // ✅ CREATE POST
             $post = Post::create([
-                'user_id' => auth()->id(),
+                'user_id' => $userId,
                 'title' => $data['title'],
-                'slug' => Str::slug($data['title']) . '-' . uniqid(),
+                'slug' => Str::slug($data['title']).'-'.uniqid(),
+                'content' => json_encode($blocks),
                 'status' => $data['status'],
                 'type' => 'post',
                 'published_at' => $data['status'] === 'publish' ? now() : null,
             ]);
 
-            // ✅ DECODE BLOCK JSON
-            $blocks = json_decode($data['content'] ?? '[]', true);
-
-            // ✅ SIMPAN BLOCK
             $this->storeBlocks($post->id, $blocks);
-
             $this->syncTaxonomies($post, $data);
             $this->syncFeaturedImage($post, $data);
 
@@ -44,22 +33,19 @@ class PostService
         });
     }
 
-    public function update(Post $post, array $data)
+    public function update(Post $post, array $data): Post
     {
         DB::transaction(function () use ($post, $data) {
+            $blocks = $this->decodeBlocks($data['blocks'] ?? null);
 
             $post->update([
                 'title' => $data['title'],
+                'content' => json_encode($blocks),
                 'status' => $data['status'],
                 'published_at' => $data['status'] === 'publish' ? now() : null,
             ]);
 
-            // ❌ HAPUS BLOCK LAMA
             $post->blocks()->delete();
-
-            // ✅ SIMPAN BLOCK BARU
-            $blocks = json_decode($data['blocks'] ?? '[]', true);
-
             $this->storeBlocks($post->id, $blocks);
 
             $this->syncTaxonomies($post, $data);
@@ -69,7 +55,7 @@ class PostService
         return $post;
     }
 
-    private function syncTaxonomies(Post $post, array $data)
+    private function syncTaxonomies(Post $post, array $data): void
     {
         $taxonomyIds = array_merge(
             $data['categories'] ?? [],
@@ -82,9 +68,9 @@ class PostService
             ->update(['count' => \DB::raw('count + 1')]);
     }
 
-    private function syncFeaturedImage(Post $post, array $data)
+    private function syncFeaturedImage(Post $post, array $data): void
     {
-        if (!empty($data['featured_image'])) {
+        if (! empty($data['featured_image'])) {
             $post->metas()->updateOrCreate(
                 ['meta_key' => 'featured_image'],
                 ['meta_value' => $data['featured_image']]
@@ -92,13 +78,9 @@ class PostService
         }
     }
 
-    /**
-     * 🔥 RECURSIVE BLOCK SAVE
-     */
-    private function storeBlocks(int $postId, array $blocks, $parentId = null)
+    private function storeBlocks(int $postId, array $blocks, ?int $parentId = null): void
     {
         foreach ($blocks as $index => $block) {
-
             $newBlock = Block::create([
                 'post_id' => $postId,
                 'parent_id' => $parentId,
@@ -108,8 +90,7 @@ class PostService
                 'order' => $index,
             ]);
 
-            // ✅ HANDLE NESTED (kalau nanti ada children)
-            if (!empty($block['children'])) {
+            if (! empty($block['children'])) {
                 $this->storeBlocks(
                     $postId,
                     $block['children'],
@@ -117,6 +98,17 @@ class PostService
                 );
             }
         }
+    }
+
+    private function decodeBlocks(?string $blocks): array
+    {
+        if (empty($blocks)) {
+            return [];
+        }
+
+        $decoded = json_decode($blocks, true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     public function delete(Post $post): bool

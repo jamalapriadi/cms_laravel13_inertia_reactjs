@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Dashboard;
 
-use Inertia\Inertia;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
 use App\Models\TermTaxonomy;
 use App\Services\PostService;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\StorePostRequest;
-use App\Http\Requests\UpdatePostRequest;
+use Inertia\Inertia;
 
 class PostController extends Controller
 {
@@ -20,18 +20,18 @@ class PostController extends Controller
                 $q->where('title', 'like', "%{$request->search}%");
             })
             ->latest();
-            
-        if($request->filled('status')){
+
+        if ($request->filled('status')) {
             $status = $request->status;
 
-            if($status != "all"){
+            if ($status != 'all') {
                 $posts = $posts->where('status', $request->status);
             }
-            
-        }else{
-            $posts = $posts->where('status','!=','trash');
+
+        } else {
+            $posts = $posts->where('status', '!=', 'trash');
         }
-            
+
         $posts = $posts->paginate(10)
             ->withQueryString();
 
@@ -55,7 +55,7 @@ class PostController extends Controller
 
     public function store(StorePostRequest $request, PostService $service)
     {
-        $service->create($request->validated(), auth()->id());
+        $service->create($request->validated(), (int) auth()->id());
 
         return redirect()->route('posts.index');
     }
