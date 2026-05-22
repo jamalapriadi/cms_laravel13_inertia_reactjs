@@ -3,6 +3,7 @@
 use App\Models\Brand;
 use App\Models\Shop\Category;
 use App\Models\Shop\Product;
+use App\Models\Shop\ProductStockUnit;
 use App\Models\Shop\ProductVariant;
 use App\Models\Shop\StockMovement;
 use App\Models\User;
@@ -129,77 +130,103 @@ test('user can create a stock movement', function () {
     $user = User::factory()->create();
     $variant = createBaseProductAndVariant();
 
-    $variant->update(['stock' => 10]);
+    $variant->update(['stock' => 0]);
+
+    $stockUnit = ProductStockUnit::create([
+        'product_variant_id' => $variant->id,
+        'imei_serial_number' => '351234567890123',
+        'network_compatibility' => 'sim_free',
+        'status' => 'reserved',
+    ]);
 
     // Store purchase type
     $response = $this->actingAs($user)
         ->post('/dashboard/ecommerce/stock-movements', [
             'product_variant_id' => $variant->id,
+            'product_stock_unit_id' => $stockUnit->id,
             'type' => 'purchase',
-            'qty' => 5,
             'note' => 'Stock purchased',
         ]);
 
     $response->assertRedirect('/dashboard/ecommerce/stock-movements');
     $this->assertDatabaseHas('stock_movements', [
         'product_variant_id' => $variant->id,
+        'product_stock_unit_id' => $stockUnit->id,
         'type' => 'purchase',
-        'qty' => 5,
-        'stock_before' => 10,
-        'stock_after' => 15,
+        'qty' => 1,
+        'stock_before' => 0,
+        'stock_after' => 1,
+        'stock_unit_status_before' => 'reserved',
+        'stock_unit_status_after' => 'available',
         'note' => 'Stock purchased',
     ]);
 
     // Assert variant stock was increased
-    $this->assertEquals(15, $variant->fresh()->stock);
+    $this->assertEquals(1, $variant->fresh()->stock);
+    $this->assertSame('available', $stockUnit->fresh()->status);
 
     // Store sale type
     $response = $this->actingAs($user)
         ->post('/dashboard/ecommerce/stock-movements', [
             'product_variant_id' => $variant->id,
+            'product_stock_unit_id' => $stockUnit->id,
             'type' => 'sale',
-            'qty' => 3,
             'note' => 'Customer order',
         ]);
 
     $response->assertRedirect('/dashboard/ecommerce/stock-movements');
-    $this->assertEquals(12, $variant->fresh()->stock);
+    $this->assertEquals(0, $variant->fresh()->stock);
+    $this->assertSame('sold', $stockUnit->fresh()->status);
 });
 
 test('user can update stock movement and recalculate variant stock levels', function () {
     $user = User::factory()->create();
     $variant = createBaseProductAndVariant();
 
-    // Setup initial stock = 100
-    $variant->update(['stock' => 100]);
+    $stockUnit = ProductStockUnit::create([
+        'product_variant_id' => $variant->id,
+        'imei_serial_number' => '351234567890123',
+        'network_compatibility' => 'sim_free',
+        'status' => 'sold',
+    ]);
+
+    $variant->update(['stock' => 0]);
 
     $movement = StockMovement::create([
         'product_variant_id' => $variant->id,
+        'product_stock_unit_id' => $stockUnit->id,
         'type' => 'purchase',
-        'qty' => 20, // should have added 20 to variant stock (so variant stock is 100)
-        'stock_before' => 80,
-        'stock_after' => 100,
+        'qty' => 1,
+        'stock_before' => 0,
+        'stock_after' => 1,
+        'stock_unit_status_before' => 'sold',
+        'stock_unit_status_after' => 'available',
         'note' => 'Initial purchase',
     ]);
 
-    // Edit movement: Change qty from purchase 20 to purchase 15 (decrease by 5)
-    // The variant stock should become: 100 - 20 (reverse old) + 15 (apply new) = 95
+    $stockUnit->update(['status' => 'available']);
+    $variant->syncStockFromUnits();
+
     $response = $this->actingAs($user)
         ->put("/dashboard/ecommerce/stock-movements/{$movement->id}", [
             'product_variant_id' => $variant->id,
-            'type' => 'purchase',
-            'qty' => 15,
-            'note' => 'Updated purchase note',
+            'product_stock_unit_id' => $stockUnit->id,
+            'type' => 'sale',
+            'note' => 'Updated sale note',
         ]);
 
     $response->assertRedirect('/dashboard/ecommerce/stock-movements');
-    $this->assertEquals(95, $variant->fresh()->stock);
+    $this->assertEquals(0, $variant->fresh()->stock);
+    $this->assertSame('sold', $stockUnit->fresh()->status);
     $this->assertDatabaseHas('stock_movements', [
         'id' => $movement->id,
-        'qty' => 15,
-        'stock_before' => 80,
-        'stock_after' => 95,
-        'note' => 'Updated purchase note',
+        'type' => 'sale',
+        'qty' => 1,
+        'stock_before' => 0,
+        'stock_after' => 0,
+        'stock_unit_status_before' => 'sold',
+        'stock_unit_status_after' => 'sold',
+        'note' => 'Updated sale note',
     ]);
 });
 
@@ -207,23 +234,32 @@ test('user can delete stock movement and reverse variant stock levels', function
     $user = User::factory()->create();
     $variant = createBaseProductAndVariant();
 
-    // Setup variant stock = 100 after a sale of 10
-    $variant->update(['stock' => 100]);
+    $stockUnit = ProductStockUnit::create([
+        'product_variant_id' => $variant->id,
+        'imei_serial_number' => '351234567890123',
+        'network_compatibility' => 'sim_free',
+        'status' => 'sold',
+    ]);
+
+    $variant->update(['stock' => 0]);
 
     $movement = StockMovement::create([
         'product_variant_id' => $variant->id,
+        'product_stock_unit_id' => $stockUnit->id,
         'type' => 'sale',
-        'qty' => 10, // decreased variant stock by 10
-        'stock_before' => 110,
-        'stock_after' => 100,
+        'qty' => 1,
+        'stock_before' => 1,
+        'stock_after' => 0,
+        'stock_unit_status_before' => 'available',
+        'stock_unit_status_after' => 'sold',
         'note' => 'Store sale',
     ]);
 
-    // Deleting the sale of 10 should restore the stock to 110
     $response = $this->actingAs($user)
         ->delete("/dashboard/ecommerce/stock-movements/{$movement->id}");
 
     $response->assertRedirect('/dashboard/ecommerce/stock-movements');
-    $this->assertEquals(110, $variant->fresh()->stock);
+    $this->assertEquals(1, $variant->fresh()->stock);
+    $this->assertSame('available', $stockUnit->fresh()->status);
     $this->assertDatabaseMissing('stock_movements', ['id' => $movement->id]);
 });

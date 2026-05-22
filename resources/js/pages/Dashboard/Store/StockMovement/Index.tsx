@@ -38,12 +38,21 @@ interface VariantOption {
 interface StockMovement {
     id: string;
     product_variant_id: string;
+    product_stock_unit_id?: string | null;
     type: 'sale' | 'purchase' | 'adjustment' | 'return' | 'cancel';
     qty: number;
     stock_before: number;
     stock_after: number;
+    stock_unit_status_before?: string | null;
+    stock_unit_status_after?: string | null;
     note: string | null;
     created_at: string;
+    stock_unit?: {
+        id: string;
+        imei_serial_number: string;
+        network_compatibility: string;
+        status: string;
+    } | null;
     variant?: {
         id: string;
         name: string;
@@ -192,6 +201,23 @@ export default function Index({
                 >
                     {row.type}
                 </span>
+            ),
+        },
+        {
+            label: 'Stock Unit',
+            render: (row: StockMovement) => (
+                <div className="flex flex-col text-xs">
+                    <span className="font-mono font-semibold text-foreground">
+                        {row.stock_unit?.imei_serial_number || '-'}
+                    </span>
+                    {row.stock_unit && (
+                        <span className="text-muted-foreground">
+                            {row.stock_unit.network_compatibility} ·{' '}
+                            {row.stock_unit_status_before || '-'} →{' '}
+                            {row.stock_unit_status_after || '-'}
+                        </span>
+                    )}
+                </div>
             ),
         },
         {

@@ -8,9 +8,10 @@
 
 namespace App\Models\Shop;
 
+use App\Models\Unit;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class ProductVariant extends Model
 {
@@ -21,6 +22,7 @@ class ProductVariant extends Model
         'unit_id',
         'name',
         'sku',
+        'image',
         'price',
         'track_stock',
         'stock',
@@ -51,7 +53,7 @@ class ProductVariant extends Model
 
     public function unit()
     {
-        return $this->belongsTo(\App\Models\Unit::class);
+        return $this->belongsTo(Unit::class);
     }
 
     public function attributes()
@@ -67,5 +69,23 @@ class ProductVariant extends Model
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    public function stockUnits()
+    {
+        return $this->hasMany(ProductStockUnit::class, 'product_variant_id');
+    }
+
+    public function availableStockUnits()
+    {
+        return $this->hasMany(ProductStockUnit::class, 'product_variant_id')
+            ->where('status', 'available');
+    }
+
+    public function syncStockFromUnits(): void
+    {
+        $this->forceFill([
+            'stock' => $this->availableStockUnits()->count(),
+        ])->save();
     }
 }

@@ -1,5 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Tag, FolderTree, Package, ClipboardList, Boxes } from 'lucide-react';
+import {
+    Tag,
+    FolderTree,
+    Package,
+    ClipboardList,
+    Boxes,
+    ScanBarcode,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
@@ -22,6 +29,11 @@ export default function MasterDataLayout({ children }: Props) {
             href: '/dashboard/ecommerce/product-variants',
             icon: Boxes,
         },
+        // {
+        //     label: 'Stok Unit',
+        //     href: '/dashboard/ecommerce/product-stock-units',
+        //     icon: ScanBarcode,
+        // },
         {
             label: 'Brands',
             href: '/dashboard/brands',

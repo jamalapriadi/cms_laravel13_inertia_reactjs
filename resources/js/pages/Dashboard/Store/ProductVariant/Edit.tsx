@@ -7,8 +7,17 @@ import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Textarea from '@/components/ui/textarea';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -29,13 +38,16 @@ interface ProductVariant {
     unit_id?: string | null;
     name: string;
     sku: string;
+    image?: string | null;
     price: string | number;
     track_stock: boolean;
     stock: number;
+    available_stock_units_count?: number;
     min_stock_alert?: number | null;
     weight?: number | null;
     cost_price?: string | number | null;
     is_active: boolean;
+    stock_units?: ProductStockUnit[];
 }
 
 interface Props {
@@ -43,6 +55,35 @@ interface Props {
     products: Product[];
     units: Unit[];
 }
+
+type NetworkCompatibility =
+    | 'sim_free'
+    | 'docomo'
+    | 'au'
+    | 'softbank'
+    | 'rakuten'
+    | 'mineo';
+
+interface ProductStockUnit {
+    id: string;
+    product_variant_id: string;
+    imei_serial_number: string;
+    network_compatibility: NetworkCompatibility;
+    status: 'available' | 'reserved' | 'sold' | 'damaged';
+    note?: string | null;
+}
+
+const networkOptions: { value: NetworkCompatibility; label: string }[] = [
+    { value: 'sim_free', label: 'SIM Free' },
+    { value: 'docomo', label: 'Docomo' },
+    { value: 'au', label: 'AU' },
+    { value: 'softbank', label: 'SoftBank' },
+    { value: 'rakuten', label: 'Rakuten' },
+    { value: 'mineo', label: 'Mineo' },
+];
+
+const networkLabel = (network: NetworkCompatibility) =>
+    networkOptions.find((option) => option.value === network)?.label ?? network;
 
 const nullableNumber = z.preprocess((val) => {
     if (val === '' || val === null || val === undefined) {
@@ -61,11 +102,11 @@ const variantSchema = z.object({
 
     sku: z.string().min(1, 'SKU is required'),
 
+    image: z.any().optional(),
+
     price: z.coerce.number().min(0, 'Price must be >= 0').default(0),
 
     track_stock: z.boolean().default(true),
-
-    stock: z.coerce.number().min(0, 'Stock cannot be negative').default(0),
 
     min_stock_alert: nullableNumber.optional(),
 
@@ -78,12 +119,39 @@ const variantSchema = z.object({
 
 type VariantFormData = z.output<typeof variantSchema>;
 
+const stockUnitSchema = z.object({
+    product_variant_id: z.string().min(1, 'Product variant is required'),
+    imei_serial_number: z
+        .string()
+        .min(1, 'IMEI / Serial Number is required')
+        .max(255),
+    network_compatibility: z.enum([
+        'sim_free',
+        'docomo',
+        'au',
+        'softbank',
+        'rakuten',
+        'mineo',
+    ]),
+    status: z
+        .enum(['available', 'reserved', 'sold', 'damaged'])
+        .default('available'),
+    note: z.string().nullable().optional(),
+});
+
+type StockUnitFormData = z.infer<typeof stockUnitSchema>;
+
 export default function Edit({
     variant: initialVariant,
     products,
     units,
 }: Props) {
     const [processing, setProcessing] = useState(false);
+    const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+    const [editingStockUnit, setEditingStockUnit] =
+        useState<ProductStockUnit | null>(null);
+    const [submittingStock, setSubmittingStock] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const {
         register,
@@ -99,9 +167,9 @@ export default function Edit({
             unit_id: initialVariant.unit_id ?? null,
             name: initialVariant.name ?? '',
             sku: initialVariant.sku ?? '',
+            image: undefined,
             price: Number(initialVariant.price ?? 0),
             track_stock: Boolean(initialVariant.track_stock),
-            stock: Number(initialVariant.stock ?? 0),
             min_stock_alert: initialVariant.min_stock_alert ?? null,
             weight: initialVariant.weight ?? null,
             cost_price: initialVariant.cost_price
@@ -111,6 +179,121 @@ export default function Edit({
         },
     });
 
+    const stockUnitForm = useForm<
+        z.input<typeof stockUnitSchema>,
+        unknown,
+        StockUnitFormData
+    >({
+        resolver: zodResolver(stockUnitSchema),
+        defaultValues: {
+            product_variant_id: initialVariant.id,
+            imei_serial_number: '',
+            network_compatibility: 'sim_free',
+            status: 'available',
+            note: '',
+        },
+    });
+
+    const openCreateStockModal = () => {
+        setEditingStockUnit(null);
+        stockUnitForm.reset({
+            product_variant_id: initialVariant.id,
+            imei_serial_number: '',
+            network_compatibility: 'sim_free',
+            status: 'available',
+            note: '',
+        });
+        setIsStockModalOpen(true);
+    };
+
+    const openEditStockModal = (stockUnit: ProductStockUnit) => {
+        setEditingStockUnit(stockUnit);
+        stockUnitForm.reset({
+            product_variant_id: stockUnit.product_variant_id,
+            imei_serial_number: stockUnit.imei_serial_number,
+            network_compatibility: stockUnit.network_compatibility,
+            status: stockUnit.status,
+            note: stockUnit.note ?? '',
+        });
+        setIsStockModalOpen(true);
+    };
+
+    const onSubmitStockUnit = (data: StockUnitFormData) => {
+        if (editingStockUnit) {
+            router.put(
+                `/dashboard/ecommerce/product-stock-units/${editingStockUnit.id}`,
+                data,
+                {
+                    preserveScroll: true,
+                    onStart: () => {
+                        setSubmittingStock(true);
+                        toast.loading('Updating stock unit...', {
+                            id: 'stock-unit',
+                        });
+                    },
+                    onSuccess: () => {
+                        toast.success('Stock unit updated successfully!', {
+                            id: 'stock-unit',
+                        });
+                        setIsStockModalOpen(false);
+                        setEditingStockUnit(null);
+                    },
+                    onError: () => {
+                        toast.error(
+                            'Failed to update stock unit. Check IMEI uniqueness.',
+                            { id: 'stock-unit' },
+                        );
+                    },
+                    onFinish: () => setSubmittingStock(false),
+                },
+            );
+
+            return;
+        }
+
+        router.post('/dashboard/ecommerce/product-stock-units', data, {
+            preserveScroll: true,
+            onStart: () => {
+                setSubmittingStock(true);
+                toast.loading('Adding stock unit...', { id: 'stock-unit' });
+            },
+            onSuccess: () => {
+                toast.success('Stock unit added successfully!', {
+                    id: 'stock-unit',
+                });
+                setIsStockModalOpen(false);
+            },
+            onError: () => {
+                toast.error(
+                    'Failed to add stock unit. Check IMEI uniqueness.',
+                    { id: 'stock-unit' },
+                );
+            },
+            onFinish: () => setSubmittingStock(false),
+        });
+    };
+
+    const deleteStockUnit = (stockUnit: ProductStockUnit) => {
+        router.delete(
+            `/dashboard/ecommerce/product-stock-units/${stockUnit.id}`,
+            {
+                preserveScroll: true,
+            },
+        );
+    };
+
+    const handleImageChange = (file?: File) => {
+        setValue('image', file, { shouldValidate: true });
+
+        if (!file) {
+            setImagePreview(null);
+
+            return;
+        }
+
+        setImagePreview(URL.createObjectURL(file));
+    };
+
     const onSubmit = (data: VariantFormData) => {
         router.post(
             `/dashboard/ecommerce/product-variants/${initialVariant.id}`,
@@ -119,6 +302,7 @@ export default function Edit({
                 ...data,
             },
             {
+                forceFormData: true,
                 preserveScroll: true,
 
                 onStart: () => {
@@ -262,6 +446,29 @@ export default function Edit({
                                 )}
                             </div>
 
+                            <div className="flex flex-col gap-1 md:col-span-2">
+                                <Label>Variant Image</Label>
+
+                                {(imagePreview || initialVariant.image) && (
+                                    <img
+                                        src={
+                                            imagePreview ??
+                                            `/storage/${initialVariant.image}`
+                                        }
+                                        alt={initialVariant.name}
+                                        className="mb-2 h-24 w-24 rounded-md border object-cover"
+                                    />
+                                )}
+
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                        handleImageChange(e.target.files?.[0])
+                                    }
+                                />
+                            </div>
+
                             {/* PRICE */}
                             <div className="flex flex-col gap-1">
                                 <Label>Price ¥</Label>
@@ -281,18 +488,6 @@ export default function Edit({
                                     type="number"
                                     min="0"
                                     {...register('cost_price')}
-                                />
-                            </div>
-
-                            {/* STOCK */}
-                            <div className="flex flex-col gap-1">
-                                <Label>Stock</Label>
-
-                                <Input
-                                    type="number"
-                                    min="0"
-                                    disabled={!watch('track_stock')}
-                                    {...register('stock')}
                                 />
                             </div>
 
@@ -376,7 +571,212 @@ export default function Edit({
                         </Button>
                     </div>
                 </form>
+
+                <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h2 className="text-lg font-semibold">
+                                Stock Units / IMEI
+                            </h2>
+                            <p className="text-sm text-muted-foreground">
+                                Current stock:{' '}
+                                {initialVariant.available_stock_units_count ??
+                                    initialVariant.stock}
+                                . Available stock units control this number
+                                automatically.
+                            </p>
+                        </div>
+                        <Button type="button" onClick={openCreateStockModal}>
+                            Add Stock Unit
+                        </Button>
+                    </div>
+
+                    {initialVariant.stock_units &&
+                    initialVariant.stock_units.length > 0 ? (
+                        <div className="space-y-3">
+                            {initialVariant.stock_units.map((stockUnit) => (
+                                <div
+                                    key={stockUnit.id}
+                                    className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-slate-50 px-4 py-3"
+                                >
+                                    <div className="min-w-0">
+                                        <div className="truncate font-mono text-sm font-semibold">
+                                            {stockUnit.imei_serial_number}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                            {networkLabel(
+                                                stockUnit.network_compatibility,
+                                            )}{' '}
+                                            · {stockUnit.status}
+                                        </div>
+                                        {stockUnit.note && (
+                                            <div className="mt-1 text-xs text-muted-foreground">
+                                                {stockUnit.note}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() =>
+                                                openEditStockModal(stockUnit)
+                                            }
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() =>
+                                                deleteStockUnit(stockUnit)
+                                            }
+                                        >
+                                            Delete
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="rounded-md border border-dashed p-5 text-sm text-muted-foreground">
+                            No stock units added for this variant yet.
+                        </div>
+                    )}
+                </div>
             </div>
+
+            <Dialog open={isStockModalOpen} onOpenChange={setIsStockModalOpen}>
+                <DialogContent className="sm:max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editingStockUnit
+                                ? 'Edit Stock Unit / IMEI'
+                                : 'Add Stock Unit / IMEI'}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Assign IMEI/serial number and network to this
+                            product variant.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form
+                        onSubmit={stockUnitForm.handleSubmit(onSubmitStockUnit)}
+                        className="space-y-5 py-2"
+                    >
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="flex flex-col gap-1.5">
+                                <Label htmlFor="imei_serial_number">
+                                    IMEI / Serial Number
+                                </Label>
+                                <Input
+                                    id="imei_serial_number"
+                                    placeholder="e.g., 351234567890123"
+                                    {...stockUnitForm.register(
+                                        'imei_serial_number',
+                                    )}
+                                />
+                                {stockUnitForm.formState.errors
+                                    .imei_serial_number && (
+                                    <p className="text-xs text-destructive">
+                                        {
+                                            stockUnitForm.formState.errors
+                                                .imei_serial_number.message
+                                        }
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-1.5">
+                                <Label htmlFor="status">Status</Label>
+                                <select
+                                    id="status"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    value={stockUnitForm.watch('status')}
+                                    onChange={(e) =>
+                                        stockUnitForm.setValue(
+                                            'status',
+                                            e.target
+                                                .value as StockUnitFormData['status'],
+                                            { shouldValidate: true },
+                                        )
+                                    }
+                                >
+                                    <option value="available">Available</option>
+                                    <option value="reserved">Reserved</option>
+                                    <option value="sold">Sold</option>
+                                    <option value="damaged">Damaged</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Network</Label>
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                {networkOptions.map((option) => {
+                                    const selected =
+                                        stockUnitForm.watch(
+                                            'network_compatibility',
+                                        ) === option.value;
+
+                                    return (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            onClick={() =>
+                                                stockUnitForm.setValue(
+                                                    'network_compatibility',
+                                                    option.value,
+                                                    { shouldValidate: true },
+                                                )
+                                            }
+                                            className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
+                                                selected
+                                                    ? option.value ===
+                                                      'sim_free'
+                                                        ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                                                        : 'border-red-500 bg-red-50 text-red-800'
+                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                            }`}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="note">Note</Label>
+                            <Textarea
+                                id="note"
+                                rows={3}
+                                placeholder="Optional internal note..."
+                                {...stockUnitForm.register('note')}
+                            />
+                        </div>
+
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsStockModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={submittingStock}>
+                                {submittingStock
+                                    ? 'Saving...'
+                                    : editingStockUnit
+                                      ? 'Update Stock Unit'
+                                      : 'Add Stock Unit'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

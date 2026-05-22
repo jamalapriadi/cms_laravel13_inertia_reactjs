@@ -1,5 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { Boxes, Package, Tags, Warehouse } from 'lucide-react';
 import { useState } from 'react';
+import type { ElementType } from 'react';
 
 import { DataTable } from '@/components/DataTable';
 
@@ -48,6 +50,12 @@ interface Props {
     products: LaravelPagination<Product>;
     categories: { id: string; name: string }[];
     brands: { id: string; name: string }[];
+    summary: {
+        products: number;
+        product_variants: number;
+        brands: number;
+        categories: number;
+    };
 
     filters: {
         search?: string;
@@ -56,7 +64,39 @@ interface Props {
     };
 }
 
-export default function Index({ products, categories, brands, filters }: Props) {
+function SummaryCard({
+    title,
+    value,
+    icon: Icon,
+}: {
+    title: string;
+    value: number;
+    icon: ElementType;
+}) {
+    return (
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                    {title}
+                </span>
+                <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                    <Icon className="h-4 w-4" />
+                </div>
+            </div>
+            <p className="mt-4 text-3xl font-extrabold tracking-tight text-foreground">
+                {value.toLocaleString('id-ID')}
+            </p>
+        </div>
+    );
+}
+
+export default function Index({
+    products,
+    categories,
+    brands,
+    summary,
+    filters,
+}: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [categoryId, setCategoryId] = useState(filters.category_id || '');
     const [brandId, setBrandId] = useState(filters.brand_id || '');
@@ -69,10 +109,10 @@ export default function Index({ products, categories, brands, filters }: Props) 
     const applyFilter = () => {
         router.get(
             '/dashboard/ecommerce/products',
-            { 
+            {
                 search,
                 category_id: categoryId,
-                brand_id: brandId 
+                brand_id: brandId,
             },
             {
                 preserveState: true,
@@ -103,7 +143,9 @@ export default function Index({ products, categories, brands, filters }: Props) 
             render: (row: Product) => (
                 <div className="flex flex-col">
                     <span className="font-medium">{row.name}</span>
-                    <span className="text-xs text-muted-foreground">{row.slug}</span>
+                    <span className="text-xs text-muted-foreground">
+                        {row.slug}
+                    </span>
                 </div>
             ),
         },
@@ -130,7 +172,9 @@ export default function Index({ products, categories, brands, filters }: Props) 
         {
             label: 'Condition',
             render: (row: Product) => (
-                <span className="text-sm capitalize">{row.condition.replace('_', ' ')}</span>
+                <span className="text-sm capitalize">
+                    {row.condition.replace('_', ' ')}
+                </span>
             ),
         },
         {
@@ -150,9 +194,13 @@ export default function Index({ products, categories, brands, filters }: Props) 
         {
             label: 'Action',
             render: (row: Product) => (
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex flex-wrap gap-2">
                     <Link href={`/dashboard/ecommerce/products/${row.id}`}>
-                        <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/5">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-primary/50 text-primary hover:bg-primary/5"
+                        >
                             Detail
                         </Button>
                     </Link>
@@ -197,8 +245,31 @@ export default function Index({ products, categories, brands, filters }: Props) 
 
                 <hr />
 
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                    <SummaryCard
+                        title="Total Product"
+                        value={summary.products}
+                        icon={Package}
+                    />
+                    <SummaryCard
+                        title="Total Product Variant"
+                        value={summary.product_variants}
+                        icon={Boxes}
+                    />
+                    <SummaryCard
+                        title="Total Brand"
+                        value={summary.brands}
+                        icon={Tags}
+                    />
+                    <SummaryCard
+                        title="Total Category Product"
+                        value={summary.categories}
+                        icon={Warehouse}
+                    />
+                </div>
+
                 {/* FILTER */}
-                <div className="flex gap-3 flex-wrap">
+                <div className="flex flex-wrap gap-3">
                     <Input
                         className="max-w-xs"
                         placeholder="Search product name..."
@@ -208,7 +279,7 @@ export default function Index({ products, categories, brands, filters }: Props) 
                     />
 
                     <select
-                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         value={categoryId}
                         onChange={(e) => setCategoryId(e.target.value)}
                     >
@@ -221,7 +292,7 @@ export default function Index({ products, categories, brands, filters }: Props) 
                     </select>
 
                     <select
-                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         value={brandId}
                         onChange={(e) => setBrandId(e.target.value)}
                     >

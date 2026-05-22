@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Store\ProductVariant;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductVariantUpdateRequest extends FormRequest
@@ -17,7 +18,7 @@ class ProductVariantUpdateRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -28,17 +29,18 @@ class ProductVariantUpdateRequest extends FormRequest
             'product_id' => ['required', 'uuid', 'exists:products,id'],
             'unit_id' => ['nullable', 'string', 'exists:units,id'],
             'name' => ['required', 'string', 'max:255'],
-            'sku' => ['required', 'string', 'max:255', 'unique:product_variants,sku,' . $variantId],
+            'sku' => ['required', 'string', 'max:255', 'unique:product_variants,sku,'.$variantId],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
             'price' => ['required', 'numeric', 'min:0'],
             'track_stock' => ['nullable', 'boolean'],
-            'stock' => ['required', 'integer', 'min:0'],
+            'stock' => ['nullable', 'integer', 'min:0'],
             'min_stock_alert' => ['nullable', 'integer', 'min:0'],
             'weight' => ['nullable', 'numeric', 'min:0'],
             'cost_price' => ['nullable', 'numeric', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
         ];
     }
-    
+
     /**
      * Prepare the data for validation.
      */
@@ -46,6 +48,7 @@ class ProductVariantUpdateRequest extends FormRequest
     {
         $this->merge([
             'track_stock' => filter_var($this->track_stock, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
+            'stock' => $this->stock ?? 0,
             'is_active' => filter_var($this->is_active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
         ]);
     }

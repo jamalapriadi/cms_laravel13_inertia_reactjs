@@ -21,6 +21,7 @@ use App\Http\Controllers\Store\PaymentController;
 use App\Http\Controllers\Store\ProductController;
 use App\Http\Controllers\Store\ProductImageController;
 use App\Http\Controllers\Store\ProductSpecificationController;
+use App\Http\Controllers\Store\ProductStockUnitController;
 use App\Http\Controllers\Store\ProductVariantController;
 use App\Http\Controllers\Store\ShippingController;
 use App\Http\Controllers\Store\StockMovementController;
@@ -79,6 +80,7 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
     Route::resource('ecommerce/categories', CategoryController::class)->names('categories');
     Route::resource('ecommerce/products', ProductController::class)->names('products');
     Route::resource('ecommerce/product-variants', ProductVariantController::class)->names('product-variants');
+    Route::resource('ecommerce/product-stock-units', ProductStockUnitController::class)->names('product-stock-units');
     Route::resource('ecommerce/product-images', ProductImageController::class)->names('product-images');
     Route::resource('ecommerce/product-specifications', ProductSpecificationController::class)->names('product-specifications');
     Route::delete('ecommerce/carts/{cart}/items/{item}', [CartController::class, 'destroyItem'])->name('carts.destroy-item');

@@ -8,6 +8,7 @@
 
 namespace App\Models\Shop;
 
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -27,9 +28,6 @@ class Product extends Model
         'condition',
         'base_price',
         'has_variant',
-        'requires_imei',
-        'imei_serial_number',
-        'network_compatibility',
         'meta_title',
         'meta_description',
         'is_publish',
@@ -40,7 +38,6 @@ class Product extends Model
     protected $casts = [
         'base_price' => 'decimal:2',
         'has_variant' => 'boolean',
-        'requires_imei' => 'boolean',
         'is_publish' => 'boolean',
     ];
 
@@ -62,7 +59,7 @@ class Product extends Model
 
     public function unit()
     {
-        return $this->belongsTo(\App\Models\Unit::class);
+        return $this->belongsTo(Unit::class);
     }
 
     public function images()
@@ -78,6 +75,11 @@ class Product extends Model
     public function variants()
     {
         return $this->hasMany(ProductVariant::class);
+    }
+
+    public function stockUnits()
+    {
+        return $this->hasManyThrough(ProductStockUnit::class, ProductVariant::class);
     }
 
     public function orderItems()
