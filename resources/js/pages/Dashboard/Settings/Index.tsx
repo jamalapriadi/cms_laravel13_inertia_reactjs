@@ -11,9 +11,6 @@ import {
 
 import type { LucideIcon } from 'lucide-react';
 
-/**
- * ✅ Type
- */
 interface MenuItem {
     title: string;
     description: string;
@@ -21,9 +18,6 @@ interface MenuItem {
     icon: LucideIcon;
 }
 
-/**
- * ✅ Data (dipisah biar clean)
- */
 const MENUS: MenuItem[] = [
     {
         title: 'General',
@@ -70,26 +64,24 @@ const MENUS: MenuItem[] = [
     },
 ];
 
-/**
- * ✅ Card Component (Reusable)
- */
 function ConfigCard({ item }: { item: MenuItem }) {
     const Icon = item.icon;
 
     return (
         <Link
             href={item.href}
-            className="group flex items-start gap-4 rounded-2xl border p-5 transition-all hover:border-primary hover:shadow-md"
+            className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-sm transition-all hover:border-primary/60 hover:bg-accent/40 hover:shadow-md dark:border-white/10 dark:bg-zinc-900/70 dark:hover:border-primary/70 dark:hover:bg-zinc-800/80"
         >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/90 text-white transition group-hover:bg-primary">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-all group-hover:scale-105 group-hover:bg-primary/90">
                 <Icon className="h-5 w-5" />
             </div>
 
-            <div className="flex flex-col">
-                <h3 className="text-base font-semibold group-hover:text-primary">
+            <div className="flex flex-col gap-1">
+                <h3 className="text-base font-semibold text-foreground transition-colors group-hover:text-primary">
                     {item.title}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+
+                <p className="text-sm leading-relaxed text-muted-foreground">
                     {item.description}
                 </p>
             </div>
@@ -97,9 +89,6 @@ function ConfigCard({ item }: { item: MenuItem }) {
     );
 }
 
-/**
- * ✅ Page
- */
 export default function ConfigMain() {
     return (
         <>
@@ -107,15 +96,15 @@ export default function ConfigMain() {
 
             <div className="container mx-auto px-6 py-6">
                 <div className="space-y-6">
-                    {/* Header */}
                     <div>
-                        <h1 className="text-2xl font-bold">Pengaturan</h1>
+                        <h1 className="text-2xl font-bold text-foreground">
+                            Pengaturan
+                        </h1>
                         <p className="text-muted-foreground">
                             Manage all system configurations in one place
                         </p>
                     </div>
 
-                    {/* Grid */}
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                         {MENUS.map((item) => (
                             <ConfigCard key={item.href} item={item} />
@@ -127,14 +116,11 @@ export default function ConfigMain() {
     );
 }
 
-/**
- * ✅ FIX: Layout Breadcrumbs
- */
 ConfigMain.layout = {
     breadcrumbs: [
         {
             title: 'Pengaturan',
-            href: '/dashboard/config/main', // ❗ FIXED (bukan ConfigMain())
+            href: '/dashboard/config/main',
         },
     ],
 };

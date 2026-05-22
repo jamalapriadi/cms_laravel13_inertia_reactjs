@@ -9,6 +9,7 @@ import {
     Image as ImageIcon,
     Plus,
     Monitor,
+    Eye,
 } from 'lucide-react';
 
 import { useState } from 'react';
@@ -32,6 +33,7 @@ import {
 
 import { LaravelPagination } from '@/types/LaravelPagination';
 import { Media } from '@/types/media';
+import DetailModal from './Detail';
 
 interface Props {
     media: LaravelPagination<Media>;
@@ -43,6 +45,7 @@ interface Props {
 
 export default function Index({ media, filters }: Props) {
     const [view, setView] = useState<'grid' | 'list'>('grid');
+    const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const handleFilter = (key: string, value: string) => {
@@ -171,6 +174,14 @@ export default function Index({ media, filters }: Props) {
                                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 transition group-hover:opacity-100">
                                     <Button
                                         size="icon"
+                                        variant="outline"
+                                        onClick={() => setSelectedMedia(item)}
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                    </Button>
+
+                                    <Button
+                                        size="icon"
                                         variant="destructive"
                                         onClick={() => setDeletingId(item.id)}
                                     >
@@ -226,15 +237,27 @@ export default function Index({ media, filters }: Props) {
                                         </td>
 
                                         <td className="p-3 text-right">
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                onClick={() =>
-                                                    setDeletingId(item.id)
-                                                }
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() =>
+                                                        setSelectedMedia(item)
+                                                    }
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() =>
+                                                        setDeletingId(item.id)
+                                                    }
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -284,6 +307,13 @@ export default function Index({ media, filters }: Props) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* DETAIL MODAL */}
+            <DetailModal
+                media={selectedMedia}
+                isOpen={!!selectedMedia}
+                onClose={() => setSelectedMedia(null)}
+            />
         </>
     );
 }
