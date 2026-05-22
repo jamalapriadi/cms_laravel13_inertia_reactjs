@@ -8,8 +8,8 @@
 
 namespace App\Models\Shop;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 class StockMovement extends Model
 {
@@ -17,10 +17,13 @@ class StockMovement extends Model
 
     protected $fillable = [
         'product_variant_id',
+        'product_stock_unit_id',
         'type',
         'qty',
         'stock_before',
         'stock_after',
+        'stock_unit_status_before',
+        'stock_unit_status_after',
         'note',
         'created_by',
     ];
@@ -34,5 +37,10 @@ class StockMovement extends Model
     public function variant()
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+
+    public function stockUnit()
+    {
+        return $this->belongsTo(ProductStockUnit::class, 'product_stock_unit_id');
     }
 }

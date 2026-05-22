@@ -13,7 +13,6 @@ import Textarea from '@/components/ui/textarea';
 import TinyEditor from '@/components/ui/TinyEditor';
 
 import AppLayout from '@/layouts/master-data-layout';
-import { cn } from '@/lib/utils';
 
 interface Category {
     id: string;
@@ -47,12 +46,6 @@ const productSchema = z.object({
     condition: z.enum(['new', 'like_new', 'second']).default('new'),
     base_price: z.coerce.number().min(0).default(0),
     has_variant: z.boolean().default(false),
-    requires_imei: z.boolean().default(false),
-    imei_serial_number: z.string().nullable().optional(),
-    network_compatibility: z
-        .enum(['sim_free', 'docomo', 'au', 'softbank', 'rakuten', 'mineo'])
-        .nullable()
-        .optional(),
     meta_title: z.string().nullable().optional(),
     meta_description: z.string().nullable().optional(),
     is_publish: z.boolean().default(true),
@@ -80,9 +73,6 @@ export default function Create({ categories, brands, units }: Props) {
             condition: 'new',
             base_price: 0,
             has_variant: false,
-            requires_imei: false,
-            imei_serial_number: '',
-            network_compatibility: 'sim_free',
             meta_title: '',
             meta_description: '',
             is_publish: true,
@@ -287,83 +277,6 @@ export default function Create({ categories, brands, units }: Props) {
                                 </select>
                             </div>
                         </div>
-
-                        <hr className="my-6" />
-
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-semibold">
-                                Device Settings
-                            </h3>
-
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="requires_imei"
-                                    checked={watch('requires_imei')}
-                                    onCheckedChange={(checked) =>
-                                        setValue('requires_imei', !!checked)
-                                    }
-                                />
-                                <Label htmlFor="requires_imei">
-                                    Product requires IMEI / Serial Number
-                                </Label>
-                            </div>
-
-                            {watch('requires_imei') && (
-                                <div className="flex flex-col gap-1">
-                                    <Label>IMEI / Serial Number</Label>
-                                    <Input
-                                        type="text"
-                                        {...register('imei_serial_number')}
-                                        placeholder="Enter IMEI or Serial Number..."
-                                    />
-                                </div>
-                            )}
-
-                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-                                {[
-                                    ['sim_free', 'SIM Free', 'Unlocked'],
-                                    ['docomo', 'Docomo', 'Carrier Locked'],
-                                    ['au', 'AU', 'Carrier Locked'],
-                                    ['softbank', 'SoftBank', 'Carrier Locked'],
-                                    ['rakuten', 'Rakuten', 'Carrier Locked'],
-                                    ['mineo', 'Mineo', 'Carrier Locked'],
-                                ].map(([value, label, desc]) => {
-                                    const selected =
-                                        watch('network_compatibility') ===
-                                        value;
-
-                                    return (
-                                        <button
-                                            key={value}
-                                            type="button"
-                                            onClick={() =>
-                                                setValue(
-                                                    'network_compatibility',
-                                                    value as ProductFormData['network_compatibility'],
-                                                )
-                                            }
-                                            className={cn(
-                                                'rounded-xl border p-4 text-center transition',
-                                                selected
-                                                    ? value === 'sim_free'
-                                                        ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                                                        : 'border-red-500 bg-red-50 text-red-800'
-                                                    : 'border-gray-200 bg-white text-gray-600',
-                                            )}
-                                        >
-                                            <span className="block text-xs font-bold">
-                                                {label}
-                                            </span>
-                                            <span className="text-[10px] text-gray-400">
-                                                {desc}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        <hr className="my-6" />
 
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div className="flex flex-col gap-1">

@@ -5,6 +5,7 @@ use App\Models\Shop\Category;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductImage;
 use App\Models\Shop\ProductSpecification;
+use App\Models\Shop\ProductStockUnit;
 use App\Models\Shop\ProductVariant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -254,6 +255,13 @@ test('authenticated user can view product detail page with variants', function (
         'is_active' => true,
     ]);
 
+    ProductStockUnit::create([
+        'product_variant_id' => $variant->id,
+        'imei_serial_number' => '351234567890123',
+        'network_compatibility' => 'docomo',
+        'status' => 'available',
+    ]);
+
     $response = $this
         ->actingAs($user)
         ->get(route('products.show', $product->id));
@@ -261,6 +269,8 @@ test('authenticated user can view product detail page with variants', function (
     $response->assertSuccessful();
     $response->assertSee('128GB Black');
     $response->assertSee('IP15-128-BLK');
+    $response->assertSee('351234567890123');
+    $response->assertSee('docomo');
 });
 
 test('user can create a product variant inline and it redirects back', function () {
@@ -301,7 +311,7 @@ test('user can create a product variant inline and it redirects back', function 
         'name' => '256GB Blue',
         'sku' => 'IP15-256-BLU',
         'price' => 16500000,
-        'stock' => 5,
+        'stock' => 0,
     ]);
 });
 
@@ -394,40 +404,7 @@ test('user can delete a product variant inline and it redirects back', function 
     $this->assertSoftDeleted($variant);
 });
 
-test('user can create a product with imei and carrier network settings', function () {
-    $user = User::factory()->create();
-
-    $category = Category::create([
-        'name' => 'Electronics',
-        'slug' => 'electronics',
-        'is_publish' => true,
-    ]);
-
-    $response = $this
-        ->actingAs($user)
-        ->post(route('products.store'), [
-            'category_id' => $category->id,
-            'name' => 'iPhone 15 Pro Max',
-            'condition' => 'new',
-            'base_price' => 20000000,
-            'requires_imei' => true,
-            'imei_serial_number' => '351234567890123',
-            'network_compatibility' => 'docomo',
-            'is_publish' => true,
-            'has_variant' => false,
-        ]);
-
-    $response->assertRedirect(route('products.index'));
-
-    $this->assertDatabaseHas('products', [
-        'name' => 'iPhone 15 Pro Max',
-        'requires_imei' => true,
-        'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'docomo',
-    ]);
-});
-
-test('user can update a product imei and network settings', function () {
+test('user can create a stock unit imei and carrier network for a variant', function () {
     $user = User::factory()->create();
 
     $category = Category::create([
@@ -442,32 +419,94 @@ test('user can update a product imei and network settings', function () {
         'slug' => 'iphone-15-pro-max',
         'condition' => 'new',
         'base_price' => 20000000,
-        'requires_imei' => false,
-        'imei_serial_number' => null,
-        'network_compatibility' => 'sim_free',
         'is_publish' => true,
+    ]);
+
+    $variant = ProductVariant::create([
+        'product_id' => $product->id,
+        'name' => 'Natural Titanium 256GB',
+        'sku' => 'IP15PM-NT-256',
+        'price' => 22000000,
+        'stock' => 0,
+        'track_stock' => true,
+        'is_active' => true,
     ]);
 
     $response = $this
         ->actingAs($user)
-        ->put(route('products.update', $product->id), [
-            'category_id' => $category->id,
-            'name' => 'iPhone 15 Pro Max',
-            'condition' => 'new',
-            'base_price' => 20000000,
-            'requires_imei' => true,
-            'imei_serial_number' => '990000862471854',
-            'network_compatibility' => 'softbank',
-            'is_publish' => true,
-            'has_variant' => false,
+        ->from(route('products.show', $product->id))
+        ->post(route('product-stock-units.store'), [
+            'product_variant_id' => $variant->id,
+            'imei_serial_number' => '351234567890123',
+            'network_compatibility' => 'docomo',
+            'status' => 'available',
         ]);
 
-    $response->assertRedirect(route('products.index'));
+    $response->assertRedirect(route('products.show', $product->id));
 
-    $this->assertDatabaseHas('products', [
-        'id' => $product->id,
-        'requires_imei' => true,
+    $this->assertDatabaseHas('product_stock_units', [
+        'product_variant_id' => $variant->id,
+        'imei_serial_number' => '351234567890123',
+        'network_compatibility' => 'docomo',
+        'status' => 'available',
+    ]);
+
+    expect($variant->fresh()->stock)->toBe(1);
+});
+
+test('user can update stock unit network and status', function () {
+    $user = User::factory()->create();
+
+    $category = Category::create([
+        'name' => 'Electronics',
+        'slug' => 'electronics',
+        'is_publish' => true,
+    ]);
+
+    $product = Product::create([
+        'category_id' => $category->id,
+        'name' => 'iPhone 15 Pro Max',
+        'slug' => 'iphone-15-pro-max',
+        'condition' => 'new',
+        'base_price' => 20000000,
+        'is_publish' => true,
+    ]);
+
+    $variant = ProductVariant::create([
+        'product_id' => $product->id,
+        'name' => 'Black 128GB',
+        'sku' => 'IP15PM-BLK-128',
+        'price' => 20000000,
+        'stock' => 1,
+        'track_stock' => true,
+        'is_active' => true,
+    ]);
+
+    $stockUnit = ProductStockUnit::create([
+        'product_variant_id' => $variant->id,
+        'imei_serial_number' => '990000862471854',
+        'network_compatibility' => 'sim_free',
+        'status' => 'available',
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('products.show', $product->id))
+        ->put(route('product-stock-units.update', $stockUnit->id), [
+            'product_variant_id' => $variant->id,
+            'imei_serial_number' => '990000862471854',
+            'network_compatibility' => 'softbank',
+            'status' => 'sold',
+        ]);
+
+    $response->assertRedirect(route('products.show', $product->id));
+
+    $this->assertDatabaseHas('product_stock_units', [
+        'id' => $stockUnit->id,
         'imei_serial_number' => '990000862471854',
         'network_compatibility' => 'softbank',
+        'status' => 'sold',
     ]);
+
+    expect($variant->fresh()->stock)->toBe(0);
 });

@@ -16,6 +16,14 @@ interface VariantOption {
     name: string;
     sku: string;
     stock: number;
+    stock_units: StockUnitOption[];
+}
+
+interface StockUnitOption {
+    id: string;
+    imei_serial_number: string;
+    network_compatibility: string;
+    status: 'available' | 'reserved' | 'sold' | 'damaged';
 }
 
 interface Props {
@@ -25,6 +33,7 @@ interface Props {
 export default function Create({ variants }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         product_variant_id: '',
+        product_stock_unit_id: '',
         type: 'purchase',
         qty: 1,
         adjustment_action: 'add',
@@ -34,22 +43,30 @@ export default function Create({ variants }: Props) {
     const selectedVariant = variants.find(
         (v) => v.id === data.product_variant_id,
     );
+    const selectedStockUnit = selectedVariant?.stock_units.find(
+        (unit) => unit.id === data.product_stock_unit_id,
+    );
     const currentStock = selectedVariant ? selectedVariant.stock : 0;
 
-    let stockChange = 0;
-    const qtyVal = Number(data.qty) || 0;
+    const statusAfterMovement = () => {
+        if (data.type === 'sale') {
+            return 'sold';
+        }
 
-    if (
-        data.type === 'purchase' ||
-        data.type === 'return' ||
-        data.type === 'cancel'
-    ) {
-        stockChange = qtyVal;
-    } else if (data.type === 'sale') {
-        stockChange = -qtyVal;
-    } else if (data.type === 'adjustment') {
-        stockChange = data.adjustment_action === 'subtract' ? -qtyVal : qtyVal;
-    }
+        if (data.type === 'adjustment') {
+            return data.adjustment_action === 'subtract'
+                ? 'damaged'
+                : 'available';
+        }
+
+        return 'available';
+    };
+
+    const nextStatus = statusAfterMovement();
+    const stockChange = selectedStockUnit
+        ? (nextStatus === 'available' ? 1 : 0) -
+          (selectedStockUnit.status === 'available' ? 1 : 0)
+        : 0;
 
     const projectedStock = currentStock + stockChange;
 
@@ -100,10 +117,11 @@ export default function Create({ variants }: Props) {
                                     id="product_variant_id"
                                     value={data.product_variant_id}
                                     onChange={(e) =>
-                                        setData(
-                                            'product_variant_id',
-                                            e.target.value,
-                                        )
+                                        setData({
+                                            ...data,
+                                            product_variant_id: e.target.value,
+                                            product_stock_unit_id: '',
+                                        })
                                     }
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                                     required
@@ -121,6 +139,47 @@ export default function Create({ variants }: Props) {
                                 {errors.product_variant_id && (
                                     <p className="mt-1 text-xs font-semibold text-red-500">
                                         {errors.product_variant_id}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Stock Unit Selector */}
+                            <div className="space-y-2">
+                                <Label htmlFor="product_stock_unit_id">
+                                    Stock Unit / IMEI
+                                </Label>
+                                <select
+                                    id="product_stock_unit_id"
+                                    value={data.product_stock_unit_id}
+                                    onChange={(e) =>
+                                        setData(
+                                            'product_stock_unit_id',
+                                            e.target.value,
+                                        )
+                                    }
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                                    required
+                                    disabled={!selectedVariant}
+                                >
+                                    <option value="">
+                                        -- Select Stock Unit --
+                                    </option>
+                                    {selectedVariant?.stock_units.map(
+                                        (unit) => (
+                                            <option
+                                                key={unit.id}
+                                                value={unit.id}
+                                            >
+                                                {unit.imei_serial_number} |{' '}
+                                                {unit.network_compatibility} |{' '}
+                                                {unit.status}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                                {errors.product_stock_unit_id && (
+                                    <p className="mt-1 text-xs font-semibold text-red-500">
+                                        {errors.product_stock_unit_id}
                                     </p>
                                 )}
                             </div>
@@ -166,21 +225,13 @@ export default function Create({ variants }: Props) {
                                     <Input
                                         id="qty"
                                         type="number"
-                                        min="1"
-                                        value={data.qty}
-                                        onChange={(e) =>
-                                            setData(
-                                                'qty',
-                                                parseInt(e.target.value) || 0,
-                                            )
-                                        }
-                                        required
+                                        value={1}
+                                        disabled
                                     />
-                                    {errors.qty && (
-                                        <p className="mt-1 text-xs font-semibold text-red-500">
-                                            {errors.qty}
-                                        </p>
-                                    )}
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        One stock movement applies to one IMEI
+                                        unit.
+                                    </p>
                                 </div>
                             </div>
 
@@ -249,7 +300,9 @@ export default function Create({ variants }: Props) {
                                 <Button
                                     type="submit"
                                     disabled={
-                                        processing || !data.product_variant_id
+                                        processing ||
+                                        !data.product_variant_id ||
+                                        !data.product_stock_unit_id
                                     }
                                 >
                                     Save Movement
@@ -278,6 +331,23 @@ export default function Create({ variants }: Props) {
                                         SKU: {selectedVariant.sku}
                                     </p>
                                 </div>
+
+                                {selectedStockUnit && (
+                                    <div className="rounded-lg border bg-slate-50 p-3 text-xs dark:bg-slate-900/40">
+                                        <span className="font-semibold text-muted-foreground uppercase">
+                                            Selected IMEI
+                                        </span>
+                                        <p className="mt-1 font-mono font-bold">
+                                            {
+                                                selectedStockUnit.imei_serial_number
+                                            }
+                                        </p>
+                                        <p className="mt-1 text-muted-foreground">
+                                            {selectedStockUnit.status} →{' '}
+                                            {nextStatus}
+                                        </p>
+                                    </div>
+                                )}
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="rounded-lg border bg-slate-50 p-3 text-center dark:bg-slate-900/40">
@@ -326,8 +396,8 @@ export default function Create({ variants }: Props) {
                                         {projectedStock}
                                     </p>
                                     <p className="mt-1 text-[10px] text-muted-foreground">
-                                        This will update the variant's stock
-                                        immediately.
+                                        This is calculated from the selected
+                                        stock unit status.
                                     </p>
                                 </div>
                             </div>

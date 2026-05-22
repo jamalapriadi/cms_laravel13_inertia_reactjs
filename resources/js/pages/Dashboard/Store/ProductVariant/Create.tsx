@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Textarea from '@/components/ui/textarea';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -28,14 +29,40 @@ interface Props {
     units: Unit[];
 }
 
+type NetworkCompatibility =
+    | 'sim_free'
+    | 'docomo'
+    | 'au'
+    | 'softbank'
+    | 'rakuten'
+    | 'mineo';
+
+type StockUnitStatus = 'available' | 'reserved' | 'sold' | 'damaged';
+
+interface StockUnitInput {
+    imei_serial_number: string;
+    network_compatibility: NetworkCompatibility;
+    status: StockUnitStatus;
+    note: string;
+}
+
+const networkOptions: { value: NetworkCompatibility; label: string }[] = [
+    { value: 'sim_free', label: 'SIM Free' },
+    { value: 'docomo', label: 'Docomo' },
+    { value: 'au', label: 'AU' },
+    { value: 'softbank', label: 'SoftBank' },
+    { value: 'rakuten', label: 'Rakuten' },
+    { value: 'mineo', label: 'Mineo' },
+];
+
 const variantSchema = z.object({
     product_id: z.string().min(1, 'Product is required'),
     unit_id: z.string().nullable().optional(),
     name: z.string().min(1, 'Variant name is required'),
     sku: z.string().min(1, 'SKU is required'),
+    image: z.any().optional(),
     price: z.coerce.number().min(0, 'Price must be >= 0').default(0),
     track_stock: z.boolean().default(true),
-    stock: z.coerce.number().min(0, 'Stock cannot be negative').default(0),
     min_stock_alert: z.coerce.number().min(0).nullable().optional(),
     weight: z.coerce.number().min(0).nullable().optional(),
     cost_price: z.coerce.number().min(0).nullable().optional(),
@@ -46,6 +73,8 @@ type VariantFormData = z.output<typeof variantSchema>;
 
 export default function Create({ products, units }: Props) {
     const [processing, setProcessing] = useState(false);
+    const [stockUnits, setStockUnits] = useState<StockUnitInput[]>([]);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const {
         register,
@@ -60,9 +89,9 @@ export default function Create({ products, units }: Props) {
             unit_id: null,
             name: '',
             sku: '',
+            image: undefined,
             price: 0,
             track_stock: true,
-            stock: 0,
             min_stock_alert: null,
             weight: null,
             cost_price: null,
@@ -70,26 +99,82 @@ export default function Create({ products, units }: Props) {
         },
     });
 
+    const addStockUnit = () => {
+        setStockUnits((items) => [
+            ...items,
+            {
+                imei_serial_number: '',
+                network_compatibility: 'sim_free',
+                status: 'available',
+                note: '',
+            },
+        ]);
+    };
+
+    const updateStockUnit = <K extends keyof StockUnitInput>(
+        index: number,
+        key: K,
+        value: StockUnitInput[K],
+    ) => {
+        setStockUnits((items) =>
+            items.map((item, itemIndex) =>
+                itemIndex === index ? { ...item, [key]: value } : item,
+            ),
+        );
+    };
+
+    const removeStockUnit = (index: number) => {
+        setStockUnits((items) =>
+            items.filter((_, itemIndex) => itemIndex !== index),
+        );
+    };
+
+    const handleImageChange = (file?: File) => {
+        setValue('image', file, { shouldValidate: true });
+
+        if (!file) {
+            setImagePreview(null);
+
+            return;
+        }
+
+        setImagePreview(URL.createObjectURL(file));
+    };
+
     const onSubmit = (data: VariantFormData) => {
-        router.post('/dashboard/ecommerce/product-variants', data, {
-            preserveScroll: true,
-            onStart: () => {
-                setProcessing(true);
-                toast.loading('Saving variant...', { id: 'save' });
+        const payload = {
+            ...data,
+            stock_units: stockUnits.filter((stockUnit) =>
+                stockUnit.imei_serial_number.trim(),
+            ),
+        };
+
+        router.post(
+            '/dashboard/ecommerce/product-variants',
+            payload as unknown as Record<string, never>,
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onStart: () => {
+                    setProcessing(true);
+                    toast.loading('Saving variant...', { id: 'save' });
+                },
+                onSuccess: () => {
+                    toast.success('Variant created successfully!', {
+                        id: 'save',
+                    });
+                },
+                onError: () => {
+                    toast.error(
+                        'Failed to create variant. Please check the inputs.',
+                        { id: 'save' },
+                    );
+                },
+                onFinish: () => {
+                    setProcessing(false);
+                },
             },
-            onSuccess: () => {
-                toast.success('Variant created successfully!', { id: 'save' });
-            },
-            onError: () => {
-                toast.error(
-                    'Failed to create variant. Please check the inputs.',
-                    { id: 'save' },
-                );
-            },
-            onFinish: () => {
-                setProcessing(false);
-            },
-        });
+        );
     };
 
     return (
@@ -195,6 +280,29 @@ export default function Create({ products, units }: Props) {
                                 )}
                             </div>
 
+                            <div className="flex flex-col gap-1 md:col-span-2">
+                                <Label>Variant Image</Label>
+                                {imagePreview && (
+                                    <img
+                                        src={imagePreview}
+                                        alt="Variant preview"
+                                        className="mb-2 h-28 w-28 rounded-md border object-cover"
+                                    />
+                                )}
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                        handleImageChange(e.target.files?.[0])
+                                    }
+                                />
+                                {errors.image && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.image.message as string}
+                                    </p>
+                                )}
+                            </div>
+
                             <div className="flex flex-col gap-1">
                                 <Label>Price ¥</Label>
                                 <Input
@@ -221,22 +329,6 @@ export default function Create({ products, units }: Props) {
                                 {errors.cost_price && (
                                     <p className="text-sm text-destructive">
                                         {errors.cost_price.message}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <Label>Stock</Label>
-                                <Input
-                                    type="number"
-                                    min="0"
-                                    aria-invalid={!!errors.stock}
-                                    {...register('stock')}
-                                    disabled={!watch('track_stock')}
-                                />
-                                {errors.stock && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.stock.message}
                                     </p>
                                 )}
                             </div>
@@ -304,6 +396,165 @@ export default function Create({ products, units }: Props) {
                                     Variant is active
                                 </Label>
                             </div>
+                        </div>
+
+                        <hr className="my-6" />
+
+                        <div className="space-y-4">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <h2 className="text-lg font-semibold">
+                                        Initial Stock Units
+                                    </h2>
+                                    <p className="text-sm text-muted-foreground">
+                                        Add IMEI/serial units for this variant.
+                                        Available units will increase stock
+                                        automatically.
+                                    </p>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={addStockUnit}
+                                >
+                                    Add Stock Unit
+                                </Button>
+                            </div>
+
+                            {stockUnits.length === 0 ? (
+                                <div className="rounded-md border border-dashed p-5 text-sm text-muted-foreground">
+                                    No stock units added yet.
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {stockUnits.map((stockUnit, index) => (
+                                        <div
+                                            key={index}
+                                            className="rounded-md border bg-slate-50 p-4"
+                                        >
+                                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                                <div className="flex flex-col gap-1">
+                                                    <Label>
+                                                        IMEI / Serial Number
+                                                    </Label>
+                                                    <Input
+                                                        value={
+                                                            stockUnit.imei_serial_number
+                                                        }
+                                                        onChange={(event) =>
+                                                            updateStockUnit(
+                                                                index,
+                                                                'imei_serial_number',
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                        placeholder="e.g., 351234567890123"
+                                                    />
+                                                </div>
+
+                                                <div className="flex flex-col gap-1">
+                                                    <Label>Status</Label>
+                                                    <select
+                                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                                        value={stockUnit.status}
+                                                        onChange={(event) =>
+                                                            updateStockUnit(
+                                                                index,
+                                                                'status',
+                                                                event.target
+                                                                    .value as StockUnitStatus,
+                                                            )
+                                                        }
+                                                    >
+                                                        <option value="available">
+                                                            Available
+                                                        </option>
+                                                        <option value="reserved">
+                                                            Reserved
+                                                        </option>
+                                                        <option value="sold">
+                                                            Sold
+                                                        </option>
+                                                        <option value="damaged">
+                                                            Damaged
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 space-y-2">
+                                                <Label>Network</Label>
+                                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                                    {networkOptions.map(
+                                                        (option) => {
+                                                            const selected =
+                                                                stockUnit.network_compatibility ===
+                                                                option.value;
+
+                                                            return (
+                                                                <button
+                                                                    key={
+                                                                        option.value
+                                                                    }
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        updateStockUnit(
+                                                                            index,
+                                                                            'network_compatibility',
+                                                                            option.value,
+                                                                        )
+                                                                    }
+                                                                    className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
+                                                                        selected
+                                                                            ? option.value ===
+                                                                              'sim_free'
+                                                                                ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                                                                                : 'border-red-500 bg-red-50 text-red-800'
+                                                                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                                                    }`}
+                                                                >
+                                                                    {
+                                                                        option.label
+                                                                    }
+                                                                </button>
+                                                            );
+                                                        },
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 flex flex-col gap-1">
+                                                <Label>Note</Label>
+                                                <Textarea
+                                                    rows={2}
+                                                    value={stockUnit.note}
+                                                    onChange={(event) =>
+                                                        updateStockUnit(
+                                                            index,
+                                                            'note',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="Optional internal note..."
+                                                />
+                                            </div>
+
+                                            <div className="mt-4 flex justify-end">
+                                                <Button
+                                                    type="button"
+                                                    variant="destructive"
+                                                    onClick={() =>
+                                                        removeStockUnit(index)
+                                                    }
+                                                >
+                                                    Remove
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 

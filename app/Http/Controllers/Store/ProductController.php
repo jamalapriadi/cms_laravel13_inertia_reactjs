@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Store\Product\ProductRequest;
 use App\Http\Requests\Store\Product\ProductUpdateRequest;
 use App\Models\Brand;
-use App\Models\Unit;
 use App\Models\Shop\Category;
 use App\Models\Shop\Product;
+use App\Models\Shop\ProductVariant;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -31,9 +32,11 @@ class ProductController extends Controller
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
                         ->orWhere('meta_title', 'like', "%{$search}%")
-                        ->orWhere('imei_serial_number', 'like', "%{$search}%")
                         ->orWhereHas('variants', function ($qv) use ($search) {
-                            $qv->where('sku', 'like', "%{$search}%");
+                            $qv->where('sku', 'like', "%{$search}%")
+                                ->orWhereHas('stockUnits', function ($stockUnitQuery) use ($search) {
+                                    $stockUnitQuery->where('imei_serial_number', 'like', "%{$search}%");
+                                });
                         });
                 });
             })
@@ -54,6 +57,12 @@ class ProductController extends Controller
             'products' => $products,
             'categories' => $categories,
             'brands' => $brands,
+            'summary' => [
+                'products' => Product::count(),
+                'product_variants' => ProductVariant::count(),
+                'brands' => Brand::count(),
+                'categories' => Category::count(),
+            ],
             'filters' => [
                 'search' => $search,
                 'category_id' => $categoryId,
@@ -115,7 +124,11 @@ class ProductController extends Controller
                 $query->latest();
             },
             'variants' => function ($query) {
-                $query->latest();
+                $query->with(['stockUnits' => function ($stockUnitQuery) {
+                    $stockUnitQuery->latest();
+                }])
+                    ->withCount(['stockUnits', 'availableStockUnits'])
+                    ->latest();
             },
         ]);
 
@@ -129,7 +142,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $product->load(['category', 'brand', 'variants']);
+        $product->load(['category', 'brand', 'variants.stockUnits']);
 
         $categories = Category::select('id', 'name')->get();
 

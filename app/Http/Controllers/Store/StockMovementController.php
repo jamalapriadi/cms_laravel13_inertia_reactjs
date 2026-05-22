@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
+use App\Models\Shop\ProductStockUnit;
 use App\Models\Shop\ProductVariant;
 use App\Models\Shop\StockMovement;
 use Illuminate\Http\Request;
@@ -64,7 +65,7 @@ class StockMovementController extends Controller
 
         // 4. Query and Filter Movements
         $movements = StockMovement::query()
-            ->with(['variant.product'])
+            ->with(['variant.product', 'stockUnit'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('note', 'like', "%{$search}%")
@@ -88,14 +89,7 @@ class StockMovementController extends Controller
             ->withQueryString();
 
         // 5. Fetch all variants for dropdown option helper
-        $variants = ProductVariant::with('product')->get()->map(function ($v) {
-            return [
-                'id' => $v->id,
-                'name' => $v->product->name.' - '.$v->name,
-                'sku' => $v->sku,
-                'stock' => $v->stock,
-            ];
-        });
+        $variants = $this->variantOptions();
 
         return Inertia::render('Dashboard/Store/StockMovement/Index', [
             'movements' => $movements,
@@ -116,22 +110,39 @@ class StockMovementController extends Controller
         ]);
     }
 
+    private function variantOptions()
+    {
+        return ProductVariant::with([
+            'product',
+            'stockUnits' => function ($query) {
+                $query->latest();
+            },
+        ])
+            ->withCount(['availableStockUnits'])
+            ->get()
+            ->map(function ($v) {
+                return [
+                    'id' => $v->id,
+                    'name' => $v->product->name.' - '.$v->name,
+                    'sku' => $v->sku,
+                    'stock' => $v->available_stock_units_count,
+                    'stock_units' => $v->stockUnits->map(fn ($unit) => [
+                        'id' => $unit->id,
+                        'imei_serial_number' => $unit->imei_serial_number,
+                        'network_compatibility' => $unit->network_compatibility,
+                        'status' => $unit->status,
+                    ])->values(),
+                ];
+            });
+    }
+
     /**
      * Show the form for creating a new stock movement.
      */
     public function create(): Response
     {
-        $variants = ProductVariant::with('product')->get()->map(function ($v) {
-            return [
-                'id' => $v->id,
-                'name' => $v->product->name.' - '.$v->name,
-                'sku' => $v->sku,
-                'stock' => $v->stock,
-            ];
-        });
-
         return Inertia::render('Dashboard/Store/StockMovement/Create', [
-            'variants' => $variants,
+            'variants' => $this->variantOptions(),
         ]);
     }
 
@@ -142,45 +153,45 @@ class StockMovementController extends Controller
     {
         $data = $request->validate([
             'product_variant_id' => 'required|exists:product_variants,id',
+            'product_stock_unit_id' => 'required|exists:product_stock_units,id',
             'type' => 'required|in:sale,purchase,adjustment,return,cancel',
-            'qty' => 'required|integer|min:1',
+            'qty' => 'nullable|integer|min:1',
             'adjustment_action' => 'nullable|in:add,subtract',
             'note' => 'nullable|string',
         ]);
 
         $variant = ProductVariant::findOrFail($data['product_variant_id']);
+        $stockUnit = ProductStockUnit::where('product_variant_id', $variant->id)
+            ->findOrFail($data['product_stock_unit_id']);
 
         $stockBefore = $variant->stock;
-        $qty = $data['qty'];
+        $qty = 1;
         $type = $data['type'];
+        $statusBefore = $stockUnit->status;
+        $statusAfter = $this->statusAfterMovement($type, $data['adjustment_action'] ?? 'add');
 
-        if (in_array($type, ['purchase', 'return', 'cancel'])) {
-            $stockAfter = $stockBefore + $qty;
-        } elseif ($type === 'sale') {
-            $stockAfter = $stockBefore - $qty;
-        } else { // adjustment
-            $action = $data['adjustment_action'] ?? 'add';
-            if ($action === 'subtract') {
-                $stockAfter = $stockBefore - $qty;
-                $qty = -$qty;
-            } else {
-                $stockAfter = $stockBefore + $qty;
+        DB::transaction(function () use ($stockUnit, $variant, $statusAfter, $type, $data, $stockBefore, $statusBefore, &$qty) {
+            $stockUnit->update(['status' => $statusAfter]);
+            $variant->syncStockFromUnits();
+            $stockAfter = $variant->fresh()->stock;
+
+            if ($type === 'adjustment' && ($data['adjustment_action'] ?? 'add') === 'subtract') {
+                $qty = -1;
             }
-        }
 
-        // Update Variant Stock
-        $variant->update(['stock' => $stockAfter]);
-
-        // Create Movement
-        StockMovement::create([
-            'product_variant_id' => $data['product_variant_id'],
-            'type' => $type,
-            'qty' => $qty,
-            'stock_before' => $stockBefore,
-            'stock_after' => $stockAfter,
-            'note' => $data['note'] ?? null,
-            'created_by' => auth()->id(),
-        ]);
+            StockMovement::create([
+                'product_variant_id' => $data['product_variant_id'],
+                'product_stock_unit_id' => $stockUnit->id,
+                'type' => $type,
+                'qty' => $qty,
+                'stock_before' => $stockBefore,
+                'stock_after' => $stockAfter,
+                'stock_unit_status_before' => $statusBefore,
+                'stock_unit_status_after' => $statusAfter,
+                'note' => $data['note'] ?? null,
+                'created_by' => auth()->id(),
+            ]);
+        });
 
         return redirect()->route('stock-movements.index')->with('success', 'Stock movement created successfully.');
     }
@@ -191,7 +202,7 @@ class StockMovementController extends Controller
     public function show(StockMovement $stockMovement): Response
     {
         return Inertia::render('Dashboard/Store/StockMovement/Show', [
-            'movement' => $stockMovement->load(['variant.product']),
+            'movement' => $stockMovement->load(['variant.product', 'stockUnit']),
         ]);
     }
 
@@ -200,15 +211,6 @@ class StockMovementController extends Controller
      */
     public function edit(StockMovement $stockMovement): Response
     {
-        $variants = ProductVariant::with('product')->get()->map(function ($v) {
-            return [
-                'id' => $v->id,
-                'name' => $v->product->name.' - '.$v->name,
-                'sku' => $v->sku,
-                'stock' => $v->stock,
-            ];
-        });
-
         // Determine adjustment_action parameter for adjustment movements
         $adjustmentAction = 'add';
         if ($stockMovement->type === 'adjustment' && $stockMovement->qty < 0) {
@@ -217,7 +219,7 @@ class StockMovementController extends Controller
 
         return Inertia::render('Dashboard/Store/StockMovement/Edit', [
             'movement' => $stockMovement,
-            'variants' => $variants,
+            'variants' => $this->variantOptions(),
             'adjustment_action' => $adjustmentAction,
         ]);
     }
@@ -229,60 +231,57 @@ class StockMovementController extends Controller
     {
         $data = $request->validate([
             'product_variant_id' => 'required|exists:product_variants,id',
+            'product_stock_unit_id' => 'required|exists:product_stock_units,id',
             'type' => 'required|in:sale,purchase,adjustment,return,cancel',
-            'qty' => 'required|integer|min:1',
+            'qty' => 'nullable|integer|min:1',
             'adjustment_action' => 'nullable|in:add,subtract',
             'note' => 'nullable|string',
         ]);
 
         $variant = ProductVariant::findOrFail($data['product_variant_id']);
+        $newStockUnit = ProductStockUnit::where('product_variant_id', $variant->id)
+            ->findOrFail($data['product_stock_unit_id']);
 
-        // 1. Reverse the old stock movement effect
-        $oldStockEffect = 0;
-        $oldType = $stockMovement->type;
-        $oldQty = $stockMovement->qty;
-
-        if (in_array($oldType, ['purchase', 'return', 'cancel'])) {
-            $oldStockEffect = $oldQty;
-        } elseif ($oldType === 'sale') {
-            $oldStockEffect = -$oldQty;
-        } else { // adjustment
-            $oldStockEffect = $oldQty;
-        }
-
-        // Calculate the base stock without the old movement's effect
-        $baseStock = $variant->stock - $oldStockEffect;
-
-        // 2. Calculate stock after with new updates
-        $qty = $data['qty'];
         $type = $data['type'];
+        $qty = 1;
 
-        if (in_array($type, ['purchase', 'return', 'cancel'])) {
-            $stockAfter = $baseStock + $qty;
-        } elseif ($type === 'sale') {
-            $stockAfter = $baseStock - $qty;
-        } else { // adjustment
-            $action = $data['adjustment_action'] ?? 'add';
-            if ($action === 'subtract') {
-                $stockAfter = $baseStock - $qty;
-                $qty = -$qty;
-            } else {
-                $stockAfter = $baseStock + $qty;
+        DB::transaction(function () use ($stockMovement, $newStockUnit, $variant, $data, $type, &$qty) {
+            $oldStockUnit = $stockMovement->stockUnit;
+            $affectedVariantIds = collect([$stockMovement->product_variant_id, $variant->id]);
+
+            if ($oldStockUnit && $stockMovement->stock_unit_status_before) {
+                $oldStockUnit->update(['status' => $stockMovement->stock_unit_status_before]);
             }
-        }
 
-        // Update Variant Stock
-        $variant->update(['stock' => $stockAfter]);
+            $affectedVariantIds->unique()->each(function ($variantId) {
+                ProductVariant::find($variantId)?->syncStockFromUnits();
+            });
 
-        // Update Stock Movement
-        $stockMovement->update([
-            'product_variant_id' => $data['product_variant_id'],
-            'type' => $type,
-            'qty' => $qty,
-            'stock_before' => $baseStock,
-            'stock_after' => $stockAfter,
-            'note' => $data['note'] ?? null,
-        ]);
+            $variant->refresh();
+            $stockBefore = $variant->stock;
+            $statusAfter = $this->statusAfterMovement($type, $data['adjustment_action'] ?? 'add');
+            $statusBefore = $newStockUnit->fresh()->status;
+
+            $newStockUnit->update(['status' => $statusAfter]);
+            $variant->syncStockFromUnits();
+            $stockAfter = $variant->fresh()->stock;
+
+            if ($type === 'adjustment' && ($data['adjustment_action'] ?? 'add') === 'subtract') {
+                $qty = -1;
+            }
+
+            $stockMovement->update([
+                'product_variant_id' => $data['product_variant_id'],
+                'product_stock_unit_id' => $newStockUnit->id,
+                'type' => $type,
+                'qty' => $qty,
+                'stock_before' => $stockBefore,
+                'stock_after' => $stockAfter,
+                'stock_unit_status_before' => $statusBefore,
+                'stock_unit_status_after' => $statusAfter,
+                'note' => $data['note'] ?? null,
+            ]);
+        });
 
         return redirect()->route('stock-movements.index')->with('success', 'Stock movement updated successfully.');
     }
@@ -292,29 +291,29 @@ class StockMovementController extends Controller
      */
     public function destroy(StockMovement $stockMovement)
     {
-        $variant = ProductVariant::findOrFail($stockMovement->product_variant_id);
+        DB::transaction(function () use ($stockMovement) {
+            $variantId = $stockMovement->product_variant_id;
 
-        // Reverse stock changes
-        $oldStockEffect = 0;
-        $oldType = $stockMovement->type;
-        $oldQty = $stockMovement->qty;
+            if ($stockMovement->stockUnit && $stockMovement->stock_unit_status_before) {
+                $stockMovement->stockUnit->update([
+                    'status' => $stockMovement->stock_unit_status_before,
+                ]);
+            }
 
-        if (in_array($oldType, ['purchase', 'return', 'cancel'])) {
-            $oldStockEffect = $oldQty;
-        } elseif ($oldType === 'sale') {
-            $oldStockEffect = -$oldQty;
-        } else { // adjustment
-            $oldStockEffect = $oldQty;
-        }
+            $stockMovement->delete();
 
-        $newStock = $variant->stock - $oldStockEffect;
-
-        // Update stock
-        $variant->update(['stock' => $newStock]);
-
-        // Delete the movement log
-        $stockMovement->delete();
+            ProductVariant::find($variantId)?->syncStockFromUnits();
+        });
 
         return redirect()->route('stock-movements.index')->with('success', 'Stock movement deleted successfully.');
+    }
+
+    private function statusAfterMovement(string $type, string $adjustmentAction = 'add'): string
+    {
+        return match ($type) {
+            'sale' => 'sold',
+            'purchase', 'return', 'cancel' => 'available',
+            'adjustment' => $adjustmentAction === 'subtract' ? 'damaged' : 'available',
+        };
     }
 }

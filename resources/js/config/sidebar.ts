@@ -14,6 +14,7 @@ import {
     Warehouse,
     Truck,
     ShoppingCart,
+    ScanBarcode,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -87,6 +88,12 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/dashboard/ecommerce/products',
                 icon: Package,
                 permission: 'product.view',
+            },
+            {
+                title: 'Stok Unit',
+                href: '/dashboard/ecommerce/product-stock-units',
+                icon: ScanBarcode,
+                permission: 'stock-unit.view',
             },
             {
                 title: 'Orders',

@@ -13,7 +13,6 @@ import Textarea from '@/components/ui/textarea';
 import TinyEditor from '@/components/ui/TinyEditor';
 
 import AppLayout from '@/layouts/master-data-layout';
-import { cn } from '@/lib/utils';
 
 interface Category {
     id: string;
@@ -33,14 +32,6 @@ interface Unit {
 
 type Condition = 'new' | 'like_new' | 'second';
 
-type NetworkCompatibility =
-    | 'sim_free'
-    | 'docomo'
-    | 'au'
-    | 'softbank'
-    | 'rakuten'
-    | 'mineo';
-
 interface Product {
     id: string;
     category_id: string;
@@ -52,9 +43,6 @@ interface Product {
     condition: Condition;
     base_price: string | number;
     has_variant: boolean;
-    requires_imei: boolean;
-    imei_serial_number?: string | null;
-    network_compatibility?: NetworkCompatibility | null;
     meta_title?: string | null;
     meta_description?: string | null;
     is_publish: boolean;
@@ -80,31 +68,12 @@ const productSchema = z.object({
         .min(0, 'Price must be greater than or equal to 0')
         .default(0),
     has_variant: z.boolean().default(false),
-    requires_imei: z.boolean().default(false),
-    imei_serial_number: z.string().nullable().optional(),
-    network_compatibility: z
-        .enum(['sim_free', 'docomo', 'au', 'softbank', 'rakuten', 'mineo'])
-        .nullable()
-        .optional(),
     meta_title: z.string().nullable().optional(),
     meta_description: z.string().nullable().optional(),
     is_publish: z.boolean().default(true),
 });
 
 type ProductFormData = z.output<typeof productSchema>;
-
-const networkOptions: {
-    value: NetworkCompatibility;
-    label: string;
-    desc: string;
-}[] = [
-    { value: 'sim_free', label: 'SIM Free', desc: 'Unlocked' },
-    { value: 'docomo', label: 'Docomo', desc: 'Carrier Locked' },
-    { value: 'au', label: 'AU', desc: 'Carrier Locked' },
-    { value: 'softbank', label: 'SoftBank', desc: 'Carrier Locked' },
-    { value: 'rakuten', label: 'Rakuten', desc: 'Carrier Locked' },
-    { value: 'mineo', label: 'Mineo', desc: 'Carrier Locked' },
-];
 
 export default function Edit({
     product: initialProduct,
@@ -131,10 +100,6 @@ export default function Edit({
             condition: initialProduct.condition ?? 'new',
             base_price: initialProduct.base_price ?? 0,
             has_variant: Boolean(initialProduct.has_variant),
-            requires_imei: Boolean(initialProduct.requires_imei),
-            imei_serial_number: initialProduct.imei_serial_number ?? '',
-            network_compatibility:
-                initialProduct.network_compatibility ?? 'sim_free',
             meta_title: initialProduct.meta_title ?? '',
             meta_description: initialProduct.meta_description ?? '',
             is_publish: Boolean(initialProduct.is_publish),
@@ -325,110 +290,6 @@ export default function Edit({
                                 </select>
                             </div>
                         </div>
-
-                        <hr className="my-6" />
-
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                                Device Settings
-                            </h3>
-
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id="requires_imei"
-                                            checked={watch('requires_imei')}
-                                            onCheckedChange={(checked) =>
-                                                setValue(
-                                                    'requires_imei',
-                                                    Boolean(checked),
-                                                )
-                                            }
-                                        />
-                                        <Label
-                                            htmlFor="requires_imei"
-                                            className="cursor-pointer font-medium"
-                                        >
-                                            Product requires IMEI / Serial
-                                            Number
-                                        </Label>
-                                    </div>
-
-                                    <p className="pl-6 text-xs text-gray-500">
-                                        Enable this if you need to track
-                                        individual device identifiers.
-                                    </p>
-                                </div>
-
-                                {watch('requires_imei') && (
-                                    <div className="flex flex-col gap-1">
-                                        <Label>IMEI / Serial Number</Label>
-                                        <Input
-                                            type="text"
-                                            aria-invalid={
-                                                !!errors.imei_serial_number
-                                            }
-                                            {...register('imei_serial_number')}
-                                            placeholder="Enter IMEI or Serial Number..."
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-3">
-                                <Label className="text-sm font-semibold">
-                                    Network Compatibility
-                                </Label>
-
-                                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-                                    {networkOptions.map((opt) => {
-                                        const selected =
-                                            watch('network_compatibility') ===
-                                            opt.value;
-
-                                        const activeClass =
-                                            opt.value === 'sim_free'
-                                                ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                                                : 'border-red-500 bg-red-50 text-red-800';
-
-                                        return (
-                                            <button
-                                                key={opt.value}
-                                                type="button"
-                                                onClick={() =>
-                                                    setValue(
-                                                        'network_compatibility',
-                                                        opt.value,
-                                                        {
-                                                            shouldValidate: true,
-                                                        },
-                                                    )
-                                                }
-                                                className={cn(
-                                                    'flex flex-col items-center justify-center rounded-xl border p-4 text-center transition',
-                                                    selected
-                                                        ? cn(
-                                                              'border-2 font-semibold shadow-sm',
-                                                              activeClass,
-                                                          )
-                                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300',
-                                                )}
-                                            >
-                                                <span className="text-xs font-bold">
-                                                    {opt.label}
-                                                </span>
-                                                <span className="text-[10px] text-gray-400">
-                                                    {opt.desc}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr className="my-6" />
 
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div className="flex flex-col gap-1">
