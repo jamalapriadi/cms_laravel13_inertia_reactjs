@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Head, router } from '@inertiajs/react';
-import { useForm } from 'react-hook-form';
 import { useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -74,7 +74,7 @@ interface ProductStockUnit {
 }
 
 const networkOptions: { value: NetworkCompatibility; label: string }[] = [
-    { value: 'sim_free', label: 'SIM Free' },
+    { value: 'sim_free', label: 'All Operator' },
     { value: 'docomo', label: 'Docomo' },
     { value: 'au', label: 'AU' },
     { value: 'softbank', label: 'SoftBank' },
@@ -152,12 +152,15 @@ export default function Edit({
         useState<ProductStockUnit | null>(null);
     const [submittingStock, setSubmittingStock] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const currentImageUrl = initialVariant.image
+        ? `/storage/${initialVariant.image}`
+        : null;
 
     const {
         register,
         handleSubmit,
         setValue,
-        watch,
+        control,
         formState: { errors },
     } = useForm<z.input<typeof variantSchema>, unknown, VariantFormData>({
         resolver: zodResolver(variantSchema),
@@ -178,6 +181,10 @@ export default function Edit({
             is_active: Boolean(initialVariant.is_active),
         },
     });
+    const selectedProductId = useWatch({ control, name: 'product_id' });
+    const selectedUnitId = useWatch({ control, name: 'unit_id' });
+    const trackStock = useWatch({ control, name: 'track_stock' });
+    const isActive = useWatch({ control, name: 'is_active' });
 
     const stockUnitForm = useForm<
         z.input<typeof stockUnitSchema>,
@@ -192,6 +199,14 @@ export default function Edit({
             status: 'available',
             note: '',
         },
+    });
+    const stockUnitStatus = useWatch({
+        control: stockUnitForm.control,
+        name: 'status',
+    });
+    const selectedNetworkCompatibility = useWatch({
+        control: stockUnitForm.control,
+        name: 'network_compatibility',
     });
 
     const openCreateStockModal = () => {
@@ -295,11 +310,17 @@ export default function Edit({
     };
 
     const onSubmit = (data: VariantFormData) => {
+        const payload = { ...data };
+
+        if (!(payload.image instanceof File)) {
+            delete payload.image;
+        }
+
         router.post(
             `/dashboard/ecommerce/product-variants/${initialVariant.id}`,
             {
                 _method: 'put',
-                ...data,
+                ...payload,
             },
             {
                 forceFormData: true,
@@ -343,7 +364,9 @@ export default function Edit({
                 <div>
                     <h1 className="text-2xl font-bold">Edit Product Variant</h1>
 
-                    <p className="text-muted-foreground">Edit variant details</p>
+                    <p className="text-muted-foreground">
+                        Edit variant details
+                    </p>
                 </div>
 
                 <hr />
@@ -357,7 +380,7 @@ export default function Edit({
 
                                 <select
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    value={watch('product_id')}
+                                    value={selectedProductId}
                                     onChange={(e) =>
                                         setValue('product_id', e.target.value, {
                                             shouldValidate: true,
@@ -391,7 +414,7 @@ export default function Edit({
 
                                 <select
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    value={watch('unit_id') ?? ''}
+                                    value={selectedUnitId ?? ''}
                                     onChange={(e) =>
                                         setValue(
                                             'unit_id',
@@ -449,15 +472,23 @@ export default function Edit({
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Variant Image</Label>
 
-                                {(imagePreview || initialVariant.image) && (
-                                    <img
-                                        src={
-                                            imagePreview ??
-                                            `/storage/${initialVariant.image}`
-                                        }
-                                        alt={initialVariant.name}
-                                        className="mb-2 h-24 w-24 rounded-md border object-cover"
-                                    />
+                                {(imagePreview || currentImageUrl) && (
+                                    <div className="mb-2 flex flex-wrap items-center gap-4">
+                                        <img
+                                            src={
+                                                imagePreview ??
+                                                currentImageUrl ??
+                                                ''
+                                            }
+                                            alt={initialVariant.name}
+                                            className="h-28 w-28 rounded-md border object-cover"
+                                        />
+                                        <div className="text-sm text-muted-foreground">
+                                            {imagePreview
+                                                ? 'New image preview'
+                                                : 'Current variant image'}
+                                        </div>
+                                    </div>
                                 )}
 
                                 <Input
@@ -467,6 +498,11 @@ export default function Edit({
                                         handleImageChange(e.target.files?.[0])
                                     }
                                 />
+                                {errors.image && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.image.message as string}
+                                    </p>
+                                )}
                             </div>
 
                             {/* PRICE */}
@@ -498,7 +534,7 @@ export default function Edit({
                                 <Input
                                     type="number"
                                     min="0"
-                                    disabled={!watch('track_stock')}
+                                    disabled={!trackStock}
                                     {...register('min_stock_alert')}
                                 />
                             </div>
@@ -522,7 +558,7 @@ export default function Edit({
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="track_stock"
-                                    checked={watch('track_stock')}
+                                    checked={trackStock}
                                     onCheckedChange={(checked) =>
                                         setValue(
                                             'track_stock',
@@ -540,7 +576,7 @@ export default function Edit({
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="is_active"
-                                    checked={watch('is_active')}
+                                    checked={isActive}
                                     onCheckedChange={(checked) =>
                                         setValue('is_active', Boolean(checked))
                                     }
@@ -694,7 +730,7 @@ export default function Edit({
                                 <select
                                     id="status"
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    value={stockUnitForm.watch('status')}
+                                    value={stockUnitStatus}
                                     onChange={(e) =>
                                         stockUnitForm.setValue(
                                             'status',
@@ -717,9 +753,8 @@ export default function Edit({
                             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                                 {networkOptions.map((option) => {
                                     const selected =
-                                        stockUnitForm.watch(
-                                            'network_compatibility',
-                                        ) === option.value;
+                                        selectedNetworkCompatibility ===
+                                        option.value;
 
                                     return (
                                         <button

@@ -130,16 +130,17 @@ class ProductVariantController extends Controller
         ProductVariant $productVariant
     ) {
         $data = $request->validated();
+        $variantData = Arr::except($data, ['image']);
 
         if ($request->hasFile('image')) {
             if ($productVariant->image) {
                 Storage::disk('public')->delete($productVariant->image);
             }
 
-            $data['image'] = $request->file('image')->store('product_variants', 'public');
+            $variantData['image'] = $request->file('image')->store('product_variants', 'public');
         }
 
-        $productVariant->update($data);
+        $productVariant->update($variantData);
 
         return $this->redirectAfterMutation()
             ->with('success', 'Product Variant updated successfully.');

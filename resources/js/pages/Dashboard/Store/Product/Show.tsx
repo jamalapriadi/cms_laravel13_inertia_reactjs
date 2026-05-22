@@ -214,7 +214,7 @@ type VariantFormData = z.infer<typeof variantSchema>;
 type StockUnitFormData = z.infer<typeof stockUnitSchema>;
 
 const networkOptions: { value: NetworkCompatibility; label: string }[] = [
-    { value: 'sim_free', label: 'SIM Free' },
+    { value: 'sim_free', label: 'All Operator' },
     { value: 'docomo', label: 'Docomo' },
     { value: 'au', label: 'AU' },
     { value: 'softbank', label: 'SoftBank' },

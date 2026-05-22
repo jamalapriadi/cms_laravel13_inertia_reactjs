@@ -6,6 +6,7 @@ use App\Models\Shop\ProductStockUnit;
 use App\Models\Shop\ProductVariant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -216,4 +217,100 @@ test('user can view stock units on product variant edit page', function () {
     $response->assertSuccessful();
     $response->assertSee('351234567890123');
     $response->assertSee('docomo');
+});
+
+test('user can update product variant without replacing existing image', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    $category = Category::create([
+        'name' => 'Electronics',
+        'slug' => 'electronics',
+        'is_publish' => true,
+    ]);
+
+    $product = Product::create([
+        'category_id' => $category->id,
+        'name' => 'iPhone 15',
+        'slug' => 'iphone-15',
+        'condition' => 'new',
+        'base_price' => 15000000,
+        'is_publish' => true,
+    ]);
+
+    Storage::disk('public')->put('product_variants/existing.jpg', 'existing image');
+
+    $variant = ProductVariant::create([
+        'product_id' => $product->id,
+        'name' => '128GB Black',
+        'sku' => 'IP15-128-BLK',
+        'image' => 'product_variants/existing.jpg',
+        'price' => 14500000,
+        'stock' => 1,
+        'track_stock' => true,
+        'is_active' => true,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->put(route('product-variants.update', $variant->id), [
+            'product_id' => $product->id,
+            'name' => '128GB Midnight',
+            'sku' => 'IP15-128-BLK',
+            'image' => null,
+            'price' => 14600000,
+            'track_stock' => true,
+            'stock' => 1,
+            'is_active' => true,
+        ]);
+
+    $response->assertRedirect(route('product-variants.index'));
+
+    expect($variant->refresh())
+        ->name->toBe('128GB Midnight')
+        ->price->toBe('14600000.00')
+        ->image->toBe('product_variants/existing.jpg');
+
+    Storage::disk('public')->assertExists('product_variants/existing.jpg');
+});
+
+test('product variant edit page includes the current image path', function () {
+    $user = User::factory()->create();
+
+    $category = Category::create([
+        'name' => 'Electronics',
+        'slug' => 'electronics',
+        'is_publish' => true,
+    ]);
+
+    $product = Product::create([
+        'category_id' => $category->id,
+        'name' => 'iPhone 15',
+        'slug' => 'iphone-15',
+        'condition' => 'new',
+        'base_price' => 15000000,
+        'is_publish' => true,
+    ]);
+
+    $variant = ProductVariant::create([
+        'product_id' => $product->id,
+        'name' => '128GB Black',
+        'sku' => 'IP15-128-BLK',
+        'image' => 'product_variants/existing.jpg',
+        'price' => 14500000,
+        'stock' => 1,
+        'track_stock' => true,
+        'is_active' => true,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->get(route('product-variants.edit', $variant->id));
+
+    $response->assertSuccessful();
+    $response->assertInertia(fn ($page) => $page
+        ->component('Dashboard/Store/ProductVariant/Edit')
+        ->where('variant.image', 'product_variants/existing.jpg')
+    );
 });

@@ -46,6 +46,20 @@ class OptionController extends Controller
 
                 $data[$field] = $path;
             }
+            
+            // Hapus file field jika kosong (frontend sudah upload via media endpoint)
+            if (empty($data[$field])) {
+                unset($data[$field]);
+            }
+            
+            // Simpan URL field jika ada
+            $urlField = $field . '_url';
+            if (isset($data[$urlField]) && !empty($data[$urlField])) {
+                // URL sudah valid dari media upload, simpan dengan key tanpa _url suffix
+                // untuk konsistensi dengan nama di database
+                $data[$field] = $data[$urlField];
+                unset($data[$urlField]); // hapus yg _url
+            }
         }
 
         $this->service->store($data);

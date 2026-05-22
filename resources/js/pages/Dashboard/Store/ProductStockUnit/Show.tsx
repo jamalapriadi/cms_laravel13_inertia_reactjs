@@ -29,7 +29,7 @@ interface Props {
 const networkLabel = (network?: string | null) =>
     network
         ? ({
-              sim_free: 'SIM Free',
+              sim_free: 'All Operator',
               docomo: 'Docomo',
               au: 'AU',
               softbank: 'SoftBank',
