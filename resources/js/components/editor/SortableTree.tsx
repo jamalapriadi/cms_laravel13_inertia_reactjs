@@ -135,7 +135,7 @@ function SortableItem({
                             e.stopPropagation();
                             onDelete(block.id);
                         }}
-                        className="absolute top-1 right-1 z-20 rounded bg-white p-1 text-red-500 opacity-0 shadow transition group-hover:opacity-100"
+                        className="absolute top-1 right-1 z-20 rounded bg-card p-1 text-red-500 opacity-0 shadow transition group-hover:opacity-100"
                     >
                         <Trash2 className="h-4 w-4" />
                     </button>

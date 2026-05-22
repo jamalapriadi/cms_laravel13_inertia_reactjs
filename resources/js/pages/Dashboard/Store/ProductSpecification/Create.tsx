@@ -82,14 +82,14 @@ export default function Create({ products }: Props) {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Add Product Specification</h1>
-                    <p className="text-gray-500">Define a technical specification for a product</p>
+                    <p className="text-muted-foreground">Define a technical specification for a product</p>
                 </div>
 
                 <hr />
 
                 {/* FORM */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                    <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
+                    <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
                         
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* PRODUCT */}

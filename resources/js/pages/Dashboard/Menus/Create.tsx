@@ -49,14 +49,14 @@ export default function Create() {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Create Menu</h1>
-                    <p className="text-gray-500">Add a new navigation menu</p>
+                    <p className="text-muted-foreground">Add a new navigation menu</p>
                 </div>
 
                 <hr />
 
                 {/* FORM */}
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="space-y-6 rounded-xl bg-white p-6 shadow">
+                    <div className="space-y-6 rounded-xl bg-card p-6 shadow">
                         {/* NAME */}
                         <div className="flex flex-col gap-1">
                             <Label>Menu Name</Label>

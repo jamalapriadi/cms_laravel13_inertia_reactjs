@@ -16,7 +16,7 @@ export default function AppSidebarLayout({
                 <AppSidebar />
                 <AppContent
                     variant="sidebar"
-                    className="overflow-x-hidden bg-slate-50"
+                    className="overflow-x-hidden bg-muted/50"
                 >
                     <div className={`p-4`}>{children}</div>
                 </AppContent>

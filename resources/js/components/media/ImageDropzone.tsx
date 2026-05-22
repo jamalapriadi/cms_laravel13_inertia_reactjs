@@ -50,11 +50,11 @@ export default function ImageDropzone({ value, onUploaded }: Props) {
     return (
         <div
             {...getRootProps()}
-            className={`flex h-48 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed transition ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'} `}
+            className={`flex h-48 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed transition ${isDragActive ? 'border-blue-500 bg-blue-100 dark:bg-blue-950/40' : 'border-border'} `}
         >
             <input {...getInputProps()} />
 
-            {loading && <p className="text-sm text-gray-500">Uploading...</p>}
+            {loading && <p className="text-sm text-muted-foreground">Uploading...</p>}
 
             {!loading && preview && (
                 <img
@@ -64,7 +64,7 @@ export default function ImageDropzone({ value, onUploaded }: Props) {
             )}
 
             {!loading && !preview && (
-                <div className="text-center text-gray-500">
+                <div className="text-center text-muted-foreground">
                     <p className="text-sm font-medium">Drag & Drop image</p>
                     <p className="text-xs">or click to upload</p>
                 </div>

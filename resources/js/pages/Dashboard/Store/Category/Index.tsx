@@ -117,8 +117,8 @@ export default function Index({ categories, filters }: Props) {
                 <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         row.show_home
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'bg-gray-50 text-gray-700'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300'
+                            : 'bg-muted/50 text-foreground'
                     }`}
                 >
                     {row.show_home ? 'Yes' : 'No'}
@@ -132,8 +132,8 @@ export default function Index({ categories, filters }: Props) {
                 <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         row.is_publish
-                            ? 'bg-green-50 text-green-700'
-                            : 'bg-red-50 text-red-700'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300'
+                            : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
                     }`}
                 >
                     {row.is_publish ? 'Published' : 'Draft'}
@@ -173,7 +173,7 @@ export default function Index({ categories, filters }: Props) {
                     <div>
                         <h1 className="text-2xl font-bold">Product Categories</h1>
 
-                        <p className="text-gray-500">
+                        <p className="text-muted-foreground">
                             List of product categories
                         </p>
                     </div>

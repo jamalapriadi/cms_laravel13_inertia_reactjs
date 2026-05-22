@@ -19,7 +19,7 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
 
     return (
         <div>
-            {/* <div className="flex bg-slate-100">
+            {/* <div className="flex bg-muted">
                 <div>
                     <AdminSidebar />
                 </div>

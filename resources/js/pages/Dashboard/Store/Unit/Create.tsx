@@ -83,14 +83,14 @@ export default function Create() {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Create Unit</h1>
-                    <p className="text-gray-500">Add a new product unit</p>
+                    <p className="text-muted-foreground">Add a new product unit</p>
                 </div>
 
                 <hr />
 
                 {/* FORM */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                    <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
+                    <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
                         {/* NAME */}
                         <div className="flex flex-col gap-1">
                             <Label>Unit Name</Label>

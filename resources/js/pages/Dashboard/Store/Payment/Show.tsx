@@ -51,8 +51,8 @@ export default function Show({ payment }: Props) {
         switch (status) {
             case 'paid':
                 return {
-                    bg: 'bg-emerald-50 border-emerald-200',
-                    text: 'text-emerald-800',
+                    bg: 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/40',
+                    text: 'text-emerald-800 dark:text-emerald-300',
                     title: 'Payment Completed Successfully',
                     desc: payment.paid_at
                         ? `The checkout was paid on ${new Date(payment.paid_at).toLocaleString('id-ID')}`
@@ -60,30 +60,30 @@ export default function Show({ payment }: Props) {
                 };
             case 'pending':
                 return {
-                    bg: 'bg-amber-50 border-amber-200',
-                    text: 'text-amber-800',
+                    bg: 'border-amber-200 dark:border-amber-900/60 bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/40',
+                    text: 'text-amber-800 dark:text-amber-300',
                     title: 'Payment Awaiting Settlement',
                     desc: 'The customer has generated a token/checkout but payment is still pending confirmation.',
                 };
             case 'failed':
             case 'expired':
                 return {
-                    bg: 'bg-rose-50 border-rose-200',
-                    text: 'text-rose-800',
+                    bg: 'border-rose-200 dark:border-rose-900/60 bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40',
+                    text: 'text-rose-800 dark:text-rose-300',
                     title: `Payment ${status.charAt(0).toUpperCase() + status.slice(1)}`,
                     desc: 'This transaction was cancelled, expired, or failed by the gateway/bank.',
                 };
             case 'refunded':
                 return {
-                    bg: 'bg-blue-50 border-blue-200',
-                    text: 'text-blue-800',
+                    bg: 'border-blue-200 bg-blue-100 dark:border-blue-900/60 dark:bg-blue-950/40',
+                    text: 'text-blue-800 dark:text-blue-300',
                     title: 'Payment Refunded',
                     desc: 'A refund transaction was processed for this order.',
                 };
             default:
                 return {
-                    bg: 'bg-slate-50 border-slate-200',
-                    text: 'text-slate-800',
+                    bg: 'bg-muted/50 border-border',
+                    text: 'text-foreground',
                     title: 'Unknown Payment Status',
                     desc: 'The current status is unrecognized.',
                 };
@@ -93,16 +93,16 @@ export default function Show({ payment }: Props) {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'paid':
-                return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                return 'bg-emerald-100 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60';
             case 'pending':
-                return 'bg-amber-100 text-amber-800 border-amber-200';
+                return 'bg-amber-100 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-900/60';
             case 'failed':
             case 'expired':
-                return 'bg-rose-100 text-rose-800 border-rose-200';
+                return 'bg-rose-100 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-900/60';
             case 'refunded':
-                return 'bg-blue-100 text-blue-800 border-blue-200';
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200';
             default:
-                return 'bg-slate-100 text-slate-800 border-slate-200';
+                return 'bg-muted text-foreground border-border';
         }
     };
 
@@ -309,7 +309,7 @@ export default function Show({ payment }: Props) {
                                         <Button
                                             size="sm"
                                             variant="ghost"
-                                            className="h-8 text-xs font-semibold hover:bg-slate-100"
+                                            className="h-8 text-xs font-semibold hover:bg-muted"
                                             onClick={handleCopyPayload}
                                             disabled={!payment.payload}
                                         >
@@ -320,7 +320,7 @@ export default function Show({ payment }: Props) {
                                     </div>
                                     <div className="relative">
                                         {payment.payload ? (
-                                            <pre className="max-h-[300px] overflow-x-auto rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-[11px] leading-relaxed text-slate-200">
+                                            <pre className="max-h-[300px] overflow-x-auto rounded-lg border border-border bg-slate-950 p-4 font-mono text-[11px] leading-relaxed text-slate-200">
                                                 {JSON.stringify(
                                                     payment.payload,
                                                     null,
@@ -421,7 +421,7 @@ export default function Show({ payment }: Props) {
                                                     ).toLocaleString('id-ID')}
                                                 </span>
                                             </div>
-                                            <div className="flex justify-between text-rose-600">
+                                            <div className="flex justify-between text-rose-700 dark:text-rose-300">
                                                 <span>Discount:</span>
                                                 <span>
                                                     -Rp{' '}

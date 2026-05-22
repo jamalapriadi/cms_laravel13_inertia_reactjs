@@ -13,7 +13,7 @@ export default function SidebarItem({ item, url }: any) {
                 asChild
                 isActive={isActive}
                 className={cn(
-                    isActive && 'bg-slate-100 font-semibold text-slate-900',
+                    isActive && 'bg-muted font-semibold text-foreground',
                 )}
             >
                 <Link href={item.href} className="flex items-center gap-2">

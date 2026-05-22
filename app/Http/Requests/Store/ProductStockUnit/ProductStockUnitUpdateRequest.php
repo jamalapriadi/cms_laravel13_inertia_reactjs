@@ -25,9 +25,16 @@ class ProductStockUnitUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique('product_stock_units', 'imei_serial_number')->ignore($stockUnit?->id),
             ],
-            'network_compatibility' => ['required', 'string', Rule::in(ProductStockUnit::NETWORKS)],
+            'network_compatibility' => ['nullable', 'string', Rule::in(ProductStockUnit::NETWORKS)],
             'status' => ['required', 'string', Rule::in(['available', 'reserved', 'sold', 'damaged'])],
             'note' => ['nullable', 'string'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'network_compatibility' => $this->network_compatibility ?: null,
+        ]);
     }
 }

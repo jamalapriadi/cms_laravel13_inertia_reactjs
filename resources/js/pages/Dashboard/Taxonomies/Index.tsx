@@ -167,7 +167,7 @@ export default function Index({ taxonomy, taxonomies, filters }: Props) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold">{title}</h1>
-                        <p className="text-gray-500">
+                        <p className="text-muted-foreground">
                             Manage your taxonomy data
                         </p>
                     </div>
@@ -191,7 +191,7 @@ export default function Index({ taxonomy, taxonomies, filters }: Props) {
                 </div>
 
                 {/* TABLE */}
-                <div className="rounded-xl bg-white p-6 shadow">
+                <div className="rounded-xl bg-card p-6 shadow">
                     <DataTable data={taxonomies.data} columns={columns} />
                 </div>
 
@@ -208,7 +208,7 @@ export default function Index({ taxonomy, taxonomies, filters }: Props) {
                             className={`rounded border px-3 py-1 ${
                                 link.active
                                     ? 'bg-primary text-white'
-                                    : 'bg-white'
+                                    : 'bg-card'
                             }`}
                         />
                     ))}

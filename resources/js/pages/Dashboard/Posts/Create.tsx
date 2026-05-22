@@ -16,9 +16,6 @@ import {
     Image as ImageIcon,
     MousePointerClick,
     AlignLeft,
-    Layout,
-    Columns,
-    Grid,
 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';

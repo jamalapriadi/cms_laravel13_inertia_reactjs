@@ -28,7 +28,7 @@ export default function MediaModal({ isOpen, onClose, onSelect }: Props) {
             <div className="fixed inset-0 bg-black/40" />
 
             <div className="fixed inset-0 flex items-center justify-center">
-                <Dialog.Panel className="flex h-[90vh] w-[95%] flex-col rounded bg-white shadow-xl">
+                <Dialog.Panel className="flex h-[90vh] w-[95%] flex-col rounded bg-card shadow-xl">
                     {/* HEADER */}
                     <div className="flex items-center justify-between border-b px-6 py-4">
                         <h2 className="text-lg font-semibold">Media Library</h2>

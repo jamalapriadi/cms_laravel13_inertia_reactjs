@@ -23,10 +23,10 @@ export default function MediaDropzone() {
     return (
         <div
             {...getRootProps()}
-            className="flex flex-1 items-center justify-center border-2 border-dashed border-gray-300"
+            className="flex flex-1 items-center justify-center border-2 border-dashed border-border"
         >
             <input {...getInputProps()} />
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
                 Drag & drop files here, or click to upload
             </p>
         </div>

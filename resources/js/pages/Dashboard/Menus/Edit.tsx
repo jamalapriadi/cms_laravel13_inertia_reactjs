@@ -77,7 +77,7 @@ export default function Edit({
 
                 {/* 🔥 ERROR DISPLAY */}
                 {errors?.menu && (
-                    <div className="rounded bg-red-100 p-3 text-sm text-red-700">
+                    <div className="rounded bg-red-100 p-3 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-300">
                         {errors.menu}
                     </div>
                 )}

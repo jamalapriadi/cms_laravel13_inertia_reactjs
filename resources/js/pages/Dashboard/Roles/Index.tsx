@@ -92,8 +92,8 @@ export default function Index({ roles, filters }: Props) {
                 <span
                     className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
                         row.permissions_count > 0
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300'
+                            : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
                     }`}
                 >
                     {row.permissions_count}

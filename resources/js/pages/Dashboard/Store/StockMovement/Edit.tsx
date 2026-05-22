@@ -22,7 +22,7 @@ interface VariantOption {
 interface StockUnitOption {
     id: string;
     imei_serial_number: string;
-    network_compatibility: string;
+    network_compatibility: string | null;
     status: 'available' | 'reserved' | 'sold' | 'damaged';
 }
 
@@ -180,8 +180,9 @@ export default function Edit({ movement, variants, adjustment_action }: Props) {
                                                 value={unit.id}
                                             >
                                                 {unit.imei_serial_number} |{' '}
-                                                {unit.network_compatibility} |{' '}
-                                                {unit.status}
+                                                {unit.network_compatibility ??
+                                                    '-'}{' '}
+                                                | {unit.status}
                                             </option>
                                         ),
                                     )}
@@ -250,10 +251,10 @@ export default function Edit({ movement, variants, adjustment_action }: Props) {
 
                             {/* Adjustment action if type = adjustment */}
                             {data.type === 'adjustment' && (
-                                <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50/30 p-4">
+                                <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-100/70 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
                                     <Label
                                         htmlFor="adjustment_action"
-                                        className="font-bold text-amber-800"
+                                        className="font-bold text-amber-800 dark:text-amber-300"
                                     >
                                         Adjustment Action
                                     </Label>
@@ -352,8 +353,8 @@ export default function Edit({ movement, variants, adjustment_action }: Props) {
                                         <span
                                             className={`flex items-center gap-0.5 font-semibold ${
                                                 stockChange >= 0
-                                                    ? 'text-emerald-600'
-                                                    : 'text-rose-600'
+                                                    ? 'text-emerald-700 dark:text-emerald-300'
+                                                    : 'text-rose-700 dark:text-rose-300'
                                             }`}
                                         >
                                             {stockChange >= 0 ? '+' : ''}
@@ -363,7 +364,7 @@ export default function Edit({ movement, variants, adjustment_action }: Props) {
                                 </div>
 
                                 {selectedStockUnit && (
-                                    <div className="rounded-lg border bg-slate-50 p-3 text-xs dark:bg-slate-900/40">
+                                    <div className="rounded-lg border bg-muted/50 p-3 text-xs dark:bg-muted/40">
                                         <span className="font-semibold text-muted-foreground uppercase">
                                             Selected IMEI
                                         </span>

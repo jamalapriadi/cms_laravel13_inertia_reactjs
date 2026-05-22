@@ -111,7 +111,7 @@ interface ProductStockUnit {
     id: string;
     product_variant_id: string;
     imei_serial_number: string;
-    network_compatibility: NetworkCompatibility;
+    network_compatibility: NetworkCompatibility | null;
     status: 'available' | 'reserved' | 'sold' | 'damaged';
     note?: string | null;
 }
@@ -198,14 +198,10 @@ const stockUnitSchema = z.object({
         .string()
         .min(1, 'IMEI / Serial Number is required')
         .max(255),
-    network_compatibility: z.enum([
-        'sim_free',
-        'docomo',
-        'au',
-        'softbank',
-        'rakuten',
-        'mineo',
-    ]),
+    network_compatibility: z
+        .enum(['sim_free', 'docomo', 'au', 'softbank', 'rakuten', 'mineo'])
+        .nullable()
+        .optional(),
     status: z
         .enum(['available', 'reserved', 'sold', 'damaged'])
         .default('available'),
@@ -226,8 +222,11 @@ const networkOptions: { value: NetworkCompatibility; label: string }[] = [
     { value: 'mineo', label: 'Mineo' },
 ];
 
-const networkLabel = (network: NetworkCompatibility) =>
-    networkOptions.find((option) => option.value === network)?.label ?? network;
+const networkLabel = (network?: NetworkCompatibility | null) =>
+    network
+        ? (networkOptions.find((option) => option.value === network)?.label ??
+          network)
+        : '-';
 
 export default function Show({ product }: Props) {
     // Modal states
@@ -242,6 +241,7 @@ export default function Show({ product }: Props) {
     );
     const [editingStockUnit, setEditingStockUnit] =
         useState<ProductStockUnit | null>(null);
+    const [stockUnitHasNetwork, setStockUnitHasNetwork] = useState(false);
 
     // Delete states
     const [deletingType, setDeletingType] = useState<
@@ -313,7 +313,7 @@ export default function Show({ product }: Props) {
         defaultValues: {
             product_variant_id: '',
             imei_serial_number: '',
-            network_compatibility: 'sim_free',
+            network_compatibility: null,
             status: 'available',
             note: '',
         },
@@ -371,10 +371,11 @@ export default function Show({ product }: Props) {
         stockUnitForm.reset({
             product_variant_id: variant.id,
             imei_serial_number: '',
-            network_compatibility: 'sim_free',
+            network_compatibility: null,
             status: 'available',
             note: '',
         });
+        setStockUnitHasNetwork(false);
         setIsStockUnitModalOpen(true);
     };
 
@@ -387,6 +388,7 @@ export default function Show({ product }: Props) {
             status: stockUnit.status,
             note: stockUnit.note ?? '',
         });
+        setStockUnitHasNetwork(!!stockUnit.network_compatibility);
         setIsStockUnitModalOpen(true);
     };
 
@@ -508,10 +510,17 @@ export default function Show({ product }: Props) {
     };
 
     const onSaveStockUnit = (data: StockUnitFormData) => {
+        const payload = {
+            ...data,
+            network_compatibility: stockUnitHasNetwork
+                ? data.network_compatibility || 'sim_free'
+                : null,
+        };
+
         if (editingStockUnit) {
             router.put(
                 `/dashboard/ecommerce/product-stock-units/${editingStockUnit.id}`,
-                data,
+                payload,
                 {
                     preserveScroll: true,
                     onStart: () => {
@@ -539,7 +548,7 @@ export default function Show({ product }: Props) {
                 },
             );
         } else {
-            router.post('/dashboard/ecommerce/product-stock-units', data, {
+            router.post('/dashboard/ecommerce/product-stock-units', payload, {
                 preserveScroll: true,
                 onStart: () => {
                     setSubmittingStockUnit(true);
@@ -698,7 +707,7 @@ export default function Show({ product }: Props) {
                     <div className="space-y-8 lg:col-span-2">
                         {/* GENERAL INFO */}
                         <Card className="overflow-hidden border shadow-sm">
-                            <CardHeader className="bg-slate-50/50">
+                            <CardHeader className="bg-muted/50">
                                 <CardTitle className="flex items-center gap-2 text-lg font-bold">
                                     <FileText className="h-5 w-5 text-primary" />
                                     General Information
@@ -750,7 +759,7 @@ export default function Show({ product }: Props) {
                                         </span>
                                         <span className="mt-1 block text-sm font-medium">
                                             {product.has_variant ? (
-                                                <Badge className="border-none bg-blue-100 text-blue-800 shadow-none hover:bg-blue-100">
+                                                <Badge className="border-none bg-blue-100 text-blue-800 shadow-none hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-950/40">
                                                     Has Variants
                                                 </Badge>
                                             ) : (
@@ -784,7 +793,7 @@ export default function Show({ product }: Props) {
                                     <span className="mb-2 block text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                         Description
                                     </span>
-                                    <div className="rounded-lg border bg-slate-50 p-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground">
+                                    <div className="rounded-lg border bg-muted/50 p-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground">
                                         {product.description || (
                                             <span className="text-muted-foreground italic">
                                                 No description provided.
@@ -797,7 +806,7 @@ export default function Show({ product }: Props) {
 
                         {/* PRODUCT VARIANTS */}
                         <Card className="border shadow-sm">
-                            <CardHeader className="flex flex-row items-center justify-between bg-slate-50/50 py-4">
+                            <CardHeader className="flex flex-row items-center justify-between bg-muted/50 py-4">
                                 <div>
                                     <CardTitle className="flex items-center gap-2 text-lg font-bold">
                                         <Boxes className="h-5 w-5 text-primary" />
@@ -833,7 +842,7 @@ export default function Show({ product }: Props) {
                                 ) : (
                                     <Table>
                                         <TableHeader>
-                                            <TableRow className="bg-slate-50/30">
+                                            <TableRow className="bg-muted/30">
                                                 <TableHead className="px-6">
                                                     Name
                                                 </TableHead>
@@ -864,7 +873,7 @@ export default function Show({ product }: Props) {
                                             {product.variants.map((v) => (
                                                 <TableRow
                                                     key={v.id}
-                                                    className="hover:bg-slate-50/50"
+                                                    className="hover:bg-muted/50"
                                                 >
                                                     <TableCell className="px-6 text-sm font-semibold">
                                                         <div className="flex items-center gap-3">
@@ -875,7 +884,7 @@ export default function Show({ product }: Props) {
                                                                     className="h-12 w-12 rounded-md border object-cover"
                                                                 />
                                                             ) : (
-                                                                <div className="flex h-12 w-12 items-center justify-center rounded-md border bg-slate-50">
+                                                                <div className="flex h-12 w-12 items-center justify-center rounded-md border bg-muted/50">
                                                                     <ImageIcon className="h-5 w-5 text-muted-foreground/60" />
                                                                 </div>
                                                             )}
@@ -944,7 +953,7 @@ export default function Show({ product }: Props) {
                                                                                 key={
                                                                                     stockUnit.id
                                                                                 }
-                                                                                className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-slate-50 px-2 py-1 text-xs"
+                                                                                className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/50 px-2 py-1 text-xs"
                                                                             >
                                                                                 <div className="min-w-0">
                                                                                     <div className="truncate font-mono font-semibold">
@@ -1008,7 +1017,7 @@ export default function Show({ product }: Props) {
                                                     </TableCell>
                                                     <TableCell className="px-6">
                                                         {v.is_active ? (
-                                                            <Badge className="border-none bg-green-100 px-2 py-0.5 text-[10px] text-green-800 shadow-none hover:bg-green-100">
+                                                            <Badge className="border-none bg-green-100 px-2 py-0.5 text-[10px] text-green-800 shadow-none hover:bg-green-100 dark:bg-green-950/40 dark:text-green-300 dark:hover:bg-green-950/40">
                                                                 Active
                                                             </Badge>
                                                         ) : (
@@ -1057,7 +1066,7 @@ export default function Show({ product }: Props) {
 
                         {/* SPECIFICATIONS */}
                         <Card className="border shadow-sm">
-                            <CardHeader className="flex flex-row items-center justify-between bg-slate-50/50 py-4">
+                            <CardHeader className="flex flex-row items-center justify-between bg-muted/50 py-4">
                                 <div>
                                     <CardTitle className="text-lg font-bold">
                                         Specifications
@@ -1090,7 +1099,7 @@ export default function Show({ product }: Props) {
                                 ) : (
                                     <Table>
                                         <TableHeader>
-                                            <TableRow className="bg-slate-50/30">
+                                            <TableRow className="bg-muted/30">
                                                 <TableHead className="w-1/3 px-6">
                                                     Specification Name
                                                 </TableHead>
@@ -1107,7 +1116,7 @@ export default function Show({ product }: Props) {
                                                 (spec) => (
                                                     <TableRow
                                                         key={spec.id}
-                                                        className="hover:bg-slate-50/50"
+                                                        className="hover:bg-muted/50"
                                                     >
                                                         <TableCell className="px-6 text-sm font-semibold">
                                                             {spec.spec_name}
@@ -1142,7 +1151,7 @@ export default function Show({ product }: Props) {
                         {/* SEO META */}
                         {(product.meta_title || product.meta_description) && (
                             <Card className="border shadow-sm">
-                                <CardHeader className="bg-slate-50/50">
+                                <CardHeader className="bg-muted/50">
                                     <CardTitle className="text-md flex items-center gap-2 font-bold">
                                         <Eye className="h-4 w-4 text-primary" />
                                         SEO Metadata Preview
@@ -1154,7 +1163,7 @@ export default function Show({ product }: Props) {
                                             <span className="block text-xs font-semibold text-muted-foreground">
                                                 Meta Title
                                             </span>
-                                            <span className="mt-1 block text-sm font-semibold text-blue-800">
+                                            <span className="mt-1 block text-sm font-semibold text-blue-800 dark:text-blue-300">
                                                 {product.meta_title}
                                             </span>
                                         </div>
@@ -1178,14 +1187,14 @@ export default function Show({ product }: Props) {
                     <div className="space-y-8 lg:col-span-1">
                         {/* THUMBNAIL */}
                         <Card className="overflow-hidden border shadow-sm">
-                            <CardHeader className="bg-slate-50/50">
+                            <CardHeader className="bg-muted/50">
                                 <CardTitle className="text-md font-bold">
                                     Thumbnail Cover
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center justify-center p-6">
                                 {product.thumbnail ? (
-                                    <div className="group relative aspect-square w-full max-w-[200px] overflow-hidden rounded-lg border bg-slate-50 p-2">
+                                    <div className="group relative aspect-square w-full max-w-[200px] overflow-hidden rounded-lg border bg-muted/50 p-2">
                                         <img
                                             src={`/storage/${product.thumbnail}`}
                                             alt={product.name}
@@ -1193,7 +1202,7 @@ export default function Show({ product }: Props) {
                                         />
                                     </div>
                                 ) : (
-                                    <div className="flex aspect-square w-full max-w-[200px] flex-col items-center justify-center rounded-lg border border-dashed bg-slate-100 p-4 text-muted-foreground">
+                                    <div className="flex aspect-square w-full max-w-[200px] flex-col items-center justify-center rounded-lg border border-dashed bg-muted p-4 text-muted-foreground">
                                         <ImageIcon className="mb-2 h-10 w-10 opacity-40" />
                                         <span className="text-center text-xs">
                                             No cover thumbnail set
@@ -1205,7 +1214,7 @@ export default function Show({ product }: Props) {
 
                         {/* PRODUCT GALLERY */}
                         <Card className="border shadow-sm">
-                            <CardHeader className="flex flex-row items-center justify-between bg-slate-50/50 py-4">
+                            <CardHeader className="flex flex-row items-center justify-between bg-muted/50 py-4">
                                 <div>
                                     <CardTitle className="text-md font-bold">
                                         Image Gallery
@@ -1238,7 +1247,7 @@ export default function Show({ product }: Props) {
                                         {product.images.map((img) => (
                                             <div
                                                 key={img.id}
-                                                className="group relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border bg-slate-50 p-2"
+                                                className="group relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border bg-muted/50 p-2"
                                             >
                                                 <img
                                                     src={`/storage/${img.image}`}
@@ -1806,40 +1815,76 @@ export default function Show({ product }: Props) {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label>Network</Label>
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                {networkOptions.map((option) => {
-                                    const selected =
-                                        stockUnitForm.watch(
-                                            'network_compatibility',
-                                        ) === option.value;
+                        <div className="space-y-3">
+                            <label className="flex items-center gap-2 text-sm font-medium">
+                                <Checkbox
+                                    checked={stockUnitHasNetwork}
+                                    onCheckedChange={(checked) => {
+                                        const enabled = checked === true;
 
-                                    return (
-                                        <button
-                                            key={option.value}
-                                            type="button"
-                                            onClick={() =>
-                                                stockUnitForm.setValue(
+                                        setStockUnitHasNetwork(enabled);
+                                        stockUnitForm.setValue(
+                                            'network_compatibility',
+                                            enabled
+                                                ? stockUnitForm.watch(
+                                                      'network_compatibility',
+                                                  ) || 'sim_free'
+                                                : null,
+                                            { shouldValidate: true },
+                                        );
+                                    }}
+                                />
+                                Ada network
+                            </label>
+
+                            {stockUnitHasNetwork && (
+                                <div className="space-y-2">
+                                    <Label>Network</Label>
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                        {networkOptions.map((option) => {
+                                            const selected =
+                                                stockUnitForm.watch(
                                                     'network_compatibility',
-                                                    option.value,
-                                                    { shouldValidate: true },
-                                                )
-                                            }
-                                            className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
-                                                selected
-                                                    ? option.value ===
-                                                      'sim_free'
-                                                        ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                                                        : 'border-red-500 bg-red-50 text-red-800'
-                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                                            }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                                                ) === option.value;
+
+                                            return (
+                                                <button
+                                                    key={option.value}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        stockUnitForm.setValue(
+                                                            'network_compatibility',
+                                                            option.value,
+                                                            {
+                                                                shouldValidate: true,
+                                                            },
+                                                        )
+                                                    }
+                                                    className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
+                                                        selected
+                                                            ? option.value ===
+                                                              'sim_free'
+                                                                ? 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                                : 'border-red-500 bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
+                                                            : 'border-border bg-card text-muted-foreground hover:border-border'
+                                                    }`}
+                                                >
+                                                    {option.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                            {stockUnitForm.formState.errors
+                                .network_compatibility && (
+                                <p className="text-xs text-destructive">
+                                    {
+                                        stockUnitForm.formState.errors
+                                            .network_compatibility.message
+                                    }
+                                </p>
+                            )}
                         </div>
 
                         <div className="flex flex-col gap-1.5">

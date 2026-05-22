@@ -92,7 +92,7 @@ export default function MasterDataLayout({ children }: Props) {
                 </aside>
 
                 {/* PAGE CONTENT */}
-                <main className="flex-1 bg-slate-50/30 p-6 dark:bg-slate-900/10">
+                <main className="flex-1 bg-muted/30 p-6 dark:bg-muted/20">
                     {children}
                 </main>
             </div>

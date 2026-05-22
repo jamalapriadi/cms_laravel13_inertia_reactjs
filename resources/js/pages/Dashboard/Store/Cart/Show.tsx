@@ -101,7 +101,7 @@ export default function Show({ cart }: Props) {
                             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
                                 Cart Details
                             </h1>
-                            <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-sm font-semibold text-slate-700">
+                            <span className="rounded-md bg-muted px-2 py-0.5 font-mono text-sm font-semibold text-foreground">
                                 {cart.id}
                             </span>
                         </div>
@@ -122,7 +122,7 @@ export default function Show({ cart }: Props) {
                     </div>
                 </div>
 
-                <hr className="border-slate-100" />
+                <hr className="border-border" />
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     {/* CART ITEMS TABLE */}
@@ -137,7 +137,7 @@ export default function Show({ cart }: Props) {
                             <div className="overflow-x-auto">
                                 <table className="w-full border-collapse text-left">
                                     <thead>
-                                        <tr className="border-b bg-slate-50 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                        <tr className="border-b bg-muted/50 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
                                             <th className="px-5 py-3">
                                                 Product Name
                                             </th>
@@ -159,7 +159,7 @@ export default function Show({ cart }: Props) {
                                         {cart.items.map((item) => (
                                             <tr
                                                 key={item.id}
-                                                className="transition hover:bg-slate-50/50"
+                                                className="transition hover:bg-muted/50"
                                             >
                                                 <td className="px-5 py-4">
                                                     <div className="flex flex-col">
@@ -189,7 +189,7 @@ export default function Show({ cart }: Props) {
                                                         item.price,
                                                     ).toLocaleString('id-ID')}
                                                 </td>
-                                                <td className="px-5 py-4 text-center font-semibold text-slate-700">
+                                                <td className="px-5 py-4 text-center font-semibold text-foreground">
                                                     {item.qty}
                                                 </td>
                                                 <td className="px-5 py-4 text-right font-bold text-foreground">
@@ -207,7 +207,7 @@ export default function Show({ cart }: Props) {
                                                                 item.id,
                                                             )
                                                         }
-                                                        className="h-auto p-1.5 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                                        className="h-auto p-1.5 text-red-600 hover:bg-red-100 hover:text-red-800 dark:hover:bg-red-950/40 dark:hover:text-red-300"
                                                     >
                                                         Remove
                                                     </Button>
@@ -227,7 +227,7 @@ export default function Show({ cart }: Props) {
                             <h2 className="text-base font-bold text-foreground">
                                 Cart Owner
                             </h2>
-                            <hr className="border-slate-100" />
+                            <hr className="border-border" />
                             {cart.user ? (
                                 <div className="space-y-3">
                                     <div>
@@ -256,7 +256,7 @@ export default function Show({ cart }: Props) {
                                         This cart belongs to a guest user who
                                         has not signed in.
                                     </p>
-                                    <div className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+                                    <div className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
                                         Guest Session
                                     </div>
                                 </div>
@@ -268,7 +268,7 @@ export default function Show({ cart }: Props) {
                             <h2 className="text-base font-bold text-foreground">
                                 Potential Invoice
                             </h2>
-                            <hr className="border-slate-100" />
+                            <hr className="border-border" />
                             <div className="space-y-2.5">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">
@@ -286,12 +286,12 @@ export default function Show({ cart }: Props) {
                                         {cart.items.length} items
                                     </span>
                                 </div>
-                                <hr className="border-slate-100" />
+                                <hr className="border-border" />
                                 <div className="flex items-baseline justify-between pt-2">
                                     <span className="text-sm font-bold text-foreground">
                                         Total Value
                                     </span>
-                                    <span className="text-xl font-extrabold text-emerald-600">
+                                    <span className="text-xl font-extrabold text-emerald-700 dark:text-emerald-300">
                                         Rp{' '}
                                         {Number(
                                             cart.total_price,

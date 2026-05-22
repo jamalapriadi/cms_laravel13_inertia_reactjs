@@ -78,7 +78,7 @@ export default function Customer({ options }: Props) {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Customer Settings</h1>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                         Configure how customers interact with your platform.
                     </p>
                 </div>
@@ -92,12 +92,12 @@ export default function Customer({ options }: Props) {
                             <h3 className="text-lg font-semibold">
                                 Authentication Settings
                             </h3>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                                 Control registration, login, and verification.
                             </p>
                         </div>
 
-                        <div className="col-span-2 space-y-4 rounded-xl bg-white p-6 shadow">
+                        <div className="col-span-2 space-y-4 rounded-xl bg-card p-6 shadow">
                             <SwitchField
                                 label="Allow Customer Registration"
                                 description="Enable public customer sign up."
@@ -163,10 +163,10 @@ function SwitchField({
     onChange: (val: boolean) => void;
 }) {
     return (
-        <div className="flex items-center justify-between border-b border-gray-200 py-3 last:border-0">
+        <div className="flex items-center justify-between border-b border-border py-3 last:border-0">
             <div>
                 <p className="font-medium">{label}</p>
-                <p className="text-sm text-gray-500">{description}</p>
+                <p className="text-sm text-muted-foreground">{description}</p>
             </div>
 
             <Checkbox

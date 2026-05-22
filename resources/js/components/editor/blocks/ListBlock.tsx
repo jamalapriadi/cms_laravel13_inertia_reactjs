@@ -61,7 +61,7 @@ export default {
                         <button
                             type="button"
                             onClick={() => removeItem(i)}
-                            className="rounded border px-2 text-sm text-red-500 hover:bg-red-50"
+                            className="rounded border px-2 text-sm text-red-500 hover:bg-red-100 dark:hover:bg-red-950/40"
                         >
                             ✕
                         </button>

@@ -50,7 +50,7 @@ interface StockMovement {
     stock_unit?: {
         id: string;
         imei_serial_number: string;
-        network_compatibility: string;
+        network_compatibility: string | null;
         status: string;
     } | null;
     variant?: {
@@ -145,16 +145,16 @@ export default function Index({
     const getTypeColor = (movementType: string) => {
         switch (movementType) {
             case 'purchase':
-                return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                return 'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300';
             case 'return':
             case 'cancel':
-                return 'bg-blue-50 text-blue-700 border-blue-200';
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200';
             case 'sale':
-                return 'bg-rose-50 text-rose-700 border-rose-200';
+                return 'border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300';
             case 'adjustment':
-                return 'bg-amber-50 text-amber-700 border-amber-200';
+                return 'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300';
             default:
-                return 'bg-slate-50 text-slate-700 border-slate-200';
+                return 'bg-muted/50 text-foreground border-border';
         }
     };
 
@@ -212,7 +212,7 @@ export default function Index({
                     </span>
                     {row.stock_unit && (
                         <span className="text-muted-foreground">
-                            {row.stock_unit.network_compatibility} ·{' '}
+                            {row.stock_unit.network_compatibility ?? '-'} ·{' '}
                             {row.stock_unit_status_before || '-'} →{' '}
                             {row.stock_unit_status_after || '-'}
                         </span>
@@ -226,7 +226,7 @@ export default function Index({
                 const isPositive = row.qty > 0;
                 return (
                     <span
-                        className={`text-sm font-semibold ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}
+                        className={`text-sm font-semibold ${isPositive ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}
                     >
                         {isPositive ? `+${row.qty}` : row.qty}
                     </span>
@@ -334,7 +334,7 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Total Logs
                             </span>
-                            <div className="rounded-lg bg-indigo-50 p-2 text-indigo-600">
+                            <div className="rounded-lg bg-indigo-100 p-2 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
                                 <Activity className="h-4 w-4" />
                             </div>
                         </div>
@@ -353,12 +353,12 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Stock Inward
                             </span>
-                            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
+                            <div className="rounded-lg bg-emerald-100 p-2 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
                                 <ArrowUpRight className="h-4 w-4" />
                             </div>
                         </div>
                         <div className="mt-4">
-                            <h3 className="text-3xl font-extrabold tracking-tight text-emerald-600">
+                            <h3 className="text-3xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300">
                                 +{summary.stock_in}
                             </h3>
                             <p className="mt-1 text-xs text-muted-foreground">
@@ -372,12 +372,12 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Stock Outward
                             </span>
-                            <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
+                            <div className="rounded-lg bg-rose-100 p-2 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
                                 <ArrowDownLeft className="h-4 w-4" />
                             </div>
                         </div>
                         <div className="mt-4">
-                            <h3 className="text-3xl font-extrabold tracking-tight text-rose-600">
+                            <h3 className="text-3xl font-extrabold tracking-tight text-rose-700 dark:text-rose-300">
                                 -{summary.stock_out}
                             </h3>
                             <p className="mt-1 text-xs text-muted-foreground">
@@ -391,13 +391,13 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Net Stock Change
                             </span>
-                            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
+                            <div className="rounded-lg bg-amber-100 p-2 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
                                 <Warehouse className="h-4 w-4" />
                             </div>
                         </div>
                         <div className="mt-4">
                             <h3
-                                className={`text-3xl font-extrabold tracking-tight ${summary.net_change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                                className={`text-3xl font-extrabold tracking-tight ${summary.net_change >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}
                             >
                                 {summary.net_change >= 0
                                     ? `+${summary.net_change}`
@@ -447,7 +447,7 @@ export default function Index({
                                                     units)
                                                 </span>
                                             </div>
-                                            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                            <div className="h-3 w-full overflow-hidden rounded-full bg-muted dark:bg-muted">
                                                 <div
                                                     className={`h-full rounded-full transition-all duration-500 ${
                                                         item.type === 'purchase'
@@ -504,7 +504,7 @@ export default function Index({
                                                 </span>
                                             </div>
                                         </div>
-                                        <span className="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-700">
+                                        <span className="inline-flex items-center gap-1 rounded bg-indigo-100 px-2 py-1 text-xs font-bold text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
                                             <Layers className="h-3 w-3" />
                                             {v.count} logs
                                         </span>
@@ -516,7 +516,7 @@ export default function Index({
                 </div>
 
                 {/* FILTER TOOLBAR */}
-                <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-slate-50/50 p-4 dark:bg-slate-900/10">
+                <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-muted/50 p-4 dark:bg-muted/20">
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="relative max-w-xs">
                             <Input

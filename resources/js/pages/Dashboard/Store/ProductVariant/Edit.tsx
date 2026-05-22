@@ -343,13 +343,13 @@ export default function Edit({
                 <div>
                     <h1 className="text-2xl font-bold">Edit Product Variant</h1>
 
-                    <p className="text-gray-500">Edit variant details</p>
+                    <p className="text-muted-foreground">Edit variant details</p>
                 </div>
 
                 <hr />
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                    <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
+                    <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* PRODUCT */}
                             <div className="flex flex-col gap-1 md:col-span-2">
@@ -572,7 +572,7 @@ export default function Edit({
                     </div>
                 </form>
 
-                <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
+                <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <h2 className="text-lg font-semibold">
@@ -597,7 +597,7 @@ export default function Edit({
                             {initialVariant.stock_units.map((stockUnit) => (
                                 <div
                                     key={stockUnit.id}
-                                    className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-slate-50 px-4 py-3"
+                                    className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-muted/50 px-4 py-3"
                                 >
                                     <div className="min-w-0">
                                         <div className="truncate font-mono text-sm font-semibold">
@@ -736,9 +736,9 @@ export default function Edit({
                                                 selected
                                                     ? option.value ===
                                                       'sim_free'
-                                                        ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                                                        : 'border-red-500 bg-red-50 text-red-800'
-                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                                        ? 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                        : 'border-red-500 bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
+                                                    : 'border-border bg-card text-muted-foreground hover:border-border'
                                             }`}
                                         >
                                             {option.label}
