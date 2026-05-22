@@ -17,16 +17,16 @@ import TextBlock from './TextBlock';
  * ✅ Strongly typed registry
  */
 export const BLOCK_REGISTRY: Record<BlockType, BlockComponent> = {
-    text: TextBlock,
-    heading: HeadingBlock,
-    paragraph: ParagraphBlock,
-    image: ImageBlock,
-    list: ListBlock,
-    quote: QuoteBlock,
-    code: CodeBlock,
-    button: ButtonBlock,
+    text: TextBlock as BlockComponent,
+    heading: HeadingBlock as BlockComponent,
+    paragraph: ParagraphBlock as BlockComponent,
+    image: ImageBlock as BlockComponent,
+    list: ListBlock as BlockComponent,
+    quote: QuoteBlock as BlockComponent,
+    code: CodeBlock as BlockComponent,
+    button: ButtonBlock as BlockComponent,
     section: SectionBlock,
-    column: ColumnBlock,
-    grid: GridBlock,
-    'grid-item': GridItemBlock,
+    column: ColumnBlock as BlockComponent,
+    grid: GridBlock as BlockComponent,
+    'grid-item': GridItemBlock as BlockComponent,
 };

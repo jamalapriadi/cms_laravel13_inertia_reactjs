@@ -1,23 +1,30 @@
 // components/editor/blocks/TextBlock.tsx
 
-import type { BlockComponent } from '../types/block';
+import TinyEditor from '@/components/ui/TinyEditor';
+import type { BlockComponent } from './block';
+import { buildBlockStyle } from '../style';
 
 type TextData = {
-    text: string;
+    html: string;
+    text?: string;
 };
 
 const TextBlock: BlockComponent<TextData> = {
     type: 'text',
 
     create: () => ({
-        text: 'New text...',
+        html: '<p>Write your article content...</p>',
     }),
 
-    render: ({ data }) => {
+    render: ({ data, styles }) => {
         return (
-            <p className="text-sm leading-relaxed">
-                {data.text || 'Empty text...'}
-            </p>
+            <div
+                className="prose-sm dark:prose-invert prose max-w-none leading-relaxed"
+                style={buildBlockStyle(styles)}
+                dangerouslySetInnerHTML={{
+                    __html: data.html || data.text || '<p>Empty text...</p>',
+                }}
+            />
         );
     },
 
@@ -26,12 +33,10 @@ const TextBlock: BlockComponent<TextData> = {
             <div className="space-y-2">
                 <label className="text-xs text-muted-foreground">Text</label>
 
-                <textarea
-                    className="textarea w-full border"
-                    value={data.text || ''}
-                    onChange={(e) => onChange({ text: e.target.value })}
-                    placeholder="Write your text..."
-                    rows={4}
+                <TinyEditor
+                    value={data.html || data.text || ''}
+                    onChange={(html) => onChange({ html })}
+                    height={320}
                 />
             </div>
         );

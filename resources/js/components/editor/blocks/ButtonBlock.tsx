@@ -1,5 +1,3 @@
-import { BlockInstance } from '@/components/editor/types';
-
 /**
  * ✅ TYPES
  */

@@ -8,12 +8,15 @@ export type BlockType =
     | 'code'
     | 'button'
     | 'section'
-    | 'column';
+    | 'column'
+    | 'grid'
+    | 'grid-item';
 
 export interface BlockInstance<T = any> {
     id: number;
     type: BlockType;
     data: T;
+    styles?: Record<string, string>;
     children?: BlockInstance[];
 }
 
@@ -22,7 +25,11 @@ export interface BlockComponent<T = any> {
 
     create: () => T;
 
-    render: (props: { data: T; children?: React.ReactNode }) => React.ReactNode;
+    render: (props: {
+        data: T;
+        styles?: Record<string, string>;
+        children?: React.ReactNode;
+    }) => React.ReactNode;
 
     editor?: (props: {
         data: T;

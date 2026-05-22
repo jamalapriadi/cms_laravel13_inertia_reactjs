@@ -15,6 +15,7 @@ export const createBlock = (type: string): any => {
         id: generateId(),
         type,
         data: defaultData,
+        styles: {},
         children: [] as any[],
     };
 

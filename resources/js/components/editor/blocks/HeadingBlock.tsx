@@ -1,3 +1,5 @@
+import { buildBlockStyle } from '../style';
+
 const ALLOWED_LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 
 export default {
@@ -8,7 +10,7 @@ export default {
         level: 'h2',
     }),
 
-    render: ({ data }: any) => {
+    render: ({ data, styles }: any) => {
         const level = ALLOWED_LEVELS.includes(data?.level) ? data.level : 'h2';
 
         const Tag = level as React.ElementType;
@@ -25,7 +27,9 @@ export default {
         };
 
         return (
-            <Tag className={sizeMap[level]}>{text || 'Untitled Heading'}</Tag>
+            <Tag className={sizeMap[level]} style={buildBlockStyle(styles)}>
+                {text || 'Untitled Heading'}
+            </Tag>
         );
     },
 
