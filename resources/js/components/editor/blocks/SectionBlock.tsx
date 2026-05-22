@@ -1,4 +1,4 @@
-import type { BlockComponent } from '../types/block';
+import type { BlockComponent } from './block';
 
 type SectionData = {
     padding?: string;
@@ -22,7 +22,7 @@ export const SectionBlock: BlockComponent<SectionData> = {
                 style={{ padding, background }}
                 className="space-y-4 rounded border border-dashed"
             >
-                {children && children.length > 0 ? (
+                {children ? (
                     children
                 ) : (
                     <div className="text-xs text-muted-foreground">

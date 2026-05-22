@@ -39,8 +39,8 @@ export default function SortableBlock({ block, selectedId, onSelect }: Props) {
             {/* 🔥 BLOCK */}
             <BlockRenderer
                 block={block}
-                selectedId={selectedId}
-                onSelect={onSelect}
+                isActive={selectedId === block.id}
+                onClick={() => onSelect?.(block)}
             />
         </div>
     );

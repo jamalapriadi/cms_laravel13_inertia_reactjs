@@ -21,5 +21,6 @@ export interface BlockInstance<T = any> {
     id: number;
     type: BlockType;
     data: T;
+    styles?: Record<string, string>;
     children?: BlockInstance[];
 }

@@ -1,5 +1,6 @@
 import { BlockInstance } from '@/types/block';
 import { BLOCK_REGISTRY } from './blocks/registry';
+import { buildBlockStyle } from './style';
 
 interface Props {
     block: BlockInstance;
@@ -7,7 +8,11 @@ interface Props {
     onClick?: () => void;
 }
 
-export default function BlockRenderer({ block, isActive = false, onClick }: Props) {
+export default function BlockRenderer({
+    block,
+    isActive = false,
+    onClick,
+}: Props) {
     const Component = BLOCK_REGISTRY[block.type];
 
     if (!Component) {
@@ -17,6 +22,7 @@ export default function BlockRenderer({ block, isActive = false, onClick }: Prop
     return (
         <div
             onClick={onClick}
+            style={buildBlockStyle(block.styles)}
             className={`relative cursor-pointer rounded border p-2 transition ${
                 isActive
                     ? 'border-primary ring-1 ring-primary'
@@ -25,6 +31,7 @@ export default function BlockRenderer({ block, isActive = false, onClick }: Prop
         >
             {Component.render({
                 data: block.data,
+                styles: block.styles,
 
                 /**
                  * 🔥 recursive children render

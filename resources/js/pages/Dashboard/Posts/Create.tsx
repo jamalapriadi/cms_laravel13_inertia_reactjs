@@ -7,20 +7,12 @@ import {
 } from '@dnd-kit/core';
 import { Head, useForm } from '@inertiajs/react';
 
-import {
-    Text,
-    Heading,
-    List,
-    Quote,
-    Code,
-    Image as ImageIcon,
-    MousePointerClick,
-    AlignLeft,
-} from 'lucide-react';
+import { Text, Heading, Image as ImageIcon } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { store } from '@/actions/App/Http/Controllers/Dashboard/PostController';
 import BlockEditor from '@/components/editor/BlockEditor';
 import { createBlock } from '@/components/editor/blocks/factory';
 import Canvas from '@/components/editor/Canvas';
@@ -29,6 +21,7 @@ import {
     insertWithPosition,
     getDropPosition,
 } from '@/components/editor/core/tree';
+import type { BlockInstance } from '@/types/block';
 
 import SortableTree from '@/components/editor/SortableTree';
 
@@ -46,21 +39,11 @@ import {
 
 import AppLayout from '@/layouts/post-layout';
 
-/**
- * ✅ TYPES
- */
 type DropPosition = 'before' | 'after' | 'inside';
 
 interface DropIndicator {
     id: number;
     position: DropPosition;
-}
-
-interface BlockInstance {
-    id: number;
-    type: string;
-    data: Record<string, any>;
-    children?: BlockInstance[];
 }
 
 function DraggableBlock({ item, disabled, onClick }: any) {
@@ -112,12 +95,7 @@ export default function Create() {
         // { type: 'grid-item', title: 'Grid Item', icon: Columns },
         { type: 'heading', title: 'Heading', icon: Heading },
         { type: 'text', title: 'Text', icon: Text },
-        { type: 'paragraph', title: 'Paragraph', icon: AlignLeft },
         { type: 'image', title: 'Image', icon: ImageIcon },
-        { type: 'button', title: 'Button', icon: MousePointerClick },
-        { type: 'list', title: 'List', icon: List },
-        { type: 'quote', title: 'Quote', icon: Quote },
-        { type: 'code', title: 'Code', icon: Code },
     ];
 
     /**
@@ -141,11 +119,18 @@ export default function Create() {
     /**
      * ✅ UPDATE BLOCK
      */
-    const updateBlock = (id: number, newData: Record<string, any>) => {
+    const updateBlock = (
+        id: number,
+        newData: Record<string, any>,
+        target: 'data' | 'styles' = 'data',
+    ) => {
         const updateRecursive = (blocks: BlockInstance[]): BlockInstance[] =>
             blocks.map((b) => {
                 if (b.id === id) {
-                    return { ...b, data: { ...b.data, ...newData } };
+                    return {
+                        ...b,
+                        [target]: { ...(b[target] ?? {}), ...newData },
+                    };
                 }
 
                 if (b.children) {
@@ -159,7 +144,12 @@ export default function Create() {
 
         if (selectedBlock?.id === id) {
             setSelectedBlock((prev) =>
-                prev ? { ...prev, data: { ...prev.data, ...newData } } : prev,
+                prev
+                    ? {
+                          ...prev,
+                          [target]: { ...(prev[target] ?? {}), ...newData },
+                      }
+                    : prev,
             );
         }
     };
@@ -189,7 +179,7 @@ export default function Create() {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        post('/dashboard/posts', {
+        post(store().url, {
             preserveScroll: true,
             onStart: () => toast.loading('Saving...', { id: 'post' }),
             onSuccess: () => toast.success('Post created', { id: 'post' }),

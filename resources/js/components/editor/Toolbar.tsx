@@ -1,6 +1,8 @@
 import { Editor } from '@tiptap/react';
 import { Button } from '@/components/ui/button';
 
+type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
 export default function Toolbar({ editor }: { editor: Editor | null }) {
     if (!editor) {
         return null;
@@ -47,7 +49,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
             <div className="mx-2 h-6 w-px bg-border" />
 
             {/* HEADINGS */}
-            {[1, 2, 3].map((level) => (
+            {([1, 2, 3] as HeadingLevel[]).map((level) => (
                 <Button
                     key={level}
                     size="sm"
