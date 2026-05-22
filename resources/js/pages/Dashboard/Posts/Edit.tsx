@@ -16,9 +16,6 @@ import {
     Image as ImageIcon,
     MousePointerClick,
     AlignLeft,
-    Layout,
-    Columns,
-    Grid,
 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
@@ -180,6 +177,16 @@ export default function Edit({ post, blocks }: any) {
             });
 
         setPageBlocks((prev) => updateRecursive(prev));
+
+        /**
+         * ✅ FIX: also update selectedBlock so the editor sidebar
+         * reflects the latest data immediately while typing.
+         */
+        if (selectedBlock?.id === id) {
+            setSelectedBlock((prev) =>
+                prev ? { ...prev, data: { ...prev.data, ...newData } } : prev,
+            );
+        }
     };
 
     /**

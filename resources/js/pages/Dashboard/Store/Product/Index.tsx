@@ -183,8 +183,8 @@ export default function Index({
                 <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         row.is_publish
-                            ? 'bg-green-50 text-green-700'
-                            : 'bg-red-50 text-red-700'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300'
+                            : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
                     }`}
                 >
                     {row.is_publish ? 'Published' : 'Draft'}
@@ -233,7 +233,7 @@ export default function Index({
                     <div>
                         <h1 className="text-2xl font-bold">Products</h1>
 
-                        <p className="text-gray-500">
+                        <p className="text-muted-foreground">
                             List of registered products
                         </p>
                     </div>

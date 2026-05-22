@@ -96,33 +96,33 @@ export default function Index({ orders, summary, filters }: Props) {
     const getPaymentStatusStyles = (pmStatus: string) => {
         switch (pmStatus) {
             case 'paid':
-                return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+                return 'border border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300';
             case 'pending':
-                return 'bg-amber-50 text-amber-700 border border-amber-200';
+                return 'border border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300';
             case 'failed':
             case 'expired':
-                return 'bg-rose-50 text-rose-700 border border-rose-200';
+                return 'border border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300';
             case 'refunded':
-                return 'bg-blue-50 text-blue-700 border border-blue-200';
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200';
             default:
-                return 'bg-slate-50 text-slate-700 border border-slate-200';
+                return 'bg-muted/50 text-foreground border border-border';
         }
     };
 
     const getOrderStatusStyles = (ordStatus: string) => {
         switch (ordStatus) {
             case 'completed':
-                return 'bg-emerald-100 text-emerald-800 font-medium';
+                return 'bg-emerald-100 text-emerald-800 dark:text-emerald-300 font-medium';
             case 'processing':
-                return 'bg-blue-100 text-blue-800 font-medium';
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 font-medium';
             case 'shipped':
-                return 'bg-indigo-100 text-indigo-800 font-medium';
+                return 'bg-indigo-100 text-indigo-800 font-medium dark:bg-indigo-950/40 dark:text-indigo-300';
             case 'pending':
-                return 'bg-amber-100 text-amber-800 font-medium';
+                return 'bg-amber-100 text-amber-800 dark:text-amber-300 font-medium';
             case 'cancelled':
-                return 'bg-rose-100 text-rose-800 font-medium';
+                return 'bg-rose-100 text-rose-800 dark:text-rose-300 font-medium';
             default:
-                return 'bg-slate-100 text-slate-800 font-medium';
+                return 'bg-muted text-foreground font-medium';
         }
     };
 
@@ -230,7 +230,7 @@ export default function Index({ orders, summary, filters }: Props) {
                     </p>
                 </div>
 
-                <hr className="border-slate-100" />
+                <hr className="border-border" />
 
                 {/* SUMMARY STATS DASHBOARD */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -257,7 +257,7 @@ export default function Index({ orders, summary, filters }: Props) {
                             Total Paid Revenue
                         </span>
                         <div className="mt-2 flex flex-col">
-                            <span className="text-xl font-bold tracking-tight text-emerald-600">
+                            <span className="text-xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300">
                                 Rp{' '}
                                 {summary.total_revenue.toLocaleString('id-ID')}
                             </span>
@@ -274,7 +274,7 @@ export default function Index({ orders, summary, filters }: Props) {
                             Pending Orders
                         </span>
                         <div className="mt-2 flex items-baseline gap-2">
-                            <span className="text-3xl font-bold tracking-tight text-amber-600">
+                            <span className="text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-300">
                                 {summary.pending_orders}
                             </span>
                             <span className="text-xs text-muted-foreground">
@@ -306,7 +306,7 @@ export default function Index({ orders, summary, filters }: Props) {
                             Completed Orders
                         </span>
                         <div className="mt-2 flex items-baseline gap-2">
-                            <span className="text-3xl font-bold tracking-tight text-emerald-600">
+                            <span className="text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300">
                                 {summary.completed_orders}
                             </span>
                             <span className="text-xs text-muted-foreground">

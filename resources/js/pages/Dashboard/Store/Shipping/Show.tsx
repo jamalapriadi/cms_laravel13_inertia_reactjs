@@ -142,13 +142,13 @@ export default function Show({ shipping }: Props) {
 
                 {/* DANGER BANNERS FOR ERROR STATES */}
                 {shipping.status === 'failed' && (
-                    <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/50 p-4 text-rose-800">
-                        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" />
+                    <div className="flex items-start gap-3 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-100 dark:bg-rose-950/40 p-4 text-rose-800 dark:text-rose-300">
+                        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700 dark:text-rose-300" />
                         <div>
                             <h4 className="font-bold">
                                 Shipment Delivery Failed
                             </h4>
-                            <p className="mt-0.5 text-sm text-rose-700">
+                            <p className="mt-0.5 text-sm text-rose-800 dark:text-rose-300">
                                 This shipment could not be successfully
                                 delivered. Please check the destination address
                                 or contact the carrier.
@@ -158,13 +158,13 @@ export default function Show({ shipping }: Props) {
                 )}
 
                 {shipping.status === 'returned' && (
-                    <div className="flex items-start gap-3 rounded-xl border border-orange-200 bg-orange-50/50 p-4 text-orange-800">
+                    <div className="flex items-start gap-3 rounded-xl border border-orange-200 dark:border-orange-900/60 bg-orange-100 dark:bg-orange-950/40 p-4 text-orange-800">
                         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-orange-600" />
                         <div>
                             <h4 className="font-bold">
                                 Shipment Returned to Sender
                             </h4>
-                            <p className="mt-0.5 text-sm text-orange-700">
+                            <p className="mt-0.5 text-sm text-orange-800 dark:text-orange-300">
                                 This shipment has been returned back to the
                                 warehouse by the courier.
                             </p>
@@ -180,7 +180,7 @@ export default function Show({ shipping }: Props) {
                         </h3>
                         <div className="relative flex flex-col items-center justify-between gap-6 md:flex-row md:gap-4">
                             {/* Connector Line */}
-                            <div className="absolute top-1/2 right-0 left-0 z-0 hidden h-0.5 -translate-y-1/2 bg-slate-200 md:block dark:bg-slate-800" />
+                            <div className="absolute top-1/2 right-0 left-0 z-0 hidden h-0.5 -translate-y-1/2 bg-muted md:block dark:bg-muted" />
 
                             {timelineSteps.map((step) => {
                                 const StepIcon = step.icon;
@@ -196,7 +196,7 @@ export default function Show({ shipping }: Props) {
                                             className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 ${
                                                 isCompleted
                                                     ? 'border-primary bg-primary font-bold text-primary-foreground'
-                                                    : 'border-slate-300 bg-background text-slate-400'
+                                                    : 'border-border bg-background text-muted-foreground'
                                             } ${isCurrent ? 'scale-110 ring-4 ring-primary/20' : ''}`}
                                         >
                                             <StepIcon className="h-5 w-5" />
@@ -262,7 +262,7 @@ export default function Show({ shipping }: Props) {
                                     <span className="block text-xs text-muted-foreground">
                                         Current Status
                                     </span>
-                                    <span className="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 uppercase">
+                                    <span className="inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-900/60 bg-indigo-100 dark:bg-indigo-950/40 px-2 py-0.5 text-xs font-semibold text-indigo-800 dark:text-indigo-300 uppercase">
                                         {shipping.status}
                                     </span>
                                 </div>

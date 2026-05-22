@@ -28,7 +28,7 @@ export default function MenuItemNode({ item, locale, onChange, onDelete }) {
         <div
             ref={setNodeRef}
             style={style}
-            className="mb-2 rounded border bg-white shadow-sm"
+            className="mb-2 rounded border bg-card shadow-sm"
         >
             {/* HEADER */}
             <div className="flex items-center gap-2 p-3">
@@ -36,7 +36,7 @@ export default function MenuItemNode({ item, locale, onChange, onDelete }) {
                 <div
                     {...attributes}
                     {...listeners}
-                    className="cursor-grab text-gray-400 hover:text-gray-600"
+                    className="cursor-grab text-muted-foreground hover:text-muted-foreground"
                 >
                     <GripVertical size={18} />
                 </div>
@@ -79,7 +79,7 @@ export default function MenuItemNode({ item, locale, onChange, onDelete }) {
 
             {/* ADVANCED PANEL */}
             {!collapsed && (
-                <div className="space-y-3 border-t bg-gray-50 p-4">
+                <div className="space-y-3 border-t bg-muted/50 p-4">
                     {/* 🔥 URL (TRANSLATION AWARE) */}
                     <div>
                         <label className="text-sm font-medium">URL</label>

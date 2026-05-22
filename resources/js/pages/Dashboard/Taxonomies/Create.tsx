@@ -60,7 +60,7 @@ export default function Create({ taxonomy }: Props) {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">{title}</h1>
-                    <p className="text-gray-500">Kelola data {taxonomy}</p>
+                    <p className="text-muted-foreground">Kelola data {taxonomy}</p>
                 </div>
 
                 {/* FORM */}

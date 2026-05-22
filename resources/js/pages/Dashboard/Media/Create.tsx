@@ -54,7 +54,7 @@ export default function CreateMedia() {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Upload Media</h1>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                         Upload images or files to your media library
                     </p>
                 </div>
@@ -101,7 +101,7 @@ export default function CreateMedia() {
                             {files.map((file, index) => (
                                 <div
                                     key={index}
-                                    className="rounded-xl border bg-white p-2 shadow-sm"
+                                    className="rounded-xl border bg-card p-2 shadow-sm"
                                 >
                                     <img
                                         src={URL.createObjectURL(file)}

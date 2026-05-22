@@ -38,7 +38,7 @@ class ProductVariantRequest extends FormRequest
             'is_active' => ['nullable', 'boolean'],
             'stock_units' => ['nullable', 'array'],
             'stock_units.*.imei_serial_number' => ['required_with:stock_units', 'string', 'max:255', 'distinct', 'unique:product_stock_units,imei_serial_number'],
-            'stock_units.*.network_compatibility' => ['required_with:stock_units', 'string', Rule::in(['sim_free', 'docomo', 'au', 'softbank', 'rakuten', 'mineo'])],
+            'stock_units.*.network_compatibility' => ['nullable', 'string', Rule::in(['sim_free', 'docomo', 'au', 'softbank', 'rakuten', 'mineo'])],
             'stock_units.*.status' => ['nullable', 'string', Rule::in(['available', 'reserved', 'sold', 'damaged'])],
             'stock_units.*.note' => ['nullable', 'string'],
         ];

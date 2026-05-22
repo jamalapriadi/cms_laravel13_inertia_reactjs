@@ -132,7 +132,7 @@ export default function Index({
                             </span>
                         </>
                     ) : (
-                        <span className="inline-flex w-fit items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                        <span className="inline-flex w-fit items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                             Guest / Anonymous
                         </span>
                     )}
@@ -185,8 +185,8 @@ export default function Index({
                         <span
                             className={`mt-0.5 text-[10px] font-semibold tracking-wider uppercase ${
                                 isAbandoned
-                                    ? 'text-amber-600'
-                                    : 'text-emerald-600'
+                                    ? 'text-amber-700 dark:text-amber-300'
+                                    : 'text-emerald-700 dark:text-emerald-300'
                             }`}
                         >
                             {isAbandoned ? 'Abandoned' : 'Active'}
@@ -241,7 +241,7 @@ export default function Index({
                     </p>
                 </div>
 
-                <hr className="border-slate-100" />
+                <hr className="border-border" />
 
                 {/* INSIGHTS METRICS GRID */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -268,7 +268,7 @@ export default function Index({
                             Cumulative Value
                         </span>
                         <div className="mt-2 flex flex-col">
-                            <span className="text-xl font-bold tracking-tight text-emerald-600">
+                            <span className="text-xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300">
                                 Rp {summary.total_value.toLocaleString('id-ID')}
                             </span>
                             <span className="mt-0.5 text-[10px] text-muted-foreground">
@@ -303,7 +303,7 @@ export default function Index({
                             Abandonment Rate
                         </span>
                         <div className="mt-2 flex items-baseline gap-2">
-                            <span className="text-3xl font-bold tracking-tight text-amber-600">
+                            <span className="text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-300">
                                 {summary.abandonment_rate}%
                             </span>
                             <span className="text-xs text-muted-foreground">
@@ -439,7 +439,7 @@ export default function Index({
                                                     {product.qty} pcs
                                                 </span>
                                             </div>
-                                            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                                                 <div
                                                     className="h-full rounded-full bg-primary transition-all duration-500"
                                                     style={{
@@ -457,13 +457,13 @@ export default function Index({
                             )}
                         </div>
 
-                        <hr className="border-slate-100" />
+                        <hr className="border-border" />
 
-                        <div className="space-y-2 rounded-lg bg-slate-50 p-4">
-                            <span className="text-xs font-bold tracking-wider text-slate-500 uppercase">
+                        <div className="space-y-2 rounded-lg bg-muted/50 p-4">
+                            <span className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
                                 Ecommerce Hint
                             </span>
-                            <p className="text-xs leading-relaxed text-slate-600">
+                            <p className="text-xs leading-relaxed text-muted-foreground">
                                 High cart abandonment rates (typically &gt; 70%)
                                 may indicate friction during checkout,
                                 uncompetitive pricing, or high shipping fees.

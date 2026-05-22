@@ -41,16 +41,16 @@ export default function Show({ movement }: Props) {
     const getTypeColor = (movementType: string) => {
         switch (movementType) {
             case 'purchase':
-                return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                return 'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300';
             case 'return':
             case 'cancel':
-                return 'bg-blue-50 text-blue-700 border-blue-200';
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200';
             case 'sale':
-                return 'bg-rose-50 text-rose-700 border-rose-200';
+                return 'border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300';
             case 'adjustment':
-                return 'bg-amber-50 text-amber-700 border-amber-200';
+                return 'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300';
             default:
-                return 'bg-slate-50 text-slate-700 border-slate-200';
+                return 'bg-muted/50 text-foreground border-border';
         }
     };
 
@@ -134,7 +134,7 @@ export default function Show({ movement }: Props) {
                                                 Quantity Shift
                                             </span>
                                             <p
-                                                className={`text-base font-bold ${movement.qty >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                                                className={`text-base font-bold ${movement.qty >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}
                                             >
                                                 {movement.qty >= 0
                                                     ? `+${movement.qty}`
@@ -187,7 +187,7 @@ export default function Show({ movement }: Props) {
                                 <FileText className="h-4 w-4 text-muted-foreground" />
                                 Notes & Explanations
                             </h3>
-                            <p className="rounded-lg border bg-slate-50 p-4 text-sm leading-relaxed text-slate-600 dark:bg-slate-900/40">
+                            <p className="rounded-lg border bg-muted/50 p-4 text-sm leading-relaxed text-muted-foreground dark:bg-muted/40">
                                 {movement.note ||
                                     'No notes were provided for this stock adjustment.'}
                             </p>

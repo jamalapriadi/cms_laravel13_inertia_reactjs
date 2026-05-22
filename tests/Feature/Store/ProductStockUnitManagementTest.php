@@ -154,6 +154,30 @@ test('authenticated user can create stock unit and variant stock is synced', fun
     expect($variant->refresh()->stock)->toBe(1);
 });
 
+test('authenticated user can create stock unit without network', function () {
+    $user = User::factory()->create();
+    $variant = createStockUnitVariant();
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('product-stock-units.create'))
+        ->post(route('product-stock-units.store'), [
+            'product_variant_id' => $variant->id,
+            'imei_serial_number' => '351234567890124',
+            'network_compatibility' => null,
+            'status' => 'available',
+        ]);
+
+    $response->assertRedirect(route('product-stock-units.index'));
+
+    $this->assertDatabaseHas('product_stock_units', [
+        'product_variant_id' => $variant->id,
+        'imei_serial_number' => '351234567890124',
+        'network_compatibility' => null,
+        'status' => 'available',
+    ]);
+});
+
 test('authenticated user can view stock unit detail page', function () {
     $user = User::factory()->create();
     $variant = createStockUnitVariant();

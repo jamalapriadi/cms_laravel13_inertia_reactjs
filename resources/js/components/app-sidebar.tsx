@@ -28,10 +28,10 @@ export function AppSidebar() {
         <Sidebar
             collapsible="icon"
             variant="inset"
-            className={`border-r border-gray-100 bg-white pt-20`}
+            className={`border-r border-border bg-card pt-20`}
         >
             {/* CONTENT */}
-            <SidebarContent className={`bg-white`}>
+            <SidebarContent className={`bg-card`}>
                 {menus.map((group) => (
                     <SidebarGroupItem key={group.label} label={group.label}>
                         {group.items.map((item: any) => (
@@ -46,7 +46,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             {/* FOOTER */}
-            <SidebarFooter className={`bg-white`}>
+            <SidebarFooter className={`bg-card`}>
                 <SidebarSeparator className="my-2" />
                 <NavUser />
             </SidebarFooter>

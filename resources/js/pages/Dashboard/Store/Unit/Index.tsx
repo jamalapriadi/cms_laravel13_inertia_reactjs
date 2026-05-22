@@ -104,8 +104,8 @@ export default function Index({ units, filters }: Props) {
                 <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         row.is_active
-                            ? 'bg-green-50 text-green-700'
-                            : 'bg-red-50 text-red-700'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300'
+                            : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
                     }`}
                 >
                     {row.is_active ? 'Active' : 'Inactive'}
@@ -145,7 +145,7 @@ export default function Index({ units, filters }: Props) {
                     <div>
                         <h1 className="text-2xl font-bold">Product Units</h1>
 
-                        <p className="text-gray-500">
+                        <p className="text-muted-foreground">
                             Manage product unit/measurement types
                         </p>
                     </div>
@@ -170,7 +170,7 @@ export default function Index({ units, filters }: Props) {
                 </div>
 
                 {/* TABLE */}
-                <div className="rounded-xl bg-white shadow">
+                <div className="rounded-xl bg-card shadow">
                     <DataTable
                         columns={columns}
                         data={units.data}
@@ -179,7 +179,7 @@ export default function Index({ units, filters }: Props) {
 
                 {/* PAGINATION */}
                 <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-muted-foreground">
                         Showing {units.from} to {units.to} of {units.total} results
                     </span>
 
@@ -191,7 +191,7 @@ export default function Index({ units, filters }: Props) {
                                 className={`px-3 py-1 rounded border text-sm ${
                                     link.active
                                         ? 'bg-blue-500 text-white border-blue-500'
-                                        : 'bg-white text-gray-700 border-gray-300'
+                                        : 'bg-card text-foreground border-border'
                                 } ${!link.url ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 {link.label}

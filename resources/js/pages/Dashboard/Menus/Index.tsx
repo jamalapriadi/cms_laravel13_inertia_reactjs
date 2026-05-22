@@ -122,7 +122,7 @@ export default function Index({ menus, filters }: Props) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold">Menus</h1>
-                        <p className="text-gray-500">Manage navigation menus</p>
+                        <p className="text-muted-foreground">Manage navigation menus</p>
                     </div>
 
                     <Link href="/dashboard/menus/create">

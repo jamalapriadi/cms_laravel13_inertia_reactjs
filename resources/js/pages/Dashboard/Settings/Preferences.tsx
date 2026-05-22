@@ -114,7 +114,7 @@ export default function Preferences({ options }: Props) {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Preferences</h1>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                         Configure SEO, snippets and social settings
                     </p>
                 </div>
@@ -128,13 +128,13 @@ export default function Preferences({ options }: Props) {
                             <h3 className="text-lg font-semibold">
                                 Title & Meta
                             </h3>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                                 Define how your website appears in search
                                 engines.
                             </p>
                         </div>
 
-                        <div className="col-span-2 space-y-6 rounded-xl bg-white p-6 shadow">
+                        <div className="col-span-2 space-y-6 rounded-xl bg-card p-6 shadow">
                             <div>
                                 <label>Meta Keyword</label>
                                 <Textarea
@@ -168,12 +168,12 @@ export default function Preferences({ options }: Props) {
                             <h3 className="text-lg font-semibold">
                                 Robots & Snippets
                             </h3>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                                 Custom robots.txt and script snippets.
                             </p>
                         </div>
 
-                        <div className="col-span-2 space-y-6 rounded-xl bg-white p-6 shadow">
+                        <div className="col-span-2 space-y-6 rounded-xl bg-card p-6 shadow">
                             <EditorField
                                 label="Robots.txt"
                                 value={data.robot_txt}
@@ -231,7 +231,7 @@ export default function Preferences({ options }: Props) {
                             <h3 className="text-lg font-semibold">
                                 Social Sharing Image
                             </h3>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                                 When you share a link to your website on social
                                 media, this image will be used if no other
                                 relevant image is found.
@@ -239,7 +239,7 @@ export default function Preferences({ options }: Props) {
                         </div>
 
                         <div className="col-span-2">
-                            <div className="rounded-xl bg-white shadow">
+                            <div className="rounded-xl bg-card shadow">
                                 {/* CARD HEADER */}
                                 <div className="flex items-center justify-between border-b px-6 py-4">
                                     <h4 className="font-semibold">
@@ -271,7 +271,7 @@ export default function Preferences({ options }: Props) {
                                 <div className="space-y-4 p-6">
                                     <p className="text-sm">
                                         Image{' '}
-                                        <span className="text-gray-500">
+                                        <span className="text-muted-foreground">
                                             (Recommended size: 1200 x 628 px)
                                         </span>
                                     </p>
@@ -293,16 +293,16 @@ export default function Preferences({ options }: Props) {
 
                                             {/* TEXT */}
                                             <div className="flex flex-col justify-center">
-                                                <h4 className="text-sm font-semibold text-gray-800">
+                                                <h4 className="text-sm font-semibold text-foreground">
                                                     {data.site_title ||
                                                         'Your page title will appear here'}
                                                 </h4>
 
-                                                <p className="text-xs text-gray-500">
+                                                <p className="text-xs text-muted-foreground">
                                                     {window.location.origin}
                                                 </p>
 
-                                                <p className="line-clamp-2 text-xs text-gray-600">
+                                                <p className="line-clamp-2 text-xs text-muted-foreground">
                                                     {data.meta_description ||
                                                         'Your meta description will appear here when you start typing.'}
                                                 </p>

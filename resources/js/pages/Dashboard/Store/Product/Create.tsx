@@ -116,7 +116,7 @@ export default function Create({ categories, brands, units }: Props) {
             <div className="container mx-auto space-y-10 px-6 py-10">
                 <div>
                     <h1 className="text-2xl font-bold">Create Product</h1>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                         Add a new product to the store
                     </p>
                 </div>
@@ -124,7 +124,7 @@ export default function Create({ categories, brands, units }: Props) {
                 <hr />
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                    <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
+                    <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Product Name</Label>

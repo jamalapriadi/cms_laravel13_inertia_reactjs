@@ -94,16 +94,16 @@ export default function Index({ payments, summary, filters }: Props) {
     const getStatusStyles = (status: string) => {
         switch (status) {
             case 'paid':
-                return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                return 'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300';
             case 'pending':
-                return 'bg-amber-50 text-amber-700 border-amber-200';
+                return 'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300';
             case 'failed':
             case 'expired':
-                return 'bg-rose-50 text-rose-700 border-rose-200';
+                return 'border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300';
             case 'refunded':
-                return 'bg-blue-50 text-blue-700 border-blue-200';
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200';
             default:
-                return 'bg-slate-50 text-slate-700 border-slate-200';
+                return 'bg-muted/50 text-foreground border-border';
         }
     };
 
@@ -236,7 +236,7 @@ export default function Index({ payments, summary, filters }: Props) {
                     </p>
                 </div>
 
-                <hr className="border-slate-100" />
+                <hr className="border-border" />
 
                 {/* INSIGHTS METRICS GRID */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -247,7 +247,7 @@ export default function Index({ payments, summary, filters }: Props) {
                             Total Revenue Collected
                         </span>
                         <div className="mt-2 flex flex-col">
-                            <span className="text-2xl font-bold tracking-tight text-emerald-600">
+                            <span className="text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300">
                                 Rp{' '}
                                 {summary.total_revenue.toLocaleString('id-ID')}
                             </span>
@@ -300,7 +300,7 @@ export default function Index({ payments, summary, filters }: Props) {
                                 <span className="text-xs text-muted-foreground">
                                     Pending:
                                 </span>
-                                <span className="text-sm font-semibold text-amber-600">
+                                <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">
                                     Rp{' '}
                                     {summary.pending_amount.toLocaleString(
                                         'id-ID',
@@ -311,7 +311,7 @@ export default function Index({ payments, summary, filters }: Props) {
                                 <span className="text-xs text-muted-foreground">
                                     Refunded:
                                 </span>
-                                <span className="text-sm font-semibold text-slate-600">
+                                <span className="text-sm font-semibold text-muted-foreground">
                                     Rp{' '}
                                     {summary.refunded_amount.toLocaleString(
                                         'id-ID',
@@ -490,7 +490,7 @@ export default function Index({ payments, summary, filters }: Props) {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                                                     <div
                                                         className="h-full rounded-full bg-primary transition-all duration-500"
                                                         style={{
@@ -526,7 +526,7 @@ export default function Index({ payments, summary, filters }: Props) {
                                         const percent =
                                             (s.count / maxStatusCount) * 100;
 
-                                        let barColor = 'bg-slate-500';
+                                        let barColor = 'bg-muted/500';
                                         if (s.status === 'paid') {
                                             barColor = 'bg-emerald-500';
                                         } else if (s.status === 'pending') {
@@ -562,7 +562,7 @@ export default function Index({ payments, summary, filters }: Props) {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                                                     <div
                                                         className={`${barColor} h-full rounded-full transition-all duration-500`}
                                                         style={{

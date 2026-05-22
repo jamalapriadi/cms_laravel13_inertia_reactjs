@@ -41,11 +41,11 @@ export default function Receipt({ order }: Props) {
     }, []);
 
     return (
-        <div className="min-h-screen bg-white p-6 md:p-12 text-slate-800">
+        <div className="min-h-screen bg-card p-6 md:p-12 text-foreground">
             <Head title={`Receipt - ${order.invoice_number}`} />
 
             {/* PRINT TOOLBAR */}
-            <div className="max-w-3xl mx-auto flex gap-3 print:hidden mb-8 bg-slate-50 border p-4 rounded-xl items-center justify-between">
+            <div className="max-w-3xl mx-auto flex gap-3 print:hidden mb-8 bg-muted/50 border p-4 rounded-xl items-center justify-between">
                 <span className="text-xs text-muted-foreground font-medium">
                     Receipt print preview. This toolbar will be hidden in the printout.
                 </span>
@@ -60,9 +60,9 @@ export default function Receipt({ order }: Props) {
             </div>
 
             {/* RECEIPT CONTENT BOX */}
-            <div className="max-w-3xl mx-auto border border-slate-200 rounded-2xl p-8 md:p-12 bg-white shadow-sm print:border-none print:shadow-none print:p-0">
+            <div className="max-w-3xl mx-auto border border-border rounded-2xl p-8 md:p-12 bg-card shadow-sm print:border-none print:shadow-none print:p-0">
                 {/* HEADER */}
-                <div className="flex flex-wrap items-start justify-between gap-6 border-b border-slate-100 pb-8">
+                <div className="flex flex-wrap items-start justify-between gap-6 border-b border-border pb-8">
                     <div className="space-y-1">
                         <h1 className="text-2xl font-black uppercase tracking-tight text-primary">Gita Trading</h1>
                         <p className="text-xs text-muted-foreground">Your trusted trading partner</p>
@@ -84,7 +84,7 @@ export default function Receipt({ order }: Props) {
                 {/* ADDRESS INFO GROUP */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-8 text-sm">
                     <div className="space-y-2">
-                        <h3 className="font-bold text-slate-400 uppercase text-xs tracking-wider">Merchant</h3>
+                        <h3 className="font-bold text-muted-foreground uppercase text-xs tracking-wider">Merchant</h3>
                         <div className="space-y-0.5">
                             <p className="font-semibold text-foreground">Gita Trading Store</p>
                             <p className="text-muted-foreground text-xs leading-relaxed">
@@ -96,7 +96,7 @@ export default function Receipt({ order }: Props) {
                     </div>
 
                     <div className="space-y-2">
-                        <h3 className="font-bold text-slate-400 uppercase text-xs tracking-wider">Customer Ship To</h3>
+                        <h3 className="font-bold text-muted-foreground uppercase text-xs tracking-wider">Customer Ship To</h3>
                         <div className="space-y-0.5">
                             <p className="font-semibold text-foreground">{order.customer_name}</p>
                             {order.customer_phone && <p className="text-muted-foreground text-xs">Phone: {order.customer_phone}</p>}
@@ -112,7 +112,7 @@ export default function Receipt({ order }: Props) {
                 <div className="my-8">
                     <table className="w-full text-left border-collapse text-sm">
                         <thead>
-                            <tr className="border-b-2 border-slate-200 text-xs text-slate-400 uppercase tracking-wider font-semibold">
+                            <tr className="border-b-2 border-border text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                                 <th className="py-2.5 pr-4">Product / Item</th>
                                 <th className="py-2.5 px-4 text-right">Price</th>
                                 <th className="py-2.5 px-4 text-center">Qty</th>
@@ -146,7 +146,7 @@ export default function Receipt({ order }: Props) {
                 </div>
 
                 {/* PRICING BREAKDOWN */}
-                <div className="border-t border-slate-100 pt-6 flex justify-end">
+                <div className="border-t border-border pt-6 flex justify-end">
                     <div className="w-full md:w-80 space-y-3 text-sm">
                         <div className="flex justify-between text-muted-foreground">
                             <span>Subtotal</span>
@@ -163,12 +163,12 @@ export default function Receipt({ order }: Props) {
                         {Number(order.discount) > 0 && (
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Discount</span>
-                                <span className="font-semibold text-rose-600">
+                                <span className="font-semibold text-rose-700 dark:text-rose-300">
                                     - Rp {Number(order.discount).toLocaleString('id-ID')}
                                 </span>
                             </div>
                         )}
-                        <hr className="border-slate-100" />
+                        <hr className="border-border" />
                         <div className="flex justify-between items-baseline pt-1">
                             <span className="font-extrabold text-base text-foreground">Grand Total</span>
                             <span className="font-black text-lg text-primary">
@@ -179,8 +179,8 @@ export default function Receipt({ order }: Props) {
                 </div>
 
                 {/* FOOTER */}
-                <div className="border-t border-slate-100 pt-8 mt-12 text-center text-xs text-slate-400 space-y-1">
-                    <p className="font-semibold text-slate-600">Thank you for your business!</p>
+                <div className="border-t border-border pt-8 mt-12 text-center text-xs text-muted-foreground space-y-1">
+                    <p className="font-semibold text-muted-foreground">Thank you for your business!</p>
                     <p>If you have any questions about this receipt, please contact our customer support.</p>
                 </div>
             </div>

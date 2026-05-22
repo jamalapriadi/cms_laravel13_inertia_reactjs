@@ -107,8 +107,8 @@ export default function Index({ images, products, filters }: Props) {
                 <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         row.is_primary
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'bg-gray-50 text-gray-700'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300'
+                            : 'bg-muted/50 text-foreground'
                     }`}
                 >
                     {row.is_primary ? 'Primary' : 'Secondary'}
@@ -153,7 +153,7 @@ export default function Index({ images, products, filters }: Props) {
                     <div>
                         <h1 className="text-2xl font-bold">Product Images</h1>
 
-                        <p className="text-gray-500">
+                        <p className="text-muted-foreground">
                             Manage additional gallery images for products
                         </p>
                     </div>

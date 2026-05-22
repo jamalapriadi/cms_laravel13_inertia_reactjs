@@ -136,19 +136,19 @@ export default function Index({
     const getStatusColor = (shippingStatus: string) => {
         switch (shippingStatus) {
             case 'pending':
-                return 'bg-slate-50 text-slate-700 border-slate-200';
+                return 'bg-muted/50 text-foreground border-border';
             case 'processing':
-                return 'bg-amber-50 text-amber-700 border-amber-200';
+                return 'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300';
             case 'shipped':
-                return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                return 'border-indigo-200 bg-indigo-100 text-indigo-800 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-300';
             case 'delivered':
-                return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                return 'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300';
             case 'failed':
-                return 'bg-rose-50 text-rose-700 border-rose-200';
+                return 'border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300';
             case 'returned':
-                return 'bg-orange-50 text-orange-700 border-orange-200';
+                return 'border-orange-200 bg-orange-100 text-orange-800 dark:border-orange-900/60 dark:bg-orange-950/40 dark:text-orange-300';
             default:
-                return 'bg-slate-50 text-slate-700 border-slate-200';
+                return 'bg-muted/50 text-foreground border-border';
         }
     };
 
@@ -295,7 +295,7 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Total Shipments
                             </span>
-                            <div className="rounded-lg bg-indigo-50 p-2 text-indigo-600">
+                            <div className="rounded-lg bg-indigo-100 dark:bg-indigo-950/40 p-2 text-indigo-700 dark:text-indigo-300">
                                 <Truck className="h-4 w-4" />
                             </div>
                         </div>
@@ -314,12 +314,12 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Pending/Processing
                             </span>
-                            <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
+                            <div className="rounded-lg bg-amber-100 dark:bg-amber-950/40 p-2 text-amber-700 dark:text-amber-300">
                                 <Clock className="h-4 w-4" />
                             </div>
                         </div>
                         <div className="mt-4">
-                            <h3 className="text-3xl font-extrabold tracking-tight text-amber-600">
+                            <h3 className="text-3xl font-extrabold tracking-tight text-amber-700 dark:text-amber-300">
                                 {summary.pending_shipments}
                             </h3>
                             <p className="mt-1 text-xs text-muted-foreground">
@@ -333,12 +333,12 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 In Transit
                             </span>
-                            <div className="rounded-lg bg-indigo-50 p-2 text-indigo-600">
+                            <div className="rounded-lg bg-indigo-100 dark:bg-indigo-950/40 p-2 text-indigo-700 dark:text-indigo-300">
                                 <Compass className="h-4 w-4" />
                             </div>
                         </div>
                         <div className="mt-4">
-                            <h3 className="text-3xl font-extrabold tracking-tight text-indigo-600">
+                            <h3 className="text-3xl font-extrabold tracking-tight text-indigo-700 dark:text-indigo-300">
                                 {summary.shipped_shipments}
                             </h3>
                             <p className="mt-1 text-xs text-muted-foreground">
@@ -352,12 +352,12 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Delivered
                             </span>
-                            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
+                            <div className="rounded-lg bg-emerald-100 dark:bg-emerald-950/40 p-2 text-emerald-700 dark:text-emerald-300">
                                 <CheckCircle2 className="h-4 w-4" />
                             </div>
                         </div>
                         <div className="mt-4">
-                            <h3 className="text-3xl font-extrabold tracking-tight text-emerald-600">
+                            <h3 className="text-3xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300">
                                 {summary.delivered_shipments}
                             </h3>
                             <p className="mt-1 text-xs text-muted-foreground">
@@ -371,7 +371,7 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Total Costs
                             </span>
-                            <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
+                            <div className="rounded-lg bg-rose-100 dark:bg-rose-950/40 p-2 text-rose-700 dark:text-rose-300">
                                 <DollarSign className="h-4 w-4" />
                             </div>
                         </div>
@@ -423,7 +423,7 @@ export default function Index({
                                                     {percentage.toFixed(1)}%)
                                                 </span>
                                             </div>
-                                            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                            <div className="h-3 w-full overflow-hidden rounded-full bg-muted dark:bg-muted">
                                                 <div
                                                     className={`h-full rounded-full transition-all duration-500 ${
                                                         item.status ===
@@ -441,7 +441,7 @@ export default function Index({
                                                                   : item.status ===
                                                                       'returned'
                                                                     ? 'bg-orange-500'
-                                                                    : 'bg-slate-400'
+                                                                    : 'bg-muted-foreground'
                                                     }`}
                                                     style={{
                                                         width: `${percentage}%`,
@@ -483,7 +483,7 @@ export default function Index({
                                                 total
                                             </span>
                                         </div>
-                                        <span className="inline-flex items-center gap-1 rounded bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">
+                                        <span className="inline-flex items-center gap-1 rounded bg-indigo-100 dark:bg-indigo-950/40 px-2.5 py-1 text-xs font-bold text-indigo-800 dark:text-indigo-300">
                                             <Layers className="h-3 w-3" />
                                             {c.count} packages
                                         </span>
@@ -495,7 +495,7 @@ export default function Index({
                 </div>
 
                 {/* FILTER TOOLBAR */}
-                <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-slate-50/50 p-4 dark:bg-slate-900/10">
+                <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-muted/50 p-4 dark:bg-muted/20">
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="relative">
                             <Input

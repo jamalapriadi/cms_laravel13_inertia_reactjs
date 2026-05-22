@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -55,7 +56,7 @@ interface ProductStockUnit {
     id: string;
     product_variant_id: string;
     imei_serial_number: string;
-    network_compatibility: NetworkCompatibility;
+    network_compatibility: NetworkCompatibility | null;
     status: 'available' | 'reserved' | 'sold' | 'damaged';
     note?: string | null;
 }
@@ -91,14 +92,10 @@ const stockUnitSchema = z.object({
         .string()
         .min(1, 'IMEI / Serial Number is required')
         .max(255),
-    network_compatibility: z.enum([
-        'sim_free',
-        'docomo',
-        'au',
-        'softbank',
-        'rakuten',
-        'mineo',
-    ]),
+    network_compatibility: z
+        .enum(['sim_free', 'docomo', 'au', 'softbank', 'rakuten', 'mineo'])
+        .nullable()
+        .optional(),
     status: z
         .enum(['available', 'reserved', 'sold', 'damaged'])
         .default('available'),
@@ -116,8 +113,11 @@ const networkOptions: { value: NetworkCompatibility; label: string }[] = [
     { value: 'mineo', label: 'Mineo' },
 ];
 
-const networkLabel = (network: NetworkCompatibility) =>
-    networkOptions.find((option) => option.value === network)?.label ?? network;
+const networkLabel = (network?: NetworkCompatibility | null) =>
+    network
+        ? (networkOptions.find((option) => option.value === network)?.label ??
+          network)
+        : '-';
 
 export default function Index({ variants, products, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
@@ -126,6 +126,7 @@ export default function Index({ variants, products, filters }: Props) {
     const [isStockModalOpen, setIsStockModalOpen] = useState(false);
     const [editingStockUnit, setEditingStockUnit] =
         useState<ProductStockUnit | null>(null);
+    const [stockUnitHasNetwork, setStockUnitHasNetwork] = useState(false);
     const [submittingStock, setSubmittingStock] = useState(false);
 
     const [deletingType, setDeletingType] = useState<
@@ -142,7 +143,7 @@ export default function Index({ variants, products, filters }: Props) {
         defaultValues: {
             product_variant_id: '',
             imei_serial_number: '',
-            network_compatibility: 'sim_free',
+            network_compatibility: null,
             status: 'available',
             note: '',
         },
@@ -173,10 +174,11 @@ export default function Index({ variants, products, filters }: Props) {
         stockUnitForm.reset({
             product_variant_id: variant.id,
             imei_serial_number: '',
-            network_compatibility: 'sim_free',
+            network_compatibility: null,
             status: 'available',
             note: '',
         });
+        setStockUnitHasNetwork(false);
         setIsStockModalOpen(true);
     };
 
@@ -189,14 +191,22 @@ export default function Index({ variants, products, filters }: Props) {
             status: stockUnit.status,
             note: stockUnit.note ?? '',
         });
+        setStockUnitHasNetwork(!!stockUnit.network_compatibility);
         setIsStockModalOpen(true);
     };
 
     const handleStockSubmit = (data: StockUnitFormData) => {
+        const payload = {
+            ...data,
+            network_compatibility: stockUnitHasNetwork
+                ? data.network_compatibility || 'sim_free'
+                : null,
+        };
+
         if (editingStockUnit) {
             router.put(
                 `/dashboard/ecommerce/product-stock-units/${editingStockUnit.id}`,
-                data,
+                payload,
                 {
                     preserveScroll: true,
                     onStart: () => {
@@ -225,7 +235,7 @@ export default function Index({ variants, products, filters }: Props) {
             return;
         }
 
-        router.post('/dashboard/ecommerce/product-stock-units', data, {
+        router.post('/dashboard/ecommerce/product-stock-units', payload, {
             preserveScroll: true,
             onStart: () => {
                 setSubmittingStock(true);
@@ -343,7 +353,7 @@ export default function Index({ variants, products, filters }: Props) {
                                     .map((stockUnit) => (
                                         <div
                                             key={stockUnit.id}
-                                            className="rounded-md border bg-slate-50 px-2 py-1 text-xs"
+                                            className="rounded-md border bg-muted/50 px-2 py-1 text-xs"
                                         >
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="min-w-0">
@@ -404,8 +414,8 @@ export default function Index({ variants, products, filters }: Props) {
                 <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         row.is_active
-                            ? 'bg-green-50 text-green-700'
-                            : 'bg-red-50 text-red-700'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300'
+                            : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
                     }`}
                 >
                     {row.is_active ? 'Active' : 'Inactive'}
@@ -446,7 +456,7 @@ export default function Index({ variants, products, filters }: Props) {
                     <div>
                         <h1 className="text-2xl font-bold">Product Variants</h1>
 
-                        <p className="text-gray-500">
+                        <p className="text-muted-foreground">
                             List of registered product variants
                         </p>
                     </div>
@@ -614,40 +624,76 @@ export default function Index({ variants, products, filters }: Props) {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label>Network</Label>
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                {networkOptions.map((option) => {
-                                    const selected =
-                                        stockUnitForm.watch(
-                                            'network_compatibility',
-                                        ) === option.value;
+                        <div className="space-y-3">
+                            <label className="flex items-center gap-2 text-sm font-medium">
+                                <Checkbox
+                                    checked={stockUnitHasNetwork}
+                                    onCheckedChange={(checked) => {
+                                        const enabled = checked === true;
 
-                                    return (
-                                        <button
-                                            key={option.value}
-                                            type="button"
-                                            onClick={() =>
-                                                stockUnitForm.setValue(
+                                        setStockUnitHasNetwork(enabled);
+                                        stockUnitForm.setValue(
+                                            'network_compatibility',
+                                            enabled
+                                                ? stockUnitForm.watch(
+                                                      'network_compatibility',
+                                                  ) || 'sim_free'
+                                                : null,
+                                            { shouldValidate: true },
+                                        );
+                                    }}
+                                />
+                                Ada network
+                            </label>
+
+                            {stockUnitHasNetwork && (
+                                <div className="space-y-2">
+                                    <Label>Network</Label>
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                        {networkOptions.map((option) => {
+                                            const selected =
+                                                stockUnitForm.watch(
                                                     'network_compatibility',
-                                                    option.value,
-                                                    { shouldValidate: true },
-                                                )
-                                            }
-                                            className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
-                                                selected
-                                                    ? option.value ===
-                                                      'sim_free'
-                                                        ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                                                        : 'border-red-500 bg-red-50 text-red-800'
-                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                                            }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                                                ) === option.value;
+
+                                            return (
+                                                <button
+                                                    key={option.value}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        stockUnitForm.setValue(
+                                                            'network_compatibility',
+                                                            option.value,
+                                                            {
+                                                                shouldValidate: true,
+                                                            },
+                                                        )
+                                                    }
+                                                    className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
+                                                        selected
+                                                            ? option.value ===
+                                                              'sim_free'
+                                                                ? 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                                : 'border-red-500 bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
+                                                            : 'border-border bg-card text-muted-foreground hover:border-border'
+                                                    }`}
+                                                >
+                                                    {option.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                            {stockUnitForm.formState.errors
+                                .network_compatibility && (
+                                <p className="text-xs text-destructive">
+                                    {
+                                        stockUnitForm.formState.errors
+                                            .network_compatibility.message
+                                    }
+                                </p>
+                            )}
                         </div>
 
                         <div className="flex flex-col gap-1.5">

@@ -186,7 +186,7 @@ export default function Create({ products, units }: Props) {
                     <h1 className="text-2xl font-bold">
                         Create Product Variant
                     </h1>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                         Add a new variant for a product
                     </p>
                 </div>
@@ -194,7 +194,7 @@ export default function Create({ products, units }: Props) {
                 <hr />
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                    <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
+                    <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Product</Label>
@@ -430,7 +430,7 @@ export default function Create({ products, units }: Props) {
                                     {stockUnits.map((stockUnit, index) => (
                                         <div
                                             key={index}
-                                            className="rounded-md border bg-slate-50 p-4"
+                                            className="rounded-md border bg-muted/50 p-4"
                                         >
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                 <div className="flex flex-col gap-1">
@@ -509,9 +509,9 @@ export default function Create({ products, units }: Props) {
                                                                         selected
                                                                             ? option.value ===
                                                                               'sim_free'
-                                                                                ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                                                                                : 'border-red-500 bg-red-50 text-red-800'
-                                                                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                                                                ? 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                                                : 'border-red-500 bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
+                                                                            : 'border-border bg-card text-muted-foreground hover:border-border'
                                                                     }`}
                                                                 >
                                                                     {

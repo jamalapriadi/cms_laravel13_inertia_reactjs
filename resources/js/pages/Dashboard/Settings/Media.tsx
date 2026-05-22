@@ -163,7 +163,7 @@ export default function Media({ options }: Props) {
                     {/* Header */}
                     <div>
                         <h1 className="text-2xl font-bold">Media Settings</h1>
-                        <p className="text-gray-500">
+                        <p className="text-muted-foreground">
                             Configure image sizes and upload settings.
                         </p>
                     </div>
@@ -199,7 +199,7 @@ export default function Media({ options }: Props) {
                                     </h3>
                                 </div>
 
-                                <div className="col-span-2 space-y-4 rounded-xl bg-white p-6 shadow">
+                                <div className="col-span-2 space-y-4 rounded-xl bg-card p-6 shadow">
                                     <Input
                                         type="number"
                                         placeholder="Width"
@@ -234,7 +234,7 @@ export default function Media({ options }: Props) {
                                 </h3>
                             </div>
 
-                            <div className="col-span-2 rounded-xl bg-white p-6 shadow">
+                            <div className="col-span-2 rounded-xl bg-card p-6 shadow">
                                 <Input
                                     type="number"
                                     value={data.max_upload_file}
@@ -256,7 +256,7 @@ export default function Media({ options }: Props) {
                                 </h3>
                             </div>
 
-                            <div className="col-span-2 space-y-6 rounded-xl bg-white p-6 shadow">
+                            <div className="col-span-2 space-y-6 rounded-xl bg-card p-6 shadow">
                                 <div className="flex justify-end">
                                     <button
                                         type="button"

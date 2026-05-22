@@ -88,7 +88,7 @@ class ProductVariantController extends Controller
                     ProductStockUnit::create([
                         'product_variant_id' => $variant->id,
                         'imei_serial_number' => $stockUnit['imei_serial_number'],
-                        'network_compatibility' => $stockUnit['network_compatibility'],
+                        'network_compatibility' => $stockUnit['network_compatibility'] ?? null,
                         'status' => $stockUnit['status'] ?? 'available',
                         'note' => $stockUnit['note'] ?? null,
                     ]);

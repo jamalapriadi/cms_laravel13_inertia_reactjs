@@ -46,7 +46,7 @@ interface ProductStockUnit {
     id: string;
     product_variant_id: string;
     imei_serial_number: string;
-    network_compatibility: string;
+    network_compatibility: string | null;
     status: 'available' | 'reserved' | 'sold' | 'damaged';
     note?: string | null;
     created_at: string;
@@ -76,22 +76,27 @@ interface Props {
     };
 }
 
-const networkLabel = (network: string) =>
-    ({
-        sim_free: 'SIM Free',
-        docomo: 'Docomo',
-        au: 'AU',
-        softbank: 'SoftBank',
-        rakuten: 'Rakuten',
-        mineo: 'Mineo',
-    })[network] ?? network;
+const networkLabel = (network?: string | null) =>
+    network
+        ? ({
+              sim_free: 'SIM Free',
+              docomo: 'Docomo',
+              au: 'AU',
+              softbank: 'SoftBank',
+              rakuten: 'Rakuten',
+              mineo: 'Mineo',
+          }[network] ?? network)
+        : '-';
 
 const statusClass = (status: ProductStockUnit['status']) =>
     ({
-        available: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-        reserved: 'border-amber-200 bg-amber-50 text-amber-700',
-        sold: 'border-slate-200 bg-slate-50 text-slate-700',
-        damaged: 'border-rose-200 bg-rose-50 text-rose-700',
+        available:
+            'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300',
+        reserved:
+            'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300',
+        sold: 'border-border bg-muted/50 text-foreground',
+        damaged:
+            'border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300',
     })[status];
 
 function SummaryCard({

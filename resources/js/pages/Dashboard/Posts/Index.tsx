@@ -100,10 +100,10 @@ export default function Index({ posts, filters }: Props) {
                 <span
                     className={`rounded px-2 py-1 text-xs font-medium ${
                         row.status === 'publish'
-                            ? 'bg-green-100 text-green-700'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300'
                             : row.status === 'draft'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-red-100 text-red-700'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-300'
+                              : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
                     }`}
                 >
                     {row.status}
@@ -165,7 +165,7 @@ export default function Index({ posts, filters }: Props) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold">Posts</h1>
-                        <p className="text-gray-500">Manage your posts data</p>
+                        <p className="text-muted-foreground">Manage your posts data</p>
                     </div>
 
                     <Link href="/dashboard/posts/create">
@@ -211,7 +211,7 @@ export default function Index({ posts, filters }: Props) {
                 </div>
 
                 {/* TABLE */}
-                <div className="rounded-xl bg-white p-6 shadow">
+                <div className="rounded-xl bg-card p-6 shadow">
                     <DataTable<Post> data={posts.data} columns={columns} />
                 </div>
 
@@ -226,7 +226,7 @@ export default function Index({ posts, filters }: Props) {
                             className={`rounded border px-3 py-1 ${
                                 link.active
                                     ? 'bg-primary text-white'
-                                    : 'bg-white'
+                                    : 'bg-card'
                             }`}
                         />
                     ))}

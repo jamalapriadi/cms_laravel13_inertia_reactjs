@@ -1,7 +1,9 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Textarea from '@/components/ui/textarea';
@@ -17,7 +19,7 @@ interface ProductStockUnit {
     id: string;
     product_variant_id: string;
     imei_serial_number: string;
-    network_compatibility: string;
+    network_compatibility: string | null;
     status: 'available' | 'reserved' | 'sold' | 'damaged';
     note?: string | null;
 }
@@ -37,7 +39,10 @@ const networkOptions = [
 ];
 
 export default function Edit({ stockUnit, variants }: Props) {
-    const { data, setData, put, processing, errors } = useForm({
+    const [hasNetwork, setHasNetwork] = useState(
+        !!stockUnit.network_compatibility,
+    );
+    const { data, setData, transform, put, processing, errors } = useForm({
         product_variant_id: stockUnit.product_variant_id,
         imei_serial_number: stockUnit.imei_serial_number,
         network_compatibility: stockUnit.network_compatibility,
@@ -47,6 +52,12 @@ export default function Edit({ stockUnit, variants }: Props) {
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
+        transform((formData) => ({
+            ...formData,
+            network_compatibility: hasNetwork
+                ? formData.network_compatibility || 'sim_free'
+                : null,
+        }));
         put(`/dashboard/ecommerce/product-stock-units/${stockUnit.id}`);
     };
 
@@ -131,36 +142,65 @@ export default function Edit({ stockUnit, variants }: Props) {
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label>Network</Label>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                            {networkOptions.map(([value, label]) => {
-                                const selected =
-                                    data.network_compatibility === value;
+                    <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-sm font-medium">
+                            <Checkbox
+                                checked={hasNetwork}
+                                onCheckedChange={(checked) => {
+                                    const enabled = checked === true;
 
-                                return (
-                                    <button
-                                        key={value}
-                                        type="button"
-                                        onClick={() =>
-                                            setData(
-                                                'network_compatibility',
-                                                value,
-                                            )
-                                        }
-                                        className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
-                                            selected
-                                                ? value === 'sim_free'
-                                                    ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                                                    : 'border-red-500 bg-red-50 text-red-800'
-                                                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                                        }`}
-                                    >
-                                        {label}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                                    setHasNetwork(enabled);
+                                    setData(
+                                        'network_compatibility',
+                                        enabled
+                                            ? data.network_compatibility ||
+                                                  'sim_free'
+                                            : null,
+                                    );
+                                }}
+                            />
+                            Ada network
+                        </label>
+
+                        {hasNetwork && (
+                            <div className="space-y-2">
+                                <Label>Network</Label>
+                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                    {networkOptions.map(([value, label]) => {
+                                        const selected =
+                                            data.network_compatibility ===
+                                            value;
+
+                                        return (
+                                            <button
+                                                key={value}
+                                                type="button"
+                                                onClick={() =>
+                                                    setData(
+                                                        'network_compatibility',
+                                                        value,
+                                                    )
+                                                }
+                                                className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
+                                                    selected
+                                                        ? value === 'sim_free'
+                                                            ? 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                            : 'border-red-500 bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
+                                                        : 'border-border bg-card text-muted-foreground hover:border-border'
+                                                }`}
+                                            >
+                                                {label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                        {errors.network_compatibility && (
+                            <p className="text-xs text-destructive">
+                                {errors.network_compatibility}
+                            </p>
+                        )}
                     </div>
 
                     <div className="space-y-2">

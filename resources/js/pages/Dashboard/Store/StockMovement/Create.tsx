@@ -22,7 +22,7 @@ interface VariantOption {
 interface StockUnitOption {
     id: string;
     imei_serial_number: string;
-    network_compatibility: string;
+    network_compatibility: string | null;
     status: 'available' | 'reserved' | 'sold' | 'damaged';
 }
 
@@ -171,8 +171,9 @@ export default function Create({ variants }: Props) {
                                                 value={unit.id}
                                             >
                                                 {unit.imei_serial_number} |{' '}
-                                                {unit.network_compatibility} |{' '}
-                                                {unit.status}
+                                                {unit.network_compatibility ??
+                                                    '-'}{' '}
+                                                | {unit.status}
                                             </option>
                                         ),
                                     )}
@@ -237,10 +238,10 @@ export default function Create({ variants }: Props) {
 
                             {/* Adjustment action if type = adjustment */}
                             {data.type === 'adjustment' && (
-                                <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50/30 p-4">
+                                <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-100/70 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
                                     <Label
                                         htmlFor="adjustment_action"
-                                        className="font-bold text-amber-800"
+                                        className="font-bold text-amber-800 dark:text-amber-300"
                                     >
                                         Adjustment Action
                                     </Label>
@@ -262,7 +263,7 @@ export default function Create({ variants }: Props) {
                                             Deduct Stock (-)
                                         </option>
                                     </select>
-                                    <p className="mt-1 text-xs text-amber-600">
+                                    <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
                                         Choose whether this adjustment increases
                                         or decreases the stock levels.
                                     </p>
@@ -333,7 +334,7 @@ export default function Create({ variants }: Props) {
                                 </div>
 
                                 {selectedStockUnit && (
-                                    <div className="rounded-lg border bg-slate-50 p-3 text-xs dark:bg-slate-900/40">
+                                    <div className="rounded-lg border bg-muted/50 p-3 text-xs dark:bg-muted/40">
                                         <span className="font-semibold text-muted-foreground uppercase">
                                             Selected IMEI
                                         </span>
@@ -350,7 +351,7 @@ export default function Create({ variants }: Props) {
                                 )}
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="rounded-lg border bg-slate-50 p-3 text-center dark:bg-slate-900/40">
+                                    <div className="rounded-lg border bg-muted/50 p-3 text-center dark:bg-muted/40">
                                         <span className="text-[10px] font-bold text-muted-foreground uppercase">
                                             Current Stock
                                         </span>
@@ -362,8 +363,8 @@ export default function Create({ variants }: Props) {
                                     <div
                                         className={`rounded-lg border p-3 text-center ${
                                             stockChange >= 0
-                                                ? 'border-emerald-100 bg-emerald-50/50'
-                                                : 'border-rose-100 bg-rose-50/50'
+                                                ? 'border-emerald-200 bg-emerald-100/70 dark:border-emerald-900/60 dark:bg-emerald-950/30'
+                                                : 'border-rose-200 bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40'
                                         }`}
                                     >
                                         <span className="text-[10px] font-bold text-muted-foreground uppercase">
@@ -372,8 +373,8 @@ export default function Create({ variants }: Props) {
                                         <p
                                             className={`mt-1 flex items-center justify-center gap-0.5 text-xl font-extrabold ${
                                                 stockChange >= 0
-                                                    ? 'text-emerald-600'
-                                                    : 'text-rose-600'
+                                                    ? 'text-emerald-700 dark:text-emerald-300'
+                                                    : 'text-rose-700 dark:text-rose-300'
                                             }`}
                                         >
                                             {stockChange >= 0 ? (

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 interface ProductStockUnit {
     id: string;
     imei_serial_number: string;
-    network_compatibility: string;
+    network_compatibility: string | null;
     status: string;
     note?: string | null;
     created_at: string;
@@ -26,15 +26,17 @@ interface Props {
     stockUnit: ProductStockUnit;
 }
 
-const networkLabel = (network: string) =>
-    ({
-        sim_free: 'SIM Free',
-        docomo: 'Docomo',
-        au: 'AU',
-        softbank: 'SoftBank',
-        rakuten: 'Rakuten',
-        mineo: 'Mineo',
-    })[network] ?? network;
+const networkLabel = (network?: string | null) =>
+    network
+        ? ({
+              sim_free: 'SIM Free',
+              docomo: 'Docomo',
+              au: 'AU',
+              softbank: 'SoftBank',
+              rakuten: 'Rakuten',
+              mineo: 'Mineo',
+          }[network] ?? network)
+        : '-';
 
 export default function Show({ stockUnit }: Props) {
     return (

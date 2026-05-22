@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function MediaSidebar({ media, onUpdate }: Props) {
-    if (!media) return <p className="text-gray-400">Select a file</p>;
+    if (!media) return <p className="text-muted-foreground">Select a file</p>;
 
     function updateAlt(e: React.ChangeEvent<HTMLInputElement>) {
         const value = e.target.value;

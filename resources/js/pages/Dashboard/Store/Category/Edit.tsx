@@ -125,12 +125,12 @@ export default function Edit({ category: initialCategory, categories }: Props) {
                 <div>
                     <h1 className="text-2xl font-bold">{title}</h1>
 
-                    <p className="text-gray-500">Edit product category data</p>
+                    <p className="text-muted-foreground">Edit product category data</p>
                 </div>
 
                 {/* FORM */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                    <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
+                    <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
                         {/* NAME */}
                         <div className="flex flex-col gap-1">
                             <Label>Category Name</Label>

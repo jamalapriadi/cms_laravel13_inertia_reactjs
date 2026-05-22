@@ -79,7 +79,7 @@ export default function Index({ media, filters }: Props) {
                             <ImageIcon className="h-6 w-6 text-primary" />
                             Media Library
                         </h1>
-                        <p className="text-gray-500">
+                        <p className="text-muted-foreground">
                             Kelola aset gambar dan dokumen sistem
                         </p>
                     </div>
@@ -150,7 +150,7 @@ export default function Index({ media, filters }: Props) {
                         {media.data.map((item) => (
                             <div
                                 key={item.id}
-                                className="group relative overflow-hidden rounded-xl border bg-white"
+                                className="group relative overflow-hidden rounded-xl border bg-card"
                             >
                                 <img
                                     src={`/storage/${item.path}`}
@@ -162,7 +162,7 @@ export default function Index({ media, filters }: Props) {
                                     <p className="truncate text-xs font-semibold text-white">
                                         {item.file_name}
                                     </p>
-                                    <p className="text-[10px] text-gray-300">
+                                    <p className="text-[10px] text-muted-foreground">
                                         {item.mime_type}
                                     </p>
                                 </div>
@@ -187,7 +187,7 @@ export default function Index({ media, filters }: Props) {
                         ))}
                     </div>
                 ) : (
-                    <div className="rounded-xl border bg-white">
+                    <div className="rounded-xl border bg-card">
                         <table className="w-full">
                             <thead className="border-b bg-muted text-sm">
                                 <tr>

@@ -98,14 +98,14 @@ export default function Edit({ productImage: initialImage, products }: Props) {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Edit Product Image</h1>
-                    <p className="text-gray-500">Edit details or upload a new file for this image</p>
+                    <p className="text-muted-foreground">Edit details or upload a new file for this image</p>
                 </div>
 
                 <hr />
 
                 {/* FORM */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                    <div className="container space-y-6 rounded-xl bg-white p-6 shadow">
+                    <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
                         
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* PRODUCT */}

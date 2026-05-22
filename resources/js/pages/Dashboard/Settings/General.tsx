@@ -288,7 +288,7 @@ export default function General({ options }: Props) {
                     {/* Header */}
                     <div>
                         <h1 className="text-2xl font-bold">General Settings</h1>
-                        <p className="text-gray-500">
+                        <p className="text-muted-foreground">
                             Manage your website configuration
                         </p>
                     </div>
@@ -301,12 +301,12 @@ export default function General({ options }: Props) {
                                 <h3 className="text-lg font-semibold">
                                     About your website
                                 </h3>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-muted-foreground">
                                     Information about your website.
                                 </p>
                             </div>
 
-                            <div className="col-span-2 space-y-6 rounded-xl bg-white p-6 shadow">
+                            <div className="col-span-2 space-y-6 rounded-xl bg-card p-6 shadow">
                                 <div className="flex flex-col gap-1">
                                     <label htmlFor="site_title">
                                         Site Title
@@ -348,7 +348,7 @@ export default function General({ options }: Props) {
                                             )
                                         }
                                     />
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-muted-foreground">
                                         You can view this information on the
                                         About page on your website.
                                     </p>
@@ -365,7 +365,7 @@ export default function General({ options }: Props) {
                                             setData('description', val)
                                         }
                                     />
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-muted-foreground">
                                         You can view this information on the
                                         About page on your website.
                                     </p>
@@ -396,12 +396,12 @@ export default function General({ options }: Props) {
                                 <h3 className="text-lg font-semibold">
                                     About your instansi
                                 </h3>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-muted-foreground">
                                     Institution information.
                                 </p>
                             </div>
 
-                            <div className="col-span-2 space-y-6 rounded-xl bg-white p-6 shadow">
+                            <div className="col-span-2 space-y-6 rounded-xl bg-card p-6 shadow">
                                 <div className="flex flex-col gap-1">
                                     <label htmlFor="alamat_instansi">
                                         Alamat Instansi
@@ -487,14 +487,14 @@ export default function General({ options }: Props) {
                                 <h3 className="text-lg font-semibold">
                                     Assets
                                 </h3>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-muted-foreground">
                                     The logo and cover image of your website
                                     that will be visible on your site. This
                                     assets will appear on your invoices.
                                 </p>
                             </div>
 
-                            <div className="col-span-2 space-y-8 rounded-xl bg-white p-6 shadow">
+                            <div className="col-span-2 space-y-8 rounded-xl bg-card p-6 shadow">
                                 {/* Favicon */}
                                 <div className="flex flex-col gap-1">
                                     <label className="font-medium">
@@ -644,14 +644,14 @@ export default function General({ options }: Props) {
                                 <h3 className="text-lg font-semibold">
                                     Social links
                                 </h3>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-muted-foreground">
                                     Information about your different accounts on
                                     social networks. Users will be able to
                                     contact you directly on your official pages.
                                 </p>
                             </div>
 
-                            <div className="col-span-2 space-y-6 rounded-xl bg-white p-6 shadow">
+                            <div className="col-span-2 space-y-6 rounded-xl bg-card p-6 shadow">
                                 {data.social_media?.length > 0 ? (
                                     data.social_media.map(
                                         (item: any, index: number) => (
@@ -699,7 +699,7 @@ export default function General({ options }: Props) {
                                         ),
                                     )
                                 ) : (
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-muted-foreground">
                                         No social media available.
                                     </p>
                                 )}
@@ -724,14 +724,14 @@ export default function General({ options }: Props) {
                                 <h3 className="text-lg font-semibold">
                                     Marketplace
                                 </h3>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-muted-foreground">
                                     Information about your different accounts on
                                     Marketplace. Users will be able to contact
                                     you directly on your official pages.
                                 </p>
                             </div>
 
-                            <div className="col-span-2 space-y-6 rounded-xl bg-white p-6 shadow">
+                            <div className="col-span-2 space-y-6 rounded-xl bg-card p-6 shadow">
                                 {data.marketplace?.length > 0 ? (
                                     data.marketplace.map(
                                         (item: any, index: number) => (
@@ -781,7 +781,7 @@ export default function General({ options }: Props) {
                                         ),
                                     )
                                 ) : (
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-muted-foreground">
                                         No marketplace data available.
                                     </p>
                                 )}
