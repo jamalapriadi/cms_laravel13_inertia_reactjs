@@ -29,10 +29,16 @@ class OrderController extends Controller
 
         // Query orders
         $orders = Order::query()
+            ->with('customer')
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('invoice_number', 'like', "%{$search}%")
-                        ->orWhere('customer_name', 'like', "%{$search}%");
+                        ->orWhere('customer_name', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($customerQuery) use ($search) {
+                            $customerQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%");
+                        });
                 });
             })
             ->when($status, function ($query, $status) {
@@ -68,7 +74,7 @@ class OrderController extends Controller
     public function show(Order $order): Response
     {
         return Inertia::render('Dashboard/Store/Order/Show', [
-            'order' => $order->load(['items.product', 'items.variant', 'payments']),
+            'order' => $order->load(['customer', 'items.product', 'items.variant', 'payments']),
         ]);
     }
 
@@ -109,7 +115,7 @@ class OrderController extends Controller
     public function receipt(Order $order): Response
     {
         return Inertia::render('Dashboard/Store/Order/Receipt', [
-            'order' => $order->load(['items.product', 'items.variant']),
+            'order' => $order->load(['customer', 'items.product', 'items.variant']),
         ]);
     }
 }

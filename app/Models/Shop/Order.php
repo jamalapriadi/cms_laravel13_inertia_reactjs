@@ -17,7 +17,7 @@ class Order extends Model
 
     protected $fillable = [
         'invoice_number',
-        'user_id',
+        'customer_id',
         'customer_name',
         'customer_email',
         'customer_phone',
@@ -48,6 +48,11 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function payments()

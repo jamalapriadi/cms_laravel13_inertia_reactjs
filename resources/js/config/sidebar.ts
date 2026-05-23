@@ -15,6 +15,9 @@ import {
     Truck,
     ShoppingCart,
     ScanBarcode,
+    Users,
+    ArrowDownLeft,
+    ArrowUpRight,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -102,6 +105,12 @@ export const sidebarConfig: SidebarGroup[] = [
                 permission: 'order.view',
             },
             {
+                title: 'Customers',
+                href: '/dashboard/ecommerce/customers',
+                icon: Users,
+                permission: 'customer.view',
+            },
+            {
                 title: 'Carts',
                 href: '/dashboard/ecommerce/carts',
                 icon: ShoppingCart,
@@ -124,6 +133,24 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/dashboard/ecommerce/shipping',
                 icon: Truck,
                 permission: 'shipping.view',
+            },
+            {
+                title: 'Suppliers',
+                href: '/dashboard/ecommerce/suppliers',
+                icon: Users,
+                permission: 'supplier.view',
+            },
+            {
+                title: 'Barang Masuk',
+                href: '/dashboard/ecommerce/incoming-goods',
+                icon: ArrowDownLeft,
+                permission: 'incoming-goods.view',
+            },
+            {
+                title: 'Retur Barang',
+                href: '/dashboard/ecommerce/supplier-returns',
+                icon: ArrowUpRight,
+                permission: 'supplier-returns.view',
             },
         ],
     },

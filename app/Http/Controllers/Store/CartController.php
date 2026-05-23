@@ -18,7 +18,7 @@ class CartController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->input('search');
-        $userType = $request->input('user_type');
+        $customerType = $request->input('customer_type', $request->input('user_type'));
 
         // Calculate summary metrics
         $totalCarts = Cart::count();
@@ -55,18 +55,18 @@ class CartController extends Controller
 
         // Query carts
         $query = Cart::query()
-            ->with(['user', 'items.product', 'items.variant']);
+            ->with(['customer', 'items.product', 'items.variant']);
 
-        if ($userType === 'registered') {
-            $query->whereNotNull('user_id');
-        } elseif ($userType === 'guest') {
-            $query->whereNull('user_id');
+        if ($customerType === 'registered') {
+            $query->whereNotNull('customer_id');
+        } elseif ($customerType === 'guest') {
+            $query->whereNull('customer_id');
         }
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->whereHas('user', function ($uq) use ($search) {
-                    $uq->where('name', 'like', "%{$search}%")
+                $q->whereHas('customer', function ($customerQuery) use ($search) {
+                    $customerQuery->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                 })->orWhere('id', 'like', "%{$search}%");
             });
@@ -90,7 +90,7 @@ class CartController extends Controller
             'top_products' => $topProducts,
             'filters' => [
                 'search' => $search,
-                'user_type' => $userType,
+                'customer_type' => $customerType,
             ],
         ]);
     }
@@ -101,7 +101,7 @@ class CartController extends Controller
     public function show(Cart $cart): Response
     {
         return Inertia::render('Dashboard/Store/Cart/Show', [
-            'cart' => $cart->load(['user', 'items.product', 'items.variant']),
+            'cart' => $cart->load(['customer', 'items.product', 'items.variant']),
         ]);
     }
 

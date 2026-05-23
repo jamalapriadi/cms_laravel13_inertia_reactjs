@@ -212,7 +212,7 @@ export default function Edit({ stockUnit, variants }: Props) {
                         />
                     </div>
 
-                    <div className="flex justify-end gap-3">
+                    <div className="flex justify-between gap-3">
                         <Link href="/dashboard/ecommerce/product-stock-units">
                             <Button type="button" variant="outline">
                                 Cancel

@@ -4,12 +4,22 @@ use App\Models\Brand;
 use App\Models\Shop\Cart;
 use App\Models\Shop\CartItem;
 use App\Models\Shop\Category;
+use App\Models\Shop\Customer;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductVariant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
+
+function createCartCustomer(array $attributes = []): Customer
+{
+    return Customer::create(array_merge([
+        'name' => 'John Customer',
+        'email' => fake()->unique()->safeEmail(),
+        'is_active' => true,
+    ], $attributes));
+}
 
 test('authenticated user can view cart list with summary metrics and insights', function () {
     $user = User::factory()->create();
@@ -45,9 +55,11 @@ test('authenticated user can view cart list with summary metrics and insights', 
         'is_active' => true,
     ]);
 
-    // Create a guest cart (user_id null)
+    $customer = createCartCustomer();
+
+    // Create a guest cart (customer_id null)
     $cart1 = Cart::create([
-        'user_id' => null,
+        'customer_id' => null,
     ]);
 
     CartItem::create([
@@ -57,9 +69,9 @@ test('authenticated user can view cart list with summary metrics and insights', 
         'qty' => 1,
     ]);
 
-    // Create a registered user cart
+    // Create a registered customer cart
     $cart2 = Cart::create([
-        'user_id' => $user->id,
+        'customer_id' => $customer->id,
     ]);
 
     CartItem::create([
@@ -87,27 +99,27 @@ test('authenticated user can view cart list with summary metrics and insights', 
     );
 });
 
-test('user can filter carts by user type and search query', function () {
+test('user can filter carts by customer type and search query', function () {
     $loggedInUser = User::factory()->create(['name' => 'LoggedInUser']);
-    $user1 = User::factory()->create(['name' => 'John Doe']);
-    $user2 = User::factory()->create(['name' => 'Alice Smith']);
+    $customer1 = createCartCustomer(['name' => 'John Doe', 'email' => 'john@example.com']);
+    $customer2 = createCartCustomer(['name' => 'Alice Smith', 'email' => 'alice@example.com']);
 
     $cart1 = Cart::create([
-        'user_id' => null, // Guest
+        'customer_id' => null, // Guest
     ]);
     $cart1->timestamps = false;
     $cart1->updated_at = now()->subMinutes(20);
     $cart1->save();
 
     $cart2 = Cart::create([
-        'user_id' => $user1->id,
+        'customer_id' => $customer1->id,
     ]);
     $cart2->timestamps = false;
     $cart2->updated_at = now()->subMinutes(10);
     $cart2->save();
 
     $cart3 = Cart::create([
-        'user_id' => $user2->id,
+        'customer_id' => $customer2->id,
     ]);
     $cart3->timestamps = false;
     $cart3->updated_at = now();
@@ -115,25 +127,25 @@ test('user can filter carts by user type and search query', function () {
 
     // Filter guest carts only
     $response = $this->actingAs($loggedInUser)
-        ->get('/dashboard/ecommerce/carts?user_type=guest');
+        ->get('/dashboard/ecommerce/carts?customer_type=guest');
 
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
         ->component('Dashboard/Store/Cart/Index')
         ->has('carts.data', 1)
-        ->where('carts.data.0.user', null)
+        ->where('carts.data.0.customer', null)
     );
 
-    // Filter registered carts only
+    // Filter registered customer carts only
     $response = $this->actingAs($loggedInUser)
-        ->get('/dashboard/ecommerce/carts?user_type=registered');
+        ->get('/dashboard/ecommerce/carts?customer_type=registered');
 
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
         ->component('Dashboard/Store/Cart/Index')
         ->has('carts.data', 2)
-        ->where('carts.data.0.user.name', 'Alice Smith') // Latest first (Alice was created last)
-        ->where('carts.data.1.user.name', 'John Doe')
+        ->where('carts.data.0.customer.name', 'Alice Smith') // Latest first
+        ->where('carts.data.1.customer.name', 'John Doe')
     );
 
     // Search by name
@@ -144,12 +156,13 @@ test('user can filter carts by user type and search query', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('Dashboard/Store/Cart/Index')
         ->has('carts.data', 1)
-        ->where('carts.data.0.user.name', 'Alice Smith')
+        ->where('carts.data.0.customer.name', 'Alice Smith')
     );
 });
 
 test('user can view cart details', function () {
     $user = User::factory()->create();
+    $customer = createCartCustomer(['name' => 'Detail Customer']);
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -174,7 +187,7 @@ test('user can view cart details', function () {
     ]);
 
     $cart = Cart::create([
-        'user_id' => $user->id,
+        'customer_id' => $customer->id,
     ]);
 
     $item = CartItem::create([
@@ -191,7 +204,7 @@ test('user can view cart details', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('Dashboard/Store/Cart/Show')
         ->where('cart.id', $cart->id)
-        ->where('cart.user.name', $user->name)
+        ->where('cart.customer.name', 'Detail Customer')
         ->where('cart.total_price', 45000000)
         ->where('cart.items.0.product.name', 'iPhone 15')
     );
@@ -199,6 +212,7 @@ test('user can view cart details', function () {
 
 test('user can delete a specific cart item', function () {
     $user = User::factory()->create();
+    $customer = createCartCustomer();
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -223,7 +237,7 @@ test('user can delete a specific cart item', function () {
     ]);
 
     $cart = Cart::create([
-        'user_id' => $user->id,
+        'customer_id' => $customer->id,
     ]);
 
     $item1 = CartItem::create([
@@ -251,6 +265,7 @@ test('user can delete a specific cart item', function () {
 
 test('deleting the last cart item deletes the entire cart', function () {
     $user = User::factory()->create();
+    $customer = createCartCustomer();
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -275,7 +290,7 @@ test('deleting the last cart item deletes the entire cart', function () {
     ]);
 
     $cart = Cart::create([
-        'user_id' => $user->id,
+        'customer_id' => $customer->id,
     ]);
 
     $item = CartItem::create([
@@ -296,9 +311,10 @@ test('deleting the last cart item deletes the entire cart', function () {
 
 test('user can delete the entire cart', function () {
     $user = User::factory()->create();
+    $customer = createCartCustomer();
 
     $cart = Cart::create([
-        'user_id' => $user->id,
+        'customer_id' => $customer->id,
     ]);
 
     $response = $this->actingAs($user)

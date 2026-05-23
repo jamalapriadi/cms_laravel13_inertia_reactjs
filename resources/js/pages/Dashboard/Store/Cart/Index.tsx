@@ -19,8 +19,8 @@ import type { LaravelPagination } from '@/types/LaravelPagination';
 
 interface Cart {
     id: string;
-    user_id: string | null;
-    user?: {
+    customer_id: string | null;
+    customer?: {
         id: string;
         name: string;
         email: string;
@@ -53,7 +53,7 @@ interface Props {
     top_products: TopProduct[];
     filters: {
         search?: string;
-        user_type?: string;
+        customer_type?: string;
     };
 }
 
@@ -64,7 +64,9 @@ export default function Index({
     filters,
 }: Props) {
     const [search, setSearch] = useState(filters.search || '');
-    const [userType, setUserType] = useState(filters.user_type || '');
+    const [customerType, setCustomerType] = useState(
+        filters.customer_type || '',
+    );
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const applyFilter = () => {
@@ -72,7 +74,7 @@ export default function Index({
             '/dashboard/ecommerce/carts',
             {
                 search,
-                user_type: userType,
+                customer_type: customerType,
             },
             {
                 preserveState: true,
@@ -83,7 +85,7 @@ export default function Index({
 
     const clearFilter = () => {
         setSearch('');
-        setUserType('');
+        setCustomerType('');
         router.get(
             '/dashboard/ecommerce/carts',
             {},
@@ -122,13 +124,13 @@ export default function Index({
             label: 'User / Owner',
             render: (row: Cart) => (
                 <div className="flex flex-col">
-                    {row.user ? (
+                    {row.customer ? (
                         <>
                             <span className="text-sm font-semibold text-foreground">
-                                {row.user.name}
+                                {row.customer.name}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                                {row.user.email}
+                                {row.customer.email}
                             </span>
                         </>
                     ) : (
@@ -339,18 +341,18 @@ export default function Index({
 
                                 <div className="w-[180px] space-y-1.5">
                                     <label className="text-xs font-medium text-foreground">
-                                        User Type
+                                        Customer Type
                                     </label>
                                     <select
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={userType}
+                                        value={customerType}
                                         onChange={(e) =>
-                                            setUserType(e.target.value)
+                                            setCustomerType(e.target.value)
                                         }
                                     >
                                         <option value="">All Carts</option>
                                         <option value="registered">
-                                            Registered Only
+                                            Customer Only
                                         </option>
                                         <option value="guest">
                                             Guest Only
@@ -365,7 +367,8 @@ export default function Index({
                                     >
                                         Apply Filter
                                     </Button>
-                                    {(filters.search || filters.user_type) && (
+                                    {(filters.search ||
+                                        filters.customer_type) && (
                                         <Button
                                             onClick={clearFilter}
                                             variant="outline"
