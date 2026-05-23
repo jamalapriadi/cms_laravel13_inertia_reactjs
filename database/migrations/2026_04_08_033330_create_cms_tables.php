@@ -80,6 +80,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('post_categories');
         Schema::dropIfExists('term_relationships');
         Schema::dropIfExists('term_taxonomy');
         Schema::dropIfExists('terms');

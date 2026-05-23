@@ -33,6 +33,8 @@ return new class extends Migration
             $table->integer('order')->default(0);
 
             $table->timestamps();
+
+            $table->index(['post_id', 'parent_id', 'order']);
         });
 
         Schema::create('block_translations', function (Blueprint $table) {
@@ -52,7 +54,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('blocks');
         Schema::dropIfExists('block_translations');
+        Schema::dropIfExists('blocks');
     }
 };

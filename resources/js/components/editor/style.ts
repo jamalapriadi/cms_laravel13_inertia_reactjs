@@ -12,6 +12,14 @@ export function buildBlockStyle(
     styles: BlockStyles | undefined,
 ): CSSProperties {
     return {
+        display: pick(styles, 'display') as CSSProperties['display'],
+        gap: pick(styles, 'gap'),
+        alignItems: pick(styles, 'alignItems') as CSSProperties['alignItems'],
+        justifyContent: pick(styles, 'justifyContent') as
+            | CSSProperties['justifyContent']
+            | undefined,
+        position: pick(styles, 'position') as CSSProperties['position'],
+        zIndex: pick(styles, 'zIndex'),
         fontFamily: pick(styles, 'fontFamily'),
         fontSize: pick(styles, 'fontSize'),
         color: pick(styles, 'color'),
@@ -31,4 +39,14 @@ export function buildBlockStyle(
         maxWidth: pick(styles, 'maxWidth'),
         borderRadius: pick(styles, 'borderRadius'),
     };
+}
+
+export function buildVisibilityClass(styles: BlockStyles | undefined): string {
+    return [
+        styles?.hideMobile === 'true' ? 'max-sm:hidden' : '',
+        styles?.hideTablet === 'true' ? 'sm:max-lg:hidden' : '',
+        styles?.hideDesktop === 'true' ? 'lg:hidden' : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
 }

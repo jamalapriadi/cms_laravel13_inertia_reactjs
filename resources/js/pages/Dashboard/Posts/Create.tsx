@@ -1,19 +1,36 @@
 import { useDraggable } from '@dnd-kit/core';
-import {
-    DndContext,
-    closestCenter,
-    DragEndEvent,
-    DragOverEvent,
-} from '@dnd-kit/core';
+import { DndContext, closestCenter } from '@dnd-kit/core';
+import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core';
 import { Head, useForm } from '@inertiajs/react';
 
-import { Text, Heading, Image as ImageIcon } from 'lucide-react';
+import {
+    Columns2,
+    Container,
+    FileText,
+    GalleryHorizontal,
+    Heading,
+    Image as ImageIcon,
+    Layers,
+    LayoutGrid,
+    LayoutPanelTop,
+    ListCollapse,
+    Minus,
+    MousePointerClick,
+    MoveVertical,
+    PanelTop,
+    Pilcrow,
+    Rows3,
+    Smile,
+    SquareStack,
+    Table2,
+} from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { store } from '@/actions/App/Http/Controllers/Dashboard/PostController';
 import BlockEditor from '@/components/editor/BlockEditor';
+import BlockRenderer from '@/components/editor/BlockRenderer';
 import { createBlock } from '@/components/editor/blocks/factory';
 import Canvas from '@/components/editor/Canvas';
 import {
@@ -21,9 +38,7 @@ import {
     insertWithPosition,
     getDropPosition,
 } from '@/components/editor/core/tree';
-import type { BlockInstance } from '@/types/block';
-
-import SortableTree from '@/components/editor/SortableTree';
+import StructureTree from '@/components/editor/StructureTree';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -37,14 +52,31 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-import AppLayout from '@/layouts/post-layout';
+import type { BlockInstance } from '@/types/block';
 
 type DropPosition = 'before' | 'after' | 'inside';
 
 interface DropIndicator {
-    id: number;
+    id: number | string;
     position: DropPosition;
 }
+
+const resolveDropTarget = (id: number | string) => {
+    if (typeof id === 'string' && id.startsWith('preview-')) {
+        return {
+            id: Number(id.replace('preview-', '')),
+        };
+    }
+
+    if (typeof id === 'string' && id.startsWith('inside-')) {
+        return {
+            id: Number(id.replace('inside-', '')),
+            position: 'inside' as DropPosition,
+        };
+    }
+
+    return { id };
+};
 
 function DraggableBlock({ item, disabled, onClick }: any) {
     const { attributes, listeners, setNodeRef } = useDraggable({
@@ -62,13 +94,15 @@ function DraggableBlock({ item, disabled, onClick }: any) {
                 {...listeners}
                 {...attributes}
                 onClick={onClick}
-                className={`w-full px-3 py-2 text-left ${
+                className={`flex h-20 w-full items-center justify-center px-2 py-2 text-center ${
                     disabled ? 'opacity-50' : 'cursor-move'
                 }`}
             >
-                <div className="flex flex-col gap-1">
+                <div className="flex min-w-0 flex-col items-center gap-1">
                     <item.icon className="h-5 w-5 text-primary" />
-                    <span className="text-xs font-medium">{item.title}</span>
+                    <span className="text-xs leading-tight font-medium break-words">
+                        {item.title}
+                    </span>
                 </div>
             </div>
         </Card>
@@ -76,7 +110,6 @@ function DraggableBlock({ item, disabled, onClick }: any) {
 }
 
 export default function Create() {
-    const [initialized, setInitialized] = useState(false);
     const [selectedBlock, setSelectedBlock] = useState<BlockInstance | null>(
         null,
     );
@@ -88,14 +121,36 @@ export default function Create() {
     /**
      * ✅ BLOCK LIST
      */
-    const blocks = [
-        // { type: 'section', title: 'Section', icon: Layout },
-        // { type: 'column', title: 'Column', icon: Columns },
-        // { type: 'grid', title: 'Grid', icon: Grid },
-        // { type: 'grid-item', title: 'Grid Item', icon: Columns },
-        { type: 'heading', title: 'Heading', icon: Heading },
-        { type: 'text', title: 'Text', icon: Text },
-        { type: 'image', title: 'Image', icon: ImageIcon },
+    const blockGroups = [
+        {
+            title: 'Basic',
+            items: [
+                { type: 'heading', title: 'Heading', icon: Heading },
+                { type: 'paragraph', title: 'Paragraph', icon: Pilcrow },
+                { type: 'rich-editor', title: 'Rich Editor', icon: FileText },
+                { type: 'image', title: 'Image', icon: ImageIcon },
+                { type: 'button', title: 'Button', icon: MousePointerClick },
+                { type: 'icon', title: 'Icon', icon: Smile },
+                { type: 'divider', title: 'Divider', icon: Minus },
+                { type: 'spacer', title: 'Spacer', icon: MoveVertical },
+                { type: 'table', title: 'Table', icon: Table2 },
+            ],
+        },
+        {
+            title: 'Layout',
+            items: [
+                { type: 'section', title: 'Section', icon: LayoutPanelTop },
+                { type: 'container', title: 'Container', icon: Container },
+                { type: 'grid', title: 'Grid', icon: LayoutGrid },
+                { type: 'columns', title: 'Columns', icon: Columns2 },
+                { type: 'flex-row', title: 'Flex Row', icon: Rows3 },
+                { type: 'flex-column', title: 'Flex Column', icon: PanelTop },
+                { type: 'card', title: 'Card', icon: SquareStack },
+                { type: 'tabs', title: 'Tabs', icon: Layers },
+                { type: 'accordion', title: 'Accordion', icon: ListCollapse },
+                { type: 'slider', title: 'Slider', icon: GalleryHorizontal },
+            ],
+        },
     ];
 
     /**
@@ -106,8 +161,6 @@ export default function Create() {
         content: '',
         status: 'draft',
     });
-
-    useEffect(() => setInitialized(true), []);
 
     /**
      * ✅ SYNC CONTENT JSON
@@ -158,17 +211,8 @@ export default function Create() {
      * ✅ ADD BLOCK (SMART)
      */
     const addBlock = (type: string) => {
-        // force create section first
-        // if (pageBlocks.length === 0 && type !== 'section') {
-        //     const section = createBlock('section');
-        //     section.children[0].children.push(createBlock(type));
-
-        //     setPageBlocks([section]);
-
-        //     return;
-        // }
-
         const newBlock = createBlock(type);
+
         setPageBlocks((prev) => [...prev, newBlock]);
         setSelectedBlock(newBlock);
     };
@@ -193,13 +237,19 @@ export default function Create() {
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
-        if (!over) return;
+        if (!over) {
+            return;
+        }
 
         const position = getDropPosition(event);
 
         const cloned = structuredClone(pageBlocks);
+        const target = resolveDropTarget(over.id as number | string);
+        const targetPosition = target.position ?? position;
 
         const isSidebarBlock = active.data.current?.source === 'sidebar';
+        const isRootDrop =
+            target.id === 'canvas-root' || target.id === 'structure-root';
 
         /**
          * 🔥 CASE 1: FROM SIDEBAR
@@ -207,29 +257,55 @@ export default function Create() {
         if (isSidebarBlock) {
             const newBlock = createBlock(active.id as string);
 
-            // ⚠️ kalau drop ke canvas kosong
-            if (pageBlocks.length === 0) {
-                setPageBlocks([newBlock]);
+            if (pageBlocks.length === 0 || isRootDrop) {
+                setPageBlocks((prev) =>
+                    isRootDrop && prev.length > 0
+                        ? [...prev, newBlock]
+                        : [newBlock],
+                );
+                setSelectedBlock(newBlock);
+                setDropIndicator(null);
+
                 return;
             }
 
-            insertWithPosition(cloned, over.id as number, newBlock, position);
+            insertWithPosition(
+                cloned,
+                target.id as number,
+                newBlock,
+                targetPosition,
+            );
 
             setPageBlocks(cloned);
+            setSelectedBlock(newBlock);
             setDropIndicator(null);
+
             return;
         }
 
         /**
          * 🔥 CASE 2: MOVE EXISTING BLOCK
          */
-        if (active.id === over.id) return;
+        if (active.id === over.id) {
+            return;
+        }
 
         const moving = findAndRemove(cloned, active.id as number);
 
-        if (!moving) return;
+        if (!moving) {
+            return;
+        }
 
-        insertWithPosition(cloned, over.id as number, moving, position);
+        if (isRootDrop) {
+            cloned.push(moving);
+        } else {
+            insertWithPosition(
+                cloned,
+                target.id as number,
+                moving,
+                targetPosition,
+            );
+        }
 
         setPageBlocks(cloned);
         setDropIndicator(null);
@@ -244,8 +320,10 @@ export default function Create() {
         }
 
         setDropIndicator({
-            id: event.over.id as number,
-            position: getDropPosition(event),
+            id: resolveDropTarget(event.over.id as number | string).id,
+            position:
+                resolveDropTarget(event.over.id as number | string).position ??
+                getDropPosition(event),
         });
     };
 
@@ -268,174 +346,157 @@ export default function Create() {
         toast.success('Block deleted');
     };
 
-    /**
-     * ✅ GUARD
-     */
-    if (!initialized) {
-        return null;
-    }
-
-    const hasSection = pageBlocks.some((b) => b.type === 'section');
-
     return (
         <>
             <Head title="Create Post" />
 
-            <div className="flex min-h-screen w-full flex-col lg:flex-row">
-                {/* LEFT SIDEBAR */}
-                <aside className="hidden w-72 border-r bg-muted/30 p-4 lg:block">
-                    <h2 className="mb-4 text-sm font-semibold text-muted-foreground uppercase">
-                        Blocks
-                    </h2>
-
-                    <div className="grid grid-cols-2 gap-2">
-                        {blocks.map((item) => (
-                            <DraggableBlock
-                                key={item.type}
-                                item={item}
-                                // disabled={
-                                //     !hasSection && item.type !== 'section'
-                                // }
-                                onClick={() => addBlock(item.type)} // fallback klik
-                            />
-                        ))}
-                    </div>
-                </aside>
-
-                {/* MAIN */}
-                <div className="flex-1 p-4 md:p-6">
-                    <div className="mb-4 lg:hidden">
-                        <div className="grid grid-cols-4 gap-2">
-                            {blocks.map((item) => (
-                                <button
-                                    key={item.type}
-                                    onClick={() => {
-                                        const newBlock = createBlock(item.type);
-                                        setPageBlocks((prev) => [
-                                            ...prev,
-                                            newBlock,
-                                        ]);
-                                        setSelectedBlock(newBlock);
-                                    }}
-                                    className="flex flex-col items-center justify-center rounded border p-2 text-xs"
-                                >
-                                    <item.icon className="h-4 w-4" />
-                                    {item.title}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <form onSubmit={submit} className="space-y-6">
+            <DndContext
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver}
+            >
+                <form
+                    onSubmit={submit}
+                    className="flex h-[calc(100vh-4rem)] w-full flex-col overflow-hidden bg-background"
+                >
+                    <header className="flex shrink-0 flex-col gap-3 border-b bg-background px-4 py-3 xl:flex-row xl:items-center">
                         <Input
                             value={data.title}
                             onChange={(e) => setData('title', e.target.value)}
                             placeholder="Post title..."
-                            className="h-14 text-2xl font-bold"
+                            className="h-10 text-lg font-semibold xl:max-w-xl"
                         />
 
-                        {errors.title && (
-                            <p className="text-sm text-destructive">
-                                {errors.title}
-                            </p>
-                        )}
-
-                        {/* CANVAS */}
-                        <Canvas>
-                            <DndContext
-                                collisionDetection={closestCenter}
-                                onDragEnd={handleDragEnd}
-                                onDragOver={handleDragOver}
+                        <div className="flex items-center gap-2 xl:ml-auto">
+                            <Select
+                                value={data.status}
+                                onValueChange={(val) => setData('status', val)}
                             >
+                                <SelectTrigger className="w-36">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="draft">Draft</SelectItem>
+                                    <SelectItem value="publish">
+                                        Publish
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            <Button type="submit" disabled={processing}>
+                                {processing ? 'Saving...' : 'Save'}
+                            </Button>
+                        </div>
+
+                        {(errors.title || errors.content) && (
+                            <div className="text-sm text-destructive">
+                                {errors.title || errors.content}
+                            </div>
+                        )}
+                    </header>
+
+                    <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[280px_minmax(420px,1fr)_280px_360px]">
+                        <aside className="min-h-0 overflow-y-auto border-b bg-muted/30 p-3 xl:border-r xl:border-b-0">
+                            <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                                Blocks
+                            </h2>
+
+                            <div className="space-y-4">
+                                {blockGroups.map((group) => (
+                                    <section key={group.title}>
+                                        <h3 className="mb-2 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                                            {group.title}
+                                        </h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {group.items.map((item) => (
+                                                <DraggableBlock
+                                                    key={item.type}
+                                                    item={item}
+                                                    onClick={() =>
+                                                        addBlock(item.type)
+                                                    }
+                                                />
+                                            ))}
+                                        </div>
+                                    </section>
+                                ))}
+                            </div>
+                        </aside>
+
+                        <main className="min-h-0 overflow-y-auto bg-muted/20 p-4">
+                            <Canvas className="mx-auto min-h-full max-w-6xl shadow-sm">
                                 {pageBlocks.length === 0 ? (
-                                    <div className="flex min-h-[200px] flex-col items-center justify-center rounded border border-dashed p-6 text-center">
-                                        <p className="text-sm text-muted-foreground">
+                                    <div className="flex min-h-[420px] flex-col items-center justify-center rounded border border-dashed p-6 text-center">
+                                        <p className="text-sm font-medium">
                                             Belum ada block
                                         </p>
-
-                                        <p className="mt-1 text-xs text-muted-foreground/70">
-                                            Drag & drop block dari sidebar atau
-                                            klik untuk menambahkan
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            Pilih block dari panel kiri atau
+                                            drag ke struktur.
                                         </p>
-
-                                        <div className="mt-4 flex gap-2">
-                                            <span className="rounded bg-muted px-2 py-1 text-xs">
-                                                Tips:
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                                Mulai dari Heading / Text
-                                            </span>
-                                        </div>
                                     </div>
                                 ) : (
-                                    <SortableTree
-                                        items={pageBlocks}
-                                        selectedBlock={selectedBlock}
-                                        setSelectedBlock={setSelectedBlock}
-                                        dropIndicator={dropIndicator}
-                                        onDelete={deleteBlock}
-                                    />
+                                    <div className="space-y-3">
+                                        {pageBlocks.map((block) => (
+                                            <BlockRenderer
+                                                key={block.id}
+                                                block={block}
+                                                isActive={
+                                                    selectedBlock?.id ===
+                                                    block.id
+                                                }
+                                                onClick={() =>
+                                                    setSelectedBlock(block)
+                                                }
+                                            />
+                                        ))}
+                                    </div>
                                 )}
-                            </DndContext>
-                        </Canvas>
+                            </Canvas>
+                        </main>
 
-                        {/* ERROR */}
-                        {errors.content && (
-                            <div className="rounded bg-red-100 p-3 text-sm text-red-600">
-                                {errors.content}
-                            </div>
-                        )}
+                        <aside className="min-h-0 overflow-y-auto border-t bg-background p-3 xl:border-t-0 xl:border-l">
+                            <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                                Structure
+                            </h2>
 
-                        {/* PUBLISH */}
-                        <div className="card bg-base-100 card-border">
-                            <div className="card-body space-y-3">
-                                <Select
-                                    value={data.status}
-                                    onValueChange={(val) =>
-                                        setData('status', val)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="draft">
-                                            Draft
-                                        </SelectItem>
-                                        <SelectItem value="publish">
-                                            Publish
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <StructureTree
+                                items={pageBlocks}
+                                selectedBlock={selectedBlock}
+                                setSelectedBlock={setSelectedBlock}
+                                dropIndicator={dropIndicator}
+                                onDelete={deleteBlock}
+                            />
+                        </aside>
 
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? 'Saving...' : 'Save'}
-                                </Button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+                        <aside className="min-h-0 overflow-y-auto border-t bg-muted/30 p-4 xl:border-t-0 xl:border-l">
+                            {selectedBlock ? (
+                                <div className="space-y-4">
+                                    <div>
+                                        <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                                            Inspector
+                                        </p>
+                                        <h2 className="mt-1 text-base font-semibold capitalize">
+                                            {selectedBlock.type}
+                                        </h2>
+                                    </div>
 
-                {/* RIGHT SIDEBAR */}
-                <aside className="hidden w-80 border-l bg-muted/30 p-4 lg:block">
-                    {selectedBlock && (
-                        <div className="card bg-base-100 card-border">
-                            <div className="card-body">
-                                <h2 className="card-title">
-                                    Edit: {selectedBlock.type}
-                                </h2>
-
-                                <BlockEditor
-                                    block={selectedBlock}
-                                    updateBlock={updateBlock}
-                                />
-                            </div>
-                        </div>
-                    )}
-                </aside>
-            </div>
+                                    <BlockEditor
+                                        block={selectedBlock}
+                                        updateBlock={updateBlock}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex min-h-48 items-center justify-center rounded border border-dashed p-6 text-center text-sm text-muted-foreground">
+                                    Pilih block di struktur untuk mengedit.
+                                </div>
+                            )}
+                        </aside>
+                    </div>
+                </form>
+            </DndContext>
         </>
     );
 }
 
-Create.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;
+Create.layout = (page: React.ReactNode) => page;

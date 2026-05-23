@@ -9,24 +9,24 @@ export const SectionBlock: BlockComponent<SectionData> = {
     type: 'section',
 
     create: () => ({
-        padding: '40px',
+        padding: '48px 24px',
         background: '#ffffff',
     }),
 
     render: ({ data, children }) => {
-        const padding = data?.padding || '40px';
+        const padding = data?.padding || '48px 24px';
         const background = data?.background || '#ffffff';
 
         return (
             <div
                 style={{ padding, background }}
-                className="space-y-4 rounded border border-dashed"
+                className="space-y-4 rounded border border-dashed border-muted-foreground/30"
             >
                 {children ? (
                     children
                 ) : (
                     <div className="text-xs text-muted-foreground">
-                        Drop column here...
+                        Drop container or grid here...
                     </div>
                 )}
             </div>
@@ -44,7 +44,7 @@ export const SectionBlock: BlockComponent<SectionData> = {
                         className="input w-full border"
                         value={data.padding || ''}
                         onChange={(e) => onChange({ padding: e.target.value })}
-                        placeholder="e.g. 40px"
+                        placeholder="e.g. 48px 24px"
                     />
                 </div>
 

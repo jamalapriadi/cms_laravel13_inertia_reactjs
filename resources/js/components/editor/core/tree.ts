@@ -1,40 +1,63 @@
 // core/tree.ts
 
-import { BlockInstance } from '@/types/block';
+import type { BlockInstance } from '@/types/block';
 
 export type DropPosition = 'before' | 'after' | 'inside';
+
+const layoutBlocks = [
+    'columns',
+    'flex-row',
+    'flex-column',
+    'card',
+    'tabs',
+    'accordion',
+    'slider',
+];
+
+const contentBlocks = [
+    'text',
+    'paragraph',
+    'rich-editor',
+    'heading',
+    'image',
+    'button',
+    'icon',
+    'divider',
+    'spacer',
+    'table',
+    'list',
+    'quote',
+    'code',
+];
 
 /**
  * 🔥 RULES (SCALABLE)
  */
 export function canDrop(target: BlockInstance, block: BlockInstance): boolean {
-    // SECTION hanya boleh column / grid
     if (target.type === 'section') {
-        return ['column', 'grid'].includes(block.type);
+        return ['container', 'column', 'grid', ...layoutBlocks].includes(
+            block.type,
+        );
     }
 
-    // COLUMN boleh apa saja kecuali column/grid
+    if (target.type === 'container') {
+        return !['section', 'container', 'column'].includes(block.type);
+    }
+
     if (target.type === 'column') {
         return !['column', 'grid'].includes(block.type);
     }
 
-    // GRID hanya boleh grid-item
     if (target.type === 'grid') {
         return block.type === 'grid-item';
     }
 
-    // GRID-ITEM boleh semua konten (text, heading, dll)
     if (target.type === 'grid-item') {
-        return [
-            'text',
-            'paragraph',
-            'heading',
-            'image',
-            'button',
-            'list',
-            'quote',
-            'code',
-        ].includes(block.type);
+        return [...contentBlocks, ...layoutBlocks].includes(block.type);
+    }
+
+    if (layoutBlocks.includes(target.type)) {
+        return block.type !== 'section';
     }
 
     return true;
@@ -139,11 +162,13 @@ export function insertWithPosition(
             // 🔥 BEFORE / AFTER (tidak perlu rule parent)
             if (position === 'before') {
                 items.splice(i, 0, block);
+
                 return true;
             }
 
             if (position === 'after') {
                 items.splice(i + 1, 0, block);
+
                 return true;
             }
 
@@ -182,14 +207,21 @@ export function insertWithPosition(
  * 🔥 DROP POSITION DETECTOR
  */
 export function getDropPosition(event: any): DropPosition {
-    const { activatorEvent, over } = event;
+    const { activatorEvent, active, over } = event;
 
-    if (!over || !activatorEvent) {
+    if (!over) {
         return 'inside';
     }
 
     const rect = over.rect;
-    const mouseY = activatorEvent.clientY;
+    const activeRect = active?.rect?.current?.translated;
+    const mouseY = activeRect
+        ? activeRect.top + activeRect.height / 2
+        : activatorEvent?.clientY;
+
+    if (!mouseY) {
+        return 'inside';
+    }
 
     const thresholdTop = rect.top + rect.height * 0.25;
     const thresholdBottom = rect.top + rect.height * 0.75;

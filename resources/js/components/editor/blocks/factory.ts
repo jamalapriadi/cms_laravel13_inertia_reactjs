@@ -26,17 +26,30 @@ export const createBlock = (type: string): any => {
         section: () => ({
             ...base,
             data: {
-                padding: '40px',
+                padding: '48px 24px',
                 background: '#ffffff',
             },
             children: [
                 {
                     id: generateId(),
-                    type: 'column',
-                    data: { width: '100%' },
+                    type: 'container',
+                    data: {
+                        maxWidth: '1120px',
+                        padding: '0px',
+                        align: 'center',
+                    },
                     children: [],
                 },
             ],
+        }),
+
+        container: () => ({
+            ...base,
+            data: {
+                maxWidth: '1120px',
+                padding: '24px',
+                align: 'center',
+            },
         }),
 
         column: () => ({
@@ -44,6 +57,36 @@ export const createBlock = (type: string): any => {
             data: {
                 width: '100%',
             },
+        }),
+
+        grid: () => ({
+            ...base,
+            data: {
+                columns: 2,
+                gap: 16,
+            },
+            children: [
+                {
+                    id: generateId(),
+                    type: 'grid-item',
+                    data: {
+                        colSpan: 1,
+                        rowSpan: 1,
+                    },
+                    styles: {},
+                    children: [],
+                },
+                {
+                    id: generateId(),
+                    type: 'grid-item',
+                    data: {
+                        colSpan: 1,
+                        rowSpan: 1,
+                    },
+                    styles: {},
+                    children: [],
+                },
+            ],
         }),
     };
 

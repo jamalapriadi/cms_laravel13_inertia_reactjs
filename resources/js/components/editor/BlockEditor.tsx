@@ -46,6 +46,28 @@ function SelectInput(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
     );
 }
 
+function CheckboxInput({
+    label,
+    checked,
+    onChange,
+}: {
+    label: string;
+    checked: boolean;
+    onChange: (checked: boolean) => void;
+}) {
+    return (
+        <label className="flex items-center justify-between gap-3 rounded border bg-background px-3 py-2 text-xs font-medium text-muted-foreground">
+            <span>{label}</span>
+            <input
+                type="checkbox"
+                checked={checked}
+                onChange={(e) => onChange(e.target.checked)}
+                className="size-4 rounded border"
+            />
+        </label>
+    );
+}
+
 function StylePanel({
     styles,
     onChange,
@@ -147,9 +169,102 @@ function SettingsPanel({
     onChange: (styles: Record<string, string>) => void;
 }) {
     const setStyle = (key: string, value: string) => onChange({ [key]: value });
+    const setBooleanStyle = (key: string, checked: boolean) =>
+        onChange({ [key]: checked ? 'true' : '' });
 
     return (
         <div className="space-y-4">
+            <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground">
+                    Layout
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                    <Field label="Display">
+                        <SelectInput
+                            value={styles.display ?? ''}
+                            onChange={(e) =>
+                                setStyle('display', e.target.value)
+                            }
+                        >
+                            <option value="">Default</option>
+                            <option value="block">Block</option>
+                            <option value="flex">Flex</option>
+                            <option value="grid">Grid</option>
+                        </SelectInput>
+                    </Field>
+                    <Field label="Gap">
+                        <TextInput
+                            value={styles.gap ?? ''}
+                            onChange={(e) => setStyle('gap', e.target.value)}
+                            placeholder="16px"
+                        />
+                    </Field>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                    <Field label="Align items">
+                        <SelectInput
+                            value={styles.alignItems ?? ''}
+                            onChange={(e) =>
+                                setStyle('alignItems', e.target.value)
+                            }
+                        >
+                            <option value="">Default</option>
+                            <option value="flex-start">Start</option>
+                            <option value="center">Center</option>
+                            <option value="flex-end">End</option>
+                            <option value="stretch">Stretch</option>
+                            <option value="baseline">Baseline</option>
+                        </SelectInput>
+                    </Field>
+                    <Field label="Justify">
+                        <SelectInput
+                            value={styles.justifyContent ?? ''}
+                            onChange={(e) =>
+                                setStyle('justifyContent', e.target.value)
+                            }
+                        >
+                            <option value="">Default</option>
+                            <option value="flex-start">Start</option>
+                            <option value="center">Center</option>
+                            <option value="flex-end">End</option>
+                            <option value="space-between">Between</option>
+                            <option value="space-around">Around</option>
+                            <option value="space-evenly">Evenly</option>
+                        </SelectInput>
+                    </Field>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground">
+                    Position
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                    <Field label="Position">
+                        <SelectInput
+                            value={styles.position ?? ''}
+                            onChange={(e) =>
+                                setStyle('position', e.target.value)
+                            }
+                        >
+                            <option value="">Default</option>
+                            <option value="static">Static</option>
+                            <option value="relative">Relative</option>
+                            <option value="absolute">Absolute</option>
+                            <option value="sticky">Sticky</option>
+                            <option value="fixed">Fixed</option>
+                        </SelectInput>
+                    </Field>
+                    <Field label="Z-index">
+                        <TextInput
+                            value={styles.zIndex ?? ''}
+                            onChange={(e) => setStyle('zIndex', e.target.value)}
+                            placeholder="10"
+                        />
+                    </Field>
+                </div>
+            </div>
+
             <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground">
                     Margin
@@ -212,6 +327,35 @@ function SettingsPanel({
                     placeholder="8px"
                 />
             </Field>
+
+            <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground">
+                    Responsive visibility
+                </p>
+                <div className="grid gap-2">
+                    <CheckboxInput
+                        label="Hide on mobile"
+                        checked={styles.hideMobile === 'true'}
+                        onChange={(checked) =>
+                            setBooleanStyle('hideMobile', checked)
+                        }
+                    />
+                    <CheckboxInput
+                        label="Hide on tablet"
+                        checked={styles.hideTablet === 'true'}
+                        onChange={(checked) =>
+                            setBooleanStyle('hideTablet', checked)
+                        }
+                    />
+                    <CheckboxInput
+                        label="Hide on desktop"
+                        checked={styles.hideDesktop === 'true'}
+                        onChange={(checked) =>
+                            setBooleanStyle('hideDesktop', checked)
+                        }
+                    />
+                </div>
+            </div>
         </div>
     );
 }
