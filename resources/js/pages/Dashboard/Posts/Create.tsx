@@ -22,6 +22,7 @@ import {
     Rows3,
     Smile,
     SquareStack,
+    Table2,
 } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
@@ -132,6 +133,7 @@ export default function Create() {
                 { type: 'icon', title: 'Icon', icon: Smile },
                 { type: 'divider', title: 'Divider', icon: Minus },
                 { type: 'spacer', title: 'Spacer', icon: MoveVertical },
+                { type: 'table', title: 'Table', icon: Table2 },
             ],
         },
         {

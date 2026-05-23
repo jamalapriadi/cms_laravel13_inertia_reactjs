@@ -32,6 +32,7 @@ class ValidPostBlocks implements ValidationRule
         'icon',
         'divider',
         'spacer',
+        'table',
         'list',
         'quote',
         'code',

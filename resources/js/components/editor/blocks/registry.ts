@@ -21,6 +21,7 @@ import RichEditorBlock from './RichEditorBlock';
 import { SectionBlock } from './SectionBlock';
 import SliderBlock from './SliderBlock';
 import SpacerBlock from './SpacerBlock';
+import TableBlock from './TableBlock';
 import TabsBlock from './TabsBlock';
 import TextBlock from './TextBlock';
 
@@ -40,6 +41,7 @@ export const BLOCK_REGISTRY: Record<BlockType, BlockComponent> = {
     icon: IconBlock as BlockComponent,
     divider: DividerBlock as BlockComponent,
     spacer: SpacerBlock as BlockComponent,
+    table: TableBlock as BlockComponent,
     section: SectionBlock,
     container: ContainerBlock as BlockComponent,
     column: ColumnBlock as BlockComponent,

@@ -22,6 +22,7 @@ export type BlockType =
     | 'icon'
     | 'divider'
     | 'spacer'
+    | 'table'
     | 'list'
     | 'quote'
     | 'code';

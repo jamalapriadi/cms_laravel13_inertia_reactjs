@@ -11,6 +11,7 @@ export type BlockType =
     | 'icon'
     | 'divider'
     | 'spacer'
+    | 'table'
     | 'section'
     | 'container'
     | 'column'
