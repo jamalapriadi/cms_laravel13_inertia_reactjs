@@ -2,6 +2,7 @@
 
 namespace App\Models\Shop;
 
+use App\Notifications\CustomerResetPasswordNotification;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -47,5 +48,10 @@ class Customer extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new CustomerResetPasswordNotification($token));
     }
 }
