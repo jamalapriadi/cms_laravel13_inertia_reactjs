@@ -2,10 +2,10 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
+import { GripVertical, ChevronDown, ChevronRight, Trash } from 'lucide-react';
 import { useState } from 'react';
 
-export default function MenuItemNode({ item, locale, onChange, onDelete }) {
+export default function MenuItemNode({ item, locale, onChange, onDelete }: any) {
     const {
         attributes,
         listeners,
@@ -28,11 +28,9 @@ export default function MenuItemNode({ item, locale, onChange, onDelete }) {
         <div
             ref={setNodeRef}
             style={style}
-            className="mb-2 rounded border bg-card shadow-sm"
+            className="mb-2 rounded-md border bg-card shadow-sm"
         >
-            {/* HEADER */}
             <div className="flex items-center gap-2 p-3">
-                {/* DRAG HANDLE */}
                 <div
                     {...attributes}
                     {...listeners}
@@ -41,7 +39,6 @@ export default function MenuItemNode({ item, locale, onChange, onDelete }) {
                     <GripVertical size={18} />
                 </div>
 
-                {/* COLLAPSE */}
                 <button onClick={() => setCollapsed(!collapsed)}>
                     {collapsed ? (
                         <ChevronRight size={16} />
@@ -50,7 +47,6 @@ export default function MenuItemNode({ item, locale, onChange, onDelete }) {
                     )}
                 </button>
 
-                {/* 🔥 TITLE (TRANSLATION AWARE) */}
                 <Input
                     value={item.translations?.[locale]?.title || ''}
                     onChange={(e) =>
@@ -67,20 +63,17 @@ export default function MenuItemNode({ item, locale, onChange, onDelete }) {
                     className="flex-1"
                 />
 
-                {/* DELETE */}
                 <Button
                     size="sm"
                     variant="destructive"
                     onClick={() => onDelete(item.id)}
                 >
-                    Delete
+                    <Trash className="h-4 w-4" />
                 </Button>
             </div>
 
-            {/* ADVANCED PANEL */}
             {!collapsed && (
                 <div className="space-y-3 border-t bg-muted/50 p-4">
-                    {/* 🔥 URL (TRANSLATION AWARE) */}
                     <div>
                         <label className="text-sm font-medium">URL</label>
                         <Input
@@ -92,10 +85,10 @@ export default function MenuItemNode({ item, locale, onChange, onDelete }) {
                             onChange={(e) =>
                                 onChange(item.id, {
                                     translations: {
-                                        ...item.translations, // 🔥 penting: merge semua locale
+                                        ...item.translations,
                                         [locale]: {
                                             ...item.translations?.[locale],
-                                            title: e.target.value,
+                                            url: e.target.value,
                                         },
                                     },
                                 })
@@ -105,7 +98,6 @@ export default function MenuItemNode({ item, locale, onChange, onDelete }) {
                         />
                     </div>
 
-                    {/* TARGET (GLOBAL) */}
                     <div>
                         <label className="text-sm font-medium">Target</label>
                         <select

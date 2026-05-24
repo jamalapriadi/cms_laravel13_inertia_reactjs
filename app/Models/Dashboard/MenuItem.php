@@ -3,11 +3,13 @@
 namespace App\Models\Dashboard;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MenuItem extends Model
 {
     protected $fillable = [
-        'menu_id','parent_id','title','url','type',
+        'menu_id','parent_id','url','type',
         'order','target','icon','meta'
     ];
 
@@ -15,13 +17,19 @@ class MenuItem extends Model
         'meta' => 'array'
     ];
 
-    public function children()
+    public function menu(): BelongsTo
+    {
+        return $this->belongsTo(Menu::class);
+    }
+
+    public function children(): HasMany
     {
         return $this->hasMany(MenuItem::class, 'parent_id')
+            ->with(['children', 'translations'])
             ->orderBy('order');
     }
 
-    public function translations()
+    public function translations(): HasMany
     {
         return $this->hasMany(MenuItemTranslation::class);
     }

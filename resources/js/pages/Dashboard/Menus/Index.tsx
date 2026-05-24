@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Edit, Hammer, Trash } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -96,7 +97,14 @@ export default function Index({ menus, filters }: Props) {
             render: (row: Menu) => (
                 <div className="flex gap-2">
                     <Link href={`/dashboard/menus/${row.id}/edit`}>
+                        <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                    </Link>
+
+                    <Link href={`/dashboard/menus/${row.id}/builder`}>
                         <Button size="sm" variant="secondary">
+                            <Hammer className="mr-2 h-4 w-4" />
                             Builder
                         </Button>
                     </Link>
@@ -106,7 +114,7 @@ export default function Index({ menus, filters }: Props) {
                         variant="destructive"
                         onClick={() => setDeletingId(row.id)}
                     >
-                        Delete
+                        <Trash className="h-4 w-4" />
                     </Button>
                 </div>
             ),

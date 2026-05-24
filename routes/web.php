@@ -59,6 +59,8 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
     Route::resource('kecamatans', KecamatanController::class);
     Route::resource('kelurahans', KelurahanController::class);
 
+    Route::get('menus/{menu}/builder', [MenuController::class, 'builder'])->name('menus.builder');
+    Route::put('menus/{menu}/builder', [MenuController::class, 'updateBuilder'])->name('menus.builder.update');
     Route::resource('menus', MenuController::class);
 
     Route::resource('roles', RoleController::class);

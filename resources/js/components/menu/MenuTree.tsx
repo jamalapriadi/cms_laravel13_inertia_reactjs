@@ -15,23 +15,23 @@ import { useMemo, useState } from 'react';
 import { flattenTree, buildTree, getProjection } from '@/utils/tree';
 import MenuItemNode from './MenuItemNode';
 
-export default function MenuTree({ data = [], setData, locale }) {
+export default function MenuTree({ data = [], setData, locale }: any) {
     const [activeId, setActiveId] = useState(null);
     const [offsetX, setOffsetX] = useState(0);
     const [overId, setOverId] = useState(null);
 
     const sensors = useSensors(useSensor(PointerSensor));
 
-    // 🔥 FLATTEN + FILTER (hanya item yang punya translation)
     const flat = useMemo(() => {
         const normalizedLocale = locale?.replace('_', '-');
 
-        return flattenTree(data || []).filter((item) => {
-            return (
-                item.translations?.[normalizedLocale]?.title ||
-                item.translations?.[locale]?.title
-            );
-        });
+        return flattenTree(data || []).map((item) => ({
+            ...item,
+            activeTranslation:
+                item.translations?.[normalizedLocale] ||
+                item.translations?.[locale] ||
+                {},
+        }));
     }, [data, locale]);
 
     function handleDragStart(event) {
@@ -119,7 +119,7 @@ export default function MenuTree({ data = [], setData, locale }) {
     }
 
     return (
-        <div className="rounded-xl border p-4">
+        <div className="rounded-lg border p-4">
             <h2 className="mb-4 font-semibold">Menu Structure</h2>
 
             <DndContext
@@ -134,15 +134,16 @@ export default function MenuTree({ data = [], setData, locale }) {
                     items={flat.map((i) => i.id)}
                     strategy={verticalListSortingStrategy}
                 >
-                    {flat.map((item) => {
-                        const normalizedLocale = locale?.replace('_', '-');
+                    {flat.length ? (
+                        flat.map((item) => {
+                            const normalizedLocale = locale?.replace('_', '-');
 
-                        const hasTranslation =
-                            item.translations?.[normalizedLocale]?.title ||
-                            item.translations?.[locale]?.title;
+                            const hasTranslation =
+                                item.translations?.[normalizedLocale]?.title ||
+                                item.translations?.[locale]?.title;
 
-                        return (
-                            <div key={item.id} className="relative opacity-80">
+                            return (
+                                <div key={item.id} className="relative">
                                 {overId === item.id && (
                                     <div className="absolute -top-1 right-0 left-0 h-1 rounded bg-blue-500" />
                                 )}
@@ -179,8 +180,13 @@ export default function MenuTree({ data = [], setData, locale }) {
                                     )}
                                 </div>
                             </div>
-                        );
-                    })}
+                            );
+                        })
+                    ) : (
+                        <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+                            No menu items yet
+                        </div>
+                    )}
                 </SortableContext>
             </DndContext>
         </div>

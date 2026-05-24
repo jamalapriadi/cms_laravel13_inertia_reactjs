@@ -28,9 +28,16 @@ class StorePostRequest extends FormRequest
             'title' => 'required|string|max:255',
             'content' => ['nullable', 'json', new ValidPostBlocks],
             'status' => ['required', 'string', Rule::in(['draft', 'publish'])],
-            // 'categories' => 'array',
-            // 'tags' => 'array',
+            'category_id' => ['nullable', 'uuid', 'exists:post_categories,id'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => [
+                'integer',
+                Rule::exists('term_taxonomy', 'id')->where('taxonomy', 'tags'),
+            ],
+            'tag_names' => ['nullable', 'array'],
+            'tag_names.*' => ['string', 'max:191'],
             'featured_image' => 'nullable|string',
+            'published_at' => ['nullable', 'date'],
         ];
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Dashboard\Menu;
 use App\Models\Dashboard\Option;
 use App\Services\Dashboard\MenuService;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class MenuController extends Controller
@@ -55,17 +56,54 @@ class MenuController extends Controller
         return response()->json($menu);
     }
 
-    public function edit(Menu $menu, MenuService $service)
+    public function edit(Menu $menu)
     {
-        $default_language = Option::where('key','default_language')->first()->value ?? 'ID';
-        $menuData = $service->getMenuTree($menu->slug);
-        
-        $languages = Option::where('key','languages')->first()->value ?? [];
-
-
         return Inertia::render('Dashboard/Menus/Edit', [
             'menu' => $menu,
-            'languages' => json_decode($languages, true) ?? [],
+        ]);
+    }
+
+    public function update(Request $request, Menu $menu)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('menus', 'slug')->ignore($menu->id),
+            ],
+        ]);
+
+        $menu->update($validated);
+
+        return redirect()
+            ->route('menus.index')
+            ->with('success', 'Menu berhasil diperbarui');
+    }
+
+    public function destroy(Menu $menu)
+    {
+        $menu->delete();
+
+        return redirect()
+            ->route('menus.index')
+            ->with('success', 'Menu berhasil dihapus');
+    }
+
+    public function builder(Menu $menu, MenuService $service)
+    {
+        $default_language = strtolower(Option::where('key', 'default_language')->first()?->value ?? 'id');
+        $menuData = $service->getMenuTree($menu->slug);
+        $languages = Option::where('key', 'languages')->first()?->value ?? [];
+
+        if (is_string($languages)) {
+            $languages = json_decode($languages, true) ?: [];
+        }
+
+        return Inertia::render('Dashboard/Menus/Builder', [
+            'menu' => $menu,
+            'languages' => $languages,
             'items' => $menuData
                 ? $service->buildTree($menuData->items)
                 : [],
@@ -73,9 +111,8 @@ class MenuController extends Controller
         ]);
     }
 
-    public function update(Request $request, Menu $menu, MenuService $service)
+    public function updateBuilder(Request $request, Menu $menu, MenuService $service)
     {
-        // 🔥 VALIDASI BASIC
         $data = $request->validate([
             'items' => 'nullable|array',
         ]);
@@ -83,10 +120,8 @@ class MenuController extends Controller
         $items = $data['items'] ?? [];
 
         try {
-            // 🔥 VALIDASI TREE
             $service->validateTree($items);
 
-            // 🔥 SAVE TREE
             $service->saveTree($menu->id, $items);
 
             return redirect()

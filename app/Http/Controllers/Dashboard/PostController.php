@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
+use App\Models\PostCategory;
 use App\Models\TermTaxonomy;
 use App\Services\PostService;
 use Illuminate\Http\Request;
@@ -44,8 +45,9 @@ class PostController extends Controller
     public function create()
     {
         return Inertia::render('Dashboard/Posts/Create', [
-            'categories' => TermTaxonomy::with('term')
-                ->where('taxonomy', 'categories')
+            'categories' => PostCategory::query()
+                ->select('id', 'category_name')
+                ->orderBy('category_name')
                 ->get(),
             'tags' => TermTaxonomy::with('term')
                 ->where('taxonomy', 'tags')
@@ -62,7 +64,7 @@ class PostController extends Controller
 
     public function edit(Post $post)
     {
-        $post->load(['categories', 'tags', 'featuredImage']);
+        $post->load(['tags.term', 'featuredImage', 'metas']);
 
         $blocks = $this->buildTree(
             $post->blocks()->orderBy('order')->get()
@@ -71,8 +73,12 @@ class PostController extends Controller
         return Inertia::render('Dashboard/Posts/Edit', [
             'post' => $post,
             'blocks' => $blocks,
-            'categories' => TermTaxonomy::with('term')
-                ->where('taxonomy', 'categories')
+            'categoryId' => $post->metas
+                ->firstWhere('meta_key', 'post_category_id')
+                ?->meta_value,
+            'categories' => PostCategory::query()
+                ->select('id', 'category_name')
+                ->orderBy('category_name')
                 ->get(),
             'tags' => TermTaxonomy::with('term')
                 ->where('taxonomy', 'tags')

@@ -2,6 +2,9 @@
 
 use App\Models\Block;
 use App\Models\Post;
+use App\Models\PostCategory;
+use App\Models\Term;
+use App\Models\TermTaxonomy;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -141,4 +144,43 @@ test('it replaces nested editor blocks when updating a post', function () {
     expect($heading->parent_id)->toBe($container->id)
         ->and($heading->props)->toBe(['text' => 'Updated heading', 'level' => 'h1'])
         ->and(Block::query()->where('post_id', $post->id)->where('props->text', 'Old heading')->exists())->toBeFalse();
+});
+
+test('it stores post category tags and featured image metadata', function () {
+    $user = User::factory()->create();
+    $category = PostCategory::query()->create([
+        'user_id' => $user->id,
+        'category_name' => 'Market News',
+        'slug' => 'market-news',
+    ]);
+
+    $tag = TermTaxonomy::query()->create([
+        'term_id' => Term::query()->create([
+            'name' => 'Trading',
+            'slug' => 'trading',
+        ])->id,
+        'taxonomy' => 'tags',
+    ]);
+
+    $response = $this->actingAs($user)->post(route('posts.store'), [
+        'title' => 'Post Metadata',
+        'status' => 'draft',
+        'content' => json_encode([]),
+        'category_id' => $category->id,
+        'tag_names' => ['Trading', 'Breakout'],
+        'featured_image' => 'posts/featured-image.jpg',
+        'published_at' => '2026-05-24 09:30:00',
+    ]);
+
+    $response->assertRedirect(route('posts.index'));
+
+    $post = Post::query()
+        ->where('title', 'Post Metadata')
+        ->firstOrFail();
+
+    expect($post->metas()->where('meta_key', 'post_category_id')->value('meta_value'))->toBe($category->id)
+        ->and($post->tags()->with('term')->get()->pluck('term.name')->all())->toBe(['Trading', 'Breakout'])
+        ->and($post->featuredImage()->value('meta_value'))->toBe('posts/featured-image.jpg')
+        ->and($post->published_at?->format('Y-m-d H:i:s'))->toBe('2026-05-24 09:30:00')
+        ->and($tag->refresh()->count)->toBe(1);
 });
