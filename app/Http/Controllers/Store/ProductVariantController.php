@@ -9,6 +9,7 @@ use App\Models\Shop\Product;
 use App\Models\Shop\ProductStockUnit;
 use App\Models\Shop\ProductVariant;
 use App\Models\Unit;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -77,6 +78,8 @@ class ProductVariantController extends Controller
 
         if ($request->hasFile('image')) {
             $variantData['image'] = $request->file('image')->store('product_variants', 'public');
+        } elseif ($mediaPath = MediaPath::normalize($request->input('image'))) {
+            $variantData['image'] = $mediaPath;
         }
 
         DB::transaction(function () use ($variantData, $stockUnits) {
@@ -138,6 +141,10 @@ class ProductVariantController extends Controller
             }
 
             $variantData['image'] = $request->file('image')->store('product_variants', 'public');
+        } elseif ($request->has('image') && $request->input('image') === '') {
+            $variantData['image'] = null;
+        } elseif ($request->filled('image')) {
+            $variantData['image'] = MediaPath::normalize($request->input('image')) ?? $productVariant->image;
         }
 
         $productVariant->update($variantData);

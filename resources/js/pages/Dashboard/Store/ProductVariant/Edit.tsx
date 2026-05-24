@@ -5,6 +5,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import MediaImagePicker from '@/components/media/MediaImagePicker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -157,10 +158,6 @@ export default function Edit({
     const [editingStockUnit, setEditingStockUnit] =
         useState<ProductStockUnit | null>(null);
     const [submittingStock, setSubmittingStock] = useState(false);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const currentImageUrl = initialVariant.image
-        ? `/storage/${initialVariant.image}`
-        : null;
 
     const {
         register,
@@ -178,7 +175,7 @@ export default function Edit({
             color: initialVariant.color ?? '',
             storage: initialVariant.storage ?? '',
             sku: initialVariant.sku ?? '',
-            image: undefined,
+            image: initialVariant.image ?? undefined,
             price: Number(initialVariant.price ?? 0),
             track_stock: Boolean(initialVariant.track_stock),
             min_stock_alert: initialVariant.min_stock_alert ?? null,
@@ -193,6 +190,7 @@ export default function Edit({
     const selectedUnitId = useWatch({ control, name: 'unit_id' });
     const trackStock = useWatch({ control, name: 'track_stock' });
     const isActive = useWatch({ control, name: 'is_active' });
+    const selectedImage = useWatch({ control, name: 'image' });
 
     const stockUnitForm = useForm<
         z.input<typeof stockUnitSchema>,
@@ -305,22 +303,10 @@ export default function Edit({
         );
     };
 
-    const handleImageChange = (file?: File) => {
-        setValue('image', file, { shouldValidate: true });
-
-        if (!file) {
-            setImagePreview(null);
-
-            return;
-        }
-
-        setImagePreview(URL.createObjectURL(file));
-    };
-
     const onSubmit = (data: VariantFormData) => {
         const payload = { ...data };
 
-        if (!(payload.image instanceof File)) {
+        if (payload.image === undefined) {
             delete payload.image;
         }
 
@@ -513,31 +499,12 @@ export default function Edit({
 
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Variant Image</Label>
-
-                                {(imagePreview || currentImageUrl) && (
-                                    <div className="mb-2 flex flex-wrap items-center gap-4">
-                                        <img
-                                            src={
-                                                imagePreview ??
-                                                currentImageUrl ??
-                                                ''
-                                            }
-                                            alt={initialVariant.name}
-                                            className="h-28 w-28 rounded-md border object-cover"
-                                        />
-                                        <div className="text-sm text-muted-foreground">
-                                            {imagePreview
-                                                ? 'New image preview'
-                                                : 'Current variant image'}
-                                        </div>
-                                    </div>
-                                )}
-
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) =>
-                                        handleImageChange(e.target.files?.[0])
+                                <MediaImagePicker
+                                    value={selectedImage as string | null}
+                                    onChange={(path) =>
+                                        setValue('image', path, {
+                                            shouldValidate: true,
+                                        })
                                     }
                                 />
                                 {errors.image && (

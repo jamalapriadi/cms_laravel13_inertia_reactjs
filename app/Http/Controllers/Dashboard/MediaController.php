@@ -17,6 +17,24 @@ class MediaController extends Controller
 
     public function index(Request $request)
     {
+        $library = $this->buildStorageLibrary($request);
+
+        return Inertia::render('Dashboard/Media/Index', [
+            ...$library,
+            'filters' => [
+                'search' => $request->query('search'),
+                'date' => $request->query('date'),
+            ],
+        ]);
+    }
+
+    public function library(Request $request)
+    {
+        return response()->json($this->buildStorageLibrary($request));
+    }
+
+    private function buildStorageLibrary(Request $request): array
+    {
         $path = trim((string) $request->query('path', ''), '/');
         $search = $request->query('search');
         $date = $request->query('date');
@@ -85,15 +103,11 @@ class MediaController extends Controller
             })
             ->values();
 
-        return Inertia::render('Dashboard/Media/Index', [
+        return [
             'storageItems' => $storageItems,
             'currentPath' => $path,
             'breadcrumbs' => $breadcrumbs,
-            'filters' => [
-                'search' => $search,
-                'date' => $date,
-            ],
-        ]);
+        ];
     }
 
     public function create(Request $request)
@@ -125,6 +139,8 @@ class MediaController extends Controller
 
         return response()->json([
             'location' => asset('storage/'.$path->path),
+            'url' => Storage::disk($path->disk)->url($path->path),
+            'media' => $path,
         ]);
     }
 

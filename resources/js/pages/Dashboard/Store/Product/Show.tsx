@@ -1,9 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { z } from 'zod';
 import {
     ArrowLeft,
     Plus,
@@ -11,46 +7,18 @@ import {
     Pencil,
     Image as ImageIcon,
     FileText,
-    Check,
     AlertCircle,
     Eye,
     Star,
     Layers,
     Boxes,
 } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import Textarea from '@/components/ui/textarea';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-
+import MediaImagePicker from '@/components/media/MediaImagePicker';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -61,6 +29,36 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import Textarea from '@/components/ui/textarea';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -160,9 +158,7 @@ const specificationSchema = z.object({
 
 const imageSchema = z.object({
     product_id: z.string().min(1, 'Product ID is required'),
-    image: z
-        .any()
-        .refine((file) => file instanceof File, 'Image file is required'),
+    image: z.string().min(1, 'Image is required'),
     is_primary: z.boolean().default(false),
     sort_order: z.coerce
         .number()
@@ -279,6 +275,7 @@ export default function Show({ product }: Props) {
         resolver: zodResolver(imageSchema),
         defaultValues: {
             product_id: product.id,
+            image: '',
             is_primary: false,
             sort_order: 0,
         },
@@ -294,7 +291,7 @@ export default function Show({ product }: Props) {
             product_id: product.id,
             name: '',
             sku: '',
-            image: undefined,
+            image: null,
             price: 0,
             track_stock: true,
             min_stock_alert: null,
@@ -328,7 +325,7 @@ export default function Show({ product }: Props) {
             product_id: product.id,
             name: '',
             sku: '',
-            image: undefined,
+            image: null,
             price: 0,
             track_stock: true,
             min_stock_alert: null,
@@ -345,7 +342,7 @@ export default function Show({ product }: Props) {
             product_id: product.id,
             name: variant.name,
             sku: variant.sku,
-            image: undefined,
+            image: variant.image ?? null,
             price: Number(variant.price),
             track_stock: !!variant.track_stock,
             min_stock_alert:
@@ -432,6 +429,7 @@ export default function Show({ product }: Props) {
                 setIsImageModalOpen(false);
                 imageForm.reset({
                     product_id: product.id,
+                    image: '',
                     is_primary: false,
                     sort_order: 0,
                 });
@@ -574,11 +572,14 @@ export default function Show({ product }: Props) {
     };
 
     const handleDelete = () => {
-        if (!deletingId || !deletingType) return;
+        if (!deletingId || !deletingType) {
+            return;
+        }
 
         const toastId = 'delete-' + deletingType;
 
         let url = '';
+
         if (deletingType === 'product') {
             url = `/dashboard/ecommerce/products/${deletingId}`;
         } else if (deletingType === 'image') {
@@ -603,6 +604,7 @@ export default function Show({ product }: Props) {
                 );
                 setDeletingId(null);
                 setDeletingType(null);
+
                 if (deletingType === 'product') {
                     router.visit('/dashboard/ecommerce/products');
                 }
@@ -793,8 +795,16 @@ export default function Show({ product }: Props) {
                                     <span className="mb-2 block text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                         Description
                                     </span>
-                                    <div className="rounded-lg border bg-muted/50 p-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground">
-                                        {product.description || (
+
+                                    <div className="rounded-lg border bg-muted/50 p-4 text-sm leading-relaxed text-foreground">
+                                        {product.description ? (
+                                            <div
+                                                className="prose-sm dark:prose-invert prose max-w-none"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: product.description,
+                                                }}
+                                            />
+                                        ) : (
                                             <span className="text-muted-foreground italic">
                                                 No description provided.
                                             </span>
@@ -1383,19 +1393,15 @@ export default function Show({ product }: Props) {
                         className="space-y-4 py-2"
                     >
                         <div className="flex flex-col gap-1.5">
-                            <Label htmlFor="image-file">Image File</Label>
-                            <Input
-                                id="image-file"
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                    if (e.target.files && e.target.files[0]) {
-                                        imageForm.setValue(
-                                            'image',
-                                            e.target.files[0],
-                                        );
-                                    }
-                                }}
+                            <MediaImagePicker
+                                label="Image File"
+                                value={imageForm.watch('image')}
+                                onChange={(path) =>
+                                    imageForm.setValue('image', path ?? '', {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                    })
+                                }
                             />
                             {imageForm.formState.errors.image && (
                                 <p className="text-xs text-destructive">
@@ -1522,26 +1528,19 @@ export default function Show({ product }: Props) {
                             </div>
 
                             <div className="flex flex-col gap-1.5 md:col-span-2">
-                                <Label htmlFor="variant_image">
-                                    Variant Image
-                                </Label>
-                                {editingVariant?.image && (
-                                    <img
-                                        src={`/storage/${editingVariant.image}`}
-                                        alt={editingVariant.name}
-                                        className="h-24 w-24 rounded-md border object-cover"
-                                    />
-                                )}
-                                <Input
-                                    id="variant_image"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) =>
-                                        variantForm.setValue(
-                                            'image',
-                                            e.target.files?.[0],
-                                            { shouldValidate: true },
-                                        )
+                                <MediaImagePicker
+                                    label="Variant Image"
+                                    value={
+                                        variantForm.watch('image') as
+                                            | string
+                                            | null
+                                            | undefined
+                                    }
+                                    onChange={(path) =>
+                                        variantForm.setValue('image', path, {
+                                            shouldDirty: true,
+                                            shouldValidate: true,
+                                        })
                                     }
                                 />
                                 {variantForm.formState.errors.image && (

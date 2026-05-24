@@ -25,7 +25,9 @@ class BrandRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048'],
+            'logo' => $this->hasFile('logo')
+                ? ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048']
+                : ['nullable', 'string'],
             'is_active' => ['boolean'],
         ];
     }

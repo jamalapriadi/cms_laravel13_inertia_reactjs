@@ -7,7 +7,9 @@ use App\Http\Requests\Store\ProductImage\ProductImageRequest;
 use App\Http\Requests\Store\ProductImage\ProductImageUpdateRequest;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductImage;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -62,6 +64,12 @@ class ProductImageController extends Controller
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('product_images', 'public');
+        } elseif ($mediaPath = MediaPath::normalize($request->input('image'))) {
+            $data['image'] = $mediaPath;
+        } else {
+            return back()
+                ->withErrors(['image' => 'The selected image could not be found in media storage.'])
+                ->withInput();
         }
 
         // If is_primary is true, un-primary others
@@ -94,13 +102,17 @@ class ProductImageController extends Controller
      */
     public function update(ProductImageUpdateRequest $request, ProductImage $productImage)
     {
-        $data = $request->validated();
+        $data = Arr::except($request->validated(), ['image']);
 
         if ($request->hasFile('image')) {
             if ($productImage->image) {
                 Storage::disk('public')->delete($productImage->image);
             }
             $data['image'] = $request->file('image')->store('product_images', 'public');
+        } elseif ($request->has('image') && $request->input('image') === '') {
+            $data['image'] = null;
+        } elseif ($request->filled('image')) {
+            $data['image'] = MediaPath::normalize($request->input('image')) ?? $productImage->image;
         }
 
         // If is_primary is true, un-primary others

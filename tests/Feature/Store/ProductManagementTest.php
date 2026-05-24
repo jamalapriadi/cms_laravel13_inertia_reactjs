@@ -221,6 +221,65 @@ test('product slug stays unique when renaming a product to an existing name', fu
         ->slug->toBe('iphone-x-2');
 });
 
+test('store entities can use existing media library paths for images', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    Storage::disk('public')->put('media/2026/05/catalog.webp', 'image');
+    Storage::disk('public')->put('media/2026/05/logo.webp', 'image');
+    Storage::disk('public')->put('media/2026/05/category.webp', 'image');
+
+    $category = Category::create([
+        'name' => 'Phones',
+        'slug' => 'phones',
+        'is_publish' => true,
+    ]);
+
+    $this
+        ->actingAs($user)
+        ->post(route('products.store'), [
+            'name' => 'iPhone 16',
+            'category_id' => $category->id,
+            'brand_id' => null,
+            'thumbnail' => 'media/2026/05/catalog.webp',
+            'condition' => 'new',
+            'base_price' => 18000000,
+            'has_variant' => false,
+            'is_publish' => true,
+        ])
+        ->assertRedirect(route('products.index'));
+
+    $this
+        ->actingAs($user)
+        ->post(route('brands.store'), [
+            'name' => 'Apple Media',
+            'description' => 'Uses media library',
+            'logo' => 'media/2026/05/logo.webp',
+            'is_active' => true,
+        ])
+        ->assertRedirect(route('brands.index'));
+
+    $this
+        ->actingAs($user)
+        ->post(route('categories.store'), [
+            'name' => 'Accessories',
+            'parent_id' => null,
+            'image' => 'media/2026/05/category.webp',
+            'sort_order' => 0,
+            'show_home' => true,
+            'is_publish' => true,
+        ])
+        ->assertRedirect(route('categories.index'));
+
+    expect(Product::query()->where('name', 'iPhone 16')->first()->thumbnail)
+        ->toBe('media/2026/05/catalog.webp')
+        ->and(Brand::query()->where('name', 'Apple Media')->first()->logo)
+        ->toBe('media/2026/05/logo.webp')
+        ->and(Category::query()->where('name', 'Accessories')->first()->image)
+        ->toBe('media/2026/05/category.webp');
+});
+
 test('user can update brand without replacing existing logo', function () {
     Storage::fake('public');
 

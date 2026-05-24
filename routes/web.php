@@ -121,6 +121,7 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
 
     Route::controller(MediaController::class)->group(function () {
         Route::get('/media', 'index')->name('dashboard.media');
+        Route::get('/media/library', 'library')->name('dashboard.media.library');
         Route::get('/media/create', 'create')->name('dashboard.media.create');
         Route::post('/media', 'store');
         Route::post('/media/upload', 'upload');

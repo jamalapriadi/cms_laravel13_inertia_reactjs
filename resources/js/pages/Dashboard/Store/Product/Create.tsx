@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import MediaImagePicker from '@/components/media/MediaImagePicker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -219,15 +220,12 @@ export default function Create({ categories, brands, units }: Props) {
 
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Thumbnail</Label>
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) =>
-                                        setValue(
-                                            'thumbnail',
-                                            e.target.files?.[0],
-                                            { shouldValidate: true },
-                                        )
+                                <MediaImagePicker
+                                    value={watch('thumbnail') as string | null}
+                                    onChange={(path) =>
+                                        setValue('thumbnail', path, {
+                                            shouldValidate: true,
+                                        })
                                     }
                                 />
                                 {errors.thumbnail && (

@@ -29,7 +29,9 @@ class ProductVariantRequest extends FormRequest
             'color' => ['nullable', 'string', 'max:255'],
             'storage' => ['nullable', 'string', 'max:255'],
             'sku' => ['required', 'string', 'max:255', 'unique:product_variants,sku'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
+            'image' => $this->hasFile('image')
+                ? ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096']
+                : ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
             'track_stock' => ['nullable', 'boolean'],
             'stock' => ['nullable', 'integer', 'min:0'],

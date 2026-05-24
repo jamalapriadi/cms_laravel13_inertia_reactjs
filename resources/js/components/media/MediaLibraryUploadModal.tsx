@@ -35,8 +35,11 @@ interface Props {
     onClose: () => void;
     items: MediaLibraryItem[];
     currentPath: string;
+    loading?: boolean;
     onOpenFolder: (path: string) => void;
     onSelectFile?: (item: MediaLibraryItem) => void;
+    onUploaded?: (item: MediaLibraryItem) => void;
+    autoSelectUploaded?: boolean;
 }
 
 export default function MediaLibraryUploadModal({
@@ -44,8 +47,11 @@ export default function MediaLibraryUploadModal({
     onClose,
     items,
     currentPath,
+    loading = false,
     onOpenFolder,
     onSelectFile,
+    onUploaded,
+    autoSelectUploaded = false,
 }: Props) {
     const [tab, setTab] = useState<'library' | 'upload'>('library');
     const [selectedItem, setSelectedItem] = useState<MediaLibraryItem | null>(
@@ -67,22 +73,49 @@ export default function MediaLibraryUploadModal({
             const toastId = toast.loading('Uploading media...');
 
             let failedUploads = 0;
+            let firstUploadedItem: MediaLibraryItem | null = null;
 
             for (const file of acceptedFiles) {
                 await new Promise<void>((resolve) => {
-                    router.post(
-                        '/dashboard/media',
-                        { file },
-                        {
-                            forceFormData: true,
-                            preserveScroll: true,
-                            preserveState: true,
-                            onError: () => {
-                                failedUploads++;
-                            },
-                            onFinish: () => resolve(),
-                        },
-                    );
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const csrfToken = document
+                        .querySelector<HTMLMetaElement>(
+                            'meta[name="csrf-token"]',
+                        )
+                        ?.getAttribute('content');
+
+                    fetch('/dashboard/media/json', {
+                        method: 'POST',
+                        headers: csrfToken
+                            ? { 'X-CSRF-TOKEN': csrfToken }
+                            : undefined,
+                        body: formData,
+                    })
+                        .then(async (response) => {
+                            if (!response.ok) {
+                                throw new Error('Upload failed');
+                            }
+
+                            const result = await response.json();
+                            const media = result.media;
+                            const item: MediaLibraryItem = {
+                                type: 'file',
+                                name: media.file_name,
+                                path: media.path,
+                                url: result.url ?? result.location,
+                                mime_type: media.mime_type,
+                                size: media.size,
+                                last_modified: media.updated_at ?? null,
+                            };
+
+                            firstUploadedItem ??= item;
+                        })
+                        .catch(() => {
+                            failedUploads++;
+                        })
+                        .finally(() => resolve());
                 });
             }
 
@@ -95,6 +128,19 @@ export default function MediaLibraryUploadModal({
             }
 
             setUploading(false);
+
+            if (autoSelectUploaded && firstUploadedItem) {
+                onUploaded?.(firstUploadedItem);
+                onSelectFile?.(firstUploadedItem);
+                onClose();
+
+                return;
+            }
+
+            if (firstUploadedItem) {
+                onUploaded?.(firstUploadedItem);
+            }
+
             setTab('library');
             router.reload({
                 only: ['storageItems', 'breadcrumbs', 'currentPath'],
@@ -102,7 +148,7 @@ export default function MediaLibraryUploadModal({
                 preserveState: true,
             });
         },
-        [],
+        [autoSelectUploaded, onClose, onSelectFile, onUploaded],
     );
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -154,7 +200,12 @@ export default function MediaLibraryUploadModal({
                                 </span>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
+                            {loading ? (
+                                <div className="flex h-72 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+                                    Loading media...
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
                                 {items.map((item) => (
                                     <button
                                         key={`${item.type}:${item.path}`}
@@ -198,8 +249,9 @@ export default function MediaLibraryUploadModal({
                                     </button>
                                 ))}
                             </div>
+                            )}
 
-                            {items.length === 0 && (
+                            {!loading && items.length === 0 && (
                                 <div className="flex h-72 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
                                     Belum ada media di folder ini.
                                 </div>

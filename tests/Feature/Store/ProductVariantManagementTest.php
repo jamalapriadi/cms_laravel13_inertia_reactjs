@@ -275,6 +275,46 @@ test('user can update product variant without replacing existing image', functio
     Storage::disk('public')->assertExists('product_variants/existing.jpg');
 });
 
+test('user can create product variant with an existing media library image path', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    $category = Category::create([
+        'name' => 'Electronics',
+        'slug' => 'electronics',
+        'is_publish' => true,
+    ]);
+
+    $product = Product::create([
+        'category_id' => $category->id,
+        'name' => 'iPhone 15',
+        'slug' => 'iphone-15',
+        'condition' => 'new',
+        'base_price' => 15000000,
+        'is_publish' => true,
+    ]);
+
+    Storage::disk('public')->put('media/2026/05/variant.webp', 'image');
+
+    $this
+        ->actingAs($user)
+        ->post(route('product-variants.store'), [
+            'product_id' => $product->id,
+            'name' => '128GB Media',
+            'sku' => 'IP15-128-MEDIA',
+            'image' => 'media/2026/05/variant.webp',
+            'price' => 14500000,
+            'track_stock' => true,
+            'stock' => 0,
+            'is_active' => true,
+        ])
+        ->assertRedirect(route('product-variants.index'));
+
+    expect(ProductVariant::query()->where('sku', 'IP15-128-MEDIA')->first()->image)
+        ->toBe('media/2026/05/variant.webp');
+});
+
 test('product variant edit page includes the current image path', function () {
     $user = User::factory()->create();
 

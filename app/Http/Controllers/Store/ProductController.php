@@ -10,6 +10,7 @@ use App\Models\Shop\Category;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductVariant;
 use App\Models\Unit;
+use App\Support\MediaPath;
 use App\Support\UniqueSlug;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -103,6 +104,8 @@ class ProductController extends Controller
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
+        } elseif ($mediaPath = MediaPath::normalize($request->input('thumbnail'))) {
+            $data['thumbnail'] = $mediaPath;
         }
 
         Product::create($data);
@@ -183,6 +186,10 @@ class ProductController extends Controller
                 Storage::disk('public')->delete($product->thumbnail);
             }
             $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
+        } elseif ($request->has('thumbnail') && $request->input('thumbnail') === '') {
+            $data['thumbnail'] = null;
+        } elseif ($request->filled('thumbnail')) {
+            $data['thumbnail'] = MediaPath::normalize($request->input('thumbnail')) ?? $product->thumbnail;
         }
 
         $product->update($data);

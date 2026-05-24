@@ -27,7 +27,9 @@ class ProductUpdateRequest extends FormRequest
             'category_id' => ['required', 'uuid', 'exists:categories,id'],
             'brand_id' => ['nullable', 'uuid', 'exists:brands,id'],
             'unit_id' => ['nullable', 'string', 'exists:units,id'],
-            'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048'],
+            'thumbnail' => $this->hasFile('thumbnail')
+                ? ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048']
+                : ['nullable', 'string'],
             'description' => ['nullable', 'string'],
             'condition' => ['required', 'in:new,like_new,second'],
             'base_price' => ['required', 'numeric', 'min:0'],
