@@ -57,9 +57,12 @@ interface ProductVariant {
     id: string;
     product_id: string;
     name: string;
+    color?: string | null;
+    storage?: string | null;
     sku: string;
     image?: string | null;
     price: string | number;
+    cost_price?: string | number | null;
     stock: number;
     stock_units_count?: number;
     available_stock_units_count?: number;
@@ -148,33 +151,56 @@ export default function Index({ variants, products, filters }: Props) {
      */
     const columns = [
         {
-            label: 'Name',
-            render: (row: ProductVariant) => (
-                <div className="flex items-center gap-3">
-                    {row.image ? (
-                        <img
-                            src={`/storage/${row.image}`}
-                            alt={row.name}
-                            className="h-10 w-10 rounded-md border object-cover"
-                        />
-                    ) : null}
-                    <div className="flex flex-col">
-                        <span className="font-medium">{row.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                            SKU: {row.sku}
-                        </span>
-                    </div>
-                </div>
-            ),
-        },
-        {
             label: 'Product',
             render: (row: ProductVariant) => (
-                <span className="text-sm">{row.product?.name || '-'}</span>
+                <span className="text-sm font-medium">
+                    {row.product?.name || '-'}
+                </span>
             ),
         },
         {
-            label: 'Price',
+            label: 'Warna',
+            render: (row: ProductVariant) => (
+                <span className="text-sm">{row.color || '-'}</span>
+            ),
+        },
+        {
+            label: 'Storage',
+            render: (row: ProductVariant) => (
+                <span className="text-sm">{row.storage || '-'}</span>
+            ),
+        },
+        {
+            label: 'Photo',
+            render: (row: ProductVariant) =>
+                row.image ? (
+                    <img
+                        src={`/storage/${row.image}`}
+                        alt={row.name}
+                        className="h-10 w-10 rounded-md border object-cover"
+                    />
+                ) : (
+                    <span className="text-sm text-muted-foreground">-</span>
+                ),
+        },
+        {
+            label: 'Kode / SKU',
+            render: (row: ProductVariant) => (
+                <span className="text-sm font-medium">{row.sku}</span>
+            ),
+        },
+        {
+            label: 'Harga Beli',
+            render: (row: ProductVariant) => (
+                <span className="text-sm">
+                    {row.cost_price != null
+                        ? `¥${Number(row.cost_price).toLocaleString('ja-JP')}`
+                        : '-'}
+                </span>
+            ),
+        },
+        {
+            label: 'Harga Jual',
             render: (row: ProductVariant) => (
                 <span className="text-sm font-medium">
                     ¥{Number(row.price).toLocaleString('ja-JP')}

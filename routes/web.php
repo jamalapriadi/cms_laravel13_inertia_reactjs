@@ -125,6 +125,7 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
         Route::post('/media', 'store');
         Route::post('/media/upload', 'upload');
         Route::post('/media/json', 'store_json');
+        Route::delete('/media/storage-file', 'destroyStorageFile')->name('dashboard.media.storage-file.destroy');
         Route::put('/media/{medium}', 'update');
         Route::delete('/media/{medium}', 'destroy');
         Route::post('/upload-image', 'store_image');

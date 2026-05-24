@@ -7,6 +7,7 @@ use App\Models\Shop\Category;
 use App\Http\Requests\Store\Category\CategoryRequest;
 use App\Http\Requests\Store\Category\CategoryUpdateRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -94,7 +95,7 @@ class CategoryController extends Controller
      */
     public function update(CategoryUpdateRequest $request, Category $category)
     {
-        $data = $request->validated();
+        $data = Arr::except($request->validated(), ['image']);
         
         if (isset($data['name']) && $data['name'] !== $category->name) {
             $data['slug'] = Str::slug($data['name']);

@@ -16,6 +16,15 @@ interface Props {
     options: OptionItem[];
 }
 
+const assetFields = [
+    'favicon_ico',
+    'logo',
+    'logo_footer',
+    'logo_mobile',
+] as const;
+
+const legacyAssetUrlFields = assetFields.map((field) => `${field}_url`);
+
 export default function General({ options }: Props) {
     const [initialized, setInitialized] = useState(false);
 
@@ -75,27 +84,14 @@ export default function General({ options }: Props) {
                 return;
             }
 
-            // 🔥 HANDLE IMAGE URL MAPPING
-            if (item.key === 'favicon_ico_url') {
-                mapped.favicon_ico_url = item.value ?? '';
+            if (assetFields.includes(item.key as (typeof assetFields)[number])) {
+                mapped[`${item.key}_url`] = item.value ?? '';
 
                 return;
             }
 
-            if (item.key === 'logo_url') {
-                mapped.logo_url = item.value ?? '';
-
-                return;
-            }
-
-            if (item.key === 'logo_footer_url') {
-                mapped.logo_footer_url = item.value ?? '';
-
-                return;
-            }
-
-            if (item.key === 'logo_mobile_url') {
-                mapped.logo_mobile_url = item.value ?? '';
+            if (legacyAssetUrlFields.includes(item.key)) {
+                mapped[item.key] = item.value ?? '';
 
                 return;
             }
@@ -118,7 +114,6 @@ export default function General({ options }: Props) {
             ...mapped,
         }));
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setInitialized(true);
     }, [options, initialized, setData, data]);
 
@@ -200,20 +195,28 @@ export default function General({ options }: Props) {
     ) => {
         const formData = new FormData();
         formData.append('file', file);
+        const csrfToken = document
+            .querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+            ?.getAttribute('content');
 
         try {
             toast.loading('Uploading...', { id: field });
 
             const response = await fetch('/dashboard/media/json', {
                 method: 'POST',
+                headers: csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {},
                 body: formData,
             });
+
+            if (!response.ok) {
+                throw new Error(`Upload failed with status ${response.status}`);
+            }
 
             const result = await response.json();
 
             setData((prev) => ({
                 ...prev,
-                [field]: file, // optional kalau mau kirim lagi saat submit
+                [field]: null,
                 [`${field}_url`]: result.location, // ini yang penting
             }));
 
@@ -270,6 +273,18 @@ export default function General({ options }: Props) {
             logo_mobile: null,
             logo_mobile_url: '',
         });
+    };
+
+    const resolveAssetUrl = (url: string) => {
+        if (!url) {
+            return '';
+        }
+
+        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
+            return url;
+        }
+
+        return `/storage/${url}`;
     };
     /**
      * ✅ Prevent TinyMCE render sebelum data siap
@@ -501,25 +516,16 @@ export default function General({ options }: Props) {
                                         Favicon Ico
                                     </label>
 
-                                    {!data.favicon_ico_url ? (
-                                        <Input
-                                            type="file"
-                                            accept=".ico,image/png"
-                                            className="cursor-pointer"
-                                            onChange={(e) =>
-                                                e.target.files &&
-                                                handleFaviconUpload(
-                                                    e.target.files[0],
-                                                )
-                                            }
-                                        />
-                                    ) : (
-                                        <div className="space-y-2">
+                                    {data.favicon_ico_url && (
+                                        <div className="mb-3 space-y-2">
                                             <img
-                                                src={data.favicon_ico_url}
-                                                className="h-16"
+                                                src={resolveAssetUrl(data.favicon_ico_url)}
+                                                className="h-16 w-16 rounded-lg border bg-muted object-contain p-2"
                                                 alt="Favicon"
                                             />
+                                            <p className="text-xs text-muted-foreground">
+                                                Current favicon. Upload a new file to replace it.
+                                            </p>
                                             <Button
                                                 type="button"
                                                 variant="destructive"
@@ -530,31 +536,33 @@ export default function General({ options }: Props) {
                                             </Button>
                                         </div>
                                     )}
+                                    <Input
+                                        type="file"
+                                        accept=".ico,image/png"
+                                        className="cursor-pointer"
+                                        onChange={(e) =>
+                                            e.target.files &&
+                                            handleFaviconUpload(
+                                                e.target.files[0],
+                                            )
+                                        }
+                                    />
                                 </div>
 
                                 {/* Logo */}
                                 <div className="flex flex-col gap-1">
                                     <label className="font-medium">Logo</label>
 
-                                    {!data.logo_url ? (
-                                        <Input
-                                            type="file"
-                                            accept="image/*"
-                                            className="cursor-pointer"
-                                            onChange={(e) =>
-                                                e.target.files &&
-                                                handleLogoUpload(
-                                                    e.target.files[0],
-                                                )
-                                            }
-                                        />
-                                    ) : (
-                                        <div className="space-y-2">
+                                    {data.logo_url && (
+                                        <div className="mb-3 space-y-2">
                                             <img
-                                                src={data.logo_url}
-                                                className="h-20"
+                                                src={resolveAssetUrl(data.logo_url)}
+                                                className="h-20 max-w-64 rounded-lg border bg-muted object-contain p-2"
                                                 alt="Logo"
                                             />
+                                            <p className="text-xs text-muted-foreground">
+                                                Current logo. Upload a new file to replace it.
+                                            </p>
                                             <Button
                                                 type="button"
                                                 variant="destructive"
@@ -564,6 +572,17 @@ export default function General({ options }: Props) {
                                             </Button>
                                         </div>
                                     )}
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        className="cursor-pointer"
+                                        onChange={(e) =>
+                                            e.target.files &&
+                                            handleLogoUpload(
+                                                e.target.files[0],
+                                            )
+                                        }
+                                    />
                                 </div>
 
                                 {/* Logo Footer */}
@@ -572,24 +591,16 @@ export default function General({ options }: Props) {
                                         Logo Footer
                                     </label>
 
-                                    {!data.logo_footer_url ? (
-                                        <Input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) =>
-                                                e.target.files &&
-                                                handleLogoFooterUpload(
-                                                    e.target.files[0],
-                                                )
-                                            }
-                                        />
-                                    ) : (
-                                        <div className="space-y-2">
+                                    {data.logo_footer_url && (
+                                        <div className="mb-3 space-y-2">
                                             <img
-                                                src={data.logo_footer_url}
-                                                className="h-20"
+                                                src={resolveAssetUrl(data.logo_footer_url)}
+                                                className="h-20 max-w-64 rounded-lg border bg-muted object-contain p-2"
                                                 alt="Logo Footer"
                                             />
+                                            <p className="text-xs text-muted-foreground">
+                                                Current footer logo. Upload a new file to replace it.
+                                            </p>
                                             <Button
                                                 type="button"
                                                 variant="destructive"
@@ -599,6 +610,16 @@ export default function General({ options }: Props) {
                                             </Button>
                                         </div>
                                     )}
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) =>
+                                            e.target.files &&
+                                            handleLogoFooterUpload(
+                                                e.target.files[0],
+                                            )
+                                        }
+                                    />
                                 </div>
 
                                 {/* Logo Mobile */}
@@ -607,24 +628,16 @@ export default function General({ options }: Props) {
                                         Logo Mobile
                                     </label>
 
-                                    {!data.logo_mobile_url ? (
-                                        <Input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) =>
-                                                e.target.files &&
-                                                handleLogoMobileUpload(
-                                                    e.target.files[0],
-                                                )
-                                            }
-                                        />
-                                    ) : (
-                                        <div className="space-y-2">
+                                    {data.logo_mobile_url && (
+                                        <div className="mb-3 space-y-2">
                                             <img
-                                                src={data.logo_mobile_url}
-                                                className="h-20"
+                                                src={resolveAssetUrl(data.logo_mobile_url)}
+                                                className="h-20 max-w-64 rounded-lg border bg-muted object-contain p-2"
                                                 alt="Logo Mobile"
                                             />
+                                            <p className="text-xs text-muted-foreground">
+                                                Current mobile logo. Upload a new file to replace it.
+                                            </p>
                                             <Button
                                                 type="button"
                                                 variant="destructive"
@@ -634,6 +647,16 @@ export default function General({ options }: Props) {
                                             </Button>
                                         </div>
                                     )}
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) =>
+                                            e.target.files &&
+                                            handleLogoMobileUpload(
+                                                e.target.files[0],
+                                            )
+                                        }
+                                    />
                                 </div>
                             </div>
                         </section>

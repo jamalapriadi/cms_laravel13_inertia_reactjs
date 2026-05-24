@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-
-use App\Services\Dashboard\OptionService;
 use App\Http\Requests\OptionRequest;
+use App\Services\Dashboard\OptionService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -30,10 +29,18 @@ class OptionController extends Controller
             'favicon_ico',
             'logo',
             'logo_footer',
-            'logo_mobile'
+            'logo_mobile',
         ];
 
         foreach ($logoFields as $field) {
+            $urlField = $field.'_url';
+
+            if ($request->has($urlField)) {
+                $data[$field] = $request->input($urlField);
+                unset($data[$urlField]);
+
+                continue;
+            }
 
             if ($request->hasFile($field)) {
 
@@ -46,24 +53,14 @@ class OptionController extends Controller
 
                 $data[$field] = $path;
             }
-            
+
             // Hapus file field jika kosong (frontend sudah upload via media endpoint)
             if (empty($data[$field])) {
                 unset($data[$field]);
             }
-            
-            // Simpan URL field jika ada
-            $urlField = $field . '_url';
-            if (isset($data[$urlField]) && !empty($data[$urlField])) {
-                // URL sudah valid dari media upload, simpan dengan key tanpa _url suffix
-                // untuk konsistensi dengan nama di database
-                $data[$field] = $data[$urlField];
-                unset($data[$urlField]); // hapus yg _url
-            }
         }
 
         $this->service->store($data);
-
 
         return redirect()->back()
             ->with('success', 'Option created');

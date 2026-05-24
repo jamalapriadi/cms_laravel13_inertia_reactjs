@@ -10,9 +10,10 @@ use App\Models\Shop\Category;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductVariant;
 use App\Models\Unit;
+use App\Support\UniqueSlug;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -93,7 +94,7 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $data = $request->validated();
-        $data['slug'] = Str::slug($data['name']);
+        $data['slug'] = UniqueSlug::make(Product::class, $data['name']);
 
         if (auth()->check()) {
             $data['created_by'] = auth()->id();
@@ -167,10 +168,10 @@ class ProductController extends Controller
      */
     public function update(ProductUpdateRequest $request, Product $product)
     {
-        $data = $request->validated();
+        $data = Arr::except($request->validated(), ['thumbnail']);
 
         if (isset($data['name']) && $data['name'] !== $product->name) {
-            $data['slug'] = Str::slug($data['name']);
+            $data['slug'] = UniqueSlug::make(Product::class, $data['name'], ignoreId: $product->id);
         }
 
         if (auth()->check()) {

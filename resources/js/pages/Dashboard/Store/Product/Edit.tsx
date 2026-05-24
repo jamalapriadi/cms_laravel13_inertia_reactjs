@@ -112,11 +112,16 @@ export default function Edit({
     }, [register]);
 
     const onSubmit = (data: ProductFormData) => {
+        const { thumbnail, ...productData } = data;
+        const payload = thumbnail instanceof File
+            ? { ...productData, thumbnail }
+            : productData;
+
         router.post(
             `/dashboard/ecommerce/products/${initialProduct.id}`,
             {
                 _method: 'put',
-                ...data,
+                ...payload,
             },
             {
                 forceFormData: true,
@@ -236,6 +241,18 @@ export default function Edit({
 
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Thumbnail</Label>
+                                {initialProduct.thumbnail && (
+                                    <div className="mb-2">
+                                        <img
+                                            src={`/storage/${initialProduct.thumbnail}`}
+                                            alt="Current product thumbnail"
+                                            className="h-32 w-32 rounded-lg border bg-muted object-contain p-1"
+                                        />
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            Current thumbnail. Upload a new file to replace it.
+                                        </p>
+                                    </div>
+                                )}
                                 <Input
                                     type="file"
                                     accept="image/*"

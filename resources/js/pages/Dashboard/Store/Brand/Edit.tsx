@@ -6,9 +6,9 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import Textarea from '@/components/ui/textarea';
 
 import AppLayout from '@/layouts/master-data-layout';
@@ -69,13 +69,19 @@ export default function Edit({ brand: initialBrand }: Props) {
      * SUBMIT
      */
     const onSubmit = (data: BrandFormData) => {
+        const { logo, ...brandData } = data;
+        const payload = logo instanceof File
+            ? { ...brandData, logo }
+            : brandData;
+
         router.post(
             `/dashboard/brands/${initialBrand.id}`,
             {
                 _method: 'put',
-                ...data,
+                ...payload,
             },
             {
+                forceFormData: logo instanceof File,
                 preserveScroll: true,
 
                 onStart: () => {
@@ -156,7 +162,9 @@ export default function Edit({ brand: initialBrand }: Props) {
                                 accept="image/*"
                                 onChange={(e) => {
                                     if (e.target.files && e.target.files[0]) {
-                                        setValue('logo', e.target.files[0]);
+                                        setValue('logo', e.target.files[0], {
+                                            shouldValidate: true,
+                                        });
                                     }
                                 }}
                             />

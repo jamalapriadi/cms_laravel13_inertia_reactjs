@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Http\Requests\Store\Brand\BrandRequest;
 use App\Http\Requests\Store\Brand\BrandUpdateRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -87,7 +88,7 @@ class BrandController extends Controller
      */
     public function update(BrandUpdateRequest $request, Brand $brand)
     {
-        $data = $request->validated();
+        $data = Arr::except($request->validated(), ['logo']);
         
         if (isset($data['name']) && $data['name'] !== $brand->name) {
             $data['slug'] = Str::slug($data['name']);

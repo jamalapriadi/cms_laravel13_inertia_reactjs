@@ -1,27 +1,29 @@
-<?php 
+<?php
+
 namespace App\Services\Dashboard;
 
 use App\Models\Dashboard\Media;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+
 class MediaService
 {
     protected $imageManager;
 
     public function __construct()
     {
-        $this->imageManager = new ImageManager(new Driver());
+        $this->imageManager = new ImageManager(new Driver);
     }
 
     public function index(Request $request)
     {
         $query = Media::query();
 
-        if($request->search){
-            $query->where('file_name','like','%'.$request->search.'%');
+        if ($request->search) {
+            $query->where('file_name', 'like', '%'.$request->search.'%');
         }
 
         $media = $query->latest()
@@ -33,43 +35,57 @@ class MediaService
     public function upload($file, $userId = null)
     {
         $uuid = Str::uuid();
-        $folder = 'media/' . date('Y/m');
+        $folder = 'media/'.date('Y/m');
 
         $extension = $file->getClientOriginalExtension();
-        $filename = $uuid . '.' . $extension;
+        $filename = $uuid.'.'.$extension;
 
         $path = $file->storeAs($folder, $filename, 'public');
 
         $width = null;
         $height = null;
+        $size = $file->getSize();
 
-        // Jika gambar → convert ke webp
-        if (str_contains($file->getMimeType(), 'image')) {
+        // Convert supported raster images to webp. Keep ico/svg as-is.
+        if (in_array($file->getMimeType(), [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/bmp',
+            'image/avif',
+        ], true)) {
 
-            $image = $this->imageManager->read($file->getRealPath());
+            $image = $this->imageManager->decodePath($file->getRealPath());
 
             $width = $image->width();
             $height = $image->height();
 
-            $webpName = $uuid . '.webp';
-            $webpPath = $folder . '/' . $webpName;
+            $webpName = $uuid.'.webp';
+            $webpPath = $folder.'/'.$webpName;
+            $encodedWebp = (string) $image->encodeUsingFileExtension('webp', quality: 80);
 
-            $image->toWebp(80)->save(storage_path('app/public/' . $webpPath));
+            Storage::disk('public')->put($webpPath, $encodedWebp);
 
             Storage::disk('public')->delete($path);
 
             $path = $webpPath;
             $filename = $webpName;
+            $size = strlen($encodedWebp);
         }
+
+        $mimeType = $path === ($webpPath ?? null)
+            ? 'image/webp'
+            : $file->getMimeType();
 
         return Media::create([
             'user_id' => $userId,
             'uuid' => $uuid,
             'file_name' => $filename,
-            'mime_type' => $file->getMimeType(),
+            'mime_type' => $mimeType,
             'path' => $path,
             'disk' => 'public',
-            'size' => $file->getSize(),
+            'size' => $size,
             'width' => $width,
             'height' => $height,
         ]);

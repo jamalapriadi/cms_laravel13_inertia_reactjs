@@ -59,6 +59,8 @@ const variantSchema = z.object({
     product_id: z.string().min(1, 'Product is required'),
     unit_id: z.string().nullable().optional(),
     name: z.string().min(1, 'Variant name is required'),
+    color: z.string().nullable().optional(),
+    storage: z.string().nullable().optional(),
     sku: z.string().min(1, 'SKU is required'),
     image: z.any().optional(),
     price: z.coerce.number().min(0, 'Price must be >= 0').default(0),
@@ -88,6 +90,8 @@ export default function Create({ products, units }: Props) {
             product_id: '',
             unit_id: null,
             name: '',
+            color: '',
+            storage: '',
             sku: '',
             image: undefined,
             price: 0,
@@ -261,6 +265,36 @@ export default function Create({ products, units }: Props) {
                                 {errors.name && (
                                     <p className="text-sm text-destructive">
                                         {errors.name.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <Label>Color / Warna</Label>
+                                <Input
+                                    type="text"
+                                    aria-invalid={!!errors.color}
+                                    {...register('color')}
+                                    placeholder="e.g., Silver"
+                                />
+                                {errors.color && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.color.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <Label>Storage</Label>
+                                <Input
+                                    type="text"
+                                    aria-invalid={!!errors.storage}
+                                    {...register('storage')}
+                                    placeholder="e.g., 256GB"
+                                />
+                                {errors.storage && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.storage.message}
                                     </p>
                                 )}
                             </div>

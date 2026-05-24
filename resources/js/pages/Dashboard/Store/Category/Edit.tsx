@@ -6,9 +6,9 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -80,13 +80,19 @@ export default function Edit({ category: initialCategory, categories }: Props) {
      * SUBMIT
      */
     const onSubmit = (data: CategoryFormData) => {
+        const { image, ...categoryData } = data;
+        const payload = image instanceof File
+            ? { ...categoryData, image }
+            : categoryData;
+
         router.post(
             `/dashboard/ecommerce/categories/${initialCategory.id}`,
             {
                 _method: 'put',
-                ...data,
+                ...payload,
             },
             {
+                forceFormData: image instanceof File,
                 preserveScroll: true,
 
                 onStart: () => {
@@ -191,7 +197,9 @@ export default function Edit({ category: initialCategory, categories }: Props) {
                                 accept="image/*"
                                 onChange={(e) => {
                                     if (e.target.files && e.target.files[0]) {
-                                        setValue('image', e.target.files[0]);
+                                        setValue('image', e.target.files[0], {
+                                            shouldValidate: true,
+                                        });
                                     }
                                 }}
                             />

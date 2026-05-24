@@ -37,6 +37,8 @@ interface ProductVariant {
     product_id: string;
     unit_id?: string | null;
     name: string;
+    color?: string | null;
+    storage?: string | null;
     sku: string;
     image?: string | null;
     price: string | number;
@@ -99,6 +101,10 @@ const variantSchema = z.object({
     unit_id: z.string().nullable().optional(),
 
     name: z.string().min(1, 'Variant name is required'),
+
+    color: z.string().nullable().optional(),
+
+    storage: z.string().nullable().optional(),
 
     sku: z.string().min(1, 'SKU is required'),
 
@@ -169,6 +175,8 @@ export default function Edit({
             product_id: initialVariant.product_id ?? '',
             unit_id: initialVariant.unit_id ?? null,
             name: initialVariant.name ?? '',
+            color: initialVariant.color ?? '',
+            storage: initialVariant.storage ?? '',
             sku: initialVariant.sku ?? '',
             image: undefined,
             price: Number(initialVariant.price ?? 0),
@@ -448,6 +456,40 @@ export default function Edit({
                                 {errors.name && (
                                     <p className="text-sm text-destructive">
                                         {errors.name.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* COLOR */}
+                            <div className="flex flex-col gap-1">
+                                <Label>Color / Warna</Label>
+
+                                <Input
+                                    type="text"
+                                    {...register('color')}
+                                    placeholder="e.g., Silver"
+                                />
+
+                                {errors.color && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.color.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* STORAGE */}
+                            <div className="flex flex-col gap-1">
+                                <Label>Storage</Label>
+
+                                <Input
+                                    type="text"
+                                    {...register('storage')}
+                                    placeholder="e.g., 256GB"
+                                />
+
+                                {errors.storage && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.storage.message}
                                     </p>
                                 )}
                             </div>
