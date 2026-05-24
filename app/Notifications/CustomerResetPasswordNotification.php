@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Notifications;
+
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Notifications\Messages\MailMessage;
+
+class CustomerResetPasswordNotification extends ResetPassword
+{
+    protected function resetUrl($notifiable): string
+    {
+        return route('customer.password.reset', [
+            'token' => $this->token,
+            'email' => $notifiable->getEmailForPasswordReset(),
+        ]);
+    }
+
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('Reset Password Customer')
+            ->line('Anda menerima email ini karena ada permintaan reset password untuk akun customer Anda.')
+            ->action('Reset Password', $this->resetUrl($notifiable))
+            ->line('Jika Anda tidak meminta reset password, abaikan email ini.');
+    }
+}

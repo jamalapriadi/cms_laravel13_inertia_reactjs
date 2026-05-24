@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Dashboard\KabupatenController;
 use App\Http\Controllers\Dashboard\KecamatanController;
 use App\Http\Controllers\Dashboard\KelurahanController;
@@ -17,6 +19,7 @@ use App\Http\Controllers\Store\BrandController;
 use App\Http\Controllers\Store\CartController;
 use App\Http\Controllers\Store\CategoryController;
 use App\Http\Controllers\Store\CustomerController;
+use App\Http\Controllers\Store\IncomingGoodsController;
 use App\Http\Controllers\Store\OrderController;
 use App\Http\Controllers\Store\PaymentController;
 use App\Http\Controllers\Store\ProductController;
@@ -26,7 +29,6 @@ use App\Http\Controllers\Store\ProductStockUnitController;
 use App\Http\Controllers\Store\ProductVariantController;
 use App\Http\Controllers\Store\ShippingController;
 use App\Http\Controllers\Store\StockMovementController;
-use App\Http\Controllers\Store\IncomingGoodsController;
 use App\Http\Controllers\Store\SupplierController;
 use App\Http\Controllers\Store\SupplierReturnController;
 use App\Http\Controllers\Store\UnitController;
@@ -45,6 +47,22 @@ Route::middleware('guest')->group(function () {
     Route::inertia('/', 'auth/login')->name('home');
 
 });
+
+// Route::middleware('guest:customer')->prefix('onboard')->group(function () {
+//     Route::get('login', [CustomerAuthController::class, 'login'])->name('customer.login');
+//     Route::post('login', [CustomerAuthController::class, 'authenticate'])->name('customer.login.store');
+//     Route::get('register', [CustomerAuthController::class, 'register'])->name('customer.register');
+//     Route::post('register', [CustomerAuthController::class, 'store'])->name('customer.register.store');
+//     Route::get('forgot-password', [CustomerAuthController::class, 'forgotPassword'])->name('customer.password.request');
+//     Route::post('forgot-password', [CustomerAuthController::class, 'sendResetLink'])->name('customer.password.email');
+//     Route::get('recovery-password', [CustomerAuthController::class, 'resetPassword'])->name('customer.password.reset');
+//     Route::post('recovery-password', [CustomerAuthController::class, 'updatePassword'])->name('customer.password.update');
+// });
+
+// Route::middleware('auth:customer')->prefix('customer')->group(function () {
+//     Route::get('dashboard', CustomerDashboardController::class)->name('customer.dashboard');
+//     Route::post('logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
+// });
 
 Route::group(['prefix' => 'api'], function () {
     Route::get('/kabupaten/{provinsi}', [KelurahanController::class, 'getKabupaten']);
