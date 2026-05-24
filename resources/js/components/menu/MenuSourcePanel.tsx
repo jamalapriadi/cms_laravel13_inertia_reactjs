@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export default function MenuSourcePanel({ onAdd }) {
+export default function MenuSourcePanel({ onAdd }: { onAdd: (item: { title: string; url: string }) => void }) {
     const [title, setTitle] = useState('');
     const [url, setUrl] = useState('');
 
@@ -12,7 +12,6 @@ export default function MenuSourcePanel({ onAdd }) {
         onAdd({
             title,
             url,
-            children: [],
         });
 
         setTitle('');
@@ -20,7 +19,7 @@ export default function MenuSourcePanel({ onAdd }) {
     }
 
     return (
-        <div className="space-y-4 rounded-xl border p-4">
+        <div className="space-y-4 rounded-lg border p-4">
             <h2 className="font-semibold">Custom Link</h2>
 
             <Input

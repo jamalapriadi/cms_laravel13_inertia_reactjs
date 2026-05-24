@@ -16,13 +16,13 @@ class MenuService
                 ->with([
                     'items.children',
                     'items.translations',
-                    'items.children.translations',
                 ])
                 ->first();
     }
 
     public function getMenuByLocale(string $slug, string $locale = 'ID')
     {
+        $locale = strtolower($locale);
         $menu = $this->getMenuTree($slug);
 
         if (!$menu) return [];
@@ -37,7 +37,6 @@ class MenuService
             $translation = $item->translations
                 ->firstWhere('locale', $locale);
 
-            // 🔥 fallback ke default (id)
             if (!$translation) {
                 $translation = $item->translations
                     ->firstWhere('locale', 'id');
@@ -57,7 +56,6 @@ class MenuService
     {
         return $items->map(function ($item) {
 
-            // 🔥 ambil semua translations jadi object
             $translations = $item->translations->mapWithKeys(function ($t) {
                 return [
                     $t->locale => [
@@ -82,21 +80,39 @@ class MenuService
         DB::transaction(function () use ($menuId, $items, $parentId, &$allIds) {
 
             foreach ($items as $index => $item) {
+                $menuItem = null;
 
-                $menuItem = MenuItem::updateOrCreate(
-                    ['id' => is_numeric($item['id'] ?? null) ? $item['id'] : null],
-                    [
+                if (is_numeric($item['id'] ?? null)) {
+                    $menuItem = MenuItem::where('menu_id', $menuId)
+                        ->find($item['id']);
+                }
+
+                if ($menuItem) {
+                    $menuItem->update([
                         'menu_id' => $menuId,
                         'parent_id' => $parentId,
                         'url' => $item['url'] ?? null,
+                        'type' => $item['type'] ?? 'custom',
                         'order' => $index,
                         'target' => $item['target'] ?? '_self',
-                    ]
-                );
+                        'icon' => $item['icon'] ?? null,
+                        'meta' => $item['meta'] ?? null,
+                    ]);
+                } else {
+                    $menuItem = MenuItem::create([
+                        'menu_id' => $menuId,
+                        'parent_id' => $parentId,
+                        'url' => $item['url'] ?? null,
+                        'type' => $item['type'] ?? 'custom',
+                        'order' => $index,
+                        'target' => $item['target'] ?? '_self',
+                        'icon' => $item['icon'] ?? null,
+                        'meta' => $item['meta'] ?? null,
+                    ]);
+                }
 
                 $allIds[] = $menuItem->id;
 
-                // 🔥 SIMPAN TRANSLATIONS
                 $existingTranslations = MenuItemTranslation::where('menu_item_id', $menuItem->id)
                     ->get()
                     ->keyBy('locale');
@@ -111,25 +127,22 @@ class MenuService
                             'locale' => $locale,
                         ],
                         [
-                            'title' => $trans['title'] ?? $existing?->title ?? '',
+                            'title' => trim($trans['title'] ?? $existing?->title ?? ''),
                             'url' => $trans['url'] ?? $existing?->url ?? null,
                         ]
                     );
                 }
 
-                // 🔥 CHILDREN
                 if (!empty($item['children'])) {
                     $this->saveTree($menuId, $item['children'], $menuItem->id, $allIds);
                 }
             }
 
-            // 🔥 DELETE ORPHAN (hanya root)
             if ($parentId === null) {
                 MenuItem::where('menu_id', $menuId)
                     ->when(!empty($allIds), fn ($q) => $q->whereNotIn('id', $allIds))
                     ->delete();
 
-                // 🔥 CLEAR CACHE TANPA QUERY ULANG
                 $menu = Menu::find($menuId);
                 if ($menu) {
                     Cache::forget("menu_" . $menu->slug);
@@ -142,7 +155,6 @@ class MenuService
     {
         foreach ($items as $item) {
 
-            // 🔥 VALIDASI TRANSLATION TITLE
             $hasTitle = collect($item['translations'] ?? [])
                 ->filter(fn ($t) => !empty($t['title']))
                 ->isNotEmpty();
@@ -151,7 +163,6 @@ class MenuService
                 throw new \Exception('Minimal satu bahasa harus memiliki title');
             }
 
-            // 🔥 DUPLICATE / LOOP CHECK
             if (isset($item['id'])) {
                 if (in_array($item['id'], $visited)) {
                     throw new \Exception("Duplicate / circular ID detected: {$item['id']}");
@@ -160,17 +171,14 @@ class MenuService
                 $visited[] = $item['id'];
             }
 
-            // 🔥 SELF PARENT
             if (isset($item['id']) && $item['id'] == $parentId) {
                 throw new \Exception("Item tidak boleh menjadi parent dirinya sendiri (ID: {$item['id']})");
             }
 
-            // 🔥 DEPTH LIMIT
             if (count($visited) > 1000) {
                 throw new \Exception('Tree terlalu dalam (kemungkinan infinite loop)');
             }
 
-            // 🔥 RECURSIVE
             if (!empty($item['children'])) {
                 $this->validateTree($item['children'], $item['id'] ?? null, $visited);
             }
