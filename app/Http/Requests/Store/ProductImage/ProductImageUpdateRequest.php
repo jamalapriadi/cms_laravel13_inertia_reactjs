@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Store\ProductImage;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductImageUpdateRequest extends FormRequest
@@ -17,13 +18,15 @@ class ProductImageUpdateRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'product_id' => ['required', 'uuid', 'exists:products,id'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
+            'image' => $this->hasFile('image')
+                ? ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096']
+                : ['nullable', 'string'],
             'is_primary' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ];

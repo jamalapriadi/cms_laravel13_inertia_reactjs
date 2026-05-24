@@ -5,10 +5,11 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import MediaImagePicker from '@/components/media/MediaImagePicker';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import Textarea from '@/components/ui/textarea';
 
 import AppLayout from '@/layouts/master-data-layout';
@@ -110,14 +111,13 @@ export default function Create() {
                         {/* LOGO */}
                         <div className="flex flex-col gap-1">
                             <Label>Logo</Label>
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                    if (e.target.files && e.target.files[0]) {
-                                        setValue('logo', e.target.files[0]);
-                                    }
-                                }}
+                            <MediaImagePicker
+                                value={watch('logo') as string | null}
+                                onChange={(path) =>
+                                    setValue('logo', path, {
+                                        shouldValidate: true,
+                                    })
+                                }
                             />
                             {errors.logo && (
                                 <p className="text-sm text-destructive">

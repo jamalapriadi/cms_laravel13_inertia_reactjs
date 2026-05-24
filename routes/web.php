@@ -16,6 +16,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Store\BrandController;
 use App\Http\Controllers\Store\CartController;
 use App\Http\Controllers\Store\CategoryController;
+use App\Http\Controllers\Store\CustomerController;
 use App\Http\Controllers\Store\OrderController;
 use App\Http\Controllers\Store\PaymentController;
 use App\Http\Controllers\Store\ProductController;
@@ -25,6 +26,9 @@ use App\Http\Controllers\Store\ProductStockUnitController;
 use App\Http\Controllers\Store\ProductVariantController;
 use App\Http\Controllers\Store\ShippingController;
 use App\Http\Controllers\Store\StockMovementController;
+use App\Http\Controllers\Store\IncomingGoodsController;
+use App\Http\Controllers\Store\SupplierController;
+use App\Http\Controllers\Store\SupplierReturnController;
 use App\Http\Controllers\Store\UnitController;
 use App\Http\Controllers\User\PermissionController;
 use App\Http\Controllers\User\RoleController;
@@ -83,11 +87,17 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
     Route::resource('ecommerce/product-stock-units', ProductStockUnitController::class)->names('product-stock-units');
     Route::resource('ecommerce/product-images', ProductImageController::class)->names('product-images');
     Route::resource('ecommerce/product-specifications', ProductSpecificationController::class)->names('product-specifications');
+    Route::patch('ecommerce/customers/{customer}/toggle-login', [CustomerController::class, 'toggleLogin'])->name('customers.toggle-login');
+    Route::post('ecommerce/customers/{customer}/reset-password', [CustomerController::class, 'resetPassword'])->name('customers.reset-password');
+    Route::resource('ecommerce/customers', CustomerController::class)->only(['index', 'show', 'destroy'])->names('customers');
     Route::delete('ecommerce/carts/{cart}/items/{item}', [CartController::class, 'destroyItem'])->name('carts.destroy-item');
     Route::resource('ecommerce/carts', CartController::class)->names('carts');
     Route::resource('ecommerce/payments', PaymentController::class)->only(['index', 'show'])->names('payments');
     Route::resource('ecommerce/stock-movements', StockMovementController::class)->names('stock-movements');
     Route::resource('ecommerce/shipping', ShippingController::class)->names('shippings');
+    Route::resource('ecommerce/suppliers', SupplierController::class)->names('suppliers');
+    Route::resource('ecommerce/incoming-goods', IncomingGoodsController::class)->names('incoming-goods');
+    Route::resource('ecommerce/supplier-returns', SupplierReturnController::class)->names('supplier-returns');
 
     Route::get('orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
     Route::resource('orders', OrderController::class)->names('orders');
@@ -111,10 +121,12 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
 
     Route::controller(MediaController::class)->group(function () {
         Route::get('/media', 'index')->name('dashboard.media');
+        Route::get('/media/library', 'library')->name('dashboard.media.library');
         Route::get('/media/create', 'create')->name('dashboard.media.create');
         Route::post('/media', 'store');
         Route::post('/media/upload', 'upload');
         Route::post('/media/json', 'store_json');
+        Route::delete('/media/storage-file', 'destroyStorageFile')->name('dashboard.media.storage-file.destroy');
         Route::put('/media/{medium}', 'update');
         Route::delete('/media/{medium}', 'destroy');
         Route::post('/upload-image', 'store_image');

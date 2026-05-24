@@ -5,10 +5,11 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import MediaImagePicker from '@/components/media/MediaImagePicker';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -65,6 +66,7 @@ export default function Edit({ category: initialCategory, categories }: Props) {
         defaultValues: {
             name: initialCategory.name,
             parent_id: initialCategory.parent_id || null,
+            image: initialCategory.image ?? undefined,
             sort_order: initialCategory.sort_order,
             show_home: !!initialCategory.show_home,
             is_publish: !!initialCategory.is_publish,
@@ -80,13 +82,19 @@ export default function Edit({ category: initialCategory, categories }: Props) {
      * SUBMIT
      */
     const onSubmit = (data: CategoryFormData) => {
+        const { image, ...categoryData } = data;
+        const payload = image !== undefined
+            ? { ...categoryData, image }
+            : categoryData;
+
         router.post(
             `/dashboard/ecommerce/categories/${initialCategory.id}`,
             {
                 _method: 'put',
-                ...data,
+                ...payload,
             },
             {
+                forceFormData: true,
                 preserveScroll: true,
 
                 onStart: () => {
@@ -174,26 +182,13 @@ export default function Edit({ category: initialCategory, categories }: Props) {
                         {/* IMAGE */}
                         <div className="flex flex-col gap-2">
                             <Label>Image</Label>
-                            
-                            {initialCategory.image && (
-                                <div>
-                                    <img 
-                                        src={`/storage/${initialCategory.image}`} 
-                                        alt="Category Image" 
-                                        className="h-32 w-32 rounded-lg border bg-muted object-contain p-1" 
-                                    />
-                                    <p className="mt-1 text-xs text-muted-foreground">Current image. Upload a new file to replace it.</p>
-                                </div>
-                            )}
-
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                    if (e.target.files && e.target.files[0]) {
-                                        setValue('image', e.target.files[0]);
-                                    }
-                                }}
+                            <MediaImagePicker
+                                value={watch('image') as string | null}
+                                onChange={(path) =>
+                                    setValue('image', path, {
+                                        shouldValidate: true,
+                                    })
+                                }
                             />
                             {errors.image && (
                                 <p className="text-sm text-destructive">

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import MediaImagePicker from '@/components/media/MediaImagePicker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -96,6 +97,7 @@ export default function Edit({
             category_id: initialProduct.category_id ?? '',
             brand_id: initialProduct.brand_id ?? null,
             unit_id: initialProduct.unit_id ?? null,
+            thumbnail: initialProduct.thumbnail ?? undefined,
             description: initialProduct.description ?? '',
             condition: initialProduct.condition ?? 'new',
             base_price: initialProduct.base_price ?? 0,
@@ -112,11 +114,16 @@ export default function Edit({
     }, [register]);
 
     const onSubmit = (data: ProductFormData) => {
+        const { thumbnail, ...productData } = data;
+        const payload = thumbnail !== undefined
+            ? { ...productData, thumbnail }
+            : productData;
+
         router.post(
             `/dashboard/ecommerce/products/${initialProduct.id}`,
             {
                 _method: 'put',
-                ...data,
+                ...payload,
             },
             {
                 forceFormData: true,
@@ -236,15 +243,12 @@ export default function Edit({
 
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Thumbnail</Label>
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) =>
-                                        setValue(
-                                            'thumbnail',
-                                            e.target.files?.[0],
-                                            { shouldValidate: true },
-                                        )
+                                <MediaImagePicker
+                                    value={watch('thumbnail') as string | null}
+                                    onChange={(path) =>
+                                        setValue('thumbnail', path, {
+                                            shouldValidate: true,
+                                        })
                                     }
                                 />
                             </div>

@@ -5,10 +5,11 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import MediaImagePicker from '@/components/media/MediaImagePicker';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import Textarea from '@/components/ui/textarea';
 
 import AppLayout from '@/layouts/master-data-layout';
@@ -56,6 +57,7 @@ export default function Edit({ brand: initialBrand }: Props) {
         defaultValues: {
             name: initialBrand.name,
             description: initialBrand.description || '',
+            logo: initialBrand.logo ?? undefined,
             is_active: !!initialBrand.is_active,
         },
     });
@@ -69,13 +71,19 @@ export default function Edit({ brand: initialBrand }: Props) {
      * SUBMIT
      */
     const onSubmit = (data: BrandFormData) => {
+        const { logo, ...brandData } = data;
+        const payload = logo !== undefined
+            ? { ...brandData, logo }
+            : brandData;
+
         router.post(
             `/dashboard/brands/${initialBrand.id}`,
             {
                 _method: 'put',
-                ...data,
+                ...payload,
             },
             {
+                forceFormData: true,
                 preserveScroll: true,
 
                 onStart: () => {
@@ -139,26 +147,13 @@ export default function Edit({ brand: initialBrand }: Props) {
                         {/* LOGO */}
                         <div className="flex flex-col gap-2">
                             <Label>Logo</Label>
-                            
-                            {initialBrand.logo && (
-                                <div>
-                                    <img 
-                                        src={`/storage/${initialBrand.logo}`} 
-                                        alt="Brand Logo" 
-                                        className="h-32 w-32 rounded-lg border bg-muted object-contain p-1" 
-                                    />
-                                    <p className="mt-1 text-xs text-muted-foreground">Current logo. Upload a new file to replace it.</p>
-                                </div>
-                            )}
-
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                    if (e.target.files && e.target.files[0]) {
-                                        setValue('logo', e.target.files[0]);
-                                    }
-                                }}
+                            <MediaImagePicker
+                                value={watch('logo') as string | null}
+                                onChange={(path) =>
+                                    setValue('logo', path, {
+                                        shouldValidate: true,
+                                    })
+                                }
                             />
                             {errors.logo && (
                                 <p className="text-sm text-destructive">

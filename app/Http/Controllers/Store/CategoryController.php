@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
-use App\Models\Shop\Category;
 use App\Http\Requests\Store\Category\CategoryRequest;
 use App\Http\Requests\Store\Category\CategoryUpdateRequest;
+use App\Models\Shop\Category;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -42,9 +44,9 @@ class CategoryController extends Controller
     public function create()
     {
         $categories = Category::select('id', 'name')->get();
-        
+
         return Inertia::render('Dashboard/Store/Category/Create', [
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
@@ -55,11 +57,13 @@ class CategoryController extends Controller
     {
         $data = $request->validated();
         $data['slug'] = Str::slug($data['name']);
-        
+
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('categories', 'public');
+        } elseif ($mediaPath = MediaPath::normalize($request->input('image'))) {
+            $data['image'] = $mediaPath;
         }
-        
+
         Category::create($data);
 
         return redirect()->route('categories.index')->with('success', 'Category created successfully.');
@@ -82,7 +86,7 @@ class CategoryController extends Controller
         $categories = Category::select('id', 'name')
             ->where('id', '!=', $category->id)
             ->get();
-            
+
         return Inertia::render('Dashboard/Store/Category/Edit', [
             'category' => $category,
             'categories' => $categories,
@@ -94,8 +98,8 @@ class CategoryController extends Controller
      */
     public function update(CategoryUpdateRequest $request, Category $category)
     {
-        $data = $request->validated();
-        
+        $data = Arr::except($request->validated(), ['image']);
+
         if (isset($data['name']) && $data['name'] !== $category->name) {
             $data['slug'] = Str::slug($data['name']);
         }
@@ -105,8 +109,12 @@ class CategoryController extends Controller
                 Storage::disk('public')->delete($category->image);
             }
             $data['image'] = $request->file('image')->store('categories', 'public');
+        } elseif ($request->has('image') && $request->input('image') === '') {
+            $data['image'] = null;
+        } elseif ($request->filled('image')) {
+            $data['image'] = MediaPath::normalize($request->input('image')) ?? $category->image;
         }
-        
+
         $category->update($data);
 
         return redirect()->route('categories.index')->with('success', 'Category updated successfully.');

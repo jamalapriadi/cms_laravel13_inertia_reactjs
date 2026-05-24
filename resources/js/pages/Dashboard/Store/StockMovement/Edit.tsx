@@ -303,7 +303,7 @@ export default function Edit({ movement, variants, adjustment_action }: Props) {
                             </div>
 
                             {/* Submit button */}
-                            <div className="flex justify-end gap-3">
+                            <div className="flex justify-between gap-3">
                                 <Link href="/dashboard/ecommerce/stock-movements">
                                     <Button variant="outline" type="button">
                                         Cancel

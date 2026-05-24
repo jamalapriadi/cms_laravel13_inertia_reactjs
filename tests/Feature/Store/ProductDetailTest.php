@@ -145,6 +145,51 @@ test('user can upload a product image and it redirects back', function () {
     Storage::disk('public')->assertExists($image->image);
 });
 
+test('user can add a product image from media library path', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    $category = Category::create([
+        'name' => 'Electronics',
+        'slug' => 'electronics',
+        'is_publish' => true,
+    ]);
+
+    $product = Product::create([
+        'category_id' => $category->id,
+        'name' => 'iPhone 15',
+        'slug' => 'iphone-15',
+        'condition' => 'new',
+        'base_price' => 15000000,
+        'is_publish' => true,
+    ]);
+
+    $path = 'media/products/iphone-gallery.webp';
+    Storage::disk('public')->put($path, 'fake-image-content');
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('products.show', $product->id))
+        ->post(route('product-images.store'), [
+            'product_id' => $product->id,
+            'image' => $path,
+            'is_primary' => true,
+            'sort_order' => 5,
+        ]);
+
+    $response->assertRedirect(route('products.show', $product->id));
+
+    $this->assertDatabaseHas('product_images', [
+        'product_id' => $product->id,
+        'image' => $path,
+        'is_primary' => true,
+        'sort_order' => 5,
+    ]);
+
+    Storage::disk('public')->assertExists($path);
+});
+
 test('user can delete a product specification and it redirects back', function () {
     $user = User::factory()->create();
 

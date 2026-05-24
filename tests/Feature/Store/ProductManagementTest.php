@@ -6,6 +6,7 @@ use App\Models\Shop\Product;
 use App\Models\Shop\ProductVariant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -88,4 +89,261 @@ test('authenticated user can view product list with summary metrics', function (
         ->where('summary.brands', 2)
         ->where('summary.categories', 2)
     );
+});
+
+test('user can update product without replacing existing thumbnail', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    $category = Category::create([
+        'name' => 'Phones',
+        'slug' => 'phones',
+        'is_publish' => true,
+    ]);
+
+    $brand = Brand::create([
+        'name' => 'Apple',
+        'slug' => 'apple',
+        'is_active' => true,
+    ]);
+
+    Storage::disk('public')->put('products/existing.jpg', 'existing image');
+
+    $product = Product::create([
+        'category_id' => $category->id,
+        'brand_id' => $brand->id,
+        'name' => 'iPhone 15',
+        'slug' => 'iphone-15',
+        'thumbnail' => 'products/existing.jpg',
+        'condition' => 'new',
+        'base_price' => 15000000,
+        'is_publish' => true,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->put(route('products.update', $product->id), [
+            'name' => 'iPhone 15 Pro',
+            'category_id' => $category->id,
+            'brand_id' => $brand->id,
+            'thumbnail' => null,
+            'condition' => 'new',
+            'base_price' => 16000000,
+            'has_variant' => false,
+            'is_publish' => true,
+        ]);
+
+    $response->assertRedirect(route('products.index'));
+
+    expect($product->refresh())
+        ->name->toBe('iPhone 15 Pro')
+        ->thumbnail->toBe('products/existing.jpg');
+
+    Storage::disk('public')->assertExists('products/existing.jpg');
+});
+
+test('product slugs stay unique when creating products with the same name', function () {
+    $user = User::factory()->create();
+
+    $category = Category::create([
+        'name' => 'Phones',
+        'slug' => 'phones',
+        'is_publish' => true,
+    ]);
+
+    $payload = [
+        'name' => 'iPhone X',
+        'category_id' => $category->id,
+        'brand_id' => null,
+        'condition' => 'new',
+        'base_price' => 8000000,
+        'has_variant' => false,
+        'is_publish' => true,
+    ];
+
+    $this
+        ->actingAs($user)
+        ->post(route('products.store'), $payload)
+        ->assertRedirect(route('products.index'));
+
+    $this
+        ->actingAs($user)
+        ->post(route('products.store'), $payload)
+        ->assertRedirect(route('products.index'));
+
+    expect(Product::query()->where('name', 'iPhone X')->pluck('slug')->all())
+        ->toBe(['iphone-x', 'iphone-x-2']);
+});
+
+test('product slug stays unique when renaming a product to an existing name', function () {
+    $user = User::factory()->create();
+
+    $category = Category::create([
+        'name' => 'Phones',
+        'slug' => 'phones',
+        'is_publish' => true,
+    ]);
+
+    Product::create([
+        'category_id' => $category->id,
+        'name' => 'iPhone X',
+        'slug' => 'iphone-x',
+        'condition' => 'new',
+        'base_price' => 8000000,
+        'is_publish' => true,
+    ]);
+
+    $product = Product::create([
+        'category_id' => $category->id,
+        'name' => 'iPhone XR',
+        'slug' => 'iphone-xr',
+        'condition' => 'new',
+        'base_price' => 9000000,
+        'is_publish' => true,
+    ]);
+
+    $this
+        ->actingAs($user)
+        ->put(route('products.update', $product->id), [
+            'name' => 'iPhone X',
+            'category_id' => $category->id,
+            'brand_id' => null,
+            'condition' => 'new',
+            'base_price' => 9000000,
+            'has_variant' => false,
+            'is_publish' => true,
+        ])
+        ->assertRedirect(route('products.index'));
+
+    expect($product->refresh())
+        ->name->toBe('iPhone X')
+        ->slug->toBe('iphone-x-2');
+});
+
+test('store entities can use existing media library paths for images', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    Storage::disk('public')->put('media/2026/05/catalog.webp', 'image');
+    Storage::disk('public')->put('media/2026/05/logo.webp', 'image');
+    Storage::disk('public')->put('media/2026/05/category.webp', 'image');
+
+    $category = Category::create([
+        'name' => 'Phones',
+        'slug' => 'phones',
+        'is_publish' => true,
+    ]);
+
+    $this
+        ->actingAs($user)
+        ->post(route('products.store'), [
+            'name' => 'iPhone 16',
+            'category_id' => $category->id,
+            'brand_id' => null,
+            'thumbnail' => 'media/2026/05/catalog.webp',
+            'condition' => 'new',
+            'base_price' => 18000000,
+            'has_variant' => false,
+            'is_publish' => true,
+        ])
+        ->assertRedirect(route('products.index'));
+
+    $this
+        ->actingAs($user)
+        ->post(route('brands.store'), [
+            'name' => 'Apple Media',
+            'description' => 'Uses media library',
+            'logo' => 'media/2026/05/logo.webp',
+            'is_active' => true,
+        ])
+        ->assertRedirect(route('brands.index'));
+
+    $this
+        ->actingAs($user)
+        ->post(route('categories.store'), [
+            'name' => 'Accessories',
+            'parent_id' => null,
+            'image' => 'media/2026/05/category.webp',
+            'sort_order' => 0,
+            'show_home' => true,
+            'is_publish' => true,
+        ])
+        ->assertRedirect(route('categories.index'));
+
+    expect(Product::query()->where('name', 'iPhone 16')->first()->thumbnail)
+        ->toBe('media/2026/05/catalog.webp')
+        ->and(Brand::query()->where('name', 'Apple Media')->first()->logo)
+        ->toBe('media/2026/05/logo.webp')
+        ->and(Category::query()->where('name', 'Accessories')->first()->image)
+        ->toBe('media/2026/05/category.webp');
+});
+
+test('user can update brand without replacing existing logo', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    Storage::disk('public')->put('brands/existing.svg', 'existing logo');
+
+    $brand = Brand::create([
+        'name' => 'Apple',
+        'slug' => 'apple',
+        'logo' => 'brands/existing.svg',
+        'is_active' => true,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->put(route('brands.update', $brand->id), [
+            'name' => 'Apple Japan',
+            'description' => 'Updated description',
+            'logo' => null,
+            'is_active' => true,
+        ]);
+
+    $response->assertRedirect(route('brands.index'));
+
+    expect($brand->refresh())
+        ->name->toBe('Apple Japan')
+        ->logo->toBe('brands/existing.svg');
+
+    Storage::disk('public')->assertExists('brands/existing.svg');
+});
+
+test('user can update category without replacing existing image', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    Storage::disk('public')->put('categories/existing.jpg', 'existing image');
+
+    $category = Category::create([
+        'name' => 'Phones',
+        'slug' => 'phones',
+        'image' => 'categories/existing.jpg',
+        'sort_order' => 1,
+        'show_home' => false,
+        'is_publish' => true,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->put(route('categories.update', $category->id), [
+            'name' => 'Smartphones',
+            'parent_id' => null,
+            'image' => null,
+            'sort_order' => 2,
+            'show_home' => true,
+            'is_publish' => true,
+        ]);
+
+    $response->assertRedirect(route('categories.index'));
+
+    expect($category->refresh())
+        ->name->toBe('Smartphones')
+        ->image->toBe('categories/existing.jpg');
+
+    Storage::disk('public')->assertExists('categories/existing.jpg');
 });

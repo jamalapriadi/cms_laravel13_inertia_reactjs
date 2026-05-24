@@ -40,8 +40,8 @@ interface CartItem {
 
 interface Cart {
     id: string;
-    user_id: string | null;
-    user?: {
+    customer_id: string | null;
+    customer?: {
         id: string;
         name: string;
         email: string;
@@ -228,14 +228,14 @@ export default function Show({ cart }: Props) {
                                 Cart Owner
                             </h2>
                             <hr className="border-border" />
-                            {cart.user ? (
+                            {cart.customer ? (
                                 <div className="space-y-3">
                                     <div>
                                         <label className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
                                             Name
                                         </label>
                                         <p className="mt-0.5 text-sm font-semibold text-foreground">
-                                            {cart.user.name}
+                                            {cart.customer.name}
                                         </p>
                                     </div>
                                     <div>
@@ -243,7 +243,7 @@ export default function Show({ cart }: Props) {
                                             Email Address
                                         </label>
                                         <p className="mt-0.5 text-sm text-foreground">
-                                            {cart.user.email}
+                                            {cart.customer.email}
                                         </p>
                                     </div>
                                     <div className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">

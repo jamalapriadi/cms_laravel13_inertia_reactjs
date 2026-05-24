@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Store\ProductVariant;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductVariantUpdateRequest extends FormRequest
@@ -29,8 +28,12 @@ class ProductVariantUpdateRequest extends FormRequest
             'product_id' => ['required', 'uuid', 'exists:products,id'],
             'unit_id' => ['nullable', 'string', 'exists:units,id'],
             'name' => ['required', 'string', 'max:255'],
+            'color' => ['nullable', 'string', 'max:255'],
+            'storage' => ['nullable', 'string', 'max:255'],
             'sku' => ['required', 'string', 'max:255', 'unique:product_variants,sku,'.$variantId],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
+            'image' => $this->hasFile('image')
+                ? ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096']
+                : ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
             'track_stock' => ['nullable', 'boolean'],
             'stock' => ['nullable', 'integer', 'min:0'],

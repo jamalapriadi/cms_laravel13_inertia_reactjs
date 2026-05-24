@@ -8,7 +8,6 @@
 
 namespace App\Models\Shop;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,7 +16,7 @@ class Cart extends Model
     use HasUuids;
 
     protected $fillable = [
-        'user_id',
+        'customer_id',
     ];
 
     protected $appends = [
@@ -43,9 +42,9 @@ class Cart extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function user()
+    public function customer()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function items()

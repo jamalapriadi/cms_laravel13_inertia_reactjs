@@ -15,7 +15,20 @@ class Option extends Model
 
     protected $casts = [
         'autoload' => 'boolean',
-        'value' => 'array'
     ];
+
+    public function getValueAttribute($value)
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $decoded = json_decode($value, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+
+        return $value;
+    }
 }
-         

@@ -21,6 +21,7 @@ class ProductStockUnit extends Model
 
     protected $fillable = [
         'product_variant_id',
+        'incoming_goods_item_id',
         'imei_serial_number',
         'network_compatibility',
         'status',
@@ -30,6 +31,11 @@ class ProductStockUnit extends Model
     public function variant()
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+
+    public function incomingGoodsItem()
+    {
+        return $this->belongsTo(IncomingGoodsItem::class, 'incoming_goods_item_id');
     }
 
     public function product()

@@ -1,7 +1,9 @@
 import { Head, useForm } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import MediaLibraryUploadModal from '@/components/media/MediaLibraryUploadModal';
+import type { MediaLibraryItem } from '@/components/media/MediaLibraryUploadModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import MonacoEditor from '@/components/ui/MonacoEditor';
@@ -13,10 +15,24 @@ interface Props {
     options: OptionItem[];
 }
 
+const preferenceFields = [
+    'site_title',
+    'meta_keyword',
+    'meta_description',
+    'robot_txt',
+    'code_snippet_head',
+    'code_snippet_body',
+    'code_snippet_footer',
+    'email_recipient',
+    'social_sharing_image',
+] as const;
+
 export default function Preferences({ options }: Props) {
-    const fileRef = useRef<HTMLInputElement | null>(null);
     const [initialized, setInitialized] = useState(false);
-    const [preview, setPreview] = useState('');
+    const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
+    const [mediaItems, setMediaItems] = useState<MediaLibraryItem[]>([]);
+    const [currentMediaPath, setCurrentMediaPath] = useState('');
+    const [isMediaLoading, setIsMediaLoading] = useState(false);
 
     const { data, setData, post, processing } = useForm({
         site_title: '',
@@ -38,53 +54,63 @@ export default function Preferences({ options }: Props) {
             return;
         }
 
-        const mapped: Partial<typeof data> = {};
+        const mapped: Record<string, string> = {};
 
         for (const item of options) {
-            if (item.key in data) {
-                mapped[item.key as keyof typeof data] = item.value ?? '';
+            if (
+                preferenceFields.includes(
+                    item.key as (typeof preferenceFields)[number],
+                )
+            ) {
+                mapped[item.key] = item.value ?? '';
             }
 
-            if (item.key === 'social_sharing_image') {
-                setPreview(item.value ?? '');
-            }
         }
 
         setData((prev) => ({ ...prev, ...mapped }));
         setInitialized(true);
     }, [options, initialized, setData]);
 
-    /**
-     * ✅ Upload Image (fetch version)
-     */
-    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files?.length) {
-            return;
-        }
-
-        const file = e.target.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
+    const loadMediaLibrary = async (path = '') => {
+        setIsMediaLoading(true);
 
         try {
-            toast.loading('Uploading...', { id: 'upload' });
+            const response = await fetch(
+                `/dashboard/media/library?path=${encodeURIComponent(path)}`,
+            );
+            const result = await response.json();
 
-            const res = await fetch('/dashboard/media/json', {
-                method: 'POST',
-                body: formData,
-            });
-
-            const result = await res.json();
-
-            setData('social_sharing_image', result.location);
-            setPreview(result.location);
-
-            toast.success('Uploaded successfully', { id: 'upload' });
-        } catch (err) {
-            toast.error('Upload failed' + err, { id: 'upload' });
+            setMediaItems(result.storageItems ?? []);
+            setCurrentMediaPath(result.currentPath ?? path);
         } finally {
-            e.target.value = '';
+            setIsMediaLoading(false);
         }
+    };
+
+    const openMediaLibrary = () => {
+        setIsMediaLibraryOpen(true);
+        loadMediaLibrary(currentMediaPath);
+    };
+
+    const selectSocialSharingImage = (item: MediaLibraryItem) => {
+        setData('social_sharing_image', item.path);
+        setIsMediaLibraryOpen(false);
+    };
+
+    const resolveAssetUrl = (url: string) => {
+        if (!url) {
+            return 'https://www.clipartmax.com/png/middle/293-2939065_apps-home-icon-website-logo-png-transparent-background.png';
+        }
+
+        if (
+            url.startsWith('http://') ||
+            url.startsWith('https://') ||
+            url.startsWith('/')
+        ) {
+            return url;
+        }
+
+        return `/storage/${url}`;
     };
 
     /**
@@ -246,25 +272,13 @@ export default function Preferences({ options }: Props) {
                                         Social sharing image preview
                                     </h4>
 
-                                    <div>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            ref={fileRef}
-                                            className="hidden"
-                                            onChange={handleUpload}
-                                        />
-
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                fileRef.current?.click()
-                                            }
-                                            className="text-sm text-blue-600 hover:underline"
-                                        >
-                                            Change image
-                                        </button>
-                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={openMediaLibrary}
+                                        className="text-sm text-blue-600 hover:underline"
+                                    >
+                                        Change image
+                                    </button>
                                 </div>
 
                                 {/* CARD BODY */}
@@ -282,10 +296,9 @@ export default function Preferences({ options }: Props) {
                                             {/* IMAGE */}
                                             <div className="w-32">
                                                 <img
-                                                    src={
-                                                        data.social_sharing_image ||
-                                                        'https://www.clipartmax.com/png/middle/293-2939065_apps-home-icon-website-logo-png-transparent-background.png'
-                                                    }
+                                                    src={resolveAssetUrl(
+                                                        data.social_sharing_image,
+                                                    )}
                                                     alt="Preview"
                                                     className="h-24 w-full rounded object-cover"
                                                 />
@@ -322,6 +335,21 @@ export default function Preferences({ options }: Props) {
                     </div>
                 </form>
             </div>
+
+            <MediaLibraryUploadModal
+                isOpen={isMediaLibraryOpen}
+                onClose={() => setIsMediaLibraryOpen(false)}
+                items={mediaItems}
+                currentPath={currentMediaPath}
+                loading={isMediaLoading}
+                onOpenFolder={loadMediaLibrary}
+                onSelectFile={selectSocialSharingImage}
+                onUploaded={(item) => {
+                    setMediaItems((currentItems) => [item, ...currentItems]);
+                    selectSocialSharingImage(item);
+                }}
+                autoSelectUploaded
+            />
         </>
     );
 }

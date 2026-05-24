@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import MediaImagePicker from '@/components/media/MediaImagePicker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -59,6 +60,8 @@ const variantSchema = z.object({
     product_id: z.string().min(1, 'Product is required'),
     unit_id: z.string().nullable().optional(),
     name: z.string().min(1, 'Variant name is required'),
+    color: z.string().nullable().optional(),
+    storage: z.string().nullable().optional(),
     sku: z.string().min(1, 'SKU is required'),
     image: z.any().optional(),
     price: z.coerce.number().min(0, 'Price must be >= 0').default(0),
@@ -74,7 +77,6 @@ type VariantFormData = z.output<typeof variantSchema>;
 export default function Create({ products, units }: Props) {
     const [processing, setProcessing] = useState(false);
     const [stockUnits, setStockUnits] = useState<StockUnitInput[]>([]);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const {
         register,
@@ -88,6 +90,8 @@ export default function Create({ products, units }: Props) {
             product_id: '',
             unit_id: null,
             name: '',
+            color: '',
+            storage: '',
             sku: '',
             image: undefined,
             price: 0,
@@ -127,18 +131,6 @@ export default function Create({ products, units }: Props) {
         setStockUnits((items) =>
             items.filter((_, itemIndex) => itemIndex !== index),
         );
-    };
-
-    const handleImageChange = (file?: File) => {
-        setValue('image', file, { shouldValidate: true });
-
-        if (!file) {
-            setImagePreview(null);
-
-            return;
-        }
-
-        setImagePreview(URL.createObjectURL(file));
     };
 
     const onSubmit = (data: VariantFormData) => {
@@ -266,6 +258,36 @@ export default function Create({ products, units }: Props) {
                             </div>
 
                             <div className="flex flex-col gap-1">
+                                <Label>Color / Warna</Label>
+                                <Input
+                                    type="text"
+                                    aria-invalid={!!errors.color}
+                                    {...register('color')}
+                                    placeholder="e.g., Silver"
+                                />
+                                {errors.color && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.color.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <Label>Storage</Label>
+                                <Input
+                                    type="text"
+                                    aria-invalid={!!errors.storage}
+                                    {...register('storage')}
+                                    placeholder="e.g., 256GB"
+                                />
+                                {errors.storage && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.storage.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-1">
                                 <Label>SKU</Label>
                                 <Input
                                     type="text"
@@ -282,18 +304,12 @@ export default function Create({ products, units }: Props) {
 
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Variant Image</Label>
-                                {imagePreview && (
-                                    <img
-                                        src={imagePreview}
-                                        alt="Variant preview"
-                                        className="mb-2 h-28 w-28 rounded-md border object-cover"
-                                    />
-                                )}
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) =>
-                                        handleImageChange(e.target.files?.[0])
+                                <MediaImagePicker
+                                    value={watch('image') as string | null}
+                                    onChange={(path) =>
+                                        setValue('image', path, {
+                                            shouldValidate: true,
+                                        })
                                     }
                                 />
                                 {errors.image && (
