@@ -4,7 +4,10 @@ namespace App\Services;
 
 use App\Models\Block;
 use App\Models\Post;
+use App\Models\Term;
 use App\Models\TermTaxonomy;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -22,11 +25,12 @@ class PostService
                 'content' => json_encode($blocks),
                 'status' => $data['status'],
                 'type' => 'post',
-                'published_at' => $data['status'] === 'publish' ? now() : null,
+                'published_at' => $this->resolvePublishedAt($data),
             ]);
 
             $this->storeBlocks($post->id, $blocks);
             $this->syncTaxonomies($post, $data);
+            $this->syncPostCategory($post, $data);
             $this->syncFeaturedImage($post, $data);
 
             return $post;
@@ -42,13 +46,14 @@ class PostService
                 'title' => $data['title'],
                 'content' => json_encode($blocks),
                 'status' => $data['status'],
-                'published_at' => $data['status'] === 'publish' ? now() : null,
+                'published_at' => $this->resolvePublishedAt($data),
             ]);
 
             $post->blocks()->delete();
             $this->storeBlocks($post->id, $blocks);
 
             $this->syncTaxonomies($post, $data);
+            $this->syncPostCategory($post, $data);
             $this->syncFeaturedImage($post, $data);
         });
 
@@ -58,14 +63,68 @@ class PostService
     private function syncTaxonomies(Post $post, array $data): void
     {
         $taxonomyIds = array_merge(
-            $data['categories'] ?? [],
-            $data['tags'] ?? []
+            $data['tags'] ?? [],
+            $this->resolveTagIds($data['tag_names'] ?? [])
         );
+        $taxonomyIds = array_values(array_unique(array_map('intval', $taxonomyIds)));
 
-        $post->taxonomies()->sync($taxonomyIds);
+        $changes = $post->taxonomies()->sync($taxonomyIds);
 
-        TermTaxonomy::whereIn('id', $taxonomyIds)
-            ->update(['count' => \DB::raw('count + 1')]);
+        TermTaxonomy::whereIn('id', $changes['attached'])
+            ->update(['count' => DB::raw('count + 1')]);
+
+        TermTaxonomy::whereIn('id', $changes['detached'])
+            ->where('count', '>', 0)
+            ->update(['count' => DB::raw('count - 1')]);
+    }
+
+    private function resolveTagIds(array $tagNames): array
+    {
+        return collect($tagNames)
+            ->map(fn ($name) => trim((string) $name))
+            ->filter()
+            ->unique(fn ($name) => Str::lower($name))
+            ->map(function ($name) {
+                $slug = Str::slug($name);
+                $term = Term::query()->firstOrCreate(
+                    ['slug' => $slug],
+                    ['name' => $name]
+                );
+
+                return TermTaxonomy::query()->firstOrCreate(
+                    [
+                        'term_id' => $term->id,
+                        'taxonomy' => 'tags',
+                    ],
+                    ['description' => null]
+                )->id;
+            })
+            ->all();
+    }
+
+    private function resolvePublishedAt(array $data): ?CarbonInterface
+    {
+        if (! empty($data['published_at'])) {
+            return Carbon::parse($data['published_at']);
+        }
+
+        return $data['status'] === 'publish' ? now() : null;
+    }
+
+    private function syncPostCategory(Post $post, array $data): void
+    {
+        if (! empty($data['category_id'])) {
+            $post->metas()->updateOrCreate(
+                ['meta_key' => 'post_category_id'],
+                ['meta_value' => $data['category_id']]
+            );
+
+            return;
+        }
+
+        $post->metas()
+            ->where('meta_key', 'post_category_id')
+            ->delete();
     }
 
     private function syncFeaturedImage(Post $post, array $data): void
@@ -75,7 +134,13 @@ class PostService
                 ['meta_key' => 'featured_image'],
                 ['meta_value' => $data['featured_image']]
             );
+
+            return;
         }
+
+        $post->metas()
+            ->where('meta_key', 'featured_image')
+            ->delete();
     }
 
     private function storeBlocks(int $postId, array $blocks, ?int $parentId = null): void

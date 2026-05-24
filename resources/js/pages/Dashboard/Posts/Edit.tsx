@@ -35,8 +35,8 @@ import { createBlock } from '@/components/editor/blocks/factory';
 import Canvas from '@/components/editor/Canvas';
 import {
     findAndRemove,
-    insertWithPosition,
     getDropPosition,
+    insertWithPosition,
 } from '@/components/editor/core/tree';
 import StructureTree from '@/components/editor/StructureTree';
 
@@ -52,9 +52,36 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
+import PostEditorLayout from '@/layouts/post-editor-layout';
 import type { BlockInstance } from '@/types/block';
+import PostMetadataPanel from './components/PostMetadataPanel';
 
 type DropPosition = 'before' | 'after' | 'inside';
+
+type PostFormData = {
+    title: string;
+    status: string;
+    blocks: string;
+    category_id: string;
+    tags: number[];
+    tag_names: string[];
+    featured_image: string;
+    published_at: string;
+};
+
+const formatDateTimeLocal = (value?: string | null) => {
+    if (!value) {
+        return '';
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
+
+    return date.toISOString().slice(0, 16);
+};
 
 interface DropIndicator {
     id: number | string;
@@ -115,7 +142,13 @@ function DraggableBlock({ item, disabled, onClick }: any) {
 /**
  * EDIT PAGE
  */
-export default function Edit({ post, blocks }: any) {
+export default function Edit({
+    post,
+    blocks,
+    categoryId,
+    categories = [],
+    tags = [],
+}: any) {
     const [pageBlocks, setPageBlocks] = useState<BlockInstance[]>(blocks ?? []);
     const [selectedBlock, setSelectedBlock] = useState<BlockInstance | null>(
         null,
@@ -163,10 +196,17 @@ export default function Edit({ post, blocks }: any) {
     /**
      * FORM (NO MORE content FIELD)
      */
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, put, processing, errors } = useForm<PostFormData>({
         title: post.title ?? '',
         status: post.status ?? 'draft',
         blocks: '',
+        category_id: categoryId ?? '',
+        tags: (post.tags ?? []).map((tag: any) => Number(tag.id)),
+        tag_names: (post.tags ?? [])
+            .map((tag: any) => tag.term?.name)
+            .filter(Boolean),
+        featured_image: post.featured_image?.meta_value ?? '',
+        published_at: formatDateTimeLocal(post.published_at),
     });
 
     /**
@@ -174,7 +214,7 @@ export default function Edit({ post, blocks }: any) {
      */
     useEffect(() => {
         setData('blocks', JSON.stringify(pageBlocks));
-    }, [pageBlocks]);
+    }, [pageBlocks, setData]);
 
     /**
      * UPDATE BLOCK
@@ -409,7 +449,7 @@ export default function Edit({ post, blocks }: any) {
                         )}
                     </header>
 
-                    <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[280px_minmax(420px,1fr)_280px_360px]">
+                    <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[280px_minmax(420px,1fr)_280px_300px_360px]">
                         <aside className="min-h-0 overflow-y-auto border-b bg-muted/30 p-3 xl:border-r xl:border-b-0">
                             <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                                 Blocks
@@ -469,20 +509,6 @@ export default function Edit({ post, blocks }: any) {
                             </Canvas>
                         </main>
 
-                        <aside className="min-h-0 overflow-y-auto border-t bg-background p-3 xl:border-t-0 xl:border-l">
-                            <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                                Structure
-                            </h2>
-
-                            <StructureTree
-                                items={pageBlocks}
-                                selectedBlock={selectedBlock}
-                                setSelectedBlock={setSelectedBlock}
-                                dropIndicator={dropIndicator}
-                                onDelete={deleteBlock}
-                            />
-                        </aside>
-
                         <aside className="min-h-0 overflow-y-auto border-t bg-muted/30 p-4 xl:border-t-0 xl:border-l">
                             {selectedBlock ? (
                                 <div className="space-y-4">
@@ -506,6 +532,43 @@ export default function Edit({ post, blocks }: any) {
                                 </div>
                             )}
                         </aside>
+
+                        <aside className="min-h-0 overflow-y-auto border-t bg-background p-3 xl:border-t-0 xl:border-l">
+                            <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                                Structure
+                            </h2>
+
+                            <StructureTree
+                                items={pageBlocks}
+                                selectedBlock={selectedBlock}
+                                setSelectedBlock={setSelectedBlock}
+                                dropIndicator={dropIndicator}
+                                onDelete={deleteBlock}
+                            />
+                        </aside>
+
+                        <aside className="min-h-0 overflow-y-auto border-t bg-background p-4 xl:border-t-0 xl:border-l">
+                            <PostMetadataPanel
+                                categories={categories}
+                                tags={tags}
+                                selectedCategoryId={data.category_id}
+                                selectedTagNames={data.tag_names}
+                                featuredImage={data.featured_image}
+                                publishedAt={data.published_at}
+                                onCategoryChange={(id) =>
+                                    setData('category_id', id)
+                                }
+                                onTagNamesChange={(names) =>
+                                    setData('tag_names', names)
+                                }
+                                onFeaturedImageChange={(path) =>
+                                    setData('featured_image', path ?? '')
+                                }
+                                onPublishedAtChange={(value) =>
+                                    setData('published_at', value)
+                                }
+                            />
+                        </aside>
                     </div>
                 </form>
             </DndContext>
@@ -513,4 +576,13 @@ export default function Edit({ post, blocks }: any) {
     );
 }
 
-Edit.layout = (page: React.ReactNode) => page;
+Edit.layout = (page: React.ReactNode) => (
+    <PostEditorLayout
+        breadcrumbs={[
+            { title: 'Posts', href: '/dashboard/posts' },
+            { title: 'Edit', href: '/dashboard/posts' },
+        ]}
+    >
+        {page}
+    </PostEditorLayout>
+);

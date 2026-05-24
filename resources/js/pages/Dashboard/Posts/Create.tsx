@@ -35,8 +35,8 @@ import { createBlock } from '@/components/editor/blocks/factory';
 import Canvas from '@/components/editor/Canvas';
 import {
     findAndRemove,
-    insertWithPosition,
     getDropPosition,
+    insertWithPosition,
 } from '@/components/editor/core/tree';
 import StructureTree from '@/components/editor/StructureTree';
 
@@ -52,9 +52,22 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
+import PostEditorLayout from '@/layouts/post-editor-layout';
 import type { BlockInstance } from '@/types/block';
+import PostMetadataPanel from './components/PostMetadataPanel';
 
 type DropPosition = 'before' | 'after' | 'inside';
+
+type PostFormData = {
+    title: string;
+    content: string;
+    status: string;
+    category_id: string;
+    tags: number[];
+    tag_names: string[];
+    featured_image: string;
+    published_at: string;
+};
 
 interface DropIndicator {
     id: number | string;
@@ -109,7 +122,7 @@ function DraggableBlock({ item, disabled, onClick }: any) {
     );
 }
 
-export default function Create() {
+export default function Create({ categories = [], tags = [] }: any) {
     const [selectedBlock, setSelectedBlock] = useState<BlockInstance | null>(
         null,
     );
@@ -156,10 +169,15 @@ export default function Create() {
     /**
      * ✅ FORM
      */
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm<PostFormData>({
         title: '',
         content: '',
         status: 'draft',
+        category_id: '',
+        tags: [],
+        tag_names: [],
+        featured_image: '',
+        published_at: '',
     });
 
     /**
@@ -167,7 +185,7 @@ export default function Create() {
      */
     useEffect(() => {
         setData('content', JSON.stringify(pageBlocks));
-    }, [pageBlocks]);
+    }, [pageBlocks, setData]);
 
     /**
      * ✅ UPDATE BLOCK
@@ -395,7 +413,7 @@ export default function Create() {
                         )}
                     </header>
 
-                    <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[280px_minmax(420px,1fr)_280px_360px]">
+                    <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[280px_minmax(420px,1fr)_280px_300px_360px]">
                         <aside className="min-h-0 overflow-y-auto border-b bg-muted/30 p-3 xl:border-r xl:border-b-0">
                             <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                                 Blocks
@@ -455,20 +473,6 @@ export default function Create() {
                             </Canvas>
                         </main>
 
-                        <aside className="min-h-0 overflow-y-auto border-t bg-background p-3 xl:border-t-0 xl:border-l">
-                            <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                                Structure
-                            </h2>
-
-                            <StructureTree
-                                items={pageBlocks}
-                                selectedBlock={selectedBlock}
-                                setSelectedBlock={setSelectedBlock}
-                                dropIndicator={dropIndicator}
-                                onDelete={deleteBlock}
-                            />
-                        </aside>
-
                         <aside className="min-h-0 overflow-y-auto border-t bg-muted/30 p-4 xl:border-t-0 xl:border-l">
                             {selectedBlock ? (
                                 <div className="space-y-4">
@@ -492,6 +496,43 @@ export default function Create() {
                                 </div>
                             )}
                         </aside>
+
+                        <aside className="min-h-0 overflow-y-auto border-t bg-background p-3 xl:border-t-0 xl:border-l">
+                            <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                                Structure
+                            </h2>
+
+                            <StructureTree
+                                items={pageBlocks}
+                                selectedBlock={selectedBlock}
+                                setSelectedBlock={setSelectedBlock}
+                                dropIndicator={dropIndicator}
+                                onDelete={deleteBlock}
+                            />
+                        </aside>
+
+                        <aside className="min-h-0 overflow-y-auto border-t bg-background p-4 xl:border-t-0 xl:border-l">
+                            <PostMetadataPanel
+                                categories={categories}
+                                tags={tags}
+                                selectedCategoryId={data.category_id}
+                                selectedTagNames={data.tag_names}
+                                featuredImage={data.featured_image}
+                                publishedAt={data.published_at}
+                                onCategoryChange={(id) =>
+                                    setData('category_id', id)
+                                }
+                                onTagNamesChange={(names) =>
+                                    setData('tag_names', names)
+                                }
+                                onFeaturedImageChange={(path) =>
+                                    setData('featured_image', path ?? '')
+                                }
+                                onPublishedAtChange={(value) =>
+                                    setData('published_at', value)
+                                }
+                            />
+                        </aside>
                     </div>
                 </form>
             </DndContext>
@@ -499,4 +540,13 @@ export default function Create() {
     );
 }
 
-Create.layout = (page: React.ReactNode) => page;
+Create.layout = (page: React.ReactNode) => (
+    <PostEditorLayout
+        breadcrumbs={[
+            { title: 'Posts', href: '/dashboard/posts' },
+            { title: 'Create', href: '/dashboard/posts/create' },
+        ]}
+    >
+        {page}
+    </PostEditorLayout>
+);
