@@ -1,8 +1,9 @@
 import { Head, useForm } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { toast } from 'sonner';
 
+import MediaImagePicker from '@/components/media/MediaImagePicker';
 import { Button } from '@/components/ui/button';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -26,7 +27,7 @@ const assetFields = [
 const legacyAssetUrlFields = assetFields.map((field) => `${field}_url`);
 
 export default function General({ options }: Props) {
-    const [initialized, setInitialized] = useState(false);
+    const initialized = useRef(false);
 
     const { data, setData, post, processing } = useForm({
         site_title: '',
@@ -59,7 +60,7 @@ export default function General({ options }: Props) {
      * Hanya jalan sekali saat pertama load
      */
     useEffect(() => {
-        if (!options || initialized) {
+        if (!options || initialized.current) {
             return;
         }
 
@@ -114,8 +115,8 @@ export default function General({ options }: Props) {
             ...mapped,
         }));
 
-        setInitialized(true);
-    }, [options, initialized, setData, data]);
+        initialized.current = true;
+    }, [options, setData, data]);
 
     /**
      * ✅ Submit Handler
@@ -189,102 +190,15 @@ export default function General({ options }: Props) {
         setData('social_media', updated);
     };
 
-    const uploadImage = async (
-        file: File,
+    const setAsset = (
         field: 'favicon_ico' | 'logo' | 'logo_footer' | 'logo_mobile',
+        path: string | null,
     ) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        const csrfToken = document
-            .querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
-            ?.getAttribute('content');
-
-        try {
-            toast.loading('Uploading...', { id: field });
-
-            const response = await fetch('/dashboard/media/json', {
-                method: 'POST',
-                headers: csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {},
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error(`Upload failed with status ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            setData((prev) => ({
-                ...prev,
-                [field]: null,
-                [`${field}_url`]: result.location, // ini yang penting
-            }));
-
-            toast.success('Uploaded successfully', { id: field });
-        } catch (error) {
-            console.log(error);
-            toast.error('Upload failed', { id: field });
-        }
-    };
-
-    const handleFaviconUpload = (file: File) => {
-        uploadImage(file, 'favicon_ico');
-    };
-
-    const handleLogoUpload = (file: File) => {
-        uploadImage(file, 'logo');
-    };
-
-    const handleLogoFooterUpload = (file: File) => {
-        uploadImage(file, 'logo_footer');
-    };
-
-    const handleLogoMobileUpload = (file: File) => {
-        uploadImage(file, 'logo_mobile');
-    };
-
-    const removeFavicon = () => {
-        setData({
-            ...data,
-            favicon_ico: null,
-            favicon_ico_url: '',
-        });
-    };
-
-    const removeLogo = () => {
-        setData({
-            ...data,
-            logo: null,
-            logo_url: '',
-        });
-    };
-
-    const removeLogoFooter = () => {
-        setData({
-            ...data,
-            logo_footer: null,
-            logo_footer_url: '',
-        });
-    };
-
-    const removeLogoMobile = () => {
-        setData({
-            ...data,
-            logo_mobile: null,
-            logo_mobile_url: '',
-        });
-    };
-
-    const resolveAssetUrl = (url: string) => {
-        if (!url) {
-            return '';
-        }
-
-        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
-            return url;
-        }
-
-        return `/storage/${url}`;
+        setData((prev) => ({
+            ...prev,
+            [field]: null,
+            [`${field}_url`]: path ?? '',
+        }));
     };
     /**
      * ✅ Prevent TinyMCE render sebelum data siap
@@ -512,149 +426,44 @@ export default function General({ options }: Props) {
                             <div className="col-span-2 space-y-8 rounded-xl bg-card p-6 shadow">
                                 {/* Favicon */}
                                 <div className="flex flex-col gap-1">
-                                    <label className="font-medium">
-                                        Favicon Ico
-                                    </label>
-
-                                    {data.favicon_ico_url && (
-                                        <div className="mb-3 space-y-2">
-                                            <img
-                                                src={resolveAssetUrl(data.favicon_ico_url)}
-                                                className="h-16 w-16 rounded-lg border bg-muted object-contain p-2"
-                                                alt="Favicon"
-                                            />
-                                            <p className="text-xs text-muted-foreground">
-                                                Current favicon. Upload a new file to replace it.
-                                            </p>
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                onClick={removeFavicon}
-                                                className="cursor-pointer"
-                                            >
-                                                Remove
-                                            </Button>
-                                        </div>
-                                    )}
-                                    <Input
-                                        type="file"
-                                        accept=".ico,image/png"
-                                        className="cursor-pointer"
-                                        onChange={(e) =>
-                                            e.target.files &&
-                                            handleFaviconUpload(
-                                                e.target.files[0],
-                                            )
+                                    <MediaImagePicker
+                                        label="Favicon Ico"
+                                        value={data.favicon_ico_url}
+                                        onChange={(path) =>
+                                            setAsset('favicon_ico', path)
                                         }
                                     />
                                 </div>
 
                                 {/* Logo */}
                                 <div className="flex flex-col gap-1">
-                                    <label className="font-medium">Logo</label>
-
-                                    {data.logo_url && (
-                                        <div className="mb-3 space-y-2">
-                                            <img
-                                                src={resolveAssetUrl(data.logo_url)}
-                                                className="h-20 max-w-64 rounded-lg border bg-muted object-contain p-2"
-                                                alt="Logo"
-                                            />
-                                            <p className="text-xs text-muted-foreground">
-                                                Current logo. Upload a new file to replace it.
-                                            </p>
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                onClick={removeLogo}
-                                            >
-                                                Remove
-                                            </Button>
-                                        </div>
-                                    )}
-                                    <Input
-                                        type="file"
-                                        accept="image/*"
-                                        className="cursor-pointer"
-                                        onChange={(e) =>
-                                            e.target.files &&
-                                            handleLogoUpload(
-                                                e.target.files[0],
-                                            )
+                                    <MediaImagePicker
+                                        label="Logo"
+                                        value={data.logo_url}
+                                        onChange={(path) =>
+                                            setAsset('logo', path)
                                         }
                                     />
                                 </div>
 
                                 {/* Logo Footer */}
                                 <div className="flex flex-col gap-1">
-                                    <label className="font-medium">
-                                        Logo Footer
-                                    </label>
-
-                                    {data.logo_footer_url && (
-                                        <div className="mb-3 space-y-2">
-                                            <img
-                                                src={resolveAssetUrl(data.logo_footer_url)}
-                                                className="h-20 max-w-64 rounded-lg border bg-muted object-contain p-2"
-                                                alt="Logo Footer"
-                                            />
-                                            <p className="text-xs text-muted-foreground">
-                                                Current footer logo. Upload a new file to replace it.
-                                            </p>
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                onClick={removeLogoFooter}
-                                            >
-                                                Remove
-                                            </Button>
-                                        </div>
-                                    )}
-                                    <Input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) =>
-                                            e.target.files &&
-                                            handleLogoFooterUpload(
-                                                e.target.files[0],
-                                            )
+                                    <MediaImagePicker
+                                        label="Logo Footer"
+                                        value={data.logo_footer_url}
+                                        onChange={(path) =>
+                                            setAsset('logo_footer', path)
                                         }
                                     />
                                 </div>
 
                                 {/* Logo Mobile */}
                                 <div className="flex flex-col gap-1">
-                                    <label className="font-medium">
-                                        Logo Mobile
-                                    </label>
-
-                                    {data.logo_mobile_url && (
-                                        <div className="mb-3 space-y-2">
-                                            <img
-                                                src={resolveAssetUrl(data.logo_mobile_url)}
-                                                className="h-20 max-w-64 rounded-lg border bg-muted object-contain p-2"
-                                                alt="Logo Mobile"
-                                            />
-                                            <p className="text-xs text-muted-foreground">
-                                                Current mobile logo. Upload a new file to replace it.
-                                            </p>
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                onClick={removeLogoMobile}
-                                            >
-                                                Remove
-                                            </Button>
-                                        </div>
-                                    )}
-                                    <Input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) =>
-                                            e.target.files &&
-                                            handleLogoMobileUpload(
-                                                e.target.files[0],
-                                            )
+                                    <MediaImagePicker
+                                        label="Logo Mobile"
+                                        value={data.logo_mobile_url}
+                                        onChange={(path) =>
+                                            setAsset('logo_mobile', path)
                                         }
                                     />
                                 </div>
