@@ -261,17 +261,17 @@ export default function Index({
                 </div>
             ),
         },
-        {
-            label: 'Barcode',
-            render: (row: ProductStockUnit) =>
-                row.barcode ? (
-                    <span className="font-mono text-xs">{row.barcode}</span>
-                ) : (
-                    <Badge variant="secondary" className="text-amber-700">
-                        Belum ada barcode
-                    </Badge>
-                ),
-        },
+        // {
+        //     label: 'Barcode',
+        //     render: (row: ProductStockUnit) =>
+        //         row.barcode ? (
+        //             <span className="font-mono text-xs">{row.barcode}</span>
+        //         ) : (
+        //             <Badge variant="secondary" className="text-amber-700">
+        //                 Belum ada barcode
+        //             </Badge>
+        //         ),
+        // },
         // {
         //     label: 'Battery Health',
         //     render: (row: ProductStockUnit) => (
