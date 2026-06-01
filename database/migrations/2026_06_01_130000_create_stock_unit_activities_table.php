@@ -8,10 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::dropIfExists('stock_unit_activities');
+
         Schema::create('stock_unit_activities', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('product_stock_unit_id');
-            $table->uuid('user_id')->nullable();
+            $table->foreignId('user_id')->nullable();
             $table->string('action');
             $table->text('description')->nullable();
             $table->string('old_status')->nullable();
