@@ -90,15 +90,43 @@ export default function Index({ variantItems, products, filters }: Props) {
         },
         {
             label: 'Options',
-            render: (row: VariantItem) => (
-                <div className="flex flex-wrap gap-2">
-                    {(row.options ?? []).map((option) => (
-                        <Badge key={option.id} variant="secondary">
-                            {option.value}
-                        </Badge>
-                    ))}
-                </div>
-            ),
+            render: (row: VariantItem) => {
+                const options = row.options ?? [];
+
+                if (!options.length) {
+                    return (
+                        <span className="text-sm text-muted-foreground">
+                            No options
+                        </span>
+                    );
+                }
+
+                return (
+                    <div className="flex max-w-xs flex-wrap gap-2 sm:max-w-sm md:max-w-md">
+                        {options.map((option) => (
+                            <div
+                                key={option.id}
+                                className="inline-flex max-w-full items-center gap-1.5 rounded-full border bg-muted/40 px-2.5 py-1 text-xs shadow-sm transition-colors hover:bg-muted"
+                                title={`${option.variant?.name ?? 'Option'}: ${option.value}`}
+                            >
+                                {option.variant?.name && (
+                                    <span className="max-w-22.5 truncate text-muted-foreground">
+                                        {option.variant.name}
+                                    </span>
+                                )}
+
+                                {option.variant?.name && (
+                                    <span className="text-muted-foreground">:</span>
+                                )}
+
+                                <span className="max-w-30 truncate font-medium">
+                                    {option.value}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                );
+            },
         },
         {
             label: 'Image',
