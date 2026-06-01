@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
+    Barcode,
     Boxes,
     CheckCircle2,
     Edit,
@@ -10,7 +11,7 @@ import {
     Trash,
     XCircle,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { DataTable } from '@/components/DataTable';
 import SearchableSelect from '@/components/SearchableSelect';
@@ -24,10 +25,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-
-// import AppLayout from '@/layouts/master-data-layout';
 
 import type { LaravelPagination } from '@/types/LaravelPagination';
 
@@ -140,10 +141,17 @@ export default function Index({
 }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
-    const [variantId, setVariantId] = useState(
-        filters.product_variant_id || '',
-    );
+    const [variantId, setVariantId] = useState(filters.product_variant_id || '');
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+    const currentPageIds = useMemo(
+        () => stockUnits.data.map((item) => item.id),
+        [stockUnits.data],
+    );
+
+    const allCurrentSelected =
+        currentPageIds.length > 0 && currentPageIds.every((id) => selectedIds.includes(id));
 
     const applyFilter = () => {
         router.get(
@@ -164,21 +172,89 @@ export default function Index({
         setSearch('');
         setStatus('');
         setVariantId('');
-        router.get(
-            '/dashboard/ecommerce/product-stock-units',
-            {},
-            { replace: true },
+        setSelectedIds([]);
+
+        router.get('/dashboard/ecommerce/product-stock-units', {}, { replace: true });
+    };
+
+    const toggleSelect = (id: string, checked: boolean) => {
+        setSelectedIds((prev) => {
+            if (checked) {
+                return prev.includes(id) ? prev : [...prev, id];
+            }
+
+            return prev.filter((item) => item !== id);
+        });
+    };
+
+    const toggleSelectAllCurrent = (checked: boolean) => {
+        setSelectedIds((prev) => {
+            if (checked) {
+                return Array.from(new Set([...prev, ...currentPageIds]));
+            }
+
+            return prev.filter((id) => !currentPageIds.includes(id));
+        });
+    };
+
+    const handleBulkGenerate = () => {
+        if (selectedIds.length === 0) {
+            return;
+        }
+
+        router.post(
+            '/dashboard/ecommerce/product-stock-units/bulk-generate-barcode',
+            { stock_unit_ids: selectedIds },
+            { preserveScroll: true },
         );
+    };
+
+    const handlePrintSelected = () => {
+        if (selectedIds.length === 0) {
+            return;
+        }
+
+        router.post(
+            '/dashboard/ecommerce/product-stock-units/barcodes/print-selected',
+            { stock_unit_ids: selectedIds },
+            { preserveScroll: true },
+        );
+    };
+
+    const handlePrintAllFiltered = () => {
+        router.get('/dashboard/ecommerce/product-stock-units/barcodes/print', {
+            search,
+            status,
+            product_variant_id: variantId,
+        });
+    };
+
+    const handleDelete = () => {
+        if (!deletingId) {
+            return;
+        }
+
+        router.delete(`/dashboard/ecommerce/product-stock-units/${deletingId}`, {
+            preserveScroll: true,
+            onFinish: () => setDeletingId(null),
+        });
     };
 
     const columns = [
         {
+            label: 'Select',
+            render: (row: ProductStockUnit) => (
+                <Checkbox
+                    checked={selectedIds.includes(row.id)}
+                    onCheckedChange={(checked) => toggleSelect(row.id, checked === true)}
+                />
+            ),
+        },
+        {
             label: 'IMEI / Serial',
             render: (row: ProductStockUnit) => (
                 <div className="flex flex-col">
-                    <span className="font-mono text-sm font-semibold">
-                        {row.imei_serial_number}
-                    </span>
+                    <span className="font-mono text-sm font-semibold">{row.imei_serial_number}</span>
                     <span className="text-xs text-muted-foreground">
                         Network: {networkLabel(row.network_compatibility)}
                     </span>
@@ -187,41 +263,40 @@ export default function Index({
         },
         {
             label: 'Barcode',
-            render: (row: ProductStockUnit) => (
-                <span className="font-mono text-xs">{row.barcode || '-'}</span>
-            ),
+            render: (row: ProductStockUnit) =>
+                row.barcode ? (
+                    <span className="font-mono text-xs">{row.barcode}</span>
+                ) : (
+                    <Badge variant="secondary" className="text-amber-700">
+                        Belum ada barcode
+                    </Badge>
+                ),
         },
-        {
-            label: 'Battery Health',
-            render: (row: ProductStockUnit) => (
-                <span className="text-sm">
-                    {typeof row.battery_health === 'number'
-                        ? `${row.battery_health}%`
-                        : '-'}
-                </span>
-            ),
-        },
-        {
-            label: 'Grade',
-            render: (row: ProductStockUnit) => (
-                <span className="text-sm font-medium">{row.grade || '-'}</span>
-            ),
-        },
+        // {
+        //     label: 'Battery Health',
+        //     render: (row: ProductStockUnit) => (
+        //         <span className="text-sm">
+        //             {typeof row.battery_health === 'number' ? `${row.battery_health}%` : '-'}
+        //         </span>
+        //     ),
+        // },
+        // {
+        //     label: 'Grade',
+        //     render: (row: ProductStockUnit) => (
+        //         <span className="text-sm font-medium">{row.grade || '-'}</span>
+        //     ),
+        // },
         {
             label: 'Product',
             render: (row: ProductStockUnit) => (
-                <span className="text-sm font-medium">
-                    {row.product?.name || row.variant?.product?.name || '-'}
-                </span>
+                <span className="text-sm font-medium">{row.product?.name || row.variant?.product?.name || '-'}</span>
             ),
         },
         {
             label: 'Product Variant',
             render: (row: ProductStockUnit) => (
                 <div className="flex flex-col">
-                    <span className="text-sm font-medium">
-                        {row.variant?.name || row.product?.name || '-'}
-                    </span>
+                    <span className="text-sm font-medium">{row.variant?.name || row.product?.name || '-'}</span>
                     <span className="text-xs text-muted-foreground">
                         SKU: {row.variant?.sku || row.product?.sku || '-'}
                     </span>
@@ -231,42 +306,72 @@ export default function Index({
         {
             label: 'Status',
             render: (row: ProductStockUnit) => (
-                <span
-                    className={`inline-flex rounded-md border px-2 py-0.5 text-xs font-semibold uppercase ${statusClass(row.status)}`}
-                >
+                <span className={`inline-flex rounded-md border px-2 py-0.5 text-xs font-semibold uppercase ${statusClass(row.status)}`}>
                     {row.status}
-                </span>
-            ),
-        },
-        {
-            label: 'Note',
-            render: (row: ProductStockUnit) => (
-                <span
-                    title={row.note || ''}
-                    className="block max-w-55 truncate text-xs text-muted-foreground"
-                >
-                    {row.note || '-'}
                 </span>
             ),
         },
         {
             label: 'Actions',
             render: (row: ProductStockUnit) => (
-                <div className="flex items-center gap-2">
-                    <Link
-                        href={`/dashboard/ecommerce/product-stock-units/${row.id}`}
-                    >
+                <div className="flex flex-wrap items-center gap-2">
+                    <Link href={`/dashboard/ecommerce/product-stock-units/${row.id}`}>
                         <Button size="sm" variant="secondary" title="Detail">
                             <Eye className="h-3.5 w-3.5" />
                         </Button>
                     </Link>
-                    <Link
-                        href={`/dashboard/ecommerce/product-stock-units/${row.id}/edit`}
-                    >
+
+                    <Link href={`/dashboard/ecommerce/product-stock-units/${row.id}/edit`}>
                         <Button size="sm" variant="secondary" title="Edit">
                             <Edit className="h-3.5 w-3.5" />
                         </Button>
                     </Link>
+
+                    {!row.barcode && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1"
+                            onClick={() =>
+                                router.post(`/dashboard/ecommerce/product-stock-units/${row.id}/generate-barcode`, {}, { preserveScroll: true })
+                            }
+                        >
+                            <Barcode className="h-3.5 w-3.5" />
+                            Generate
+                        </Button>
+                    )}
+
+                    {row.barcode && (
+                        <>
+                            <Link href={`/dashboard/ecommerce/product-stock-units/barcodes/print?ids=${row.id}`}>
+                                <Button size="sm" variant="outline">
+                                    Print
+                                </Button>
+                            </Link>
+
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                    const confirmed = window.confirm('Regenerate barcode unit ini?');
+
+                                    if (!confirmed) {
+                                        return;
+                                    }
+
+                                    router.post(
+                                        `/dashboard/ecommerce/product-stock-units/${row.id}/regenerate-barcode`,
+                                        {},
+                                        { preserveScroll: true },
+                                    );
+                                }}
+                                disabled={row.status === 'sold'}
+                            >
+                                Regenerate
+                            </Button>
+                        </>
+                    )}
+
                     <Button
                         size="sm"
                         variant="destructive"
@@ -280,20 +385,6 @@ export default function Index({
         },
     ];
 
-    const handleDelete = () => {
-        if (!deletingId) {
-            return;
-        }
-
-        router.delete(
-            `/dashboard/ecommerce/product-stock-units/${deletingId}`,
-            {
-                preserveScroll: true,
-                onFinish: () => setDeletingId(null),
-            },
-        );
-    };
-
     return (
         <>
             <Head title="Stok Unit" />
@@ -301,49 +392,34 @@ export default function Index({
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                            Stok Unit
-                        </h1>
+                        <h1 className="text-2xl font-bold tracking-tight text-foreground">Stok Unit</h1>
                         <p className="mt-0.5 text-sm text-muted-foreground">
-                            Daftar IMEI/serial unit beserta product dan product
-                            variant yang terhubung.
+                            Daftar IMEI/serial unit beserta product dan product variant yang terhubung.
                         </p>
                     </div>
 
-                    <Link href="/dashboard/ecommerce/product-stock-units/create">
-                        <Button className="gap-2">
-                            <Plus className="h-4 w-4" />
-                            Add Stok Unit
-                        </Button>
-                    </Link>
+                    <div className="flex flex-wrap gap-2">
+                        <Link href="/dashboard/ecommerce/barcode-scanner">
+                            <Button variant="outline" className="gap-2">
+                                <ScanBarcode className="h-4 w-4" />
+                                Barcode Scanner
+                            </Button>
+                        </Link>
+                        <Link href="/dashboard/ecommerce/product-stock-units/create">
+                            <Button className="gap-2">
+                                <Plus className="h-4 w-4" />
+                                Add Stok Unit
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="grid gap-5 md:grid-cols-5">
-                    <SummaryCard
-                        title="Product"
-                        value={summary.products}
-                        icon={Package}
-                    />
-                    <SummaryCard
-                        title="Product Variant"
-                        value={summary.product_variants}
-                        icon={Boxes}
-                    />
-                    <SummaryCard
-                        title="Stok Unit"
-                        value={summary.stock_units}
-                        icon={ScanBarcode}
-                    />
-                    <SummaryCard
-                        title="Available"
-                        value={summary.available_stock_units}
-                        icon={CheckCircle2}
-                    />
-                    <SummaryCard
-                        title="Non Available"
-                        value={summary.non_available_stock_units}
-                        icon={XCircle}
-                    />
+                    <SummaryCard title="Product" value={summary.products} icon={Package} />
+                    <SummaryCard title="Product Variant" value={summary.product_variants} icon={Boxes} />
+                    <SummaryCard title="Stok Unit" value={summary.stock_units} icon={ScanBarcode} />
+                    <SummaryCard title="Available" value={summary.available_stock_units} icon={CheckCircle2} />
+                    <SummaryCard title="Non Available" value={summary.non_available_stock_units} icon={XCircle} />
                 </div>
 
                 <div className="flex flex-wrap gap-3">
@@ -353,9 +429,7 @@ export default function Index({
                             placeholder="Search IMEI, barcode, product, grade..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            onKeyDown={(e) =>
-                                e.key === 'Enter' && applyFilter()
-                            }
+                            onKeyDown={(e) => e.key === 'Enter' && applyFilter()}
                         />
                     </div>
 
@@ -394,48 +468,70 @@ export default function Index({
                     </Button>
                 </div>
 
-                <DataTable<ProductStockUnit>
-                    data={stockUnits.data}
-                    columns={columns}
-                />
+                <div className="rounded-xl border bg-card p-4 shadow-sm">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <label className="mr-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
+                            <Checkbox
+                                checked={allCurrentSelected}
+                                onCheckedChange={(checked) => toggleSelectAllCurrent(checked === true)}
+                            />
+                            Select all di halaman ini
+                        </label>
+
+                        <Button
+                            variant="outline"
+                            className="gap-2"
+                            onClick={handleBulkGenerate}
+                            disabled={selectedIds.length === 0}
+                        >
+                            <Barcode className="h-4 w-4" />
+                            Generate Barcode
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            onClick={handlePrintSelected}
+                            disabled={selectedIds.length === 0}
+                        >
+                            Print Selected Barcode
+                        </Button>
+
+                        <Button variant="outline" onClick={handlePrintAllFiltered}>
+                            Print All Filtered
+                        </Button>
+                    </div>
+
+                    <p className="mt-2 text-xs text-muted-foreground">{selectedIds.length} item terpilih.</p>
+                </div>
+
+                <DataTable<ProductStockUnit> data={stockUnits.data} columns={columns} />
 
                 <div className="flex flex-wrap gap-2">
                     {stockUnits.links.map((link, i) => (
                         <button
                             key={i}
-                            dangerouslySetInnerHTML={{
-                                __html: link.label,
-                            }}
+                            dangerouslySetInnerHTML={{ __html: link.label }}
                             disabled={!link.url}
                             onClick={() => link.url && router.visit(link.url)}
                             className={`rounded px-3 py-1 text-sm ${
-                                link.active
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'hover:bg-muted'
+                                link.active ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
                             } ${!link.url && 'opacity-50'}`}
                         />
                     ))}
                 </div>
             </div>
 
-            <AlertDialog
-                open={!!deletingId}
-                onOpenChange={() => setDeletingId(null)}
-            >
+            <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete stok unit?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action will delete the selected IMEI/serial
-                            stock unit and resync its variant stock.
+                            This action will delete the selected IMEI/serial stock unit and resync its variant stock.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleDelete}
-                            className="bg-red-600 text-white hover:bg-red-700"
-                        >
+                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 text-white hover:bg-red-700">
                             Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>

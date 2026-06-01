@@ -39,6 +39,18 @@ class IncomingGoods extends Model
         return $this->hasMany(IncomingGoodsItem::class);
     }
 
+    public function stockUnits()
+    {
+        return $this->hasManyThrough(
+            ProductStockUnit::class,
+            IncomingGoodsItem::class,
+            'incoming_goods_id',
+            'incoming_goods_item_id',
+            'id',
+            'id',
+        );
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

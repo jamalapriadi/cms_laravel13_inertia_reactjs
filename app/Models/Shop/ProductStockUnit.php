@@ -4,6 +4,7 @@ namespace App\Models\Shop;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductStockUnit extends Model
@@ -54,5 +55,10 @@ class ProductStockUnit extends Model
     public function incomingGoodsItem()
     {
         return $this->belongsTo(IncomingGoodsItem::class, 'incoming_goods_item_id');
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(StockUnitActivity::class, 'product_stock_unit_id');
     }
 }

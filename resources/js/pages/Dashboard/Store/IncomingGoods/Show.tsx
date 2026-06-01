@@ -73,16 +73,25 @@ export default function Show({ incomingGoods }: Props) {
                         </div>
                     </div>
 
-                    {incomingGoods.status === 'pending' && (
+                    <div className="flex flex-wrap gap-2">
                         <Link
-                            href={`/dashboard/ecommerce/incoming-goods/${incomingGoods.id}/edit`}
+                            href={`/dashboard/ecommerce/incoming-goods/${incomingGoods.id}/barcodes/print`}
                         >
-                            <Button className="gap-2">
-                                <Edit className="h-4 w-4" />
-                                Edit
+                            <Button variant="outline">
+                                Cetak Barcode Barang Masuk
                             </Button>
                         </Link>
-                    )}
+                        {incomingGoods.status === 'pending' && (
+                            <Link
+                                href={`/dashboard/ecommerce/incoming-goods/${incomingGoods.id}/edit`}
+                            >
+                                <Button className="gap-2">
+                                    <Edit className="h-4 w-4" />
+                                    Edit
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 <div className="grid gap-4 rounded-xl border bg-card p-6 shadow-sm md:grid-cols-4">

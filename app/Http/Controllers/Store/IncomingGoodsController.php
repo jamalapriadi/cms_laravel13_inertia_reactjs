@@ -120,6 +120,7 @@ class IncomingGoodsController extends Controller
                     $stockBefore = $variant->stock;
 
                     $stockUnit = ProductStockUnit::create([
+                        'product_id' => $itemData['product_id'],
                         'product_variant_id' => $itemData['product_variant_id'],
                         'incoming_goods_item_id' => $incomingItem->id,
                         'imei_serial_number' => $unitData['imei_serial_number'],
@@ -256,6 +257,7 @@ class IncomingGoodsController extends Controller
                     $stockBefore = $variant->stock;
 
                     $stockUnit = ProductStockUnit::create([
+                        'product_id' => $itemData['product_id'],
                         'product_variant_id' => $itemData['product_variant_id'],
                         'incoming_goods_item_id' => $incomingItem->id,
                         'imei_serial_number' => $unitData['imei_serial_number'],
