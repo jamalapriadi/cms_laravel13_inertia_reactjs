@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +45,7 @@ export default function Edit({ specification: initialSpec, products }: Props) {
         register,
         handleSubmit,
         setValue,
+        watch,
         formState: { errors },
     } = useForm<
         z.input<typeof specSchema>,
@@ -62,22 +64,33 @@ export default function Edit({ specification: initialSpec, products }: Props) {
      * SUBMIT
      */
     const onSubmit = (data: SpecFormData) => {
-        router.put(`/dashboard/ecommerce/product-specifications/${initialSpec.id}`, data, {
-            preserveScroll: true,
-            onStart: () => {
-                setProcessing(true);
-                toast.loading('Updating specification...', { id: 'update' });
+        router.put(
+            `/dashboard/ecommerce/product-specifications/${initialSpec.id}`,
+            data,
+            {
+                preserveScroll: true,
+                onStart: () => {
+                    setProcessing(true);
+                    toast.loading('Updating specification...', {
+                        id: 'update',
+                    });
+                },
+                onSuccess: () => {
+                    toast.success('Specification updated successfully!', {
+                        id: 'update',
+                    });
+                },
+                onFinish: () => {
+                    setProcessing(false);
+                },
+                onError: () => {
+                    toast.error(
+                        'Failed to update specification. Please check the inputs.',
+                        { id: 'update' },
+                    );
+                },
             },
-            onSuccess: () => {
-                toast.success('Specification updated successfully!', { id: 'update' });
-            },
-            onFinish: () => {
-                setProcessing(false);
-            },
-            onError: () => {
-                toast.error('Failed to update specification. Please check the inputs.', { id: 'update' });
-            },
-        });
+        );
     };
 
     return (
@@ -87,8 +100,12 @@ export default function Edit({ specification: initialSpec, products }: Props) {
             <div className="container mx-auto space-y-10 px-6 py-10">
                 {/* HEADER */}
                 <div>
-                    <h1 className="text-2xl font-bold">Edit Product Specification</h1>
-                    <p className="text-muted-foreground">Edit details for this specification</p>
+                    <h1 className="text-2xl font-bold">
+                        Edit Product Specification
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Edit details for this specification
+                    </p>
                 </div>
 
                 <hr />
@@ -96,28 +113,24 @@ export default function Edit({ specification: initialSpec, products }: Props) {
                 {/* FORM */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                     <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
-                        
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* PRODUCT */}
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Product</Label>
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    {...register('product_id')}
-                                    onChange={(e) => setValue('product_id', e.target.value)}
-                                >
-                                    <option value="">-- Select Product --</option>
-                                    {products.map((product) => (
-                                        <option key={product.id} value={product.id}>
-                                            {product.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.product_id && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.product_id.message}
-                                    </p>
-                                )}
+                                <SearchableSelect
+                                    options={products.map((product) => ({
+                                        value: product.id,
+                                        label: product.name,
+                                    }))}
+                                    value={watch('product_id')}
+                                    onChange={(value) =>
+                                        setValue('product_id', value ?? '', {
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                    placeholder="-- Select Product --"
+                                    error={errors.product_id?.message}
+                                />
                             </div>
 
                             {/* SPEC NAME */}
@@ -159,13 +172,19 @@ export default function Edit({ specification: initialSpec, products }: Props) {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/dashboard/ecommerce/product-specifications')}
+                            onClick={() =>
+                                router.visit(
+                                    '/dashboard/ecommerce/product-specifications',
+                                )
+                            }
                         >
                             Cancel
                         </Button>
 
                         <Button type="submit" disabled={processing}>
-                            {processing ? 'Please wait...' : 'Update Specification'}
+                            {processing
+                                ? 'Please wait...'
+                                : 'Update Specification'}
                         </Button>
                     </div>
                 </form>

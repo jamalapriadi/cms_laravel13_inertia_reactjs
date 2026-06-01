@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { DataTable } from '@/components/DataTable';
+import SearchableSelect from '@/components/SearchableSelect';
 
 import {
     AlertDialog,
@@ -60,9 +61,9 @@ export default function Index({ specifications, products, filters }: Props) {
     const applyFilter = () => {
         router.get(
             '/dashboard/ecommerce/product-specifications',
-            { 
+            {
                 search,
-                product_id: productId 
+                product_id: productId,
             },
             {
                 preserveState: true,
@@ -79,9 +80,12 @@ export default function Index({ specifications, products, filters }: Props) {
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/product-specifications/${deletingId}`, {
-            onFinish: () => setDeletingId(null),
-        });
+        router.delete(
+            `/dashboard/ecommerce/product-specifications/${deletingId}`,
+            {
+                onFinish: () => setDeletingId(null),
+            },
+        );
     };
 
     /**
@@ -91,7 +95,9 @@ export default function Index({ specifications, products, filters }: Props) {
         {
             label: 'Product',
             render: (row: ProductSpecification) => (
-                <span className="text-sm font-medium">{row.product?.name || '-'}</span>
+                <span className="text-sm font-medium">
+                    {row.product?.name || '-'}
+                </span>
             ),
         },
         {
@@ -103,14 +109,18 @@ export default function Index({ specifications, products, filters }: Props) {
         {
             label: 'Specification Value',
             render: (row: ProductSpecification) => (
-                <span className="text-sm text-muted-foreground">{row.spec_value || '-'}</span>
+                <span className="text-sm text-muted-foreground">
+                    {row.spec_value || '-'}
+                </span>
             ),
         },
         {
             label: 'Action',
             render: (row: ProductSpecification) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/ecommerce/product-specifications/${row.id}/edit`}>
+                    <Link
+                        href={`/dashboard/ecommerce/product-specifications/${row.id}/edit`}
+                    >
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>
@@ -136,14 +146,18 @@ export default function Index({ specifications, products, filters }: Props) {
                 {/* HEADER */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">Product Specifications</h1>
+                        <h1 className="text-2xl font-bold">
+                            Product Specifications
+                        </h1>
 
                         <p className="text-muted-foreground">
                             Manage technical specifications for products
                         </p>
                     </div>
 
-                    <Link href={`/dashboard/ecommerce/product-specifications/create${productId ? `?product_id=${productId}` : ''}`}>
+                    <Link
+                        href={`/dashboard/ecommerce/product-specifications/create${productId ? `?product_id=${productId}` : ''}`}
+                    >
                         <Button>Add Specification</Button>
                     </Link>
                 </div>
@@ -151,7 +165,7 @@ export default function Index({ specifications, products, filters }: Props) {
                 <hr />
 
                 {/* FILTER */}
-                <div className="flex gap-3 flex-wrap">
+                <div className="flex flex-wrap gap-3">
                     <Input
                         className="max-w-xs"
                         placeholder="Search specification..."
@@ -160,24 +174,26 @@ export default function Index({ specifications, products, filters }: Props) {
                         onKeyDown={(e) => e.key === 'Enter' && applyFilter()}
                     />
 
-                    <select
-                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    <SearchableSelect
+                        className="min-w-64"
+                        options={products.map((product) => ({
+                            value: product.id,
+                            label: product.name,
+                        }))}
                         value={productId}
-                        onChange={(e) => setProductId(e.target.value)}
-                    >
-                        <option value="">All Products</option>
-                        {products.map((product) => (
-                            <option key={product.id} value={product.id}>
-                                {product.name}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={(value) => setProductId(value ?? '')}
+                        placeholder="All Products"
+                        clearable
+                    />
 
                     <Button onClick={applyFilter}>Apply Filter</Button>
                 </div>
 
                 {/* TABLE */}
-                <DataTable<ProductSpecification> data={specifications.data} columns={columns} />
+                <DataTable<ProductSpecification>
+                    data={specifications.data}
+                    columns={columns}
+                />
 
                 {/* PAGINATION */}
                 <div className="flex flex-wrap gap-2">
@@ -206,11 +222,13 @@ export default function Index({ specifications, products, filters }: Props) {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Specification?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Delete Specification?
+                        </AlertDialogTitle>
 
                         <AlertDialogDescription>
-                            This action cannot be undone. The selected product specification
-                            will be permanently deleted.
+                            This action cannot be undone. The selected product
+                            specification will be permanently deleted.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
 

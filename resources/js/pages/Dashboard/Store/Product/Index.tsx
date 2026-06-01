@@ -1,9 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Boxes, Package, Tags, Warehouse } from 'lucide-react';
-import { useState } from 'react';
-import type { ElementType } from 'react';
+import { useRef, useState } from 'react';
+import type { ChangeEvent, ElementType } from 'react';
 
 import { DataTable } from '@/components/DataTable';
+import SearchableSelect from '@/components/SearchableSelect';
 
 import {
     AlertDialog,
@@ -102,6 +103,55 @@ export default function Index({
     const [brandId, setBrandId] = useState(filters.brand_id || '');
 
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    const openImportDialog = () => {
+        setIsImportDialogOpen(true);
+    };
+
+    const closeImportDialog = () => {
+        setIsImportDialogOpen(false);
+    };
+
+    const downloadImportTemplate = () => {
+        window.location.href = '/dashboard/ecommerce/products/template';
+    };
+
+    const triggerImport = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImportFile = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.currentTarget.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        router.post(
+            '/dashboard/ecommerce/products/import',
+            { file },
+            {
+                forceFormData: true,
+                preserveState: true,
+                onSuccess: () => {
+                    event.currentTarget.value = '';
+                    setIsImportDialogOpen(false);
+                },
+            },
+        );
+    };
+
+    const exportProducts = () => {
+        const params = new URLSearchParams();
+
+        if (search) params.append('search', search);
+        if (categoryId) params.append('category_id', categoryId);
+        if (brandId) params.append('brand_id', brandId);
+
+        window.location.href = `/dashboard/ecommerce/products/export${params.toString() ? `?${params.toString()}` : ''}`;
+    };
 
     /**
      * FILTER
@@ -238,9 +288,105 @@ export default function Index({
                         </p>
                     </div>
 
-                    <Link href="/dashboard/ecommerce/products/create">
-                        <Button>Add Product</Button>
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={exportProducts}>
+                            Export Excel
+                        </Button>
+
+                        <Button variant="secondary" onClick={openImportDialog}>
+                            Import Excel
+                        </Button>
+
+                        <Link href="/dashboard/ecommerce/products/create">
+                            <Button>Add Product</Button>
+                        </Link>
+                    </div>
+
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".xlsx,.xls,.csv"
+                        className="hidden"
+                        onChange={handleImportFile}
+                    />
+
+                    <AlertDialog
+                        open={isImportDialogOpen}
+                        onOpenChange={setIsImportDialogOpen}
+                    >
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                    Import Produk dari Excel
+                                </AlertDialogTitle>
+                            </AlertDialogHeader>
+                            <AlertDialogDescription>
+                                Unggah file Excel (.xlsx, .xls, .csv) berisi
+                                daftar produk dengan kolom yang sesuai. Gunakan
+                                template import untuk memastikan format data dan
+                                gunakan nama atau slug untuk kategori, brand,
+                                dan unit jika ID tidak tersedia.
+                            </AlertDialogDescription>
+
+                            <div className="mt-4 rounded-xl border border-border bg-muted p-4 text-sm text-foreground">
+                                <p className="font-semibold">
+                                    Format kolom yang didukung:
+                                </p>
+                                <ul className="mt-2 list-disc space-y-1 pl-5">
+                                    <li>
+                                        <strong>name</strong>,{' '}
+                                        <strong>slug</strong>,{' '}
+                                        <strong>sku</strong>
+                                    </li>
+                                    <li>
+                                        <strong>category_id</strong>,{' '}
+                                        <strong>category_slug</strong>,{' '}
+                                        <strong>category_name</strong>
+                                    </li>
+                                    <li>
+                                        <strong>brand_id</strong>,{' '}
+                                        <strong>brand_slug</strong>,{' '}
+                                        <strong>brand_name</strong>
+                                    </li>
+                                    <li>
+                                        <strong>unit_id</strong>,{' '}
+                                        <strong>unit_code</strong>,{' '}
+                                        <strong>unit_name</strong>
+                                    </li>
+                                    <li>
+                                        <strong>condition</strong> (new /
+                                        like_new / second)
+                                    </li>
+                                    <li>
+                                        <strong>base_price</strong>,{' '}
+                                        <strong>has_variant</strong> (0/1),{' '}
+                                        <strong>is_publish</strong> (0/1)
+                                    </li>
+                                    <li>
+                                        <strong>thumbnail</strong>,{' '}
+                                        <strong>description</strong>,{' '}
+                                        <strong>meta_title</strong>,{' '}
+                                        <strong>meta_description</strong>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <AlertDialogFooter>
+                                <Button
+                                    variant="outline"
+                                    onClick={downloadImportTemplate}
+                                >
+                                    Download Template
+                                </Button>
+                                <Button onClick={triggerImport}>
+                                    Pilih File untuk Upload
+                                </Button>
+                                <AlertDialogCancel onClick={closeImportDialog}>
+                                    Batal
+                                </AlertDialogCancel>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
 
                 <hr />
@@ -269,40 +415,46 @@ export default function Index({
                 </div>
 
                 {/* FILTER */}
-                <div className="flex flex-wrap gap-3">
-                    <Input
-                        className="max-w-xs"
-                        placeholder="Search product name..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && applyFilter()}
-                    />
+                <div className="justifty-between flex flex-wrap gap-3">
+                    <div>
+                        <Input
+                            className="max-w-xs"
+                            placeholder="Search product name..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            onKeyDown={(e) =>
+                                e.key === 'Enter' && applyFilter()
+                            }
+                        />
+                    </div>
 
-                    <select
-                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                        value={categoryId}
-                        onChange={(e) => setCategoryId(e.target.value)}
-                    >
-                        <option value="">All Categories</option>
-                        {categories.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                                {cat.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div>
+                        <SearchableSelect
+                            className="min-w-56"
+                            options={categories.map((cat) => ({
+                                value: cat.id,
+                                label: cat.name,
+                            }))}
+                            value={categoryId}
+                            onChange={(value) => setCategoryId(value ?? '')}
+                            placeholder="All Categories"
+                            clearable
+                        />
+                    </div>
 
-                    <select
-                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                        value={brandId}
-                        onChange={(e) => setBrandId(e.target.value)}
-                    >
-                        <option value="">All Brands</option>
-                        {brands.map((brand) => (
-                            <option key={brand.id} value={brand.id}>
-                                {brand.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div>
+                        <SearchableSelect
+                            className="min-w-56"
+                            options={brands.map((brand) => ({
+                                value: brand.id,
+                                label: brand.name,
+                            }))}
+                            value={brandId}
+                            onChange={(value) => setBrandId(value ?? '')}
+                            placeholder="All Brands"
+                            clearable
+                        />
+                    </div>
 
                     <Button onClick={applyFilter}>Apply Filter</Button>
                 </div>

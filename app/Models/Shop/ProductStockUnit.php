@@ -20,33 +20,39 @@ class ProductStockUnit extends Model
     ];
 
     protected $fillable = [
+        'product_id',
         'product_variant_id',
         'incoming_goods_item_id',
         'imei_serial_number',
+        'barcode',
+        'battery_health',
+        'grade',
         'network_compatibility',
         'status',
         'note',
     ];
 
+    protected $casts = [
+        'battery_health' => 'integer',
+    ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
     public function variant()
     {
-        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+        return $this->belongsTo(VariantItem::class, 'product_variant_id');
+    }
+
+    public function variantItem()
+    {
+        return $this->belongsTo(VariantItem::class, 'product_variant_id');
     }
 
     public function incomingGoodsItem()
     {
         return $this->belongsTo(IncomingGoodsItem::class, 'incoming_goods_item_id');
-    }
-
-    public function product()
-    {
-        return $this->hasOneThrough(
-            Product::class,
-            ProductVariant::class,
-            'id',
-            'id',
-            'product_variant_id',
-            'product_id',
-        );
     }
 }

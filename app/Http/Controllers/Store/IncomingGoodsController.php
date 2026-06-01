@@ -7,9 +7,9 @@ use App\Http\Requests\Store\IncomingGoods\IncomingGoodsRequest;
 use App\Models\Shop\IncomingGoods;
 use App\Models\Shop\IncomingGoodsItem;
 use App\Models\Shop\ProductStockUnit;
-use App\Models\Shop\ProductVariant;
 use App\Models\Shop\StockMovement;
 use App\Models\Shop\Supplier;
+use App\Models\Shop\VariantItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -58,14 +58,14 @@ class IncomingGoodsController extends Controller
     {
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
 
-        $variants = ProductVariant::with('product')
+        $variants = VariantItem::with('product')
             ->where('is_active', true)
             ->get()
             ->map(fn ($v) => [
                 'id' => $v->id,
                 'name' => $v->product->name.' - '.$v->name,
                 'sku' => $v->sku,
-                'cost_price' => $v->cost_price ?? 0,
+                'cost_price' => $v->buying_price ?? 0,
                 'product_id' => $v->product_id,
             ]);
 
@@ -116,7 +116,7 @@ class IncomingGoodsController extends Controller
                 $unitStatus = ($incoming->status === 'completed') ? 'available' : 'reserved';
 
                 foreach ($itemData['stock_units'] as $unitData) {
-                    $variant = ProductVariant::findOrFail($itemData['product_variant_id']);
+                    $variant = VariantItem::findOrFail($itemData['product_variant_id']);
                     $stockBefore = $variant->stock;
 
                     $stockUnit = ProductStockUnit::create([
@@ -183,14 +183,14 @@ class IncomingGoodsController extends Controller
 
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
 
-        $variants = ProductVariant::with('product')
+        $variants = VariantItem::with('product')
             ->where('is_active', true)
             ->get()
             ->map(fn ($v) => [
                 'id' => $v->id,
                 'name' => $v->product->name.' - '.$v->name,
                 'sku' => $v->sku,
-                'cost_price' => $v->cost_price ?? 0,
+                'cost_price' => $v->buying_price ?? 0,
                 'product_id' => $v->product_id,
             ]);
 
@@ -252,7 +252,7 @@ class IncomingGoodsController extends Controller
                 $unitStatus = ($incomingGood->status === 'completed') ? 'available' : 'reserved';
 
                 foreach ($itemData['stock_units'] as $unitData) {
-                    $variant = ProductVariant::findOrFail($itemData['product_variant_id']);
+                    $variant = VariantItem::findOrFail($itemData['product_variant_id']);
                     $stockBefore = $variant->stock;
 
                     $stockUnit = ProductStockUnit::create([

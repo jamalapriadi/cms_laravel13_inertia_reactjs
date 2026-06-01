@@ -3,18 +3,24 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
+use App\Exports\ProductsExport;
+use App\Exports\ProductsImportTemplateExport;
+use App\Imports\ProductsImport;
+use App\Http\Requests\Store\Product\ProductImportRequest;
 use App\Http\Requests\Store\Product\ProductRequest;
 use App\Http\Requests\Store\Product\ProductUpdateRequest;
 use App\Models\Brand;
 use App\Models\Shop\Category;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductVariant;
+use App\Models\Shop\VariantItem;
 use App\Models\Unit;
 use App\Support\MediaPath;
 use App\Support\UniqueSlug;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -29,12 +35,13 @@ class ProductController extends Controller
         $brandId = $request->query('brand_id');
 
         $products = Product::query()
-            ->with(['category', 'brand', 'variants'])
+            ->with(['category', 'brand', 'variantItems'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%")
                         ->orWhere('meta_title', 'like', "%{$search}%")
-                        ->orWhereHas('variants', function ($qv) use ($search) {
+                        ->orWhereHas('variantItems', function ($qv) use ($search) {
                             $qv->where('sku', 'like', "%{$search}%")
                                 ->orWhereHas('stockUnits', function ($stockUnitQuery) use ($search) {
                                     $stockUnitQuery->where('imei_serial_number', 'like', "%{$search}%");
@@ -62,6 +69,7 @@ class ProductController extends Controller
             'summary' => [
                 'products' => Product::count(),
                 'product_variants' => ProductVariant::count(),
+                'variant_items' => VariantItem::count(),
                 'brands' => Brand::count(),
                 'categories' => Category::count(),
             ],
@@ -71,6 +79,34 @@ class ProductController extends Controller
                 'brand_id' => $brandId,
             ],
         ]);
+    }
+
+    /**
+     * Export the product list to Excel.
+     */
+    public function export(Request $request)
+    {
+        $filters = $request->only(['search', 'category_id', 'brand_id']);
+
+        return Excel::download(new ProductsExport($filters), 'products.xlsx');
+    }
+
+    /**
+     * Download the product import template.
+     */
+    public function template()
+    {
+        return Excel::download(new ProductsImportTemplateExport(), 'products-import-template.xlsx');
+    }
+
+    /**
+     * Import product records from an Excel file.
+     */
+    public function import(ProductImportRequest $request)
+    {
+        Excel::import(new ProductsImport(), $request->file('file'));
+
+        return redirect()->route('products.index')->with('success', 'Products imported successfully.');
     }
 
     /**
@@ -108,9 +144,15 @@ class ProductController extends Controller
             $data['thumbnail'] = $mediaPath;
         }
 
-        Product::create($data);
+        $product = Product::create($data);
 
-        return redirect()->route('products.index')->with('success', 'Product created successfully.');
+        if ($product->has_variant) {
+            return redirect()
+                ->route('product-variants.create', ['product_id' => $product->id])
+                ->with('success', 'Product created successfully. Continue by adding product variants.');
+        }
+
+        return redirect()->route('products.show', $product)->with('success', 'Product created successfully.');
     }
 
     /**
@@ -127,14 +169,23 @@ class ProductController extends Controller
             'specifications' => function ($query) {
                 $query->latest();
             },
-            'variants' => function ($query) {
-                $query->with(['stockUnits' => function ($stockUnitQuery) {
-                    $stockUnitQuery->latest();
-                }])
+            'variants.options',
+            'variantItems' => function ($query) {
+                $query->with([
+                    'options.variant',
+                    'stockUnits' => function ($stockUnitQuery) {
+                        $stockUnitQuery->latest();
+                    },
+                ])
                     ->withCount(['stockUnits', 'availableStockUnits'])
                     ->latest();
             },
+            'stockUnits' => function ($query) {
+                $query->latest();
+            },
         ]);
+
+        $product->loadCount(['stockUnits', 'availableStockUnits']);
 
         return Inertia::render('Dashboard/Store/Product/Show', [
             'product' => $product,
@@ -146,7 +197,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $product->load(['category', 'brand', 'variants.stockUnits']);
+        $product->load(['category', 'brand', 'variants.options', 'variantItems.stockUnits']);
 
         $categories = Category::select('id', 'name')->get();
 

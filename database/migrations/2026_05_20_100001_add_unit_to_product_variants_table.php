@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
+        Schema::table('variant_items', function (Blueprint $table) {
             $table->ulid('unit_id')->nullable()->after('weight');
             $table->foreign('unit_id')->references('id')->on('units')->nullOnDelete();
             $table->index('unit_id');
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
+        Schema::table('variant_items', function (Blueprint $table) {
             $table->dropForeignIdFor('units', 'unit_id');
             $table->dropColumn('unit_id');
         });

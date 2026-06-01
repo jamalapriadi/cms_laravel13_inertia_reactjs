@@ -1,22 +1,30 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Textarea from '@/components/ui/textarea';
-// import AppLayout from '@/layouts/master-data-layout';
 
-interface VariantOption {
+interface VariantItem {
     id: string;
     name: string;
     sku: string;
 }
 
+interface Product {
+    id: string;
+    name: string;
+    has_variant: boolean;
+    sku?: string | null;
+    variant_items: VariantItem[];
+}
+
 interface Props {
-    variants: VariantOption[];
+    products: Product[];
 }
 
 const networkOptions = [
@@ -28,15 +36,35 @@ const networkOptions = [
     ['mineo', 'Mineo'],
 ];
 
-export default function Create({ variants }: Props) {
+export default function Create({ products }: Props) {
+    const urlParams =
+        typeof window !== 'undefined'
+            ? new URLSearchParams(window.location.search)
+            : null;
+    const defaultProductId = urlParams?.get('product_id') || '';
+
     const [hasNetwork, setHasNetwork] = useState(false);
     const { data, setData, transform, post, processing, errors } = useForm({
+        product_id: defaultProductId,
         product_variant_id: '',
         imei_serial_number: '',
+        barcode: '',
+        battery_health: '',
+        grade: '',
         network_compatibility: null as string | null,
         status: 'available',
         note: '',
     });
+
+    const selectedProduct = products.find((p) => p.id === data.product_id);
+    const showVariantSelect = selectedProduct?.has_variant ?? false;
+
+    // Reset variant item if selected product has no variants
+    useEffect(() => {
+        if (selectedProduct && !selectedProduct.has_variant) {
+            setData('product_variant_id', '');
+        }
+    }, [selectedProduct, setData]);
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -45,6 +73,15 @@ export default function Create({ variants }: Props) {
             network_compatibility: hasNetwork
                 ? formData.network_compatibility || 'sim_free'
                 : null,
+            product_variant_id: showVariantSelect
+                ? formData.product_variant_id || null
+                : null,
+            barcode: formData.barcode || null,
+            battery_health:
+                formData.battery_health === '' || formData.battery_health === null
+                    ? null
+                    : Number(formData.battery_health),
+            grade: formData.grade || null,
         }));
         post('/dashboard/ecommerce/product-stock-units');
     };
@@ -63,7 +100,7 @@ export default function Create({ variants }: Props) {
                     <div>
                         <h1 className="text-2xl font-bold">Create Stok Unit</h1>
                         <p className="text-sm text-muted-foreground">
-                            Tambahkan IMEI/serial unit untuk product variant.
+                            Tambahkan IMEI/serial unit untuk produk.
                         </p>
                     </div>
                 </div>
@@ -72,27 +109,51 @@ export default function Create({ variants }: Props) {
                     onSubmit={handleSubmit}
                     className="space-y-6 rounded-xl border bg-card p-6 shadow-sm"
                 >
-                    <div className="space-y-2">
-                        <Label>Product Variant</Label>
-                        <select
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            value={data.product_variant_id}
-                            onChange={(e) =>
-                                setData('product_variant_id', e.target.value)
-                            }
-                            required
-                        >
-                            <option value="">-- Select Variant --</option>
-                            {variants.map((variant) => (
-                                <option key={variant.id} value={variant.id}>
-                                    {variant.name} ({variant.sku})
-                                </option>
-                            ))}
-                        </select>
-                        {errors.product_variant_id && (
-                            <p className="text-xs text-destructive">
-                                {errors.product_variant_id}
-                            </p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label>Product</Label>
+                            <SearchableSelect
+                                options={products.map((product) => ({
+                                    value: product.id,
+                                    label: product.name,
+                                }))}
+                                value={data.product_id}
+                                onChange={(value) =>
+                                    setData('product_id', value ?? '')
+                                }
+                                placeholder="-- Select Product --"
+                                error={errors.product_id}
+                            />
+                            {selectedProduct &&
+                                !selectedProduct.has_variant && (
+                                    <p className="text-xs text-muted-foreground">
+                                        SKU produk: {selectedProduct.sku || '-'}
+                                    </p>
+                                )}
+                        </div>
+
+                        {showVariantSelect && (
+                            <div className="space-y-2">
+                                <Label>Product Variant Item</Label>
+                                <SearchableSelect
+                                    options={(
+                                        selectedProduct?.variant_items ?? []
+                                    ).map((variant) => ({
+                                        value: variant.id,
+                                        label: variant.name,
+                                        description: variant.sku,
+                                    }))}
+                                    value={data.product_variant_id}
+                                    onChange={(value) =>
+                                        setData(
+                                            'product_variant_id',
+                                            value ?? '',
+                                        )
+                                    }
+                                    placeholder="-- Select Variant Item --"
+                                    error={errors.product_variant_id}
+                                />
+                            </div>
                         )}
                     </div>
 
@@ -113,6 +174,58 @@ export default function Create({ variants }: Props) {
                             {errors.imei_serial_number && (
                                 <p className="text-xs text-destructive">
                                     {errors.imei_serial_number}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Barcode</Label>
+                            <Input
+                                value={data.barcode}
+                                onChange={(e) =>
+                                    setData('barcode', e.target.value)
+                                }
+                                placeholder="Optional barcode"
+                            />
+                            {errors.barcode && (
+                                <p className="text-xs text-destructive">
+                                    {errors.barcode}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label>Battery Health (%)</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={data.battery_health}
+                                onChange={(e) =>
+                                    setData('battery_health', e.target.value)
+                                }
+                                placeholder="Optional, 0-100"
+                            />
+                            {errors.battery_health && (
+                                <p className="text-xs text-destructive">
+                                    {errors.battery_health}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Grade</Label>
+                            <Input
+                                value={data.grade}
+                                onChange={(e) => setData('grade', e.target.value)}
+                                placeholder="Optional, e.g., A / B+ / C"
+                                maxLength={50}
+                            />
+                            {errors.grade && (
+                                <p className="text-xs text-destructive">
+                                    {errors.grade}
                                 </p>
                             )}
                         </div>

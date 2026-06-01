@@ -6,14 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Store\ProductVariant\ProductVariantRequest;
 use App\Http\Requests\Store\ProductVariant\ProductVariantUpdateRequest;
 use App\Models\Shop\Product;
-use App\Models\Shop\ProductStockUnit;
 use App\Models\Shop\ProductVariant;
-use App\Models\Unit;
-use App\Support\MediaPath;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ProductVariantController extends Controller
@@ -24,35 +19,27 @@ class ProductVariantController extends Controller
         $productId = $request->query('product_id');
 
         $variants = ProductVariant::query()
-            ->with([
-                'product',
-                'unit',
-                'stockUnits' => function ($query) {
-                    $query->latest();
-                },
-            ])
-            ->withCount(['stockUnits', 'availableStockUnits'])
+            ->with(['product', 'options'])
+            ->withCount('options')
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%")
-                        ->orWhereHas('stockUnits', function ($stockUnitQuery) use ($search) {
-                            $stockUnitQuery->where('imei_serial_number', 'like', "%{$search}%");
+                        ->orWhereHas('product', function ($productQuery) use ($search) {
+                            $productQuery->where('name', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('options', function ($optionQuery) use ($search) {
+                            $optionQuery->where('value', 'like', "%{$search}%");
                         });
                 });
             })
-            ->when($productId, function ($query, $productId) {
-                $query->where('product_id', $productId);
-            })
+            ->when($productId, fn ($query, $productId) => $query->where('product_id', $productId))
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
-        $products = Product::select('id', 'name')->get();
-
         return Inertia::render('Dashboard/Store/ProductVariant/Index', [
             'variants' => $variants,
-            'products' => $products,
+            'products' => Product::select('id', 'name')->orderBy('name')->get(),
             'filters' => [
                 'search' => $search,
                 'product_id' => $productId,
@@ -60,112 +47,104 @@ class ProductVariantController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('Dashboard/Store/ProductVariant/Create', [
-            'products' => Product::select('id', 'name')->get(),
-            'units' => Unit::select('id', 'name', 'code')
-                ->where('is_active', true)
-                ->get(),
+            'products' => Product::select('id', 'name')->orderBy('name')->get(),
+            'selectedProductId' => $request->query('product_id'),
         ]);
     }
 
     public function store(ProductVariantRequest $request)
     {
         $data = $request->validated();
-        $stockUnits = $data['stock_units'] ?? [];
-        $variantData = Arr::except($data, ['stock_units']);
 
-        if ($request->hasFile('image')) {
-            $variantData['image'] = $request->file('image')->store('product_variants', 'public');
-        } elseif ($mediaPath = MediaPath::normalize($request->input('image'))) {
-            $variantData['image'] = $mediaPath;
-        }
+        DB::transaction(function () use ($data) {
+            $variants = $data['variants'] ?? [[
+                'name' => $data['name'],
+                'options' => $data['options'] ?? [],
+            ]];
 
-        DB::transaction(function () use ($variantData, $stockUnits) {
-            $variant = ProductVariant::create($variantData);
+            foreach ($variants as $index => $variantData) {
+                $variant = ProductVariant::updateOrCreate(
+                    [
+                        'product_id' => $data['product_id'],
+                        'name' => $variantData['name'],
+                    ],
+                    ['sort_order' => $index],
+                );
 
-            collect($stockUnits)
-                ->filter(fn ($stockUnit) => filled($stockUnit['imei_serial_number'] ?? null))
-                ->each(function ($stockUnit) use ($variant) {
-                    ProductStockUnit::create([
-                        'product_variant_id' => $variant->id,
-                        'imei_serial_number' => $stockUnit['imei_serial_number'],
-                        'network_compatibility' => $stockUnit['network_compatibility'] ?? null,
-                        'status' => $stockUnit['status'] ?? 'available',
-                        'note' => $stockUnit['note'] ?? null,
-                    ]);
-                });
-
-            $variant->syncStockFromUnits();
+                $this->syncOptions($variant, $variantData['options'] ?? []);
+            }
         });
 
-        return $this->redirectAfterMutation()
-            ->with('success', 'Product Variant created successfully.');
+        return $this->redirectAfterMutation($data['product_id'])
+            ->with('success', 'Product variants saved successfully.');
     }
 
     public function show(ProductVariant $productVariant)
     {
-        $productVariant->load(['product', 'unit', 'stockUnits'])
-            ->loadCount(['stockUnits', 'availableStockUnits']);
-
-        return Inertia::render('Dashboard/Store/ProductVariant/Show', [
-            'variant' => $productVariant,
-        ]);
+        return redirect()->route('product-variants.edit', $productVariant);
     }
 
     public function edit(ProductVariant $productVariant)
     {
-        $productVariant->load(['product', 'unit', 'stockUnits'])
-            ->loadCount(['stockUnits', 'availableStockUnits']);
+        $productVariant->load(['product', 'options']);
 
         return Inertia::render('Dashboard/Store/ProductVariant/Edit', [
             'variant' => $productVariant,
-            'products' => Product::select('id', 'name')->get(),
-            'units' => Unit::select('id', 'name', 'code')
-                ->where('is_active', true)
-                ->get(),
+            'products' => Product::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 
-    public function update(
-        ProductVariantUpdateRequest $request,
-        ProductVariant $productVariant
-    ) {
+    public function update(ProductVariantUpdateRequest $request, ProductVariant $productVariant)
+    {
         $data = $request->validated();
-        $variantData = Arr::except($data, ['image']);
 
-        if ($request->hasFile('image')) {
-            if ($productVariant->image) {
-                Storage::disk('public')->delete($productVariant->image);
-            }
+        DB::transaction(function () use ($data, $productVariant) {
+            $productVariant->update([
+                'product_id' => $data['product_id'],
+                'name' => $data['name'],
+            ]);
 
-            $variantData['image'] = $request->file('image')->store('product_variants', 'public');
-        } elseif ($request->has('image') && $request->input('image') === '') {
-            $variantData['image'] = null;
-        } elseif ($request->filled('image')) {
-            $variantData['image'] = MediaPath::normalize($request->input('image')) ?? $productVariant->image;
-        }
+            $this->syncOptions($productVariant, $data['options'] ?? []);
+        });
 
-        $productVariant->update($variantData);
-
-        return $this->redirectAfterMutation()
-            ->with('success', 'Product Variant updated successfully.');
+        return $this->redirectAfterMutation($data['product_id'])
+            ->with('success', 'Product variant updated successfully.');
     }
 
     public function destroy(ProductVariant $productVariant)
     {
-        if ($productVariant->image) {
-            Storage::disk('public')->delete($productVariant->image);
-        }
+        $productId = $productVariant->product_id;
 
         $productVariant->delete();
 
-        return $this->redirectAfterMutation()
-            ->with('success', 'Product Variant deleted successfully.');
+        return $this->redirectAfterMutation($productId)
+            ->with('success', 'Product variant deleted successfully.');
     }
 
-    private function redirectAfterMutation()
+    private function syncOptions(ProductVariant $variant, array $options): void
+    {
+        $values = collect($options)
+            ->map(fn ($option) => trim((string) $option))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $variant->options()
+            ->whereNotIn('value', $values)
+            ->delete();
+
+        $values->each(function (string $value, int $index) use ($variant) {
+            $variant->options()->updateOrCreate(
+                ['value' => $value],
+                ['sort_order' => $index],
+            );
+        });
+    }
+
+    private function redirectAfterMutation(string $productId)
     {
         $previous = url()->previous();
 
@@ -173,6 +152,6 @@ class ProductVariantController extends Controller
             return redirect()->back();
         }
 
-        return redirect()->route('product-variants.index');
+        return redirect()->route('product-variants.index', ['product_id' => $productId]);
     }
 }

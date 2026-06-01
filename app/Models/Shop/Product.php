@@ -11,6 +11,7 @@ namespace App\Models\Shop;
 use App\Models\Unit;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
@@ -23,6 +24,7 @@ class Product extends Model
         'unit_id',
         'name',
         'slug',
+        'sku',
         'thumbnail',
         'description',
         'condition',
@@ -72,14 +74,24 @@ class Product extends Model
         return $this->hasMany(ProductSpecification::class);
     }
 
-    public function variants()
+    public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
     }
 
-    public function stockUnits()
+    public function variantItems(): HasMany
     {
-        return $this->hasManyThrough(ProductStockUnit::class, ProductVariant::class);
+        return $this->hasMany(VariantItem::class);
+    }
+
+    public function stockUnits(): HasMany
+    {
+        return $this->hasMany(ProductStockUnit::class, 'product_id');
+    }
+
+    public function availableStockUnits(): HasMany
+    {
+        return $this->hasMany(ProductStockUnit::class, 'product_id')->where('status', 'available');
     }
 
     public function orderItems()

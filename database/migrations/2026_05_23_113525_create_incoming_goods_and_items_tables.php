@@ -52,7 +52,7 @@ return new class extends Migration
 
             $table->foreign('product_variant_id')
                 ->references('id')
-                ->on('product_variants')
+                ->on('variant_items')
                 ->onDelete('cascade');
         });
     }

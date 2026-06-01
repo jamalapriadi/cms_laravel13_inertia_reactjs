@@ -24,7 +24,7 @@ class ProductSpecificationRequest extends FormRequest
         return [
             'product_id' => ['required', 'uuid', 'exists:products,id'],
             'spec_name' => ['required', 'string', 'max:255'],
-            'spec_value' => ['nullable', 'string'],
+            'spec_value' => ['required', 'string'],
         ];
     }
 }

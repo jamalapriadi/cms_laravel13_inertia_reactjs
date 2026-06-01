@@ -1,15 +1,11 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/master-data-layout';
+import { ArrowLeft, Warehouse } from 'lucide-react';
+
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Textarea from '@/components/ui/textarea';
-import {
-    ArrowLeft,
-    Warehouse,
-    ArrowUpRight,
-    ArrowDownLeft,
-} from 'lucide-react';
 
 interface VariantOption {
     id: string;
@@ -125,31 +121,23 @@ export default function Edit({ movement, variants, adjustment_action }: Props) {
                                 <Label htmlFor="product_variant_id">
                                     Product Variant
                                 </Label>
-                                <select
-                                    id="product_variant_id"
+                                <SearchableSelect
+                                    options={variants.map((v) => ({
+                                        value: v.id,
+                                        label: `${v.sku} | ${v.name}`,
+                                        description: `Current stock: ${v.stock}`,
+                                    }))}
                                     value={data.product_variant_id}
-                                    onChange={(e) =>
+                                    onChange={(value) =>
                                         setData({
                                             ...data,
-                                            product_variant_id: e.target.value,
+                                            product_variant_id: value ?? '',
                                             product_stock_unit_id: '',
                                         })
                                     }
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                                    required
-                                >
-                                    {variants.map((v) => (
-                                        <option key={v.id} value={v.id}>
-                                            {v.sku} | {v.name} (Current stock:{' '}
-                                            {v.stock})
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.product_variant_id && (
-                                    <p className="mt-1 text-xs font-semibold text-red-500">
-                                        {errors.product_variant_id}
-                                    </p>
-                                )}
+                                    placeholder="-- Select Product Variant --"
+                                    error={errors.product_variant_id}
+                                />
                             </div>
 
                             {/* Stock Unit Selector */}
@@ -157,41 +145,25 @@ export default function Edit({ movement, variants, adjustment_action }: Props) {
                                 <Label htmlFor="product_stock_unit_id">
                                     Stock Unit / IMEI
                                 </Label>
-                                <select
-                                    id="product_stock_unit_id"
+                                <SearchableSelect
+                                    options={(
+                                        selectedVariant?.stock_units ?? []
+                                    ).map((unit) => ({
+                                        value: unit.id,
+                                        label: unit.imei_serial_number,
+                                        description: `${unit.network_compatibility ?? '-'} | ${unit.status}`,
+                                    }))}
                                     value={data.product_stock_unit_id}
-                                    onChange={(e) =>
+                                    onChange={(value) =>
                                         setData(
                                             'product_stock_unit_id',
-                                            e.target.value,
+                                            value ?? '',
                                         )
                                     }
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                                    required
                                     disabled={!selectedVariant}
-                                >
-                                    <option value="">
-                                        -- Select Stock Unit --
-                                    </option>
-                                    {selectedVariant?.stock_units.map(
-                                        (unit) => (
-                                            <option
-                                                key={unit.id}
-                                                value={unit.id}
-                                            >
-                                                {unit.imei_serial_number} |{' '}
-                                                {unit.network_compatibility ??
-                                                    '-'}{' '}
-                                                | {unit.status}
-                                            </option>
-                                        ),
-                                    )}
-                                </select>
-                                {errors.product_stock_unit_id && (
-                                    <p className="mt-1 text-xs font-semibold text-red-500">
-                                        {errors.product_stock_unit_id}
-                                    </p>
-                                )}
+                                    placeholder="-- Select Stock Unit --"
+                                    error={errors.product_stock_unit_id}
+                                />
                             </div>
 
                             {/* Grid fields for type & qty */}

@@ -13,6 +13,7 @@ import {
 import { useState } from 'react';
 
 import { DataTable } from '@/components/DataTable';
+import SearchableSelect from '@/components/SearchableSelect';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -33,6 +34,7 @@ import type { LaravelPagination } from '@/types/LaravelPagination';
 interface Product {
     id: string;
     name: string;
+    sku?: string | null;
 }
 
 interface ProductVariant {
@@ -44,13 +46,18 @@ interface ProductVariant {
 
 interface ProductStockUnit {
     id: string;
-    product_variant_id: string;
+    product_id: string;
+    product_variant_id: string | null;
     imei_serial_number: string;
+    barcode?: string | null;
+    battery_health?: number | null;
+    grade?: string | null;
     network_compatibility: string | null;
     status: 'available' | 'reserved' | 'sold' | 'damaged';
     note?: string | null;
     created_at: string;
     variant?: ProductVariant | null;
+    product?: Product | null;
 }
 
 interface VariantOption {
@@ -179,10 +186,32 @@ export default function Index({
             ),
         },
         {
+            label: 'Barcode',
+            render: (row: ProductStockUnit) => (
+                <span className="font-mono text-xs">{row.barcode || '-'}</span>
+            ),
+        },
+        {
+            label: 'Battery Health',
+            render: (row: ProductStockUnit) => (
+                <span className="text-sm">
+                    {typeof row.battery_health === 'number'
+                        ? `${row.battery_health}%`
+                        : '-'}
+                </span>
+            ),
+        },
+        {
+            label: 'Grade',
+            render: (row: ProductStockUnit) => (
+                <span className="text-sm font-medium">{row.grade || '-'}</span>
+            ),
+        },
+        {
             label: 'Product',
             render: (row: ProductStockUnit) => (
                 <span className="text-sm font-medium">
-                    {row.variant?.product?.name || '-'}
+                    {row.product?.name || row.variant?.product?.name || '-'}
                 </span>
             ),
         },
@@ -191,10 +220,10 @@ export default function Index({
             render: (row: ProductStockUnit) => (
                 <div className="flex flex-col">
                     <span className="text-sm font-medium">
-                        {row.variant?.name || '-'}
+                        {row.variant?.name || row.product?.name || '-'}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                        SKU: {row.variant?.sku || '-'}
+                        SKU: {row.variant?.sku || row.product?.sku || '-'}
                     </span>
                 </div>
             ),
@@ -318,38 +347,46 @@ export default function Index({
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                    <Input
-                        className="max-w-xs"
-                        placeholder="Search IMEI, product, variant..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && applyFilter()}
-                    />
+                    <div>
+                        <Input
+                            className="max-w-xs"
+                            placeholder="Search IMEI, barcode, product, grade..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            onKeyDown={(e) =>
+                                e.key === 'Enter' && applyFilter()
+                            }
+                        />
+                    </div>
 
-                    <select
-                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                    >
-                        <option value="">All Status</option>
-                        <option value="available">Available</option>
-                        <option value="reserved">Reserved</option>
-                        <option value="sold">Sold</option>
-                        <option value="damaged">Damaged</option>
-                    </select>
+                    <div>
+                        <select
+                            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                        >
+                            <option value="">All Status</option>
+                            <option value="available">Available</option>
+                            <option value="reserved">Reserved</option>
+                            <option value="sold">Sold</option>
+                            <option value="damaged">Damaged</option>
+                        </select>
+                    </div>
 
-                    <select
-                        className="flex h-10 min-w-[260px] rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                        value={variantId}
-                        onChange={(e) => setVariantId(e.target.value)}
-                    >
-                        <option value="">All Product Variants</option>
-                        {variants.map((variant) => (
-                            <option key={variant.id} value={variant.id}>
-                                {variant.name} ({variant.sku})
-                            </option>
-                        ))}
-                    </select>
+                    <div>
+                        <SearchableSelect
+                            className="min-w-72"
+                            options={variants.map((variant) => ({
+                                value: variant.id,
+                                label: variant.name,
+                                description: variant.sku,
+                            }))}
+                            value={variantId}
+                            onChange={(value) => setVariantId(value ?? '')}
+                            placeholder="All Product Variants"
+                            clearable
+                        />
+                    </div>
 
                     <Button onClick={applyFilter}>Apply Filter</Button>
                     <Button variant="outline" onClick={clearFilter}>

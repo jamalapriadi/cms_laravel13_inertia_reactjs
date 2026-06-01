@@ -8,10 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
-            $table->string('image')->nullable()->after('sku');
-        });
-
         Schema::create('product_stock_units', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('product_variant_id');
@@ -36,7 +32,7 @@ return new class extends Migration
 
             $table->foreign('product_variant_id')
                 ->references('id')
-                ->on('product_variants')
+                ->on('variant_items')
                 ->cascadeOnDelete();
 
             $table->index('product_variant_id');
@@ -68,9 +64,5 @@ return new class extends Migration
         });
 
         Schema::dropIfExists('product_stock_units');
-
-        Schema::table('product_variants', function (Blueprint $table) {
-            $table->dropColumn('image');
-        });
     }
 };

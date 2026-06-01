@@ -30,7 +30,7 @@ class IncomingGoodsRequest extends FormRequest
             'status' => ['nullable', 'string', Rule::in(['pending', 'completed', 'cancelled'])],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'uuid', 'exists:products,id'],
-            'items.*.product_variant_id' => ['required', 'uuid', 'exists:product_variants,id'],
+            'items.*.product_variant_id' => ['required', 'uuid', 'exists:variant_items,id'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.cost_price' => ['required', 'numeric', 'min:0'],
             'items.*.stock_units' => ['required', 'array'],

@@ -29,8 +29,8 @@ class CartItem extends Model
 
     public function getPriceAttribute(): float
     {
-        if ($this->product_variant_id && $this->variant && $this->variant->price !== null) {
-            return (float) $this->variant->price;
+        if ($this->product_variant_id && $this->variant && $this->variant->selling_price !== null) {
+            return (float) $this->variant->selling_price;
         }
 
         return (float) ($this->product->base_price ?? 0);
@@ -59,6 +59,6 @@ class CartItem extends Model
 
     public function variant()
     {
-        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+        return $this->belongsTo(VariantItem::class, 'product_variant_id');
     }
 }

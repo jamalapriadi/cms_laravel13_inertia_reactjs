@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
 use App\Models\Shop\ProductStockUnit;
-use App\Models\Shop\ProductVariant;
 use App\Models\Shop\StockMovement;
+use App\Models\Shop\VariantItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -52,7 +52,7 @@ class StockMovementController extends Controller
             ->limit(5)
             ->get()
             ->map(function ($item) {
-                $variant = ProductVariant::with('product')->find($item->product_variant_id);
+                $variant = VariantItem::with('product')->find($item->product_variant_id);
 
                 return [
                     'variant_id' => $item->product_variant_id,
@@ -112,7 +112,7 @@ class StockMovementController extends Controller
 
     private function variantOptions()
     {
-        return ProductVariant::with([
+        return VariantItem::with([
             'product',
             'stockUnits' => function ($query) {
                 $query->latest();
@@ -152,7 +152,7 @@ class StockMovementController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'product_variant_id' => 'required|exists:product_variants,id',
+            'product_variant_id' => 'required|exists:variant_items,id',
             'product_stock_unit_id' => 'required|exists:product_stock_units,id',
             'type' => 'required|in:sale,purchase,adjustment,return,cancel',
             'qty' => 'nullable|integer|min:1',
@@ -160,7 +160,7 @@ class StockMovementController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        $variant = ProductVariant::findOrFail($data['product_variant_id']);
+        $variant = VariantItem::findOrFail($data['product_variant_id']);
         $stockUnit = ProductStockUnit::where('product_variant_id', $variant->id)
             ->findOrFail($data['product_stock_unit_id']);
 
@@ -230,7 +230,7 @@ class StockMovementController extends Controller
     public function update(Request $request, StockMovement $stockMovement)
     {
         $data = $request->validate([
-            'product_variant_id' => 'required|exists:product_variants,id',
+            'product_variant_id' => 'required|exists:variant_items,id',
             'product_stock_unit_id' => 'required|exists:product_stock_units,id',
             'type' => 'required|in:sale,purchase,adjustment,return,cancel',
             'qty' => 'nullable|integer|min:1',
@@ -238,7 +238,7 @@ class StockMovementController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        $variant = ProductVariant::findOrFail($data['product_variant_id']);
+        $variant = VariantItem::findOrFail($data['product_variant_id']);
         $newStockUnit = ProductStockUnit::where('product_variant_id', $variant->id)
             ->findOrFail($data['product_stock_unit_id']);
 
@@ -254,7 +254,7 @@ class StockMovementController extends Controller
             }
 
             $affectedVariantIds->unique()->each(function ($variantId) {
-                ProductVariant::find($variantId)?->syncStockFromUnits();
+                VariantItem::find($variantId)?->syncStockFromUnits();
             });
 
             $variant->refresh();
@@ -302,7 +302,7 @@ class StockMovementController extends Controller
 
             $stockMovement->delete();
 
-            ProductVariant::find($variantId)?->syncStockFromUnits();
+            VariantItem::find($variantId)?->syncStockFromUnits();
         });
 
         return redirect()->route('stock-movements.index')->with('success', 'Stock movement deleted successfully.');

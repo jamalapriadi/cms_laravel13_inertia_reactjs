@@ -33,6 +33,11 @@ export default function MasterDataLayout({ children }: Props) {
             icon: Boxes,
         },
         {
+            label: 'Variant Items',
+            href: '/dashboard/ecommerce/variant-items',
+            icon: ScanBarcode,
+        },
+        {
             label: 'Brands',
             href: '/dashboard/brands',
             icon: Tag,

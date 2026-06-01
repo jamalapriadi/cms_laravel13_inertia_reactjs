@@ -1,9 +1,10 @@
-import { router } from '@inertiajs/react';
 import type { RequestPayload } from '@inertiajs/core';
+import { router } from '@inertiajs/react';
 import { ArrowLeft, Plus, Save, Trash } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -181,21 +182,17 @@ export default function SupplierReturnForm({
                 <div className="grid gap-5 rounded-xl border bg-card p-6 shadow-sm md:grid-cols-2">
                     <div className="flex flex-col gap-1.5">
                         <Label>Supplier</Label>
-                        <select
-                            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        <SearchableSelect
+                            options={suppliers.map((supplier) => ({
+                                value: supplier.id,
+                                label: supplier.name,
+                            }))}
                             value={form.supplier_id}
-                            onChange={(event) =>
-                                updateForm('supplier_id', event.target.value)
+                            onChange={(value) =>
+                                updateForm('supplier_id', value ?? '')
                             }
-                            required
-                        >
-                            <option value="">Pilih supplier</option>
-                            {suppliers.map((supplier) => (
-                                <option key={supplier.id} value={supplier.id}>
-                                    {supplier.name}
-                                </option>
-                            ))}
-                        </select>
+                            placeholder="Pilih supplier"
+                        />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
@@ -282,39 +279,28 @@ export default function SupplierReturnForm({
                             >
                                 <div className="flex flex-col gap-1.5">
                                     <Label>Stok Unit</Label>
-                                    <select
-                                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    <SearchableSelect
+                                        options={stockUnits.map((unit) => ({
+                                            value: unit.id,
+                                            label: unit.imei_serial_number,
+                                            description: `${unit.product_name} / ${unit.variant_name} (${unit.sku})`,
+                                            disabled:
+                                                selectedUnitIds.includes(
+                                                    unit.id,
+                                                ) &&
+                                                unit.id !==
+                                                    item.product_stock_unit_id,
+                                        }))}
                                         value={item.product_stock_unit_id}
-                                        onChange={(event) =>
+                                        onChange={(value) =>
                                             updateItem(
                                                 index,
                                                 'product_stock_unit_id',
-                                                event.target.value,
+                                                value ?? '',
                                             )
                                         }
-                                        required
-                                    >
-                                        <option value="">
-                                            Pilih IMEI/serial
-                                        </option>
-                                        {stockUnits.map((unit) => (
-                                            <option
-                                                key={unit.id}
-                                                value={unit.id}
-                                                disabled={
-                                                    selectedUnitIds.includes(
-                                                        unit.id,
-                                                    ) &&
-                                                    unit.id !==
-                                                        item.product_stock_unit_id
-                                                }
-                                            >
-                                                {unit.imei_serial_number} -{' '}
-                                                {unit.product_name} /{' '}
-                                                {unit.variant_name} ({unit.sku})
-                                            </option>
-                                        ))}
-                                    </select>
+                                        placeholder="Pilih IMEI/serial"
+                                    />
                                     {currentUnit && (
                                         <p className="text-xs text-muted-foreground">
                                             {currentUnit.product_name} /{' '}

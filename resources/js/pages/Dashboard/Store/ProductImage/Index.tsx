@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { DataTable } from '@/components/DataTable';
+import SearchableSelect from '@/components/SearchableSelect';
 
 import {
     AlertDialog,
@@ -58,8 +59,8 @@ export default function Index({ images, products, filters }: Props) {
     const applyFilter = () => {
         router.get(
             '/dashboard/ecommerce/product-images',
-            { 
-                product_id: productId 
+            {
+                product_id: productId,
             },
             {
                 preserveState: true,
@@ -88,17 +89,19 @@ export default function Index({ images, products, filters }: Props) {
         {
             label: 'Image',
             render: (row: ProductImage) => (
-                <img 
-                    src={`/storage/${row.image}`} 
-                    alt="Product Image" 
-                    className="h-16 w-16 rounded-md border bg-muted object-contain p-1" 
+                <img
+                    src={`/storage/${row.image}`}
+                    alt="Product Image"
+                    className="h-16 w-16 rounded-md border bg-muted object-contain p-1"
                 />
             ),
         },
         {
             label: 'Product',
             render: (row: ProductImage) => (
-                <span className="text-sm font-medium">{row.product?.name || '-'}</span>
+                <span className="text-sm font-medium">
+                    {row.product?.name || '-'}
+                </span>
             ),
         },
         {
@@ -125,7 +128,9 @@ export default function Index({ images, products, filters }: Props) {
             label: 'Action',
             render: (row: ProductImage) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/ecommerce/product-images/${row.id}/edit`}>
+                    <Link
+                        href={`/dashboard/ecommerce/product-images/${row.id}/edit`}
+                    >
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>
@@ -158,7 +163,9 @@ export default function Index({ images, products, filters }: Props) {
                         </p>
                     </div>
 
-                    <Link href={`/dashboard/ecommerce/product-images/create${productId ? `?product_id=${productId}` : ''}`}>
+                    <Link
+                        href={`/dashboard/ecommerce/product-images/create${productId ? `?product_id=${productId}` : ''}`}
+                    >
                         <Button>Add Product Image</Button>
                     </Link>
                 </div>
@@ -166,19 +173,18 @@ export default function Index({ images, products, filters }: Props) {
                 <hr />
 
                 {/* FILTER */}
-                <div className="flex gap-3 flex-wrap">
-                    <select
-                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                <div className="flex flex-wrap gap-3">
+                    <SearchableSelect
+                        className="min-w-64"
+                        options={products.map((product) => ({
+                            value: product.id,
+                            label: product.name,
+                        }))}
                         value={productId}
-                        onChange={(e) => setProductId(e.target.value)}
-                    >
-                        <option value="">All Products</option>
-                        {products.map((product) => (
-                            <option key={product.id} value={product.id}>
-                                {product.name}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={(value) => setProductId(value ?? '')}
+                        placeholder="All Products"
+                        clearable
+                    />
 
                     <Button onClick={applyFilter}>Apply Filter</Button>
                 </div>

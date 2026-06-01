@@ -5,10 +5,11 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -23,9 +24,14 @@ interface Props {
 
 const imageSchema = z.object({
     product_id: z.string().min(1, 'Product is required'),
-    image: z.any().refine((file) => file instanceof File, 'Image file is required'),
+    image: z
+        .any()
+        .refine((file) => file instanceof File, 'Image file is required'),
     is_primary: z.boolean().default(false),
-    sort_order: z.coerce.number().min(0, 'Sort order cannot be negative').default(0),
+    sort_order: z.coerce
+        .number()
+        .min(0, 'Sort order cannot be negative')
+        .default(0),
 });
 
 type ImageFormData = z.infer<typeof imageSchema>;
@@ -34,8 +40,13 @@ export default function Create({ products }: Props) {
     const [processing, setProcessing] = useState(false);
 
     // Get product_id from query string if available
-    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-    const initialProductId = searchParams ? searchParams.get('product_id') || '' : '';
+    const searchParams =
+        typeof window !== 'undefined'
+            ? new URLSearchParams(window.location.search)
+            : null;
+    const initialProductId = searchParams
+        ? searchParams.get('product_id') || ''
+        : '';
 
     const {
         register,
@@ -67,13 +78,17 @@ export default function Create({ products }: Props) {
                 toast.loading('Saving product image...', { id: 'save' });
             },
             onSuccess: () => {
-                toast.success('Product image saved successfully!', { id: 'save' });
+                toast.success('Product image saved successfully!', {
+                    id: 'save',
+                });
             },
             onFinish: () => {
                 setProcessing(false);
             },
             onError: () => {
-                toast.error('Failed to save image. Please check the inputs.', { id: 'save' });
+                toast.error('Failed to save image. Please check the inputs.', {
+                    id: 'save',
+                });
             },
         });
     };
@@ -86,7 +101,9 @@ export default function Create({ products }: Props) {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Add Product Image</h1>
-                    <p className="text-muted-foreground">Upload a new image to the product's gallery</p>
+                    <p className="text-muted-foreground">
+                        Upload a new image to the product's gallery
+                    </p>
                 </div>
 
                 <hr />
@@ -94,28 +111,24 @@ export default function Create({ products }: Props) {
                 {/* FORM */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                     <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
-                        
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* PRODUCT */}
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Product</Label>
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    {...register('product_id')}
-                                    onChange={(e) => setValue('product_id', e.target.value)}
-                                >
-                                    <option value="">-- Select Product --</option>
-                                    {products.map((product) => (
-                                        <option key={product.id} value={product.id}>
-                                            {product.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.product_id && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.product_id.message}
-                                    </p>
-                                )}
+                                <SearchableSelect
+                                    options={products.map((product) => ({
+                                        value: product.id,
+                                        label: product.name,
+                                    }))}
+                                    value={watch('product_id')}
+                                    onChange={(value) =>
+                                        setValue('product_id', value ?? '', {
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                    placeholder="-- Select Product --"
+                                    error={errors.product_id?.message}
+                                />
                             </div>
 
                             {/* IMAGE */}
@@ -125,8 +138,14 @@ export default function Create({ products }: Props) {
                                     type="file"
                                     accept="image/*"
                                     onChange={(e) => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            setValue('image', e.target.files[0]);
+                                        if (
+                                            e.target.files &&
+                                            e.target.files[0]
+                                        ) {
+                                            setValue(
+                                                'image',
+                                                e.target.files[0],
+                                            );
                                         }
                                     }}
                                 />
@@ -163,10 +182,15 @@ export default function Create({ products }: Props) {
                                     id="is_primary"
                                     checked={watch('is_primary')}
                                     onCheckedChange={(checked) =>
-                                        setValue('is_primary', checked as boolean)
+                                        setValue(
+                                            'is_primary',
+                                            checked as boolean,
+                                        )
                                     }
                                 />
-                                <Label htmlFor="is_primary">Set as primary cover image for this product</Label>
+                                <Label htmlFor="is_primary">
+                                    Set as primary cover image for this product
+                                </Label>
                             </div>
                         </div>
                     </div>
@@ -176,7 +200,11 @@ export default function Create({ products }: Props) {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/dashboard/ecommerce/product-images')}
+                            onClick={() =>
+                                router.visit(
+                                    '/dashboard/ecommerce/product-images',
+                                )
+                            }
                         >
                             Cancel
                         </Button>

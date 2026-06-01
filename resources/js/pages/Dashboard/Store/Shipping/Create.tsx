@@ -1,10 +1,11 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/master-data-layout';
+import { ArrowLeft, Truck } from 'lucide-react';
+
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Textarea from '@/components/ui/textarea';
-import { ArrowLeft, Truck } from 'lucide-react';
 
 interface OrderOption {
     id: string;
@@ -32,6 +33,7 @@ export default function Create({ orders }: Props) {
 
     const handleOrderChange = (orderId: string) => {
         const selectedOrder = orders.find((o) => o.id === orderId);
+
         if (selectedOrder) {
             setData({
                 ...data,
@@ -82,32 +84,21 @@ export default function Create({ orders }: Props) {
                         {/* Order Selector */}
                         <div className="space-y-2">
                             <Label htmlFor="order_id">Associated Order</Label>
-                            <select
-                                id="order_id"
+                            <SearchableSelect
+                                options={orders.map((o) => ({
+                                    value: o.id,
+                                    label: o.invoice_number,
+                                    description: `${o.customer_name} (Cost: Rp ${Number(
+                                        o.shipping_cost,
+                                    ).toLocaleString('id-ID')})`,
+                                }))}
                                 value={data.order_id}
-                                onChange={(e) =>
-                                    handleOrderChange(e.target.value)
+                                onChange={(value) =>
+                                    handleOrderChange(value ?? '')
                                 }
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                                required
-                            >
-                                <option value="">-- Select Order --</option>
-                                {orders.map((o) => (
-                                    <option key={o.id} value={o.id}>
-                                        {o.invoice_number} | {o.customer_name}{' '}
-                                        (Cost: Rp{' '}
-                                        {Number(o.shipping_cost).toLocaleString(
-                                            'id-ID',
-                                        )}
-                                        )
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.order_id && (
-                                <p className="mt-1 text-xs font-semibold text-red-500">
-                                    {errors.order_id}
-                                </p>
-                            )}
+                                placeholder="-- Select Order --"
+                                error={errors.order_id}
+                            />
                             <p className="text-xs text-muted-foreground">
                                 Only orders without existing shipping records
                                 are listed.

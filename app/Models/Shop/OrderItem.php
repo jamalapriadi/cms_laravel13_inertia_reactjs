@@ -8,8 +8,8 @@
 
 namespace App\Models\Shop;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
@@ -49,6 +49,6 @@ class OrderItem extends Model
 
     public function variant()
     {
-        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+        return $this->belongsTo(VariantItem::class, 'product_variant_id');
     }
 }

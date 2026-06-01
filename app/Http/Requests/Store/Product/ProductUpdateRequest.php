@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Store\Product;
 
+use App\Models\Shop\VariantItem;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProductUpdateRequest extends FormRequest
 {
@@ -33,6 +35,17 @@ class ProductUpdateRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'condition' => ['required', 'in:new,like_new,second'],
             'base_price' => ['required', 'numeric', 'min:0'],
+            'sku' => array_filter([
+                $this->boolean('has_variant') ? 'nullable' : 'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'sku')->ignore($this->route('product')?->id),
+                function ($attribute, $value, $fail) {
+                    if ($value && VariantItem::where('sku', $value)->exists()) {
+                        $fail('The SKU has already been used by a variant item.');
+                    }
+                },
+            ]),
             'has_variant' => ['nullable', 'boolean'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
@@ -48,6 +61,7 @@ class ProductUpdateRequest extends FormRequest
         $this->merge([
             'has_variant' => filter_var($this->has_variant, FILTER_VALIDATE_BOOLEAN),
             'is_publish' => filter_var($this->is_publish, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
+            'sku' => $this->input('sku') !== '' ? $this->input('sku') : null,
         ]);
     }
 }

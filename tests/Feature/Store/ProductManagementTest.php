@@ -4,8 +4,10 @@ use App\Models\Brand;
 use App\Models\Shop\Category;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductVariant;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
@@ -174,6 +176,79 @@ test('product slugs stay unique when creating products with the same name', func
 
     expect(Product::query()->where('name', 'iPhone X')->pluck('slug')->all())
         ->toBe(['iphone-x', 'iphone-x-2']);
+});
+
+test('authenticated user can export products to excel', function () {
+    $user = User::factory()->create();
+
+    Category::create([
+        'name' => 'Phones',
+        'slug' => 'phones',
+        'is_publish' => true,
+    ]);
+
+    Brand::create([
+        'name' => 'Apple',
+        'slug' => 'apple',
+        'is_active' => true,
+    ]);
+
+    Product::create([
+        'category_id' => Category::first()->id,
+        'brand_id' => Brand::first()->id,
+        'name' => 'iPhone 15',
+        'slug' => 'iphone-15',
+        'condition' => 'new',
+        'base_price' => 15000000,
+        'is_publish' => true,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->get(route('products.export'));
+
+    $response->assertOk();
+    $response->assertHeader('content-disposition', fn ($value) => str_contains($value, 'attachment'));
+});
+
+test('authenticated user can import products from excel', function () {
+    $user = User::factory()->create();
+
+    Category::create([
+        'name' => 'Phones',
+        'slug' => 'phones',
+        'is_publish' => true,
+    ]);
+
+    Brand::create([
+        'name' => 'Apple',
+        'slug' => 'apple',
+        'is_active' => true,
+    ]);
+
+    Unit::create([
+        'name' => 'Piece',
+        'code' => 'pcs',
+        'is_active' => true,
+    ]);
+
+    $csv = "name,slug,category_slug,brand_slug,unit_code,condition,base_price,has_variant,is_publish\n";
+    $csv .= "Test Product,test-product,phones,apple,pcs,new,1500000,0,1\n";
+
+    $file = UploadedFile::fake()->createWithContent('products.csv', $csv);
+
+    $response = $this
+        ->actingAs($user)
+        ->post(route('products.import'), [
+            'file' => $file,
+        ]);
+
+    $response->assertRedirect(route('products.index'));
+
+    $this->assertDatabaseHas('products', [
+        'name' => 'Test Product',
+        'slug' => 'test-product',
+    ]);
 });
 
 test('product slug stays unique when renaming a product to an existing name', function () {

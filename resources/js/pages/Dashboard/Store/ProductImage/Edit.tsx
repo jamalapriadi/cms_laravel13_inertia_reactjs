@@ -5,10 +5,11 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -34,7 +35,10 @@ const imageSchema = z.object({
     product_id: z.string().min(1, 'Product is required'),
     image: z.any().optional(),
     is_primary: z.boolean().default(false),
-    sort_order: z.coerce.number().min(0, 'Sort order cannot be negative').default(0),
+    sort_order: z.coerce
+        .number()
+        .min(0, 'Sort order cannot be negative')
+        .default(0),
 });
 
 type ImageFormData = z.infer<typeof imageSchema>;
@@ -75,16 +79,23 @@ export default function Edit({ productImage: initialImage, products }: Props) {
                 preserveScroll: true,
                 onStart: () => {
                     setProcessing(true);
-                    toast.loading('Updating product image...', { id: 'update' });
+                    toast.loading('Updating product image...', {
+                        id: 'update',
+                    });
                 },
                 onSuccess: () => {
-                    toast.success('Product image updated successfully!', { id: 'update' });
+                    toast.success('Product image updated successfully!', {
+                        id: 'update',
+                    });
                 },
                 onFinish: () => {
                     setProcessing(false);
                 },
                 onError: () => {
-                    toast.error('Failed to update image. Please check the inputs.', { id: 'update' });
+                    toast.error(
+                        'Failed to update image. Please check the inputs.',
+                        { id: 'update' },
+                    );
                 },
             },
         );
@@ -98,7 +109,9 @@ export default function Edit({ productImage: initialImage, products }: Props) {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Edit Product Image</h1>
-                    <p className="text-muted-foreground">Edit details or upload a new file for this image</p>
+                    <p className="text-muted-foreground">
+                        Edit details or upload a new file for this image
+                    </p>
                 </div>
 
                 <hr />
@@ -106,40 +119,39 @@ export default function Edit({ productImage: initialImage, products }: Props) {
                 {/* FORM */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                     <div className="container space-y-6 rounded-xl bg-card p-6 shadow">
-                        
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* PRODUCT */}
                             <div className="flex flex-col gap-1 md:col-span-2">
                                 <Label>Product</Label>
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    {...register('product_id')}
-                                    onChange={(e) => setValue('product_id', e.target.value)}
-                                >
-                                    <option value="">-- Select Product --</option>
-                                    {products.map((product) => (
-                                        <option key={product.id} value={product.id}>
-                                            {product.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.product_id && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.product_id.message}
-                                    </p>
-                                )}
+                                <SearchableSelect
+                                    options={products.map((product) => ({
+                                        value: product.id,
+                                        label: product.name,
+                                    }))}
+                                    value={watch('product_id')}
+                                    onChange={(value) =>
+                                        setValue('product_id', value ?? '', {
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                    placeholder="-- Select Product --"
+                                    error={errors.product_id?.message}
+                                />
                             </div>
 
                             {/* CURRENT IMAGE */}
                             <div className="flex flex-col gap-2 md:col-span-2">
                                 <Label>Current Image</Label>
                                 <div>
-                                    <img 
-                                        src={`/storage/${initialImage.image}`} 
-                                        alt="Current Product Image" 
-                                        className="h-32 w-32 rounded-lg border bg-muted object-contain p-1" 
+                                    <img
+                                        src={`/storage/${initialImage.image}`}
+                                        alt="Current Product Image"
+                                        className="h-32 w-32 rounded-lg border bg-muted object-contain p-1"
                                     />
-                                    <p className="mt-1 text-xs text-muted-foreground">Upload a new file below if you want to replace it.</p>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        Upload a new file below if you want to
+                                        replace it.
+                                    </p>
                                 </div>
                             </div>
 
@@ -150,8 +162,14 @@ export default function Edit({ productImage: initialImage, products }: Props) {
                                     type="file"
                                     accept="image/*"
                                     onChange={(e) => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            setValue('image', e.target.files[0]);
+                                        if (
+                                            e.target.files &&
+                                            e.target.files[0]
+                                        ) {
+                                            setValue(
+                                                'image',
+                                                e.target.files[0],
+                                            );
                                         }
                                     }}
                                 />
@@ -188,10 +206,15 @@ export default function Edit({ productImage: initialImage, products }: Props) {
                                     id="is_primary"
                                     checked={watch('is_primary')}
                                     onCheckedChange={(checked) =>
-                                        setValue('is_primary', checked as boolean)
+                                        setValue(
+                                            'is_primary',
+                                            checked as boolean,
+                                        )
                                     }
                                 />
-                                <Label htmlFor="is_primary">Set as primary cover image for this product</Label>
+                                <Label htmlFor="is_primary">
+                                    Set as primary cover image for this product
+                                </Label>
                             </div>
                         </div>
                     </div>
@@ -201,7 +224,11 @@ export default function Edit({ productImage: initialImage, products }: Props) {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/dashboard/ecommerce/product-images')}
+                            onClick={() =>
+                                router.visit(
+                                    '/dashboard/ecommerce/product-images',
+                                )
+                            }
                         >
                             Cancel
                         </Button>

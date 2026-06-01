@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Store;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Store\SupplierReturn\SupplierReturnRequest;
 use App\Models\Shop\ProductStockUnit;
-use App\Models\Shop\ProductVariant;
 use App\Models\Shop\StockMovement;
 use App\Models\Shop\Supplier;
 use App\Models\Shop\SupplierReturn;
 use App\Models\Shop\SupplierReturnItem;
+use App\Models\Shop\VariantItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -105,7 +105,7 @@ class SupplierReturnController extends Controller
                 ]);
 
                 $stockUnit = ProductStockUnit::findOrFail($itemData['product_stock_unit_id']);
-                $variant = ProductVariant::findOrFail($stockUnit->product_variant_id);
+                $variant = VariantItem::findOrFail($stockUnit->product_variant_id);
 
                 $statusBefore = $stockUnit->status;
 
@@ -232,7 +232,7 @@ class SupplierReturnController extends Controller
                 ]);
 
                 $stockUnit = ProductStockUnit::findOrFail($itemData['product_stock_unit_id']);
-                $variant = ProductVariant::findOrFail($stockUnit->product_variant_id);
+                $variant = VariantItem::findOrFail($stockUnit->product_variant_id);
 
                 $statusBefore = 'available'; // Since we reverted them back to available in step 1
                 $newStatus = ($supplierReturn->status === 'completed') ? 'damaged' : 'reserved';

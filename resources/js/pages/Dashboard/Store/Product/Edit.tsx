@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import MediaImagePicker from '@/components/media/MediaImagePicker';
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -39,6 +40,7 @@ interface Product {
     brand_id?: string | null;
     unit_id?: string | null;
     name: string;
+    sku?: string | null;
     thumbnail?: string | null;
     description?: string | null;
     condition: Condition;
@@ -61,6 +63,7 @@ const productSchema = z.object({
     category_id: z.string().min(1, 'Category is required'),
     brand_id: z.string().nullable().optional(),
     unit_id: z.string().nullable().optional(),
+    sku: z.string().nullable().optional(),
     thumbnail: z.any().optional(),
     description: z.string().nullable().optional(),
     condition: z.enum(['new', 'like_new', 'second']).default('new'),
@@ -97,6 +100,7 @@ export default function Edit({
             category_id: initialProduct.category_id ?? '',
             brand_id: initialProduct.brand_id ?? null,
             unit_id: initialProduct.unit_id ?? null,
+            sku: initialProduct.sku ?? '',
             thumbnail: initialProduct.thumbnail ?? undefined,
             description: initialProduct.description ?? '',
             condition: initialProduct.condition ?? 'new',
@@ -108,16 +112,25 @@ export default function Edit({
         },
     });
 
+    const hasVariant = watch('has_variant');
+
     useEffect(() => {
         register('description');
         register('thumbnail');
     }, [register]);
 
+    useEffect(() => {
+        if (hasVariant) {
+            setValue('sku', '', { shouldValidate: true });
+        }
+    }, [hasVariant, setValue]);
+
     const onSubmit = (data: ProductFormData) => {
         const { thumbnail, ...productData } = data;
-        const payload = thumbnail !== undefined
-            ? { ...productData, thumbnail }
-            : productData;
+        const payload =
+            thumbnail !== undefined
+                ? { ...productData, thumbnail }
+                : productData;
 
         router.post(
             `/dashboard/ecommerce/products/${initialProduct.id}`,
@@ -175,70 +188,98 @@ export default function Edit({
                                 )}
                             </div>
 
+                            <div className="flex flex-col gap-3">
+                                {!hasVariant && (
+                                    <div className="flex flex-col gap-1">
+                                        <Label>
+                                            SKU (only for products without
+                                            variants)
+                                        </Label>
+                                        <Input
+                                            type="text"
+                                            aria-invalid={!!errors.sku}
+                                            {...register('sku')}
+                                            placeholder="e.g., IP15-BASE"
+                                        />
+                                        {errors.sku && (
+                                            <p className="text-sm text-destructive">
+                                                {errors.sku.message as string}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id="has_variant"
+                                        checked={watch('has_variant')}
+                                        onCheckedChange={(checked) =>
+                                            setValue(
+                                                'has_variant',
+                                                Boolean(checked),
+                                            )
+                                        }
+                                    />
+                                    <Label htmlFor="has_variant">
+                                        Product has variants
+                                    </Label>
+                                </div>
+                            </div>
+
                             <div className="flex flex-col gap-1">
                                 <Label>Category</Label>
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    {...register('category_id')}
-                                >
-                                    <option value="">
-                                        -- Select Category --
-                                    </option>
-                                    {categories.map((cat) => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.category_id && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.category_id.message}
-                                    </p>
-                                )}
+                                <SearchableSelect
+                                    options={categories.map((cat) => ({
+                                        value: cat.id,
+                                        label: cat.name,
+                                    }))}
+                                    value={watch('category_id')}
+                                    onChange={(value) =>
+                                        setValue('category_id', value ?? '', {
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                    placeholder="-- Select Category --"
+                                    error={errors.category_id?.message}
+                                />
                             </div>
 
                             <div className="flex flex-col gap-1">
                                 <Label>Brand Optional</Label>
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                <SearchableSelect
+                                    options={brands.map((brand) => ({
+                                        value: brand.id,
+                                        label: brand.name,
+                                    }))}
                                     value={watch('brand_id') ?? ''}
-                                    onChange={(e) =>
-                                        setValue(
-                                            'brand_id',
-                                            e.target.value || null,
-                                            { shouldValidate: true },
-                                        )
+                                    onChange={(value) =>
+                                        setValue('brand_id', value || null, {
+                                            shouldValidate: true,
+                                        })
                                     }
-                                >
-                                    <option value="">-- No Brand --</option>
-                                    {brands.map((brand) => (
-                                        <option key={brand.id} value={brand.id}>
-                                            {brand.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    placeholder="-- No Brand --"
+                                    error={errors.brand_id?.message}
+                                    clearable
+                                />
                             </div>
 
                             <div className="flex flex-col gap-1">
                                 <Label>Unit Optional</Label>
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                <SearchableSelect
+                                    options={units.map((unit) => ({
+                                        value: unit.id,
+                                        label: unit.name,
+                                        description: unit.code,
+                                    }))}
                                     value={watch('unit_id') ?? ''}
-                                    onChange={(e) =>
-                                        setValue(
-                                            'unit_id',
-                                            e.target.value || null,
-                                            { shouldValidate: true },
-                                        )
+                                    onChange={(value) =>
+                                        setValue('unit_id', value || null, {
+                                            shouldValidate: true,
+                                        })
                                     }
-                                >
-                                    <option value="">-- No Unit --</option>
-                                    {units.map((unit) => (
-                                        <option key={unit.id} value={unit.id}>
-                                            {unit.name} ({unit.code})
-                                        </option>
-                                    ))}
-                                </select>
+                                    placeholder="-- No Unit --"
+                                    error={errors.unit_id?.message}
+                                    clearable
+                                />
                             </div>
 
                             <div className="flex flex-col gap-1 md:col-span-2">
@@ -320,22 +361,6 @@ export default function Edit({
                         <hr className="my-6" />
 
                         <div className="space-y-4">
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="has_variant"
-                                    checked={watch('has_variant')}
-                                    onCheckedChange={(checked) =>
-                                        setValue(
-                                            'has_variant',
-                                            Boolean(checked),
-                                        )
-                                    }
-                                />
-                                <Label htmlFor="has_variant">
-                                    Product has variants
-                                </Label>
-                            </div>
-
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="is_publish"

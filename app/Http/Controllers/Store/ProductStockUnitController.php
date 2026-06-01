@@ -7,7 +7,7 @@ use App\Http\Requests\Store\ProductStockUnit\ProductStockUnitRequest;
 use App\Http\Requests\Store\ProductStockUnit\ProductStockUnitUpdateRequest;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductStockUnit;
-use App\Models\Shop\ProductVariant;
+use App\Models\Shop\VariantItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -17,7 +17,7 @@ class ProductStockUnitController extends Controller
 {
     private function variantOptions()
     {
-        return ProductVariant::with('product')
+        return VariantItem::with('product')
             ->orderBy('name')
             ->get()
             ->map(fn ($variant) => [
@@ -34,11 +34,17 @@ class ProductStockUnitController extends Controller
         $variantId = $request->query('product_variant_id');
 
         $stockUnits = ProductStockUnit::query()
-            ->with(['variant.product'])
+            ->with(['variant.product', 'product'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('imei_serial_number', 'like', "%{$search}%")
+                        ->orWhere('barcode', 'like', "%{$search}%")
+                        ->orWhere('grade', 'like', "%{$search}%")
                         ->orWhere('network_compatibility', 'like', "%{$search}%")
+                        ->orWhereHas('product', function ($productQuery) use ($search) {
+                            $productQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('sku', 'like', "%{$search}%");
+                        })
                         ->orWhereHas('variant', function ($variantQuery) use ($search) {
                             $variantQuery->where('name', 'like', "%{$search}%")
                                 ->orWhere('sku', 'like', "%{$search}%")
@@ -68,7 +74,7 @@ class ProductStockUnitController extends Controller
             'variants' => $variants,
             'summary' => [
                 'products' => Product::count(),
-                'product_variants' => ProductVariant::count(),
+                'product_variants' => VariantItem::count(),
                 'stock_units' => $totalStockUnits,
                 'available_stock_units' => $availableStockUnits,
                 'non_available_stock_units' => $totalStockUnits - $availableStockUnits,
@@ -83,8 +89,25 @@ class ProductStockUnitController extends Controller
 
     public function create(): Response
     {
+        $products = Product::with(['variantItems' => function ($query) {
+            $query->orderBy('name');
+        }])
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($p) => [
+            'id' => $p->id,
+            'name' => $p->name,
+            'sku' => $p->sku,
+            'has_variant' => $p->has_variant,
+            'variant_items' => $p->variantItems->map(fn ($vi) => [
+                'id' => $vi->id,
+                'name' => $vi->name,
+                'sku' => $vi->sku,
+            ]),
+        ]);
+
         return Inertia::render('Dashboard/Store/ProductStockUnit/Create', [
-            'variants' => $this->variantOptions(),
+            'products' => $products,
         ]);
     }
 
@@ -93,7 +116,9 @@ class ProductStockUnitController extends Controller
         DB::transaction(function () use ($request) {
             $stockUnit = ProductStockUnit::create($request->validated());
 
-            ProductVariant::findOrFail($stockUnit->product_variant_id)->syncStockFromUnits();
+            if ($stockUnit->product_variant_id) {
+                VariantItem::findOrFail($stockUnit->product_variant_id)->syncStockFromUnits();
+            }
         });
 
         if (str_contains(url()->previous(), '/dashboard/ecommerce/product-stock-units/create')) {
@@ -105,7 +130,7 @@ class ProductStockUnitController extends Controller
 
     public function show(ProductStockUnit $productStockUnit): Response
     {
-        $productStockUnit->load(['variant.product']);
+        $productStockUnit->load(['variant.product', 'product']);
 
         return Inertia::render('Dashboard/Store/ProductStockUnit/Show', [
             'stockUnit' => $productStockUnit,
@@ -114,11 +139,28 @@ class ProductStockUnitController extends Controller
 
     public function edit(ProductStockUnit $productStockUnit): Response
     {
-        $productStockUnit->load(['variant.product']);
+        $productStockUnit->load(['variant.product', 'product']);
+
+        $products = Product::with(['variantItems' => function ($query) {
+            $query->orderBy('name');
+        }])
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($p) => [
+            'id' => $p->id,
+            'name' => $p->name,
+            'sku' => $p->sku,
+            'has_variant' => $p->has_variant,
+            'variant_items' => $p->variantItems->map(fn ($vi) => [
+                'id' => $vi->id,
+                'name' => $vi->name,
+                'sku' => $vi->sku,
+            ]),
+        ]);
 
         return Inertia::render('Dashboard/Store/ProductStockUnit/Edit', [
             'stockUnit' => $productStockUnit,
-            'variants' => $this->variantOptions(),
+            'products' => $products,
         ]);
     }
 
@@ -129,10 +171,12 @@ class ProductStockUnitController extends Controller
 
             $productStockUnit->update($request->validated());
 
-            ProductVariant::findOrFail($oldVariantId)->syncStockFromUnits();
+            if ($oldVariantId) {
+                VariantItem::findOrFail($oldVariantId)->syncStockFromUnits();
+            }
 
-            if ($oldVariantId !== $productStockUnit->product_variant_id) {
-                ProductVariant::findOrFail($productStockUnit->product_variant_id)->syncStockFromUnits();
+            if ($productStockUnit->product_variant_id && $oldVariantId !== $productStockUnit->product_variant_id) {
+                VariantItem::findOrFail($productStockUnit->product_variant_id)->syncStockFromUnits();
             }
         });
 
@@ -150,7 +194,9 @@ class ProductStockUnitController extends Controller
 
             $productStockUnit->delete();
 
-            ProductVariant::findOrFail($variantId)->syncStockFromUnits();
+            if ($variantId) {
+                VariantItem::findOrFail($variantId)->syncStockFromUnits();
+            }
         });
 
         return redirect()->back()->with('success', 'Stock unit deleted successfully.');

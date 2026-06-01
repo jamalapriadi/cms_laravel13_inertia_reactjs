@@ -1,9 +1,10 @@
-import { router } from '@inertiajs/react';
 import type { RequestPayload } from '@inertiajs/core';
+import { router } from '@inertiajs/react';
 import { ArrowLeft, Plus, Save, Trash } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -294,21 +295,17 @@ export default function IncomingGoodsForm({
                 <div className="grid gap-5 rounded-xl border bg-card p-6 shadow-sm md:grid-cols-2">
                     <div className="flex flex-col gap-1.5">
                         <Label>Supplier</Label>
-                        <select
-                            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        <SearchableSelect
+                            options={suppliers.map((supplier) => ({
+                                value: supplier.id,
+                                label: supplier.name,
+                            }))}
                             value={form.supplier_id}
-                            onChange={(event) =>
-                                updateForm('supplier_id', event.target.value)
+                            onChange={(value) =>
+                                updateForm('supplier_id', value ?? '')
                             }
-                            required
-                        >
-                            <option value="">Pilih supplier</option>
-                            {suppliers.map((supplier) => (
-                                <option key={supplier.id} value={supplier.id}>
-                                    {supplier.name}
-                                </option>
-                            ))}
-                        </select>
+                            placeholder="Pilih supplier"
+                        />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
@@ -392,27 +389,21 @@ export default function IncomingGoodsForm({
                             <div className="grid gap-4 md:grid-cols-[1fr_120px_180px_auto]">
                                 <div className="flex flex-col gap-1.5">
                                     <Label>Produk Variant</Label>
-                                    <select
-                                        className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    <SearchableSelect
+                                        options={variants.map((variant) => ({
+                                            value: variant.id,
+                                            label: variant.name,
+                                            description: variant.sku,
+                                        }))}
                                         value={item.product_variant_id}
-                                        onChange={(event) =>
+                                        onChange={(value) =>
                                             selectVariant(
                                                 itemIndex,
-                                                event.target.value,
+                                                value ?? '',
                                             )
                                         }
-                                        required
-                                    >
-                                        <option value="">Pilih variant</option>
-                                        {variants.map((variant) => (
-                                            <option
-                                                key={variant.id}
-                                                value={variant.id}
-                                            >
-                                                {variant.name} ({variant.sku})
-                                            </option>
-                                        ))}
-                                    </select>
+                                        placeholder="Pilih variant"
+                                    />
                                 </div>
 
                                 <div className="flex flex-col gap-1.5">

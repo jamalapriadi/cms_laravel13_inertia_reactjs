@@ -62,6 +62,29 @@ class ProductImageController extends Controller
     {
         $data = $request->validated();
 
+        if ($request->hasFile('images')) {
+            $files = $request->file('images', []);
+            $sortOrder = (int) ($data['sort_order'] ?? 0);
+            $isPrimary = (bool) ($data['is_primary'] ?? false);
+
+            if ($isPrimary) {
+                ProductImage::where('product_id', $data['product_id'])
+                    ->where('is_primary', true)
+                    ->update(['is_primary' => false]);
+            }
+
+            foreach ($files as $index => $file) {
+                ProductImage::create([
+                    'product_id' => $data['product_id'],
+                    'image' => $file->store('product_images', 'public'),
+                    'is_primary' => $isPrimary && $index === 0,
+                    'sort_order' => $sortOrder + $index,
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Product images added successfully.');
+        }
+
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('product_images', 'public');
         } elseif ($mediaPath = MediaPath::normalize($request->input('image'))) {

@@ -22,11 +22,17 @@ class ProductImageRequest extends FormRequest
      */
     public function rules(): array
     {
+        $singleImageRules = $this->hasFile('images')
+            ? ['nullable']
+            : ($this->hasFile('image')
+                ? ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096']
+                : ['required', 'string']);
+
         return [
             'product_id' => ['required', 'uuid', 'exists:products,id'],
-            'image' => $this->hasFile('image')
-                ? ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096']
-                : ['required', 'string'],
+            'image' => $singleImageRules,
+            'images' => ['nullable', 'array'],
+            'images.*' => ['image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
             'is_primary' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ];

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import MediaImagePicker from '@/components/media/MediaImagePicker';
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -83,9 +84,8 @@ export default function Edit({ category: initialCategory, categories }: Props) {
      */
     const onSubmit = (data: CategoryFormData) => {
         const { image, ...categoryData } = data;
-        const payload = image !== undefined
-            ? { ...categoryData, image }
-            : categoryData;
+        const payload =
+            image !== undefined ? { ...categoryData, image } : categoryData;
 
         router.post(
             `/dashboard/ecommerce/categories/${initialCategory.id}`,
@@ -133,7 +133,9 @@ export default function Edit({ category: initialCategory, categories }: Props) {
                 <div>
                     <h1 className="text-2xl font-bold">{title}</h1>
 
-                    <p className="text-muted-foreground">Edit product category data</p>
+                    <p className="text-muted-foreground">
+                        Edit product category data
+                    </p>
                 </div>
 
                 {/* FORM */}
@@ -158,25 +160,21 @@ export default function Edit({ category: initialCategory, categories }: Props) {
                         {/* PARENT CATEGORY */}
                         <div className="flex flex-col gap-1">
                             <Label>Parent Category</Label>
-                            <select
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                {...register('parent_id')}
-                                onChange={(e) => {
-                                    setValue('parent_id', e.target.value === '' ? null : e.target.value);
-                                }}
-                            >
-                                <option value="">-- None (Top Level) --</option>
-                                {categories.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.name}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.parent_id && (
-                                <p className="text-sm text-destructive">
-                                    {errors.parent_id.message}
-                                </p>
-                            )}
+                            <SearchableSelect
+                                options={categories.map((cat) => ({
+                                    value: cat.id,
+                                    label: cat.name,
+                                }))}
+                                value={watch('parent_id') ?? ''}
+                                onChange={(value) =>
+                                    setValue('parent_id', value || null, {
+                                        shouldValidate: true,
+                                    })
+                                }
+                                placeholder="-- None (Top Level) --"
+                                error={errors.parent_id?.message}
+                                clearable
+                            />
                         </div>
 
                         {/* IMAGE */}
@@ -244,7 +242,9 @@ export default function Edit({ category: initialCategory, categories }: Props) {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/dashboard/ecommerce/categories')}
+                            onClick={() =>
+                                router.visit('/dashboard/ecommerce/categories')
+                            }
                         >
                             Cancel
                         </Button>
