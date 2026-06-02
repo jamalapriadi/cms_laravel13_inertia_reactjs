@@ -5,6 +5,7 @@ use App\Http\Controllers\Customer\DashboardController as CustomerDashboardContro
 use App\Http\Controllers\Dashboard\KabupatenController;
 use App\Http\Controllers\Dashboard\KecamatanController;
 use App\Http\Controllers\Dashboard\KelurahanController;
+use App\Http\Controllers\Dashboard\Cms\PostTranslationController;
 use App\Http\Controllers\Dashboard\MediaController;
 use App\Http\Controllers\Dashboard\MenuController;
 use App\Http\Controllers\Dashboard\OptionController;
@@ -12,18 +13,23 @@ use App\Http\Controllers\Dashboard\PackageController;
 use App\Http\Controllers\Dashboard\PostCategoryController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\ProvinceController;
+use App\Http\Controllers\Dashboard\SiteContentController;
 use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\TaxonomyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Store\BrandController;
 use App\Http\Controllers\Store\BarcodeScannerController;
+use App\Http\Controllers\Store\BannerSlideController;
 use App\Http\Controllers\Store\CartController;
 use App\Http\Controllers\Store\CategoryController;
 use App\Http\Controllers\Store\CustomerController;
+use App\Http\Controllers\Store\FaqController;
 use App\Http\Controllers\Store\IncomingGoodsController;
 use App\Http\Controllers\Store\OrderController;
 use App\Http\Controllers\Store\PaymentController;
 use App\Http\Controllers\Store\ProductController;
+use App\Http\Controllers\Store\ProductCollectionController;
+use App\Http\Controllers\Store\ProductCollectionItemController;
 use App\Http\Controllers\Store\ProductImageController;
 use App\Http\Controllers\Store\ProductSpecificationController;
 use App\Http\Controllers\Store\ProductStockUnitController;
@@ -100,7 +106,13 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
         Route::delete('taxonomies/{taxonomy}/{termTaxonomy}', 'destroy')->name('taxonomies.destroy');
     });
 
+    Route::get('posts/usage-guide', [PostController::class, 'usageGuide'])->name('posts.usage-guide');
     Route::resource('posts', PostController::class);
+    Route::prefix('cms/posts/{post}/translations')->name('dashboard.cms.posts.translations.')->group(function () {
+        Route::get('/', [PostTranslationController::class, 'index'])->name('index');
+        Route::get('/{language}', [PostTranslationController::class, 'edit'])->name('edit');
+        Route::put('/{language}', [PostTranslationController::class, 'update'])->name('update');
+    });
 
     Route::resource('packages', PackageController::class);
     Route::get('ecommerce/search-options', SearchOptionController::class)->name('ecommerce.search-options');
@@ -123,7 +135,22 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
     Route::get('ecommerce/barcode-scanner', [BarcodeScannerController::class, 'scanner'])->name('barcode-scanner.index');
     Route::post('ecommerce/barcode-scanner/search', [BarcodeScannerController::class, 'scanSearch'])->name('barcode-scanner.search');
     Route::resource('ecommerce/product-images', ProductImageController::class)->names('product-images');
+    Route::get('ecommerce/product-collections/options/products', [ProductCollectionController::class, 'optionsProducts'])->name('product-collections.options.products');
+    Route::post('ecommerce/product-collections/{productCollection}/items', [ProductCollectionItemController::class, 'store'])->name('product-collections.items.store');
+    Route::put('ecommerce/product-collections/{productCollection}/items/{item}', [ProductCollectionItemController::class, 'update'])->name('product-collections.items.update');
+    Route::delete('ecommerce/product-collections/{productCollection}/items/{item}', [ProductCollectionItemController::class, 'destroy'])->name('product-collections.items.destroy');
+    Route::resource('ecommerce/product-collections', ProductCollectionController::class)
+        ->parameters(['product-collections' => 'productCollection'])
+        ->names('product-collections');
     Route::resource('ecommerce/product-specifications', ProductSpecificationController::class)->names('product-specifications');
+    Route::resource('ecommerce/faqs', FaqController::class)
+        ->parameters(['faqs' => 'faq'])
+        ->except(['show'])
+        ->names('faqs');
+    Route::resource('ecommerce/banner-slides', BannerSlideController::class)
+        ->parameters(['banner-slides' => 'bannerSlide'])
+        ->except(['show'])
+        ->names('banner-slides');
     Route::patch('ecommerce/customers/{customer}/toggle-login', [CustomerController::class, 'toggleLogin'])->name('customers.toggle-login');
     Route::post('ecommerce/customers/{customer}/reset-password', [CustomerController::class, 'resetPassword'])->name('customers.reset-password');
     Route::resource('ecommerce/customers', CustomerController::class)->only(['index', 'show', 'destroy'])->names('customers');
@@ -150,6 +177,11 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
             Route::get('/socialite', 'socialite')->name('config.socialite');
             Route::get('/language', 'language')->name('config.language');
             Route::post('/language/update', 'updateLanguage')->name('config.language.update');
+            Route::get('/site-contents/usage', [SiteContentController::class, 'usage'])->name('config.site-contents.usage');
+            Route::resource('/site-contents', SiteContentController::class)
+                ->parameters(['site-contents' => 'siteContent'])
+                ->except(['show'])
+                ->names('config.site-contents');
             Route::get('/reading', 'reading')->name('config.reading');
         });
     });

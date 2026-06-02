@@ -5,18 +5,23 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Models\Dashboard\Language;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\TermTaxonomy;
+use App\Services\Cms\LanguageManager;
 use App\Services\PostService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PostController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, LanguageManager $languageManager)
     {
-        $posts = Post::with(['author'])
+        $posts = Post::with([
+            'author',
+            'translations:id,post_id,language_id,status',
+        ])
             ->when($request->search, function ($q) use ($request) {
                 $q->where('title', 'like', "%{$request->search}%");
             })
@@ -36,9 +41,23 @@ class PostController extends Controller
         $posts = $posts->paginate(10)
             ->withQueryString();
 
+        $enabledLanguages = $languageManager->getEnabledLanguages()
+            ->map(fn (Language $language) => [
+                'id' => $language->id,
+                'code' => strtolower((string) $language->code),
+                'name' => $language->english_name,
+            ])
+            ->values();
+
         return Inertia::render('Dashboard/Posts/Index', [
             'posts' => $posts,
-            'filters' => $request->only('search'),
+            'filters' => $request->only('search', 'status'),
+            'enabledLanguages' => $enabledLanguages,
+            'defaultLanguage' => $languageManager->getDefaultLanguage()?->only([
+                'id',
+                'code',
+                'english_name',
+            ]),
         ]);
     }
 
@@ -52,6 +71,13 @@ class PostController extends Controller
             'tags' => TermTaxonomy::with('term')
                 ->where('taxonomy', 'tags')
                 ->get(),
+        ]);
+    }
+
+    public function usageGuide()
+    {
+        return Inertia::render('Dashboard/Posts/UsageGuide', [
+            'apiBaseUrl' => rtrim((string) config('app.url'), '/').'/api',
         ]);
     }
 

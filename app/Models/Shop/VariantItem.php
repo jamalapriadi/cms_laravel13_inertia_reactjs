@@ -78,6 +78,11 @@ class VariantItem extends Model
             ->where('status', 'available');
     }
 
+    public function collectionItems(): HasMany
+    {
+        return $this->hasMany(ProductCollectionItem::class);
+    }
+
     public function syncStockFromUnits(): void
     {
         $this->forceFill([

@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import {
     Headphones,
     Languages,
+    FileText,
     Search,
     Settings,
     Users,
@@ -55,6 +56,12 @@ const MENUS: MenuItem[] = [
         description: 'Configuration for your site language.',
         href: '/dashboard/config/language',
         icon: Languages,
+    },
+    {
+        title: 'Site Contents',
+        description: 'Manage dynamic text keys and translations by active locale.',
+        href: '/dashboard/config/site-contents',
+        icon: FileText,
     },
     {
         title: 'Wilayah',

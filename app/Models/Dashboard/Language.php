@@ -2,8 +2,11 @@
 
 namespace App\Models\Dashboard;
 
+use App\Models\BlockTranslation;
+use App\Models\PostTranslation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Language extends Model
 {
@@ -16,17 +19,45 @@ class Language extends Model
         'flag'
     ];
 
-    public function getCCA2Attribute(){
+    protected $fillable = [
+        'code',
+        'english_name',
+        'major',
+        'active',
+        'default_locale',
+        'tag',
+        'encode_url',
+        'country',
+    ];
+
+    public function getCCA2Attribute()
+    {
         return strtoupper($this->code);
     }
 
-    public function getFlagAttribute(){
+    public function getFlagAttribute()
+    {
         $country = \App\Models\Dashboard\Country::where('cca2', strtoupper($this->code))->first();
 
-        if($country){
+        if ($country) {
             return $country->flag;
-        }else{
-            return "";
         }
+
+        return "";
+    }
+
+    public function postTranslations(): HasMany
+    {
+        return $this->hasMany(PostTranslation::class);
+    }
+
+    public function blockTranslations(): HasMany
+    {
+        return $this->hasMany(BlockTranslation::class);
+    }
+
+    public function scopeEnabled($query)
+    {
+        return $query->where('active', 1);
     }
 }

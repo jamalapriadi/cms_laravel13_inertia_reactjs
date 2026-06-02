@@ -31,4 +31,9 @@ class Option extends Model
 
         return $value;
     }
+
+    public static function getByKey(string $key, mixed $default = null): mixed
+    {
+        return static::query()->where('key', $key)->first()?->value ?? $default;
+    }
 }

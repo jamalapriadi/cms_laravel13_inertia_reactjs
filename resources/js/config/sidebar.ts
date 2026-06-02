@@ -8,7 +8,6 @@ import {
     Tags,
     ShoppingBag,
     Package,
-    Boxes,
     ClipboardList,
     BadgeDollarSign,
     Warehouse,
@@ -18,6 +17,7 @@ import {
     Users,
     ArrowDownLeft,
     ArrowUpRight,
+    CircleHelp,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -25,6 +25,7 @@ export interface SidebarItem {
     href: string;
     icon?: React.ElementType;
     permission?: string;
+    children?: SidebarItem[];
 }
 
 export interface SidebarGroup {
@@ -55,25 +56,77 @@ export const sidebarConfig: SidebarGroup[] = [
     |--------------------------------------------------------------------------
     */
     {
-        label: 'Blogs',
+        label: 'Frontend',
         items: [
             {
                 title: 'Posts',
                 href: '/dashboard/posts',
                 icon: FileText,
-                permission: 'post.view',
+                permission: 'product.view',
+                children: [
+                    {
+                        title: 'All Posts',
+                        href: '/dashboard/posts',
+                        icon: FileText,
+                        permission: 'post.view',
+                    },
+                    {
+                        title: 'Categories',
+                        href: '/dashboard/post-categories',
+                        icon: FolderTree,
+                        permission: 'category.manage',
+                    },
+                    {
+                        title: 'Tags',
+                        href: '/dashboard/taxonomies/tags',
+                        icon: Tags,
+                        permission: 'taxonomy.manage',
+                    },
+                ],
             },
             {
-                title: 'Categories',
-                href: '/dashboard/post-categories',
-                icon: FolderTree,
-                permission: 'category.manage',
+                title: 'Promo',
+                href: '/dashboard/ecommerce/product-collections',
+                icon: BadgeDollarSign,
+                permission: 'product.view',
+                children: [
+                    {
+                        title: 'Product Collections',
+                        href: '/dashboard/ecommerce/product-collections',
+                        permission: 'product.view',
+                    },
+                    {
+                        title: 'Best Seller',
+                        href: '/dashboard/ecommerce/product-collections?type=best_seller',
+                        permission: 'product.view',
+                    },
+                    {
+                        title: 'Exclusive Deals',
+                        href: '/dashboard/ecommerce/product-collections?type=exclusive_deals',
+                        permission: 'product.view',
+                    },
+                    {
+                        title: 'Big Sale',
+                        href: '/dashboard/ecommerce/product-collections?type=big_sale',
+                        permission: 'product.view',
+                    },
+                    {
+                        title: 'Flash Sale',
+                        href: '/dashboard/ecommerce/product-collections?type=flash_sale',
+                        permission: 'product.view',
+                    },
+                    {
+                        title: 'Promo Lainnya',
+                        href: '/dashboard/ecommerce/product-collections?type=promo',
+                        permission: 'product.view',
+                    },
+                ],
             },
             {
-                title: 'Tags',
-                href: '/dashboard/taxonomies/tags',
-                icon: Tags,
-                permission: 'taxonomy.manage',
+                title: 'Banner Slides',
+                href: '/dashboard/ecommerce/banner-slides',
+                icon: Image,
+                permission: 'product.view',
             },
         ],
     },
@@ -98,6 +151,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 icon: ScanBarcode,
                 permission: 'stock-unit.view',
             },
+            
             {
                 title: 'Orders',
                 href: '/dashboard/orders',
@@ -152,6 +206,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 icon: ArrowUpRight,
                 permission: 'supplier-returns.view',
             },
+            
         ],
     },
 
@@ -176,11 +231,24 @@ export const sidebarConfig: SidebarGroup[] = [
                 permission: 'settings.manage',
             },
             {
+                title: 'FAQ',
+                href: '/dashboard/ecommerce/faqs',
+                icon: CircleHelp,
+                permission: 'product.view',
+            },
+            {
+                title: 'Site Contents',
+                href: '/dashboard/config/site-contents',
+                icon: FileText,
+                permission: 'settings.manage',
+            },
+            {
                 title: 'General Settings',
                 href: '/dashboard/config/main',
                 icon: Settings,
                 permission: 'settings.manage',
             },
+            
         ],
     },
 ];
