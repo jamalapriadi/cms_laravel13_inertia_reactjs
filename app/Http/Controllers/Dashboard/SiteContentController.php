@@ -8,6 +8,7 @@ use App\Http\Resources\Store\SiteContentResource;
 use App\Models\Shop\SiteContent;
 use App\Models\Shop\SiteContentTranslation;
 use App\Services\ActiveLanguageService;
+use App\Services\Api\V1\SiteContentApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ class SiteContentController extends Controller
 {
     public function __construct(
         private readonly ActiveLanguageService $activeLanguageService,
+        private readonly SiteContentApiService $siteContentApiService,
     ) {}
 
     public function index(Request $request): Response
@@ -88,6 +90,8 @@ class SiteContentController extends Controller
             $this->upsertTranslations($siteContent, $validated['translations'] ?? []);
         });
 
+        $this->siteContentApiService->flushCache();
+
         return redirect()->route('config.site-contents.index')
             ->with('success', 'Site content created successfully.');
     }
@@ -114,6 +118,8 @@ class SiteContentController extends Controller
             $this->upsertTranslations($siteContent, $validated['translations'] ?? []);
         });
 
+        $this->siteContentApiService->flushCache();
+
         return redirect()->route('config.site-contents.index')
             ->with('success', 'Site content updated successfully.');
     }
@@ -121,6 +127,8 @@ class SiteContentController extends Controller
     public function destroy(SiteContent $siteContent)
     {
         $siteContent->delete();
+
+        $this->siteContentApiService->flushCache();
 
         return redirect()->route('config.site-contents.index')
             ->with('success', 'Site content deleted successfully.');

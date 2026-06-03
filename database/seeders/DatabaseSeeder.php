@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             ProductCollectionSeeder::class,
             FaqSeeder::class,
             SiteContentSeeder::class,
+            PostSampleSeeder::class,
         ]);
     }
 }

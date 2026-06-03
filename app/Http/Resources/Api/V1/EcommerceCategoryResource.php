@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Http\Resources\Api\V1;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
+class EcommerceCategoryResource extends JsonResource
+{
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'image' => $this->mediaUrl($this->image),
+            'parent_id' => $this->parent_id,
+            'show_home' => (bool) $this->show_home,
+            'is_publish' => (bool) $this->is_publish,
+            'products_count' => $this->whenCounted('products'),
+            'children' => EcommerceCategoryResource::collection($this->whenLoaded('children')),
+        ];
+    }
+
+    protected function mediaUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://', '/'])) {
+            return $path;
+        }
+
+        return Storage::disk('public')->url($path);
+    }
+}

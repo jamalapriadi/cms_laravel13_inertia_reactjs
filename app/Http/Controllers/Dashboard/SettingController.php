@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use Inertia\Inertia;
 use App\Http\Controllers\Controller;
+use App\Services\Api\V1\SiteContentApiService;
 use Illuminate\Http\Request;
 
 
@@ -91,6 +92,8 @@ class SettingController extends Controller
                 ['value' => $item['value']]
             );
         }
+
+        app(SiteContentApiService::class)->flushCache();
 
         return back()->with('success', 'Language updated successfully');
     }

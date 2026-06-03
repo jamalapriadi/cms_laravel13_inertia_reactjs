@@ -1,0 +1,3483 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Gitatrading Store API Documentation",
+        "description": "REST API documentation for Gitatrading Store frontend integration with Next.js",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Local development"
+        },
+        {
+            "url": "https://api.gitatrading-store.com",
+            "description": "Production"
+        }
+    ],
+    "paths": {
+        "/api/v1/customer/register": {
+            "post": {
+                "tags": [
+                    "Customer Authentication"
+                ],
+                "summary": "Register customer",
+                "description": "Endpoint untuk register customer frontend Next.js dan mengembalikan bearer token.",
+                "operationId": "ae7f84063dd948763951671929f2dfb8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerRegisterRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Customer registered successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerAuthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/login": {
+            "post": {
+                "tags": [
+                    "Customer Authentication"
+                ],
+                "summary": "Login customer",
+                "description": "Endpoint untuk login customer frontend Next.js menggunakan email dan password.",
+                "operationId": "79c92da621e2d38676c201548d0e8e8c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerLoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Customer logged in successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerAuthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "Email atau password salah.",
+                                    "errors": []
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/forgot-password": {
+            "post": {
+                "tags": [
+                    "Customer Authentication"
+                ],
+                "summary": "Send reset password link",
+                "description": "Endpoint untuk mengirim link reset password ke email customer. Email yang tidak terdaftar tetap mendapat response generic.",
+                "operationId": "cf0ee6e2c677d67249b6e1e677909592",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerForgotPasswordRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Reset password link accepted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many reset link requests.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/reset-password": {
+            "post": {
+                "tags": [
+                    "Customer Authentication"
+                ],
+                "summary": "Reset customer password",
+                "description": "Endpoint untuk reset password customer menggunakan token valid dari email reset password.",
+                "operationId": "745a22066ecb9a3e97f6301cc44314ad",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerResetPasswordRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid or expired reset token.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "Token reset password tidak valid atau sudah kedaluwarsa.",
+                                    "errors": []
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/me": {
+            "get": {
+                "tags": [
+                    "Customer Authentication"
+                ],
+                "summary": "Get authenticated customer",
+                "description": "Endpoint untuk mengambil data customer yang sedang login menggunakan bearer token.",
+                "operationId": "82a95ace77966c72afa2a1ab83f6dc02",
+                "responses": {
+                    "200": {
+                        "description": "Authenticated customer retrieved.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerMeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/customer/logout": {
+            "post": {
+                "tags": [
+                    "Customer Authentication"
+                ],
+                "summary": "Logout customer",
+                "description": "Endpoint untuk logout customer dengan menghapus bearer token yang sedang digunakan.",
+                "operationId": "75bfdb6b9af239127424fac78e9b5cf7",
+                "responses": {
+                    "200": {
+                        "description": "Customer logged out successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1": {
+            "get": {
+                "tags": [
+                    "Health"
+                ],
+                "summary": "API information",
+                "description": "Returns API version and active status.",
+                "operationId": "13c4010052dab00afde8bd6ce1730de0",
+                "responses": {
+                    "200": {
+                        "description": "Gitatrading Store API information.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gitatrading Store API"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "version": {
+                                                    "type": "string",
+                                                    "example": "v1"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "active"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "message": "Gitatrading Store API",
+                                    "data": {
+                                        "version": "v1",
+                                        "status": "active"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/health": {
+            "get": {
+                "tags": [
+                    "Health"
+                ],
+                "summary": "API health check",
+                "description": "Returns a lightweight health check response for the REST API.",
+                "operationId": "90a753d79e5568ff4e2baf1fb98dbdbe",
+                "responses": {
+                    "200": {
+                        "description": "API is running.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "API is running"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "app": {
+                                                    "type": "string",
+                                                    "example": "gitatrading-store"
+                                                },
+                                                "version": {
+                                                    "type": "string",
+                                                    "example": "v1"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "message": "API is running",
+                                    "data": {
+                                        "app": "gitatrading-store",
+                                        "version": "v1"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/posts": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Get list of published posts",
+                "description": "Returns a paginated list of published posts for the Next.js frontend.",
+                "operationId": "7b253f6aade6833019f938c1f2ef08ed",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search by title, slug, content, or translation content.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Filter by category slug.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "news",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "name": "language",
+                        "in": "query",
+                        "description": "Language code, default locale, or language tag.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page. Min 1, max 100.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sort order.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "latest",
+                            "enum": [
+                                "latest",
+                                "oldest"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Posts retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ],
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Posts retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PostListItem"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/PaginationMeta"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/posts/{slug}": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Get post detail by slug",
+                "description": "Returns a published post detail by slug, including categories, blocks, SEO meta, and language data when available.",
+                "operationId": "4a31a4294673ae32c229c1a2deaf26f0",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Post slug or translated post slug.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "contoh-slug-post"
+                        }
+                    },
+                    {
+                        "name": "language",
+                        "in": "query",
+                        "description": "Language code, default locale, or language tag.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id",
+                            "nullable": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Post retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Post retrieved successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PostDetail"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "Post not found",
+                                    "errors": []
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/checkout/summary": {
+            "get": {
+                "tags": [
+                    "Checkout"
+                ],
+                "summary": "Get checkout summary",
+                "description": "Mengambil ringkasan checkout dari cart aktif customer login. API menghitung ulang harga dan stok dari database.",
+                "operationId": "5c34f75239ed819fbada8a56a24ca932",
+                "parameters": [
+                    {
+                        "name": "shipping_method",
+                        "in": "query",
+                        "description": "Kode metode pengiriman untuk simulasi grand total.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "jne_regular",
+                            "enum": [
+                                "pickup",
+                                "jne_regular",
+                                "jnt_regular"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Checkout summary retrieved.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CheckoutSummaryResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Cart empty, stale product, or insufficient stock.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/checkout": {
+            "post": {
+                "tags": [
+                    "Checkout"
+                ],
+                "summary": "Submit checkout",
+                "description": "Membuat order dari cart aktif customer login. Backend validasi ulang cart, menghitung ulang harga, membuat order item snapshot, payment pending, shipping pending, reserve stock unit, dan menandai cart checked_out.",
+                "operationId": "e2ace94317a5bd4833340ebc34f3b249",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CheckoutRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Checkout completed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error, cart empty, stale product, or insufficient stock.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "List customer orders",
+                "description": "Mengambil daftar order milik customer login.",
+                "operationId": "0750f1a684855056c86d0a5110f19614",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page. Min 1, max 100.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orders retrieved.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders/{orderNumber}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Get customer order detail",
+                "description": "Mengambil detail order customer login berdasarkan invoice/order number.",
+                "operationId": "468794f083cd96ae54dacc39e4e712e2",
+                "parameters": [
+                    {
+                        "name": "orderNumber",
+                        "in": "path",
+                        "description": "Invoice/order number.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "INV-20260603-000123"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order retrieved.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Order not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders/{orderNumber}/cancel": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Cancel customer order",
+                "description": "Membatalkan order milik customer login jika status order masih pending/processing dan payment_status masih pending. Stock unit reserved akan dilepas kembali ke available.",
+                "operationId": "dfd4f41746df7c500990796e5b683b5c",
+                "parameters": [
+                    {
+                        "name": "orderNumber",
+                        "in": "path",
+                        "description": "Invoice/order number.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "INV-20260603-000123"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order cancelled.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Order cannot be cancelled.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/home": {
+            "get": {
+                "tags": [
+                    "General / Master Data"
+                ],
+                "summary": "Get home data",
+                "description": "Endpoint publik untuk data homepage frontend, termasuk section yang akan diisi banner, kategori, koleksi, produk, dan FAQ.",
+                "operationId": "f060ec5c19565ff8c1c162fd4c8ad722",
+                "responses": {
+                    "200": {
+                        "description": "Home data endpoint response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HomeResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "List products",
+                "description": "Endpoint publik untuk daftar produk ecommerce. Response saat ini mengikuti kontrak placeholder yang tersedia di controller.",
+                "operationId": "af025eea451d2ffef5b35062d4157755",
+                "responses": {
+                    "200": {
+                        "description": "Products endpoint response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderCollectionResponse"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "message": "Products endpoint is ready",
+                                    "data": {
+                                        "items": [],
+                                        "meta": {
+                                            "status": "placeholder"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/products/{slug}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get product detail",
+                "description": "Endpoint publik untuk detail produk berdasarkan slug. Response saat ini mengikuti kontrak placeholder yang tersedia di controller.",
+                "operationId": "a7af3fd33b408bd6d2855b4b994cd456",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Product slug.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "iphone-15-pro"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product detail endpoint response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderDetailResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/categories": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "List product categories",
+                "description": "Endpoint publik untuk daftar kategori produk ecommerce. Response saat ini mengikuti kontrak placeholder yang tersedia di controller.",
+                "operationId": "ad17f3baab1f0367373e6999492630e2",
+                "responses": {
+                    "200": {
+                        "description": "Categories endpoint response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderCollectionResponse"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "message": "Categories endpoint is ready",
+                                    "data": {
+                                        "items": [],
+                                        "meta": {
+                                            "status": "placeholder"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/brands": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "List brands",
+                "description": "Endpoint publik untuk daftar brand ecommerce. Response saat ini mengikuti kontrak placeholder yang tersedia di controller.",
+                "operationId": "5fd8891dd4666c7fc9e700db45c69968",
+                "responses": {
+                    "200": {
+                        "description": "Brands endpoint response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderCollectionResponse"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "message": "Brands endpoint is ready",
+                                    "data": {
+                                        "items": [],
+                                        "meta": {
+                                            "status": "placeholder"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/product-collections": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "List product collections",
+                "description": "Endpoint publik untuk daftar koleksi produk ecommerce. Response saat ini mengikuti kontrak placeholder yang tersedia di controller.",
+                "operationId": "033604ef371034e11b55eb0eb1d456c2",
+                "responses": {
+                    "200": {
+                        "description": "Product collections endpoint response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderCollectionResponse"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "message": "Product collections endpoint is ready",
+                                    "data": {
+                                        "items": [],
+                                        "meta": {
+                                            "status": "placeholder"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cart": {
+            "get": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Get current cart",
+                "description": "Mengambil cart aktif. Guest cart dibaca dari header X-Cart-Token. Jika bearer token customer valid dikirim, cart customer akan diprioritaskan.",
+                "operationId": "d37c40fae9642ae5fd48fe90d23e059a",
+                "parameters": [
+                    {
+                        "name": "X-Cart-Token",
+                        "in": "header",
+                        "description": "Token cart guest dari frontend Next.js. Wajib untuk guest cart, opsional untuk customer login.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "guest-cart-token-from-nextjs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cart retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CartResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Clear current cart",
+                "description": "Mengosongkan cart aktif. Guest cart ditentukan oleh X-Cart-Token, customer cart ditentukan oleh bearer token.",
+                "operationId": "225cbc9d2a093456897af4f0c4dd2def",
+                "parameters": [
+                    {
+                        "name": "X-Cart-Token",
+                        "in": "header",
+                        "description": "Token cart guest dari frontend Next.js.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "guest-cart-token-from-nextjs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cart cleared successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CartResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cart/items": {
+            "post": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Add cart item",
+                "description": "Menambahkan produk ke cart. Produk dengan has_variant=true wajib mengirim variant_item_id. Jika X-Cart-Token tidak dikirim dan customer belum login, API akan membuat cart token baru dan mengembalikannya di response header X-Cart-Token dan payload data.cart_token.",
+                "operationId": "4cd6fec2d4120ce13574d1a4dc78b300",
+                "parameters": [
+                    {
+                        "name": "X-Cart-Token",
+                        "in": "header",
+                        "description": "Token cart guest dari frontend Next.js.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "guest-cart-token-from-nextjs"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddCartItemRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cart item added successfully.",
+                        "headers": {
+                            "X-Cart-Token": {
+                                "description": "Cart token yang harus disimpan frontend untuk guest cart.",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CartResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error, product unavailable, variant required, or insufficient stock.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cart/items/{item}": {
+            "put": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Update cart item quantity",
+                "description": "Mengubah quantity item cart. Header X-Cart-Token digunakan untuk guest cart, sedangkan bearer token digunakan untuk customer cart.",
+                "operationId": "03db69625fb2c63a820da5de581dfbc8",
+                "parameters": [
+                    {
+                        "name": "item",
+                        "in": "path",
+                        "description": "Cart item UUID.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "9d44f95d-982b-4216-9b17-51cf9e34fa46"
+                        }
+                    },
+                    {
+                        "name": "X-Cart-Token",
+                        "in": "header",
+                        "description": "Token cart guest dari frontend Next.js.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "guest-cart-token-from-nextjs"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateCartItemRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cart item updated successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CartResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cart not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error, cart item not found, or insufficient stock.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Remove cart item",
+                "description": "Menghapus satu item dari cart. Jika item terakhir dihapus, cart ikut dihapus dan response mengembalikan cart kosong.",
+                "operationId": "5c50fca91f464f6f7350f07f60c4cda6",
+                "parameters": [
+                    {
+                        "name": "item",
+                        "in": "path",
+                        "description": "Cart item UUID.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "9d44f95d-982b-4216-9b17-51cf9e34fa46"
+                        }
+                    },
+                    {
+                        "name": "X-Cart-Token",
+                        "in": "header",
+                        "description": "Token cart guest dari frontend Next.js.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "guest-cart-token-from-nextjs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cart item removed successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CartResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cart not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Cart item not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Patch cart item quantity",
+                "description": "Alias PATCH untuk update quantity item cart. Kontrak request dan response sama seperti PUT.",
+                "operationId": "41276c82885185dbc8e067b8c876f04b",
+                "parameters": [
+                    {
+                        "name": "item",
+                        "in": "path",
+                        "description": "Cart item UUID.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "9d44f95d-982b-4216-9b17-51cf9e34fa46"
+                        }
+                    },
+                    {
+                        "name": "X-Cart-Token",
+                        "in": "header",
+                        "description": "Token cart guest dari frontend Next.js.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "guest-cart-token-from-nextjs"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateCartItemRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cart item updated successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CartResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cart not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error, cart item not found, or insufficient stock.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/banner-slides": {
+            "get": {
+                "tags": [
+                    "General / Master Data"
+                ],
+                "summary": "List banner slides",
+                "description": "Endpoint publik untuk daftar banner slide aktif sesuai jadwal start_at/end_at. Banner tidak memiliki field slug dan tidak memiliki tabel translation, sehingga API detail /{slug} tidak dibuat.",
+                "operationId": "0f2107f606c4f6d175f8fd33ba399af4",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Tipe halaman/banner. Alias query page juga didukung.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "homepage"
+                        }
+                    },
+                    {
+                        "name": "position",
+                        "in": "query",
+                        "description": "Posisi banner pada halaman.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "main"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Alias untuk type, misalnya page=homepage.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "homepage"
+                        }
+                    },
+                    {
+                        "name": "placement",
+                        "in": "query",
+                        "description": "Alias gabungan type_position, misalnya homepage_main atau homepage_hero.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "homepage_main"
+                        }
+                    },
+                    {
+                        "name": "lang",
+                        "in": "query",
+                        "description": "Diterima untuk kompatibilitas frontend, tetapi banner slide belum memiliki tabel translation sehingga field utama dari banner_slides digunakan.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Banner slides retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BannerSlideListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/faqs": {
+            "get": {
+                "tags": [
+                    "General / Master Data"
+                ],
+                "summary": "List FAQs",
+                "description": "Endpoint publik untuk daftar FAQ aktif. Response saat ini mengikuti kontrak placeholder yang tersedia di controller.",
+                "operationId": "c6ad914ae0a286379ff0de8fbb1f281b",
+                "responses": {
+                    "200": {
+                        "description": "FAQs endpoint response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderCollectionResponse"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "message": "FAQs endpoint is ready",
+                                    "data": {
+                                        "items": [],
+                                        "meta": {
+                                            "status": "placeholder"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/site-contents": {
+            "get": {
+                "tags": [
+                    "Site Contents"
+                ],
+                "summary": "List site contents by language",
+                "description": "Endpoint publik untuk mengambil semua active site content berdasarkan bahasa aktif. Response dicache 24 jam dan otomatis invalid ketika data site content atau konfigurasi bahasa di dashboard berubah.",
+                "operationId": "768f16dc768be5f66187cd4729594a79",
+                "parameters": [
+                    {
+                        "name": "lang",
+                        "in": "query",
+                        "description": "Kode bahasa aktif. Jika kosong atau tidak aktif, API fallback ke default language.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Site contents retrieved.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SiteContentAllResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/site-contents/{group}": {
+            "get": {
+                "tags": [
+                    "Site Contents"
+                ],
+                "summary": "Get site content group by language",
+                "description": "Endpoint publik untuk mengambil active site content dalam satu group, misalnya homepage, footer, product_detail, checkout, promo, atau general. Response dicache 24 jam dan otomatis invalid ketika data berubah.",
+                "operationId": "782aa5031e9d78122eae61bb819f3b6e",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "Group site content.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "homepage"
+                        }
+                    },
+                    {
+                        "name": "lang",
+                        "in": "query",
+                        "description": "Kode bahasa aktif. Jika kosong atau tidak aktif, API fallback ke default language.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Site content group retrieved.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SiteContentGroupResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ApiSuccessResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Success"
+                    },
+                    "data": {
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "BannerSlide": {
+                "required": [
+                    "id",
+                    "image_url",
+                    "type",
+                    "position",
+                    "placement",
+                    "is_active",
+                    "sort_order"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Promo iPhone Jepang",
+                        "nullable": true
+                    },
+                    "subtitle": {
+                        "type": "string",
+                        "example": "Stok ready dan bergaransi",
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Temukan pilihan gadget Jepang terbaik untuk kebutuhanmu.",
+                        "nullable": true
+                    },
+                    "image": {
+                        "type": "string",
+                        "example": "banner_slides/hero.webp",
+                        "nullable": true
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "example": "http://localhost:8000/storage/banner_slides/hero.webp",
+                        "nullable": true
+                    },
+                    "mobile_image": {
+                        "type": "string",
+                        "example": "banner_slides/mobile/hero.webp",
+                        "nullable": true
+                    },
+                    "mobile_image_url": {
+                        "type": "string",
+                        "example": "http://localhost:8000/storage/banner_slides/mobile/hero.webp",
+                        "nullable": true
+                    },
+                    "button_text": {
+                        "type": "string",
+                        "example": "Belanja sekarang",
+                        "nullable": true
+                    },
+                    "button_url": {
+                        "type": "string",
+                        "example": "/products",
+                        "nullable": true
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "homepage"
+                    },
+                    "position": {
+                        "type": "string",
+                        "example": "main"
+                    },
+                    "placement": {
+                        "type": "string",
+                        "example": "homepage_main"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "start_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "end_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "BannerSlideListResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Banner slides retrieved successfully"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BannerSlide"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Block": {
+                "properties": {
+                    "id": {
+                        "example": 1,
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "parent_id": {
+                        "example": null,
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "paragraph"
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "data": {
+                        "type": "object",
+                        "example": {
+                            "text": "Isi block paragraph"
+                        }
+                    },
+                    "styles": {
+                        "type": "object",
+                        "example": []
+                    },
+                    "children": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Block"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "CartProduct": {
+                "required": [
+                    "id",
+                    "name",
+                    "slug",
+                    "is_publish"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "9c5f48a7-4a56-4f71-a4a5-7a872ecfd413"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "iPhone 15 Pro"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "iphone-15-pro"
+                    },
+                    "sku": {
+                        "type": "string",
+                        "example": "IP15P",
+                        "nullable": true
+                    },
+                    "thumbnail": {
+                        "type": "string",
+                        "example": "https://gitatrading-store.com/storage/products/iphone-15-pro.jpg",
+                        "nullable": true
+                    },
+                    "is_publish": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "CartVariantItem": {
+                "required": [
+                    "id",
+                    "sku",
+                    "name",
+                    "selling_price",
+                    "is_active"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "9d44f624-73dc-42ce-8510-76ed6c7f1d41"
+                    },
+                    "sku": {
+                        "type": "string",
+                        "example": "IP15P-BLK-128"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Black / 128GB"
+                    },
+                    "image": {
+                        "type": "string",
+                        "example": "https://gitatrading-store.com/storage/products/iphone-15-pro-black.jpg",
+                        "nullable": true
+                    },
+                    "selling_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 17999000
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "CartItem": {
+                "required": [
+                    "id",
+                    "product_id",
+                    "qty",
+                    "price",
+                    "subtotal",
+                    "stock_available",
+                    "product"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "9d44f95d-982b-4216-9b17-51cf9e34fa46"
+                    },
+                    "product_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "9c5f48a7-4a56-4f71-a4a5-7a872ecfd413"
+                    },
+                    "variant_item_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "9d44f624-73dc-42ce-8510-76ed6c7f1d41",
+                        "nullable": true
+                    },
+                    "qty": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 17999000
+                    },
+                    "subtotal": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 35998000
+                    },
+                    "stock_available": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "product": {
+                        "$ref": "#/components/schemas/CartProduct"
+                    },
+                    "variant_item": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/CartVariantItem"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Cart": {
+                "required": [
+                    "id",
+                    "cart_token",
+                    "customer_id",
+                    "is_guest",
+                    "total_qty",
+                    "total_price",
+                    "items"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "9d44f8ea-71d9-4c88-939a-2aafec67dc40",
+                        "nullable": true
+                    },
+                    "cart_token": {
+                        "type": "string",
+                        "example": "guest-cart-token-from-nextjs",
+                        "nullable": true
+                    },
+                    "customer_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "is_guest": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "total_qty": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "total_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 35998000
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CartItem"
+                        }
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-06-03T10:20:30.000000Z",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AddCartItemRequest": {
+                "required": [
+                    "product_id"
+                ],
+                "properties": {
+                    "product_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "9c5f48a7-4a56-4f71-a4a5-7a872ecfd413"
+                    },
+                    "variant_item_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "9d44f624-73dc-42ce-8510-76ed6c7f1d41",
+                        "nullable": true
+                    },
+                    "qty": {
+                        "type": "integer",
+                        "example": 1,
+                        "default": 1,
+                        "maximum": 999,
+                        "minimum": 1
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateCartItemRequest": {
+                "required": [
+                    "qty"
+                ],
+                "properties": {
+                    "qty": {
+                        "type": "integer",
+                        "example": 2,
+                        "maximum": 999,
+                        "minimum": 1
+                    }
+                },
+                "type": "object"
+            },
+            "CartResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Cart retrieved successfully"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/Cart"
+                    }
+                },
+                "type": "object"
+            },
+            "Category": {
+                "properties": {
+                    "id": {
+                        "example": "uuid-or-id",
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "News",
+                        "nullable": true
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "news",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "CheckoutSummaryResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Checkout summary retrieved successfully"
+                    },
+                    "data": {
+                        "required": [
+                            "cart_id",
+                            "items",
+                            "totals",
+                            "shipping_methods",
+                            "selected_shipping_method",
+                            "payment_methods"
+                        ],
+                        "properties": {
+                            "cart_id": {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "required": [
+                                        "product_id",
+                                        "product_name",
+                                        "price",
+                                        "qty",
+                                        "subtotal",
+                                        "stock_available"
+                                    ],
+                                    "properties": {
+                                        "cart_item_id": {
+                                            "type": "string",
+                                            "format": "uuid"
+                                        },
+                                        "product_id": {
+                                            "type": "string",
+                                            "format": "uuid"
+                                        },
+                                        "variant_item_id": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "nullable": true
+                                        },
+                                        "product_name": {
+                                            "type": "string",
+                                            "example": "iPhone 15 Pro"
+                                        },
+                                        "variant_name": {
+                                            "type": "string",
+                                            "example": "Black / 128GB",
+                                            "nullable": true
+                                        },
+                                        "sku": {
+                                            "type": "string",
+                                            "example": "IP15P-BLK-128",
+                                            "nullable": true
+                                        },
+                                        "price": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 17999000
+                                        },
+                                        "qty": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "subtotal": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 17999000
+                                        },
+                                        "stock_available": {
+                                            "type": "integer",
+                                            "example": 3
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "totals": {
+                                "required": [
+                                    "subtotal",
+                                    "shipping_cost",
+                                    "discount",
+                                    "grand_total"
+                                ],
+                                "properties": {
+                                    "subtotal": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 17999000
+                                    },
+                                    "shipping_cost": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 20000
+                                    },
+                                    "discount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 0
+                                    },
+                                    "grand_total": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 18019000
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "selected_shipping_method": {
+                                "type": "string",
+                                "example": "jne_regular"
+                            },
+                            "shipping_methods": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "jne_regular"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "JNE Regular"
+                                        },
+                                        "cost": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 20000
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "payment_methods": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "bank_transfer"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Bank Transfer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "CheckoutRequest": {
+                "required": [
+                    "shipping_address",
+                    "shipping_method",
+                    "payment_method"
+                ],
+                "properties": {
+                    "shipping_address": {
+                        "type": "string",
+                        "example": "Jl. Sudirman No. 10, Jakarta"
+                    },
+                    "shipping_method": {
+                        "type": "string",
+                        "example": "jne_regular",
+                        "enum": [
+                            "pickup",
+                            "jne_regular",
+                            "jnt_regular"
+                        ]
+                    },
+                    "payment_method": {
+                        "type": "string",
+                        "example": "bank_transfer",
+                        "enum": [
+                            "bank_transfer",
+                            "qris",
+                            "cash_on_delivery"
+                        ]
+                    },
+                    "notes": {
+                        "type": "string",
+                        "example": "Tolong hubungi sebelum dikirim.",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "OrderItem": {
+                "required": [
+                    "id",
+                    "product_id",
+                    "product_name",
+                    "price",
+                    "qty",
+                    "subtotal"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "product_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "variant_item_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "product_name": {
+                        "type": "string",
+                        "example": "iPhone 15 Pro"
+                    },
+                    "variant_name": {
+                        "type": "string",
+                        "example": "Black / 128GB",
+                        "nullable": true
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 17999000
+                    },
+                    "qty": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "subtotal": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 17999000
+                    }
+                },
+                "type": "object"
+            },
+            "OrderPayment": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "payment_method": {
+                        "type": "string",
+                        "example": "bank_transfer"
+                    },
+                    "transaction_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 18019000
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "paid_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "OrderShipping": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "courier": {
+                        "type": "string",
+                        "example": "jne_regular"
+                    },
+                    "tracking_number": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "shipping_cost": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 20000
+                    },
+                    "shipping_address": {
+                        "type": "string",
+                        "example": "Jl. Sudirman No. 10, Jakarta",
+                        "nullable": true
+                    },
+                    "shipped_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "delivered_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Order": {
+                "required": [
+                    "id",
+                    "order_number",
+                    "customer",
+                    "subtotal",
+                    "shipping_cost",
+                    "discount",
+                    "grand_total",
+                    "payment_status",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "order_number": {
+                        "type": "string",
+                        "example": "INV-20260603-000123"
+                    },
+                    "invoice_number": {
+                        "type": "string",
+                        "example": "INV-20260603-000123"
+                    },
+                    "customer": {
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Jane Customer"
+                            },
+                            "email": {
+                                "type": "string",
+                                "example": "jane@example.com",
+                                "nullable": true
+                            },
+                            "phone": {
+                                "type": "string",
+                                "example": "081234567890",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "shipping_address": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "subtotal": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 17999000
+                    },
+                    "shipping_cost": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 20000
+                    },
+                    "discount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "grand_total": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 18019000
+                    },
+                    "payment_status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "paid_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderItem"
+                        }
+                    },
+                    "payments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderPayment"
+                        }
+                    },
+                    "shipping": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/OrderShipping"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "OrderResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Order retrieved successfully"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/Order"
+                    }
+                },
+                "type": "object"
+            },
+            "OrderListResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "meta"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Orders retrieved successfully"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Order"
+                        }
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                },
+                "type": "object"
+            },
+            "Customer": {
+                "required": [
+                    "id",
+                    "name",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "9c5f48a7-4a56-4f71-a4a5-7a872ecfd413"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Jane Customer"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "jane@example.com"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "081234567890",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerRegisterRequest": {
+                "required": [
+                    "name",
+                    "email",
+                    "password",
+                    "password_confirmation"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Jane Customer"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "jane@example.com"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "081234567890",
+                        "nullable": true
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "password123",
+                        "minLength": 8
+                    },
+                    "password_confirmation": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "password123"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerLoginRequest": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "jane@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "password123"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerForgotPasswordRequest": {
+                "required": [
+                    "email"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "jane@example.com"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerResetPasswordRequest": {
+                "required": [
+                    "email",
+                    "token",
+                    "password",
+                    "password_confirmation"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "jane@example.com"
+                    },
+                    "token": {
+                        "type": "string",
+                        "example": "reset-token-from-email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "newPassword123",
+                        "minLength": 8
+                    },
+                    "password_confirmation": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "newPassword123"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerAuthResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Login berhasil."
+                    },
+                    "data": {
+                        "required": [
+                            "customer",
+                            "token",
+                            "token_type"
+                        ],
+                        "properties": {
+                            "customer": {
+                                "$ref": "#/components/schemas/Customer"
+                            },
+                            "token": {
+                                "type": "string",
+                                "example": "plain-text-api-token"
+                            },
+                            "token_type": {
+                                "type": "string",
+                                "example": "Bearer"
+                            },
+                            "cart": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/components/schemas/Cart"
+                                    }
+                                ],
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerMeResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Success"
+                    },
+                    "data": {
+                        "required": [
+                            "customer"
+                        ],
+                        "properties": {
+                            "customer": {
+                                "$ref": "#/components/schemas/Customer"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerMessageResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Logout berhasil."
+                    },
+                    "data": {
+                        "type": "object",
+                        "example": []
+                    }
+                },
+                "type": "object"
+            },
+            "ApiErrorResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "errors"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Error"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "example": []
+                    }
+                },
+                "type": "object"
+            },
+            "ValidationErrorResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "errors"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Validation failed"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "example": {
+                            "per_page": [
+                                "The per page field must not be greater than 100."
+                            ]
+                        },
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PaginationMeta": {
+                "required": [
+                    "current_page",
+                    "per_page",
+                    "total",
+                    "last_page"
+                ],
+                "properties": {
+                    "current_page": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "last_page": {
+                        "type": "integer",
+                        "example": 10
+                    }
+                },
+                "type": "object"
+            },
+            "PostListItem": {
+                "properties": {
+                    "id": {
+                        "example": 1,
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Judul Post"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "judul-post"
+                    },
+                    "excerpt": {
+                        "type": "string",
+                        "example": "Ringkasan post",
+                        "nullable": true
+                    },
+                    "thumbnail": {
+                        "type": "string",
+                        "example": "https://gitatrading-store.com/storage/posts/thumbnail.jpg",
+                        "nullable": true
+                    },
+                    "published_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-06-02T00:00:00.000000Z",
+                        "nullable": true
+                    },
+                    "categories": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Category"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PostDetail": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/PostListItem"
+                    },
+                    {
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "example": "Konten post",
+                                "nullable": true
+                            },
+                            "blocks": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Block"
+                                }
+                            },
+                            "seo": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "SEO title",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "SEO description",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "language": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "code": {
+                                        "type": "string",
+                                        "example": "id"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Indonesian",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "PlaceholderCollectionResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Products endpoint is ready"
+                    },
+                    "data": {
+                        "required": [
+                            "items",
+                            "meta"
+                        ],
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                },
+                                "example": []
+                            },
+                            "meta": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "placeholder"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "PlaceholderDetailResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Product detail endpoint is ready"
+                    },
+                    "data": {
+                        "required": [
+                            "item",
+                            "slug",
+                            "meta"
+                        ],
+                        "properties": {
+                            "item": {
+                                "type": "object",
+                                "example": null,
+                                "nullable": true
+                            },
+                            "slug": {
+                                "type": "string",
+                                "example": "iphone-15-pro"
+                            },
+                            "meta": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "placeholder"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "HomeResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Home endpoint is ready"
+                    },
+                    "data": {
+                        "required": [
+                            "sections",
+                            "meta"
+                        ],
+                        "properties": {
+                            "sections": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                },
+                                "example": []
+                            },
+                            "meta": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "placeholder"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "SiteContentLanguageMeta": {
+                "required": [
+                    "requested",
+                    "current",
+                    "fallback",
+                    "active"
+                ],
+                "properties": {
+                    "requested": {
+                        "type": "string",
+                        "example": "id",
+                        "nullable": true
+                    },
+                    "current": {
+                        "type": "string",
+                        "example": "id"
+                    },
+                    "fallback": {
+                        "type": "string",
+                        "example": "id"
+                    },
+                    "active": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "id",
+                            "en"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "SiteContentCacheMeta": {
+                "required": [
+                    "ttl_seconds",
+                    "generated_at"
+                ],
+                "properties": {
+                    "ttl_seconds": {
+                        "type": "integer",
+                        "example": 86400
+                    },
+                    "generated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-06-03T10:00:00+07:00"
+                    }
+                },
+                "type": "object"
+            },
+            "SiteContentItem": {
+                "required": [
+                    "id",
+                    "key",
+                    "group",
+                    "type",
+                    "value",
+                    "locale",
+                    "fallback_used",
+                    "sort_order"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "key": {
+                        "type": "string",
+                        "example": "homepage.hero.headline"
+                    },
+                    "group": {
+                        "type": "string",
+                        "example": "homepage",
+                        "nullable": true
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "text"
+                    },
+                    "value": {
+                        "type": "string",
+                        "example": "Temukan gadget Jepang terbaik",
+                        "nullable": true
+                    },
+                    "locale": {
+                        "type": "string",
+                        "example": "id"
+                    },
+                    "fallback_used": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "SiteContentAllResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Site contents retrieved successfully"
+                    },
+                    "data": {
+                        "required": [
+                            "language",
+                            "group",
+                            "contents",
+                            "items",
+                            "cache"
+                        ],
+                        "properties": {
+                            "language": {
+                                "$ref": "#/components/schemas/SiteContentLanguageMeta"
+                            },
+                            "group": {
+                                "type": "string",
+                                "example": null,
+                                "nullable": true
+                            },
+                            "contents": {
+                                "description": "Object dinamis berisi group => key => value.",
+                                "type": "object",
+                                "example": {
+                                    "homepage": {
+                                        "homepage.hero.headline": "Temukan gadget Jepang terbaik",
+                                        "homepage.hero.cta": "Belanja sekarang"
+                                    }
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                }
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/SiteContentItem"
+                                }
+                            },
+                            "cache": {
+                                "$ref": "#/components/schemas/SiteContentCacheMeta"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "SiteContentGroupResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Site content group retrieved successfully"
+                    },
+                    "data": {
+                        "required": [
+                            "language",
+                            "group",
+                            "contents",
+                            "items",
+                            "cache"
+                        ],
+                        "properties": {
+                            "language": {
+                                "$ref": "#/components/schemas/SiteContentLanguageMeta"
+                            },
+                            "group": {
+                                "type": "string",
+                                "example": "homepage"
+                            },
+                            "contents": {
+                                "description": "Object dinamis berisi key => value untuk group yang diminta.",
+                                "type": "object",
+                                "example": {
+                                    "homepage.hero.headline": "Temukan gadget Jepang terbaik",
+                                    "homepage.hero.cta": "Belanja sekarang"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "nullable": true
+                                }
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/SiteContentItem"
+                                }
+                            },
+                            "cache": {
+                                "$ref": "#/components/schemas/SiteContentCacheMeta"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "Customer API token",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Customer Authentication",
+            "description": "API untuk register, login, forgot password, reset password, cek user login, dan logout customer."
+        },
+        {
+            "name": "Products",
+            "description": "API publik untuk produk, kategori produk, brand, dan koleksi produk."
+        },
+        {
+            "name": "Cart",
+            "description": "API cart frontend Next.js untuk guest cart, customer cart, dan merge cart saat login."
+        },
+        {
+            "name": "Checkout",
+            "description": "API checkout customer login dari active cart menjadi order."
+        },
+        {
+            "name": "Orders",
+            "description": "API order customer login untuk list, detail, dan cancel order."
+        },
+        {
+            "name": "Site Contents",
+            "description": "API publik untuk dynamic frontend copy multi-language dengan cache dan invalidation dari dashboard."
+        },
+        {
+            "name": "Posts",
+            "description": "Published posts and news content"
+        },
+        {
+            "name": "General / Master Data",
+            "description": "API publik untuk home data, banner, FAQ, dan data umum frontend."
+        },
+        {
+            "name": "Health",
+            "description": "API information and health checks"
+        }
+    ]
+}

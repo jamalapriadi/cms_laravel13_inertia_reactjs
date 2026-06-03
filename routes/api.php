@@ -1,0 +1,71 @@
+<?php
+
+use App\Http\Controllers\Api\V1\BannerSlideController;
+use App\Http\Controllers\Api\V1\BrandController;
+use App\Http\Controllers\Api\V1\CartController;
+use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\CheckoutController;
+use App\Http\Controllers\Api\V1\Customer\CustomerAuthController;
+use App\Http\Controllers\Api\V1\FaqController;
+use App\Http\Controllers\Api\V1\HealthController;
+use App\Http\Controllers\Api\V1\HomeController;
+use App\Http\Controllers\Api\V1\OpenApiController;
+use App\Http\Controllers\Api\V1\OrderController;
+use App\Http\Controllers\Api\V1\PostController;
+use App\Http\Controllers\Api\V1\ProductCollectionController;
+use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\SiteContentController;
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('v1')->name('api.v1.')->group(function (): void {
+    Route::get('/', [HealthController::class, 'info'])->name('info');
+    Route::get('openapi.json', OpenApiController::class)->name('openapi');
+    Route::get('health', [HealthController::class, 'health'])->name('health');
+
+    Route::get('home', HomeController::class)->name('home');
+    Route::get('posts', [PostController::class, 'index'])->name('posts.index');
+    Route::get('posts/{slug}', [PostController::class, 'show'])->name('posts.show');
+    Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('products/{slug}', [ProductController::class, 'show'])->name('products.show');
+    Route::get('brands', [BrandController::class, 'index'])->name('brands.index');
+    Route::get('banner-slides', [BannerSlideController::class, 'index'])->name('banner-slides.index');
+    Route::get('product-collections', [ProductCollectionController::class, 'index'])->name('product-collections.index');
+    Route::get('faqs', [FaqController::class, 'index'])->name('faqs.index');
+    Route::get('site-contents', [SiteContentController::class, 'index'])->name('site-contents.index');
+    Route::get('site-contents/{group}', [SiteContentController::class, 'group'])->name('site-contents.group');
+    Route::get('cart', [CartController::class, 'show'])->name('cart.show');
+    Route::post('cart/items', [CartController::class, 'store'])->name('cart.items.store');
+    Route::put('cart/items/{item}', [CartController::class, 'update'])->name('cart.items.update');
+    Route::patch('cart/items/{item}', [CartController::class, 'update'])->name('cart.items.patch');
+    Route::delete('cart/items/{item}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+    Route::delete('cart', [CartController::class, 'clear'])->name('cart.clear');
+
+    Route::prefix('customer')->name('customer.')->group(function (): void {
+        Route::post('register', [CustomerAuthController::class, 'register'])
+            ->middleware('throttle:5,1')
+            ->name('register');
+        Route::post('login', [CustomerAuthController::class, 'login'])
+            ->middleware('throttle:5,1')
+            ->name('login');
+        Route::post('forgot-password', [CustomerAuthController::class, 'forgotPassword'])
+            ->middleware('throttle:5,1')
+            ->name('forgot-password');
+        Route::post('reset-password', [CustomerAuthController::class, 'resetPassword'])
+            ->middleware('throttle:5,1')
+            ->name('reset-password');
+
+        Route::middleware('auth:customer_api')->group(function (): void {
+            Route::get('me', [CustomerAuthController::class, 'me'])->name('me');
+            Route::post('logout', [CustomerAuthController::class, 'logout'])->name('logout');
+        });
+    });
+
+    Route::middleware('auth:customer_api')->group(function (): void {
+        Route::get('checkout/summary', [CheckoutController::class, 'summary'])->name('checkout.summary');
+        Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
+        Route::post('orders/{orderNumber}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    });
+});

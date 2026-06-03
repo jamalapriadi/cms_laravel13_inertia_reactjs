@@ -4,9 +4,11 @@ namespace App\Models\Shop;
 
 use App\Notifications\CustomerResetPasswordNotification;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class Customer extends Authenticatable
 {
@@ -48,6 +50,25 @@ class Customer extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function accessTokens(): HasMany
+    {
+        return $this->hasMany(CustomerAccessToken::class);
+    }
+
+    public function createAccessToken(string $name = 'customer-api'): string
+    {
+        $plainTextToken = Str::random(64);
+        $expirationMinutes = config('customer.api_token_expiration_minutes');
+
+        $this->accessTokens()->create([
+            'name' => $name,
+            'token' => hash('sha256', $plainTextToken),
+            'expires_at' => $expirationMinutes ? now()->addMinutes((int) $expirationMinutes) : null,
+        ]);
+
+        return $plainTextToken;
     }
 
     public function sendPasswordResetNotification($token): void

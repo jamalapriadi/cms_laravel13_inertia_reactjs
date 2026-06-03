@@ -17,6 +17,13 @@ class Cart extends Model
 
     protected $fillable = [
         'customer_id',
+        'cart_token',
+        'status',
+        'checked_out_at',
+    ];
+
+    protected $casts = [
+        'checked_out_at' => 'datetime',
     ];
 
     protected $appends = [

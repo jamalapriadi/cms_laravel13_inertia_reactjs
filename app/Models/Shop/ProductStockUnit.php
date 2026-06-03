@@ -23,6 +23,8 @@ class ProductStockUnit extends Model
     protected $fillable = [
         'product_id',
         'product_variant_id',
+        'reserved_order_id',
+        'reserved_at',
         'incoming_goods_item_id',
         'imei_serial_number',
         'barcode',
@@ -35,6 +37,7 @@ class ProductStockUnit extends Model
 
     protected $casts = [
         'battery_health' => 'integer',
+        'reserved_at' => 'datetime',
     ];
 
     public function product()
@@ -55,6 +58,11 @@ class ProductStockUnit extends Model
     public function incomingGoodsItem()
     {
         return $this->belongsTo(IncomingGoodsItem::class, 'incoming_goods_item_id');
+    }
+
+    public function reservedOrder()
+    {
+        return $this->belongsTo(Order::class, 'reserved_order_id');
     }
 
     public function activities(): HasMany

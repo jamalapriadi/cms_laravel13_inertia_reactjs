@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Shop\CustomerAccessToken;
 use App\Models\Shop\ProductStockUnit;
 use App\Observers\ProductStockUnitObserver;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +39,28 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        Auth::viaRequest('customer-token', function (Request $request) {
+            $plainTextToken = $request->bearerToken();
+
+            if (! $plainTextToken) {
+                return null;
+            }
+
+            $accessToken = CustomerAccessToken::query()
+                ->with('customer')
+                ->where('token', hash('sha256', $plainTextToken))
+                ->first();
+
+            if (! $accessToken || $accessToken->isExpired() || ! $accessToken->customer?->is_active) {
+                return null;
+            }
+
+            $accessToken->forceFill(['last_used_at' => now()])->save();
+            $request->attributes->set('customer_access_token', $accessToken);
+
+            return $accessToken->customer;
+        });
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
