@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Dashboard\Media;
 use App\Services\Dashboard\MediaService;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -82,7 +83,7 @@ class MediaController extends Controller
                 'type' => 'file',
                 'name' => basename($file),
                 'path' => $file,
-                'url' => Storage::url($file),
+                'url' => Storage::disk('public')->url($file),
                 'mime_type' => $disk->mimeType($file),
                 'size' => $disk->size($file),
                 'last_modified' => date('Y-m-d H:i:s', $disk->lastModified($file)),
@@ -138,8 +139,8 @@ class MediaController extends Controller
         );
 
         return response()->json([
-            'location' => asset('storage/'.$path->path),
-            'url' => Storage::disk($path->disk)->url($path->path),
+            'location' => MediaPath::url($path->path),
+            'url' => MediaPath::url($path->path),
             'media' => $path,
         ]);
     }
@@ -213,7 +214,7 @@ class MediaController extends Controller
         $path = $request->file('image')->store('posts', 'public');
 
         return response()->json([
-            'url' => asset('storage/'.$path),
+            'url' => Storage::disk('public')->url($path),
         ]);
     }
 }

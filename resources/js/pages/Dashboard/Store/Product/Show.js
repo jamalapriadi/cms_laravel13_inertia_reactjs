@@ -8,6 +8,7 @@ var button_1 = require("@/components/ui/button");
 var card_1 = require("@/components/ui/card");
 var table_1 = require("@/components/ui/table");
 var master_data_layout_1 = require("@/layouts/master-data-layout");
+var media_1 = require("@/lib/media");
 var money = function (value) {
     return "\u00A5".concat(Number(value !== null && value !== void 0 ? value : 0).toLocaleString('ja-JP'));
 };
@@ -49,7 +50,7 @@ function Show(_a) {
                             </card_1.CardTitle>
                         </card_1.CardHeader>
                         <card_1.CardContent className="space-y-4">
-                            {product.thumbnail ? (<img src={"/storage/".concat(product.thumbnail)} alt={product.name} className="aspect-square w-full rounded-lg border object-cover"/>) : (<div className="flex aspect-square w-full items-center justify-center rounded-lg border bg-muted text-muted-foreground">
+                            {product.thumbnail ? (<img src={(0, media_1.mediaUrl)(product.thumbnail) || ''} alt={product.name} className="aspect-square w-full rounded-lg border object-cover"/>) : (<div className="flex aspect-square w-full items-center justify-center rounded-lg border bg-muted text-muted-foreground">
                                     No Image
                                 </div>)}
                             <div className="grid grid-cols-2 gap-3 text-sm">

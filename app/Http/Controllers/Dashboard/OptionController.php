@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OptionRequest;
 use App\Services\Dashboard\OptionService;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -40,7 +41,14 @@ class OptionController extends Controller
             $urlField = $field.'_url';
 
             if ($request->has($urlField)) {
-                $data[$field] = $request->input($urlField);
+                $path = MediaPath::normalize($request->input($urlField), requireExists: false);
+
+                if ($path !== null) {
+                    $data[$field] = $path;
+                } else {
+                    unset($data[$field]);
+                }
+
                 unset($data[$urlField]);
 
                 continue;

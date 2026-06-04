@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import MediaLibraryUploadModal from '@/components/media/MediaLibraryUploadModal';
 import type { MediaLibraryItem } from '@/components/media/MediaLibraryUploadModal';
 import { Button } from '@/components/ui/button';
+import { useMediaUrl } from '@/lib/media';
 
 interface Props {
     value?: string | null;
@@ -16,13 +17,7 @@ export default function MediaImagePicker({ value, onChange, label }: Props) {
     const [items, setItems] = useState<MediaLibraryItem[]>([]);
     const [currentPath, setCurrentPath] = useState('');
     const [loading, setLoading] = useState(false);
-    const previewUrl = value
-        ? value.startsWith('http://') ||
-          value.startsWith('https://') ||
-          value.startsWith('/')
-            ? value
-            : `/storage/${value}`
-        : null;
+    const previewUrl = useMediaUrl(value);
 
     const loadLibrary = async (path = '') => {
         setLoading(true);

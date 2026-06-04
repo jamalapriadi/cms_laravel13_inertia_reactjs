@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/master-data-layout';
+import { mediaUrl } from '@/lib/media';
 import type { LaravelPagination } from '@/types/LaravelPagination';
 
 interface Product {
@@ -62,6 +63,7 @@ const money = (value: string | number | null | undefined) =>
     `¥${Number(value ?? 0).toLocaleString('ja-JP')}`;
 
 export default function Index({ variantItems, products, filters }: Props) {
+    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;
     const [search, setSearch] = useState(filters.search || '');
     const [productId, setProductId] = useState(filters.product_id || '');
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -133,7 +135,7 @@ export default function Index({ variantItems, products, filters }: Props) {
             render: (row: VariantItem) =>
                 row.image ? (
                     <img
-                        src={`/storage/${row.image}`}
+                        src={mediaUrl(row.image, mediaUrlBase) ?? ''}
                         alt={row.name}
                         className="h-10 w-10 rounded-md border object-cover"
                     />

@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { DataTable } from '@/components/DataTable';
@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 
 import AppLayout from '@/layouts/master-data-layout';
+import { mediaUrl } from '@/lib/media';
 
 import type { LaravelPagination } from '@/types/LaravelPagination';
 
@@ -49,6 +50,7 @@ interface Props {
 }
 
 export default function Index({ images, products, filters }: Props) {
+    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;
     const [productId, setProductId] = useState(filters.product_id || '');
 
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -90,7 +92,7 @@ export default function Index({ images, products, filters }: Props) {
             label: 'Image',
             render: (row: ProductImage) => (
                 <img
-                    src={`/storage/${row.image}`}
+                    src={mediaUrl(row.image, mediaUrlBase) ?? ''}
                     alt="Product Image"
                     className="h-16 w-16 rounded-md border bg-muted object-contain p-1"
                 />

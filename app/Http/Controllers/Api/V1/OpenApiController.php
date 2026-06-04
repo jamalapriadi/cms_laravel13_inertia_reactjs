@@ -71,7 +71,7 @@ class OpenApiController extends Controller
                                                     'title' => 'Judul Post',
                                                     'slug' => 'judul-post',
                                                     'excerpt' => 'Ringkasan post',
-                                                    'thumbnail' => 'https://gitatrading-store.com/storage/posts/thumbnail.jpg',
+                                                    'thumbnail' => 'https://img.gitatrading-store.com/media/2026/06/post-thumbnail.webp',
                                                     'published_at' => '2026-06-02T00:00:00.000000Z',
                                                     'categories' => [
                                                         [
@@ -126,7 +126,7 @@ class OpenApiController extends Controller
                                                 'slug' => 'judul-post',
                                                 'excerpt' => 'Ringkasan post',
                                                 'content' => '[{"type":"paragraph","data":{"text":"Isi block paragraph"}}]',
-                                                'thumbnail' => 'https://gitatrading-store.com/storage/posts/thumbnail.jpg',
+                                                'thumbnail' => 'https://img.gitatrading-store.com/media/2026/06/post-thumbnail.webp',
                                                 'published_at' => '2026-06-02T00:00:00.000000Z',
                                                 'categories' => [
                                                     [

@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources\Store;
 
+use App\Models\Shop\ProductCollection;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
-/** @mixin \App\Models\Shop\ProductCollection */
+/** @mixin ProductCollection */
 class ProductCollectionResource extends JsonResource
 {
     /**
@@ -43,6 +44,6 @@ class ProductCollectionResource extends JsonResource
             return null;
         }
 
-        return Storage::disk('public')->url($path);
+        return MediaPath::url($path);
     }
 }

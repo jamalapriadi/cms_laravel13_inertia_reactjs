@@ -51,6 +51,7 @@ class HandleInertiaRequests extends Middleware
             'customerAuth' => [
                 'customer' => $customer,
             ],
+            'mediaUrlBase' => rtrim((string) config('filesystems.disks.public.url'), '/'),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

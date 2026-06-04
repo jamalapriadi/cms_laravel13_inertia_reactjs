@@ -9,6 +9,7 @@ use App\Models\Shop\SiteContent;
 use App\Models\Shop\SiteContentTranslation;
 use App\Services\ActiveLanguageService;
 use App\Services\Api\V1\SiteContentApiService;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -146,7 +147,7 @@ class SiteContentController extends Controller
         $translationsByLocale = collect($translations)
             ->filter(fn ($translation) => is_array($translation) && ! empty($translation['locale']))
             ->mapWithKeys(fn (array $translation) => [
-                strtolower((string) $translation['locale']) => $translation['value'] ?? null,
+                strtolower((string) $translation['locale']) => $this->normalizeContentValue($siteContent, $translation['value'] ?? null),
             ]);
 
         foreach ($this->activeLanguageService->activeCodes() as $locale) {
@@ -160,6 +161,15 @@ class SiteContentController extends Controller
                 ],
             );
         }
+    }
+
+    private function normalizeContentValue(SiteContent $siteContent, mixed $value): mixed
+    {
+        if (! is_string($value) || $siteContent->type !== 'image') {
+            return $value;
+        }
+
+        return MediaPath::normalize($value, requireExists: false) ?? $value;
     }
 
     private function parseNullableBoolean(mixed $value): ?bool

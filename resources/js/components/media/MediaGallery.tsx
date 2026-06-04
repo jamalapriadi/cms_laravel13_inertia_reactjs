@@ -1,4 +1,5 @@
 import { usePage } from '@inertiajs/react';
+import { mediaUrl } from '@/lib/media';
 import type { Media } from '@/types/media';
 
 interface Props {
@@ -7,7 +8,7 @@ interface Props {
 }
 
 export default function MediaGallery({ selected, onSelect }: Props) {
-    const { media } = usePage().props as any;
+    const { media, mediaUrlBase } = usePage().props as any;
 
     return (
         <div className="grid grid-cols-3 gap-4 md:grid-cols-5 lg:grid-cols-7">
@@ -20,7 +21,7 @@ export default function MediaGallery({ selected, onSelect }: Props) {
                     }`}
                 >
                     <img
-                        src={`/storage/${item.path}`}
+                        src={item.url ?? mediaUrl(item.path, mediaUrlBase) ?? ''}
                         className="h-28 w-full object-cover"
                     />
                 </div>

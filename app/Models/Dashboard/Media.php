@@ -2,9 +2,9 @@
 
 namespace App\Models\Dashboard;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Model;
 
 class Media extends Model
 {
@@ -40,12 +40,13 @@ class Media extends Model
 
     public function getUrlAttribute()
     {
-        return asset('storage/' . $this->path);
+        return MediaPath::url($this->path);
     }
 
     public function url()
     {
-        return Storage::disk($this->disk)->url($this->path);
+        return $this->disk === 'public'
+            ? MediaPath::url($this->path)
+            : null;
     }
-    
 }

@@ -5,9 +5,9 @@ namespace App\Http\Resources\Api\V1;
 use App\Models\PostMeta;
 use App\Models\PostTranslation;
 use App\Models\TermTaxonomy;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class PostResource extends JsonResource
@@ -83,11 +83,7 @@ class PostResource extends JsonResource
             return null;
         }
 
-        if (Str::startsWith($path, ['http://', 'https://', '/'])) {
-            return $path;
-        }
-
-        return Storage::disk('public')->url($path);
+        return MediaPath::url($path);
     }
 
     protected function excerpt(?string $content): ?string

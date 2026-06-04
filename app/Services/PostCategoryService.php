@@ -1,9 +1,11 @@
-<?php 
+<?php
+
 // app/Services/PostCategoryService.php
 
 namespace App\Services;
 
 use App\Models\PostCategory;
+use App\Support\MediaPath;
 use Illuminate\Support\Str;
 
 class PostCategoryService
@@ -27,12 +29,21 @@ class PostCategoryService
         $data['slug'] = Str::slug($data['category_name']);
         $data['user_id'] = auth()->id();
 
+        if (array_key_exists('featured_image', $data)) {
+            $data['featured_image'] = MediaPath::normalize($data['featured_image'], requireExists: false);
+        }
+
         return PostCategory::create($data);
     }
 
     public function update(PostCategory $category, $data)
     {
         $data['slug'] = Str::slug($data['category_name']);
+
+        if (array_key_exists('featured_image', $data)) {
+            $data['featured_image'] = MediaPath::normalize($data['featured_image'], requireExists: false);
+        }
+
         return $category->update($data);
     }
 

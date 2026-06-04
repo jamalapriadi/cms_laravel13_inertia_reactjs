@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import AppLayout from '@/layouts/master-data-layout';
+import { useMediaUrl } from '@/lib/media';
 
 interface Product {
     id: string;
@@ -44,6 +45,7 @@ const imageSchema = z.object({
 type ImageFormData = z.infer<typeof imageSchema>;
 
 export default function Edit({ productImage: initialImage, products }: Props) {
+    const initialImageUrl = useMediaUrl(initialImage.image);
     const [processing, setProcessing] = useState(false);
 
     const {
@@ -144,7 +146,7 @@ export default function Edit({ productImage: initialImage, products }: Props) {
                                 <Label>Current Image</Label>
                                 <div>
                                     <img
-                                        src={`/storage/${initialImage.image}`}
+                                        src={initialImageUrl ?? ''}
                                         alt="Current Product Image"
                                         className="h-32 w-32 rounded-lg border bg-muted object-contain p-1"
                                     />

@@ -6,6 +6,7 @@ use App\Models\Block;
 use App\Models\Post;
 use App\Models\Term;
 use App\Models\TermTaxonomy;
+use App\Support\MediaPath;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -132,7 +133,7 @@ class PostService
         if (! empty($data['featured_image'])) {
             $post->metas()->updateOrCreate(
                 ['meta_key' => 'featured_image'],
-                ['meta_value' => $data['featured_image']]
+                ['meta_value' => MediaPath::normalize($data['featured_image'], requireExists: false) ?? $data['featured_image']]
             );
 
             return;

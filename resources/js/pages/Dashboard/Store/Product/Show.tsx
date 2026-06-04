@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     Image as ImageIcon,
@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/table';
 import Textarea from '@/components/ui/textarea';
 import AppLayout from '@/layouts/master-data-layout';
+import { mediaUrl } from '@/lib/media';
 
 interface ProductImage {
     id: string;
@@ -124,6 +125,7 @@ const money = (value: string | number | null | undefined) =>
     `¥${Number(value ?? 0).toLocaleString('ja-JP')}`;
 
 export default function Show({ product }: Props) {
+    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;
     const [editingSpecificationId, setEditingSpecificationId] = useState<
         string | null
     >(null);
@@ -336,7 +338,7 @@ export default function Show({ product }: Props) {
                         <CardContent className="space-y-4">
                             {product.thumbnail ? (
                                 <img
-                                    src={`/storage/${product.thumbnail}`}
+                                    src={mediaUrl(product.thumbnail, mediaUrlBase) ?? ''}
                                     alt={product.name}
                                     className="aspect-square w-full rounded-lg border object-cover transition-transform duration-300 hover:scale-[1.02]"
                                 />
@@ -775,7 +777,7 @@ export default function Show({ product }: Props) {
                                             className="rounded-lg border p-3 transition-all hover:-translate-y-0.5 hover:shadow-sm"
                                         >
                                             <img
-                                                src={`/storage/${image.image}`}
+                                                src={mediaUrl(image.image, mediaUrlBase) ?? ''}
                                                 alt={product.name}
                                                 className="h-40 w-full rounded-md border bg-muted object-cover"
                                             />

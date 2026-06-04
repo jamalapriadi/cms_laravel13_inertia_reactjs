@@ -1,4 +1,5 @@
 import { Media } from '@/types/media';
+import { useMediaUrl } from '@/lib/media';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { router } from '@inertiajs/react';
@@ -30,6 +31,7 @@ interface Props {
 }
 
 export default function DetailModal({ media, isOpen, onClose }: Props) {
+    const mediaPreviewUrl = useMediaUrl(media?.path);
     const [altText, setAltText] = useState(media?.alt || '');
     const [isDeleting, setIsDeleting] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -105,7 +107,7 @@ export default function DetailModal({ media, isOpen, onClose }: Props) {
 
     if (!media) return null;
 
-    const imageUrl = `/storage/${media.path}`;
+    const imageUrl = media.url ?? mediaPreviewUrl ?? '';
     const isImage = media.mime_type.startsWith('image');
 
     return (
@@ -163,7 +165,7 @@ export default function DetailModal({ media, isOpen, onClose }: Props) {
                                     UKURAN
                                 </label>
                                 <p className="text-sm">
-                                    {formatFileSize(media.size)}
+                                    {formatFileSize(media.size ?? undefined)}
                                 </p>
                             </div>
 

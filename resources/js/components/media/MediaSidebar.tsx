@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { useMediaUrl } from '@/lib/media';
 import type { Media } from '@/types/media';
 
 interface Props {
@@ -7,20 +8,24 @@ interface Props {
 }
 
 export default function MediaSidebar({ media, onUpdate }: Props) {
+    const previewUrl = useMediaUrl(media?.path);
+
     if (!media) return <p className="text-muted-foreground">Select a file</p>;
+
+    const selectedMedia = media;
 
     function updateAlt(e: React.ChangeEvent<HTMLInputElement>) {
         const value = e.target.value;
 
         router.put(
-            `/dashboard/media/${media.id}`,
+            `/dashboard/media/${selectedMedia.id}`,
             {
                 alt: value,
             },
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    onUpdate({ ...media, alt: value });
+                    onUpdate({ ...selectedMedia, alt: value });
                 },
             },
         );
@@ -29,7 +34,7 @@ export default function MediaSidebar({ media, onUpdate }: Props) {
     return (
         <div>
             <img
-                src={`/storage/${media.path}`}
+                src={media.url ?? previewUrl ?? ''}
                 className="mb-4 w-full rounded"
             />
 

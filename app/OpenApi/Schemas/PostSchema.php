@@ -14,7 +14,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'title', type: 'string', example: 'Judul Post'),
         new OA\Property(property: 'slug', type: 'string', example: 'judul-post'),
         new OA\Property(property: 'excerpt', type: 'string', nullable: true, example: 'Ringkasan post'),
-        new OA\Property(property: 'thumbnail', type: 'string', nullable: true, example: 'https://gitatrading-store.com/storage/posts/thumbnail.jpg'),
+        new OA\Property(property: 'thumbnail', type: 'string', nullable: true, example: 'https://img.gitatrading-store.com/media/2026/06/post-thumbnail.webp'),
         new OA\Property(property: 'published_at', type: 'string', format: 'date-time', nullable: true, example: '2026-06-02T00:00:00.000000Z'),
         new OA\Property(
             property: 'categories',

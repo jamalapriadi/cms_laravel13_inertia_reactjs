@@ -1,6 +1,8 @@
+import { usePage } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
+import { mediaUrl, useMediaUrl } from '@/lib/media';
 
 interface Media {
     id: string;
@@ -13,7 +15,9 @@ interface Props {
 }
 
 export default function ImageDropzone({ value, onUploaded }: Props) {
-    const [preview, setPreview] = useState<string | undefined>(value);
+    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;
+    const initialPreview = useMediaUrl(value);
+    const [preview, setPreview] = useState<string | null>(initialPreview);
     const [loading, setLoading] = useState(false);
 
     const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -29,7 +33,7 @@ export default function ImageDropzone({ value, onUploaded }: Props) {
 
             const media = res.data.media;
 
-            setPreview(`/storage/${media.path}`);
+            setPreview(media.url ?? mediaUrl(media.path, mediaUrlBase));
 
             if (onUploaded) onUploaded(media);
         } catch (e) {

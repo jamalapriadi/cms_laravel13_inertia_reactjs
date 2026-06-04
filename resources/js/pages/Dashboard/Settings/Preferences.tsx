@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -10,6 +10,7 @@ import MonacoEditor from '@/components/ui/MonacoEditor';
 import Textarea from '@/components/ui/textarea';
 
 import type { OptionItem } from '@/types/option';
+import { mediaUrl } from '@/lib/media';
 
 interface Props {
     options: OptionItem[];
@@ -28,6 +29,7 @@ const preferenceFields = [
 ] as const;
 
 export default function Preferences({ options }: Props) {
+    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;
     const [initialized, setInitialized] = useState(false);
     const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
     const [mediaItems, setMediaItems] = useState<MediaLibraryItem[]>([]);
@@ -102,15 +104,7 @@ export default function Preferences({ options }: Props) {
             return 'https://www.clipartmax.com/png/middle/293-2939065_apps-home-icon-website-logo-png-transparent-background.png';
         }
 
-        if (
-            url.startsWith('http://') ||
-            url.startsWith('https://') ||
-            url.startsWith('/')
-        ) {
-            return url;
-        }
-
-        return `/storage/${url}`;
+        return mediaUrl(url, mediaUrlBase) ?? url;
     };
 
     /**

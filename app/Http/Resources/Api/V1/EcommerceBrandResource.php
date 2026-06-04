@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class EcommerceBrandResource extends JsonResource
 {
@@ -31,10 +30,6 @@ class EcommerceBrandResource extends JsonResource
             return null;
         }
 
-        if (Str::startsWith($path, ['http://', 'https://', '/'])) {
-            return $path;
-        }
-
-        return Storage::disk('public')->url($path);
+        return MediaPath::url($path);
     }
 }
