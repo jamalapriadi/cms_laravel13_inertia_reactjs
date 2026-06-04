@@ -38,25 +38,25 @@ return [
             'report' => false,
         ],
 
-        // 'public' => [
-        //     'driver' => 'local',
-        //     'root' => storage_path('app/public'),
-        //     'url' => env('IMG_URL')
-        //         ? rtrim(env('IMG_URL'), '/')
-        //         : rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
-        //     'visibility' => 'public',
-        //     'throw' => true,
-        //     'report' => true,
-        // ],
-
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => env('IMG_URL')
+                ? rtrim(env('IMG_URL'), '/')
+                : rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
-            'throw' => false,
-            'report' => false,
+            'throw' => true,
+            'report' => true,
         ],
+
+        // 'public' => [
+        //     'driver' => 'local',
+        //     'root' => storage_path('app/public'),
+        //     'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+        //     'visibility' => 'public',
+        //     'throw' => false,
+        //     'report' => false,
+        // ],
 
         's3' => [
             'driver' => 's3',
