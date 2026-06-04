@@ -11,22 +11,26 @@ class ProvinceController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Province::query();
+        $props = list_cache()->rememberRequest('wilayah', $request, function () use ($request) {
+            $query = Province::query();
 
-        // 🔎 Search
-        if ($request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+            // 🔎 Search
+            if ($request->search) {
+                $query->where('name', 'like', '%'.$request->search.'%');
+            }
 
-        $provinces = $query
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+            $provinces = $query
+                ->orderBy('name')
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Wilayah/Provinces/Index', [
-            'provinces' => $provinces,
-            'filters' => $request->only(['search']),
-        ]);
+            return [
+                'provinces' => $provinces,
+                'filters' => $request->only(['search']),
+            ];
+        });
+
+        return Inertia::render('Dashboard/Wilayah/Provinces/Index', $props);
     }
 
     public function create()

@@ -1,14 +1,13 @@
-<?php 
+<?php
 
 namespace App\Http\Controllers\Dashboard;
 
-
-use Inertia\Inertia;
-use Illuminate\Support\Str;
+use App\Http\Controllers\Controller;
 use App\Models\Term;
 use App\Models\TermTaxonomy;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class TaxonomyController extends Controller
 {
@@ -16,21 +15,25 @@ class TaxonomyController extends Controller
     {
         $search = $request->search;
 
-        $taxonomies = TermTaxonomy::with('term')
-            ->where('taxonomy', $taxonomy)
-            ->when($search, function ($q) use ($search) {
-                $q->whereHas('term', function ($q2) use ($search) {
-                    $q2->where('name', 'like', "%{$search}%");
-                });
-            })
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('taxonomies', $request, function () use ($search, $taxonomy) {
+            $taxonomies = TermTaxonomy::with('term')
+                ->where('taxonomy', $taxonomy)
+                ->when($search, function ($q) use ($search) {
+                    $q->whereHas('term', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    });
+                })
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Taxonomies/Index', [
-            'taxonomies' => $taxonomies,
-            'taxonomy' => $taxonomy,
-            'filters' => ['search' => $search],
-        ]);
+            return [
+                'taxonomies' => $taxonomies,
+                'taxonomy' => $taxonomy,
+                'filters' => ['search' => $search],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Taxonomies/Index', $props);
     }
 
     public function create($taxonomy)

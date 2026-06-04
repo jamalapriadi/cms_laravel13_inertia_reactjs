@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\ProductIndexRequest;
 use App\Http\Resources\Api\V1\ProductDetailResource;
 use App\Http\Resources\Api\V1\ProductResource;
 use App\Models\Shop\Product;
+use App\Services\Cache\ListCacheService;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -20,50 +21,57 @@ class ProductController extends Controller
         $filters = $request->validated();
         $perPage = (int) ($filters['per_page'] ?? 12);
 
-        $products = $this->publicProductQuery()
-            ->when($filters['search'] ?? null, function (Builder $query, string $search): void {
-                $query->where(function (Builder $searchQuery) use ($search): void {
-                    $searchQuery
-                        ->where('name', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%")
-                        ->orWhereHas('brand', fn (Builder $brandQuery) => $brandQuery->where('name', 'like', "%{$search}%"))
-                        ->orWhereHas('category', fn (Builder $categoryQuery) => $categoryQuery->where('name', 'like', "%{$search}%"))
-                        ->orWhereHas('variantItems', fn (Builder $variantQuery) => $variantQuery->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%"));
+        $payload = app(ListCacheService::class)->rememberRequest('api.products', $request, function () use ($filters, $perPage, $request): array {
+            $products = $this->publicProductQuery()
+                ->when($filters['search'] ?? null, function (Builder $query, string $search): void {
+                    $query->where(function (Builder $searchQuery) use ($search): void {
+                        $searchQuery
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('slug', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%")
+                            ->orWhere('description', 'like', "%{$search}%")
+                            ->orWhereHas('brand', fn (Builder $brandQuery) => $brandQuery->where('name', 'like', "%{$search}%"))
+                            ->orWhereHas('category', fn (Builder $categoryQuery) => $categoryQuery->where('name', 'like', "%{$search}%"))
+                            ->orWhereHas('variantItems', fn (Builder $variantQuery) => $variantQuery->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%"));
+                    });
+                })
+                ->when($filters['category'] ?? null, function (Builder $query, string $category): void {
+                    $query->whereHas('category', function (Builder $categoryQuery) use ($category): void {
+                        $categoryQuery->where('slug', $category)->orWhere('id', $category);
+                    });
+                })
+                ->when($filters['brand'] ?? null, function (Builder $query, string $brand): void {
+                    $query->whereHas('brand', function (Builder $brandQuery) use ($brand): void {
+                        $brandQuery->where('slug', $brand)->orWhere('id', $brand);
+                    });
+                })
+                ->when($filters['collection'] ?? null, function (Builder $query, string $collection): void {
+                    $query->whereHas('collectionItems.collection', function (Builder $collectionQuery) use ($collection): void {
+                        $collectionQuery->active()
+                            ->where(function (Builder $slugQuery) use ($collection): void {
+                                $slugQuery->where('slug', $collection)->orWhere('id', $collection);
+                            });
+                    });
                 });
-            })
-            ->when($filters['category'] ?? null, function (Builder $query, string $category): void {
-                $query->whereHas('category', function (Builder $categoryQuery) use ($category): void {
-                    $categoryQuery->where('slug', $category)->orWhere('id', $category);
-                });
-            })
-            ->when($filters['brand'] ?? null, function (Builder $query, string $brand): void {
-                $query->whereHas('brand', function (Builder $brandQuery) use ($brand): void {
-                    $brandQuery->where('slug', $brand)->orWhere('id', $brand);
-                });
-            })
-            ->when($filters['collection'] ?? null, function (Builder $query, string $collection): void {
-                $query->whereHas('collectionItems.collection', function (Builder $collectionQuery) use ($collection): void {
-                    $collectionQuery->active()
-                        ->where(function (Builder $slugQuery) use ($collection): void {
-                            $slugQuery->where('slug', $collection)->orWhere('id', $collection);
-                        });
-                });
-            });
 
-        $this->applySort($products, (string) ($filters['sort'] ?? 'latest'));
+            $this->applySort($products, (string) ($filters['sort'] ?? 'latest'));
 
-        $paginator = $products->paginate($perPage)->withQueryString();
+            $paginator = $products->paginate($perPage)->withQueryString();
+
+            return [
+                'data' => ProductResource::collection($paginator->getCollection())->resolve($request),
+                'meta' => [
+                    'current_page' => $paginator->currentPage(),
+                    'per_page' => $paginator->perPage(),
+                    'total' => $paginator->total(),
+                    'last_page' => $paginator->lastPage(),
+                ],
+            ];
+        });
 
         return $this->successResponseWithMeta(
-            ProductResource::collection($paginator->getCollection())->resolve($request),
-            [
-                'current_page' => $paginator->currentPage(),
-                'per_page' => $paginator->perPage(),
-                'total' => $paginator->total(),
-                'last_page' => $paginator->lastPage(),
-            ],
+            $payload['data'],
+            $payload['meta'],
             'Products retrieved successfully'
         );
     }

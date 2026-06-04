@@ -3,41 +3,46 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Package;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Package;
 
 class PackageController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Package::query();
+        $props = list_cache()->rememberRequest('packages', $request, function () use ($request) {
+            $query = Package::query();
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('location', 'like', "%{$search}%");
-        }
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%");
+            }
 
-        $packages = $query->latest()->paginate(10)->withQueryString();
-        
-        return Inertia::render('Dashboard/Packages/Index', [
-            'packages' => $packages,
-            'filters'  => $request->only(['search'])
-        ]);
+            $packages = $query->latest()->paginate(10)->withQueryString();
+
+            return [
+                'packages' => $packages,
+                'filters' => $request->only(['search']),
+            ];
+        });
+
+        return Inertia::render('Dashboard/Packages/Index', $props);
     }
 
     public function create()
     {
         return Inertia::render('Dashboard/Packages/Create');
     }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'     => 'required|string|min:3',
+            'name' => 'required|string|min:3',
             'location' => 'required|string',
-            'speed'    => 'required|string',
-            'price'    => 'required|numeric|min:1000',
+            'speed' => 'required|string',
+            'price' => 'required|numeric|min:1000',
         ]);
 
         Package::create($validated);
@@ -48,17 +53,17 @@ class PackageController extends Controller
     public function edit(Package $package)
     {
         return Inertia::render('Dashboard/Packages/Edit', [
-            'package' => $package
+            'package' => $package,
         ]);
     }
 
     public function update(Request $request, Package $package)
     {
         $validated = $request->validate([
-            'name'     => 'required|string|min:3',
+            'name' => 'required|string|min:3',
             'location' => 'required|string',
-            'speed'    => 'required|string',
-            'price'    => 'required|numeric|min:1000',
+            'speed' => 'required|string',
+            'price' => 'required|numeric|min:1000',
         ]);
 
         $package->update($validated);

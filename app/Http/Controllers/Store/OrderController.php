@@ -20,52 +20,56 @@ class OrderController extends Controller
         $status = $request->input('status');
         $paymentStatus = $request->input('payment_status');
 
-        // Calculate summary counts
-        $totalOrders = Order::count();
-        $totalRevenue = Order::where('payment_status', 'paid')->sum('grand_total');
-        $pendingOrders = Order::where('status', 'pending')->count();
-        $processingOrders = Order::where('status', 'processing')->count();
-        $completedOrders = Order::where('status', 'completed')->count();
+        $props = list_cache()->rememberRequest('orders', $request, function () use ($search, $status, $paymentStatus) {
+            // Calculate summary counts
+            $totalOrders = Order::count();
+            $totalRevenue = Order::where('payment_status', 'paid')->sum('grand_total');
+            $pendingOrders = Order::where('status', 'pending')->count();
+            $processingOrders = Order::where('status', 'processing')->count();
+            $completedOrders = Order::where('status', 'completed')->count();
 
-        // Query orders
-        $orders = Order::query()
-            ->with('customer')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('invoice_number', 'like', "%{$search}%")
-                        ->orWhere('customer_name', 'like', "%{$search}%")
-                        ->orWhereHas('customer', function ($customerQuery) use ($search) {
-                            $customerQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%")
-                                ->orWhere('phone', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when($status, function ($query, $status) {
-                $query->where('status', $status);
-            })
-            ->when($paymentStatus, function ($query, $paymentStatus) {
-                $query->where('payment_status', $paymentStatus);
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            // Query orders
+            $orders = Order::query()
+                ->with('customer')
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('invoice_number', 'like', "%{$search}%")
+                            ->orWhere('customer_name', 'like', "%{$search}%")
+                            ->orWhereHas('customer', function ($customerQuery) use ($search) {
+                                $customerQuery->where('name', 'like', "%{$search}%")
+                                    ->orWhere('email', 'like', "%{$search}%")
+                                    ->orWhere('phone', 'like', "%{$search}%");
+                            });
+                    });
+                })
+                ->when($status, function ($query, $status) {
+                    $query->where('status', $status);
+                })
+                ->when($paymentStatus, function ($query, $paymentStatus) {
+                    $query->where('payment_status', $paymentStatus);
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Store/Order/Index', [
-            'orders' => $orders,
-            'summary' => [
-                'total_orders' => (int) $totalOrders,
-                'total_revenue' => (float) $totalRevenue,
-                'pending_orders' => (int) $pendingOrders,
-                'processing_orders' => (int) $processingOrders,
-                'completed_orders' => (int) $completedOrders,
-            ],
-            'filters' => [
-                'search' => $search,
-                'status' => $status,
-                'payment_status' => $paymentStatus,
-            ],
-        ]);
+            return [
+                'orders' => $orders,
+                'summary' => [
+                    'total_orders' => (int) $totalOrders,
+                    'total_revenue' => (float) $totalRevenue,
+                    'pending_orders' => (int) $pendingOrders,
+                    'processing_orders' => (int) $processingOrders,
+                    'completed_orders' => (int) $completedOrders,
+                ],
+                'filters' => [
+                    'search' => $search,
+                    'status' => $status,
+                    'payment_status' => $paymentStatus,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/Order/Index', $props);
     }
 
     /**

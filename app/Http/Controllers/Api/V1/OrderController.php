@@ -7,6 +7,7 @@ use App\Http\Resources\Api\V1\OrderResource;
 use App\Models\Shop\Customer;
 use App\Models\Shop\Order;
 use App\Services\Api\V1\CheckoutService;
+use App\Services\Cache\ListCacheService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,21 +25,28 @@ class OrderController extends Controller
     {
         $perPage = min(max((int) $request->query('per_page', 10), 1), 100);
 
-        $orders = Order::query()
-            ->where('customer_id', $this->customer($request)->id)
-            ->with($this->checkoutService->orderRelations())
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
+        $payload = app(ListCacheService::class)->rememberRequest('api.orders', $request, function () use ($perPage, $request): array {
+            $orders = Order::query()
+                ->where('customer_id', $this->customer($request)->id)
+                ->with($this->checkoutService->orderRelations())
+                ->latest()
+                ->paginate($perPage)
+                ->withQueryString();
+
+            return [
+                'data' => OrderResource::collection($orders->getCollection())->resolve($request),
+                'meta' => [
+                    'current_page' => $orders->currentPage(),
+                    'per_page' => $orders->perPage(),
+                    'total' => $orders->total(),
+                    'last_page' => $orders->lastPage(),
+                ],
+            ];
+        });
 
         return $this->successResponseWithMeta(
-            OrderResource::collection($orders->getCollection())->resolve($request),
-            [
-                'current_page' => $orders->currentPage(),
-                'per_page' => $orders->perPage(),
-                'total' => $orders->total(),
-                'last_page' => $orders->lastPage(),
-            ],
+            $payload['data'],
+            $payload['meta'],
             'Orders retrieved successfully'
         );
     }

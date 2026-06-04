@@ -22,18 +22,22 @@ class BrandController extends Controller
     {
         $search = $request->query('search');
 
-        $brands = Brand::query()
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%");
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('brands', $request, function () use ($search) {
+            $brands = Brand::query()
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', "%{$search}%");
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Store/Brand/Index', [
-            'brands' => $brands,
-            'filters' => ['search' => $search],
-        ]);
+            return [
+                'brands' => $brands,
+                'filters' => ['search' => $search],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/Brand/Index', $props);
     }
 
     /**

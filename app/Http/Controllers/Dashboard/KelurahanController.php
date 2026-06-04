@@ -1,11 +1,11 @@
 <?php
 
 namespace App\Http\Controllers\Dashboard;
-use App\Http\Controllers\Controller;
 
-use App\Models\Dashboard\Kelurahan;
-use App\Models\Dashboard\Kecamatan;
+use App\Http\Controllers\Controller;
 use App\Models\Dashboard\Kabupaten;
+use App\Models\Dashboard\Kecamatan;
+use App\Models\Dashboard\Kelurahan;
 use App\Models\Dashboard\Province;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,29 +14,33 @@ class KelurahanController extends Controller
 {
     public function index(Request $request)
     {
-        $kelurahans = Kelurahan::with('kecamatan.kabupaten.province')
-            ->when($request->provinsi_id, function ($query) use ($request) {
-                $query->whereHas('kecamatan.kabupaten', function ($q) use ($request) {
-                    $q->where('province_id', $request->provinsi_id);
-                });
-            })
-            ->when($request->kabupaten_id, function ($query) use ($request) {
-                $query->whereHas('kecamatan', function ($q) use ($request) {
-                    $q->where('kabupaten_id', $request->kabupaten_id);
-                });
-            })
-            ->when($request->kecamatan_id, function ($query) use ($request) {
-                $query->where('kecamatan_id', $request->kecamatan_id);
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('wilayah', $request, function () use ($request) {
+            $kelurahans = Kelurahan::with('kecamatan.kabupaten.province')
+                ->when($request->provinsi_id, function ($query) use ($request) {
+                    $query->whereHas('kecamatan.kabupaten', function ($q) use ($request) {
+                        $q->where('province_id', $request->provinsi_id);
+                    });
+                })
+                ->when($request->kabupaten_id, function ($query) use ($request) {
+                    $query->whereHas('kecamatan', function ($q) use ($request) {
+                        $q->where('kabupaten_id', $request->kabupaten_id);
+                    });
+                })
+                ->when($request->kecamatan_id, function ($query) use ($request) {
+                    $query->where('kecamatan_id', $request->kecamatan_id);
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Wilayah/Kelurahans/Index', [
-            'kelurahans' => $kelurahans,
-            'provinsis' => Province::orderBy('name')->get(),
-            'filters' => $request->only(['province_id', 'kabupaten_id', 'kecamatan_id'])
-        ]);
+            return [
+                'kelurahans' => $kelurahans,
+                'provinsis' => Province::orderBy('name')->get(),
+                'filters' => $request->only(['province_id', 'kabupaten_id', 'kecamatan_id']),
+            ];
+        });
+
+        return Inertia::render('Dashboard/Wilayah/Kelurahans/Index', $props);
     }
 
     public function create()
@@ -53,7 +57,7 @@ class KelurahanController extends Controller
         $request->validate([
             'id' => 'required|unique:kelurahans,id',
             'kecamatan_id' => 'required|exists:kecamatans,id',
-            'name' => 'required|string|max:255'
+            'name' => 'required|string|max:255',
         ]);
 
         Kelurahan::create($request->all());
@@ -78,12 +82,11 @@ class KelurahanController extends Controller
         ]);
     }
 
-
     public function update(Request $request, Kelurahan $kelurahan)
     {
         $request->validate([
             'kecamatan_id' => 'required|exists:kecamatans,id',
-            'name' => 'required|string|max:255'
+            'name' => 'required|string|max:255',
         ]);
 
         $kelurahan->update($request->only('kecamatan_id', 'name'));
@@ -94,6 +97,7 @@ class KelurahanController extends Controller
     public function destroy(Kelurahan $kelurahan)
     {
         $kelurahan->delete();
+
         return back();
     }
 

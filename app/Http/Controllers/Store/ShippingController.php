@@ -21,76 +21,80 @@ class ShippingController extends Controller
         $status = $request->input('status');
         $courier = $request->input('courier');
 
-        // 1. Calculate General Summary Metrics
-        $totalShipments = Shipping::count();
-        $pendingShipments = Shipping::whereIn('status', ['pending', 'processing'])->count();
-        $shippedShipments = Shipping::where('status', 'shipped')->count();
-        $deliveredShipments = Shipping::where('status', 'delivered')->count();
-        $totalCost = Shipping::sum('shipping_cost');
+        $props = list_cache()->rememberRequest('shipping', $request, function () use ($search, $status, $courier) {
+            // 1. Calculate General Summary Metrics
+            $totalShipments = Shipping::count();
+            $pendingShipments = Shipping::whereIn('status', ['pending', 'processing'])->count();
+            $shippedShipments = Shipping::where('status', 'shipped')->count();
+            $deliveredShipments = Shipping::where('status', 'delivered')->count();
+            $totalCost = Shipping::sum('shipping_cost');
 
-        // 2. Courier Distribution
-        $courierDistribution = Shipping::select('courier', DB::raw('count(*) as count'), DB::raw('sum(shipping_cost) as total_cost'))
-            ->groupBy('courier')
-            ->get()
-            ->map(fn ($item) => [
-                'courier' => $item->courier,
-                'count' => (int) $item->count,
-                'total_cost' => (float) $item->total_cost,
-            ]);
+            // 2. Courier Distribution
+            $courierDistribution = Shipping::select('courier', DB::raw('count(*) as count'), DB::raw('sum(shipping_cost) as total_cost'))
+                ->groupBy('courier')
+                ->get()
+                ->map(fn ($item) => [
+                    'courier' => $item->courier,
+                    'count' => (int) $item->count,
+                    'total_cost' => (float) $item->total_cost,
+                ]);
 
-        // 3. Status Distribution
-        $statusDistribution = Shipping::select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->get()
-            ->map(fn ($item) => [
-                'status' => $item->status,
-                'count' => (int) $item->count,
-            ]);
+            // 3. Status Distribution
+            $statusDistribution = Shipping::select('status', DB::raw('count(*) as count'))
+                ->groupBy('status')
+                ->get()
+                ->map(fn ($item) => [
+                    'status' => $item->status,
+                    'count' => (int) $item->count,
+                ]);
 
-        // 4. Query Shippings
-        $shippings = Shipping::query()
-            ->with(['order'])
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('courier', 'like', "%{$search}%")
-                        ->orWhere('tracking_number', 'like', "%{$search}%")
-                        ->orWhereHas('order', function ($oQ) use ($search) {
-                            $oQ->where('invoice_number', 'like', "%{$search}%")
-                                ->orWhere('customer_name', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when($status, function ($query, $status) {
-                $query->where('status', $status);
-            })
-            ->when($courier, function ($query, $courier) {
-                $query->where('courier', $courier);
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            // 4. Query Shippings
+            $shippings = Shipping::query()
+                ->with(['order'])
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('courier', 'like', "%{$search}%")
+                            ->orWhere('tracking_number', 'like', "%{$search}%")
+                            ->orWhereHas('order', function ($oQ) use ($search) {
+                                $oQ->where('invoice_number', 'like', "%{$search}%")
+                                    ->orWhere('customer_name', 'like', "%{$search}%");
+                            });
+                    });
+                })
+                ->when($status, function ($query, $status) {
+                    $query->where('status', $status);
+                })
+                ->when($courier, function ($query, $courier) {
+                    $query->where('courier', $courier);
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        // 5. Unique couriers list for filter dropdown
-        $couriers = Shipping::distinct()->pluck('courier')->filter()->values();
+            // 5. Unique couriers list for filter dropdown
+            $couriers = Shipping::distinct()->pluck('courier')->filter()->values();
 
-        return Inertia::render('Dashboard/Store/Shipping/Index', [
-            'shippings' => $shippings,
-            'couriers' => $couriers,
-            'summary' => [
-                'total_shipments' => $totalShipments,
-                'pending_shipments' => $pendingShipments,
-                'shipped_shipments' => $shippedShipments,
-                'delivered_shipments' => $deliveredShipments,
-                'total_cost' => (float) $totalCost,
-                'courier_distribution' => $courierDistribution,
-                'status_distribution' => $statusDistribution,
-            ],
-            'filters' => [
-                'search' => $search,
-                'status' => $status,
-                'courier' => $courier,
-            ],
-        ]);
+            return [
+                'shippings' => $shippings,
+                'couriers' => $couriers,
+                'summary' => [
+                    'total_shipments' => $totalShipments,
+                    'pending_shipments' => $pendingShipments,
+                    'shipped_shipments' => $shippedShipments,
+                    'delivered_shipments' => $deliveredShipments,
+                    'total_cost' => (float) $totalCost,
+                    'courier_distribution' => $courierDistribution,
+                    'status_distribution' => $statusDistribution,
+                ],
+                'filters' => [
+                    'search' => $search,
+                    'status' => $status,
+                    'courier' => $courier,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/Shipping/Index', $props);
     }
 
     /**

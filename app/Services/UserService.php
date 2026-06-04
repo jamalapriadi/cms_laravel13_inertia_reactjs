@@ -16,7 +16,7 @@ class UserService
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%");
                 });
             })
             ->when($role, function ($query) use ($role) {
@@ -45,8 +45,9 @@ class UserService
             'password' => Hash::make($data['password']),
         ]);
 
-        if (!empty($data['roles'])) {
+        if (! empty($data['roles'])) {
             $user->syncRoles($data['roles']);
+            list_cache()->clearMany(['users', 'roles']);
         }
 
         return $user;
@@ -59,13 +60,14 @@ class UserService
             'email' => $data['email'],
         ]);
 
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $user->update([
                 'password' => Hash::make($data['password']),
             ]);
         }
 
         $user->syncRoles($data['roles'] ?? []);
+        list_cache()->clearMany(['users', 'roles']);
 
         return $user;
     }

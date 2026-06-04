@@ -29,39 +29,43 @@ class SiteContentController extends Controller
         $type = trim((string) $request->query('type', ''));
         $isActive = $this->parseNullableBoolean($request->query('is_active'));
 
-        $siteContents = SiteContent::query()
-            ->with('translations')
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($builder) use ($search) {
-                    $builder->where('key', 'like', "%{$search}%")
-                        ->orWhere('group', 'like', "%{$search}%")
-                        ->orWhere('type', 'like', "%{$search}%")
-                        ->orWhereHas('translations', function ($translationQuery) use ($search) {
-                            $translationQuery->where('value', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->group($group !== '' ? $group : null)
-            ->type($type !== '' ? $type : null)
-            ->when($isActive !== null, fn ($query) => $query->where('is_active', $isActive))
-            ->orderBy('group')
-            ->orderBy('sort_order')
-            ->paginate(10)
-            ->withQueryString()
-            ->through(fn (SiteContent $content) => SiteContentResource::make($content)->resolve());
+        $props = list_cache()->rememberRequest('site-contents', $request, function () use ($search, $group, $type, $isActive) {
+            $siteContents = SiteContent::query()
+                ->with('translations')
+                ->when($search !== '', function ($query) use ($search) {
+                    $query->where(function ($builder) use ($search) {
+                        $builder->where('key', 'like', "%{$search}%")
+                            ->orWhere('group', 'like', "%{$search}%")
+                            ->orWhere('type', 'like', "%{$search}%")
+                            ->orWhereHas('translations', function ($translationQuery) use ($search) {
+                                $translationQuery->where('value', 'like', "%{$search}%");
+                            });
+                    });
+                })
+                ->group($group !== '' ? $group : null)
+                ->type($type !== '' ? $type : null)
+                ->when($isActive !== null, fn ($query) => $query->where('is_active', $isActive))
+                ->orderBy('group')
+                ->orderBy('sort_order')
+                ->paginate(10)
+                ->withQueryString()
+                ->through(fn (SiteContent $content) => SiteContentResource::make($content)->resolve());
 
-        return Inertia::render('Dashboard/Config/SiteContent/Index', [
-            'siteContents' => $siteContents,
-            'activeLanguages' => $this->activeLanguages(),
-            'groupOptions' => $this->groupOptions(),
-            'typeOptions' => $this->typeOptions(),
-            'filters' => [
-                'search' => $search,
-                'group' => $group,
-                'type' => $type,
-                'is_active' => $isActive,
-            ],
-        ]);
+            return [
+                'siteContents' => $siteContents,
+                'activeLanguages' => $this->activeLanguages(),
+                'groupOptions' => $this->groupOptions(),
+                'typeOptions' => $this->typeOptions(),
+                'filters' => [
+                    'search' => $search,
+                    'group' => $group,
+                    'type' => $type,
+                    'is_active' => $isActive,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Config/SiteContent/Index', $props);
     }
 
     public function create(): Response

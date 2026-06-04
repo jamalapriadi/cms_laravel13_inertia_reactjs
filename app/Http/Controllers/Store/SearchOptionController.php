@@ -27,113 +27,115 @@ class SearchOptionController extends Controller
         $search = trim($data['query'] ?? '');
         $limit = (int) ($data['limit'] ?? 20);
 
-        $options = match ($data['type']) {
-            'brands' => Brand::query()
-                ->select('id', 'name')
-                ->where('is_active', true)
-                ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
-                ->orderBy('name')
-                ->limit($limit)
-                ->get()
-                ->map(fn (Brand $brand) => [
-                    'value' => $brand->id,
-                    'label' => $brand->name,
-                ]),
-            'categories' => Category::query()
-                ->select('id', 'name')
-                ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
-                ->orderBy('name')
-                ->limit($limit)
-                ->get()
-                ->map(fn (Category $category) => [
-                    'value' => $category->id,
-                    'label' => $category->name,
-                ]),
-            'orders' => $this->orders($search, $limit),
-            'products' => Product::query()
-                ->select('id', 'name')
-                ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
-                ->orderBy('name')
-                ->limit($limit)
-                ->get()
-                ->map(fn (Product $product) => [
-                    'value' => $product->id,
-                    'label' => $product->name,
-                ]),
-            'shipping-orders' => $this->orders($search, $limit, onlyWithoutShipping: true),
-            'stock-units' => ProductStockUnit::query()
-                ->with('variant.product')
-                ->when($search !== '', function ($query) use ($search) {
-                    $query->where('imei_serial_number', 'like', "%{$search}%")
-                        ->orWhereHas('variant', function ($variantQuery) use ($search) {
-                            $variantQuery->where('sku', 'like', "%{$search}%")
+        $options = list_cache()->rememberRequest('search-options', $request, function () use ($data, $search, $limit) {
+            return match ($data['type']) {
+                'brands' => Brand::query()
+                    ->select('id', 'name')
+                    ->where('is_active', true)
+                    ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
+                    ->orderBy('name')
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn (Brand $brand) => [
+                        'value' => $brand->id,
+                        'label' => $brand->name,
+                    ]),
+                'categories' => Category::query()
+                    ->select('id', 'name')
+                    ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
+                    ->orderBy('name')
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn (Category $category) => [
+                        'value' => $category->id,
+                        'label' => $category->name,
+                    ]),
+                'orders' => $this->orders($search, $limit),
+                'products' => Product::query()
+                    ->select('id', 'name')
+                    ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
+                    ->orderBy('name')
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn (Product $product) => [
+                        'value' => $product->id,
+                        'label' => $product->name,
+                    ]),
+                'shipping-orders' => $this->orders($search, $limit, onlyWithoutShipping: true),
+                'stock-units' => ProductStockUnit::query()
+                    ->with('variant.product')
+                    ->when($search !== '', function ($query) use ($search) {
+                        $query->where('imei_serial_number', 'like', "%{$search}%")
+                            ->orWhereHas('variant', function ($variantQuery) use ($search) {
+                                $variantQuery->where('sku', 'like', "%{$search}%")
+                                    ->orWhere('name', 'like', "%{$search}%")
+                                    ->orWhereHas('product', fn ($productQuery) => $productQuery->where('name', 'like', "%{$search}%"));
+                            });
+                    })
+                    ->latest()
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn (ProductStockUnit $unit) => [
+                        'value' => $unit->id,
+                        'label' => $unit->imei_serial_number,
+                        'description' => trim(($unit->variant?->product?->name ?? 'N/A').' / '.($unit->variant?->name ?? 'N/A').' ('.($unit->variant?->sku ?? 'N/A').')'),
+                    ]),
+                'suppliers' => Supplier::query()
+                    ->select('id', 'name', 'code')
+                    ->where('is_active', true)
+                    ->when($search !== '', function ($query) use ($search) {
+                        $query->where(function ($searchQuery) use ($search) {
+                            $searchQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('code', 'like', "%{$search}%");
+                        });
+                    })
+                    ->orderBy('name')
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn (Supplier $supplier) => [
+                        'value' => $supplier->id,
+                        'label' => $supplier->name,
+                        'description' => $supplier->code,
+                    ]),
+                'units' => Unit::query()
+                    ->select('id', 'name', 'code')
+                    ->where('is_active', true)
+                    ->when($search !== '', function ($query) use ($search) {
+                        $query->where(function ($searchQuery) use ($search) {
+                            $searchQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('code', 'like', "%{$search}%");
+                        });
+                    })
+                    ->orderBy('name')
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn (Unit $unit) => [
+                        'value' => $unit->id,
+                        'label' => $unit->name,
+                        'description' => $unit->code,
+                    ]),
+                'variant-items' => VariantItem::query()
+                    ->with('product')
+                    ->where('is_active', true)
+                    ->when($search !== '', function ($query) use ($search) {
+                        $query->where(function ($searchQuery) use ($search) {
+                            $searchQuery->where('sku', 'like', "%{$search}%")
                                 ->orWhere('name', 'like', "%{$search}%")
                                 ->orWhereHas('product', fn ($productQuery) => $productQuery->where('name', 'like', "%{$search}%"));
                         });
-                })
-                ->latest()
-                ->limit($limit)
-                ->get()
-                ->map(fn (ProductStockUnit $unit) => [
-                    'value' => $unit->id,
-                    'label' => $unit->imei_serial_number,
-                    'description' => trim(($unit->variant?->product?->name ?? 'N/A').' / '.($unit->variant?->name ?? 'N/A').' ('.($unit->variant?->sku ?? 'N/A').')'),
-                ]),
-            'suppliers' => Supplier::query()
-                ->select('id', 'name', 'code')
-                ->where('is_active', true)
-                ->when($search !== '', function ($query) use ($search) {
-                    $query->where(function ($searchQuery) use ($search) {
-                        $searchQuery->where('name', 'like', "%{$search}%")
-                            ->orWhere('code', 'like', "%{$search}%");
-                    });
-                })
-                ->orderBy('name')
-                ->limit($limit)
-                ->get()
-                ->map(fn (Supplier $supplier) => [
-                    'value' => $supplier->id,
-                    'label' => $supplier->name,
-                    'description' => $supplier->code,
-                ]),
-            'units' => Unit::query()
-                ->select('id', 'name', 'code')
-                ->where('is_active', true)
-                ->when($search !== '', function ($query) use ($search) {
-                    $query->where(function ($searchQuery) use ($search) {
-                        $searchQuery->where('name', 'like', "%{$search}%")
-                            ->orWhere('code', 'like', "%{$search}%");
-                    });
-                })
-                ->orderBy('name')
-                ->limit($limit)
-                ->get()
-                ->map(fn (Unit $unit) => [
-                    'value' => $unit->id,
-                    'label' => $unit->name,
-                    'description' => $unit->code,
-                ]),
-            'variant-items' => VariantItem::query()
-                ->with('product')
-                ->where('is_active', true)
-                ->when($search !== '', function ($query) use ($search) {
-                    $query->where(function ($searchQuery) use ($search) {
-                        $searchQuery->where('sku', 'like', "%{$search}%")
-                            ->orWhere('name', 'like', "%{$search}%")
-                            ->orWhereHas('product', fn ($productQuery) => $productQuery->where('name', 'like', "%{$search}%"));
-                    });
-                })
-                ->orderBy('sku')
-                ->limit($limit)
-                ->get()
-                ->map(fn (VariantItem $variant) => [
-                    'value' => $variant->id,
-                    'label' => trim(($variant->product?->name ?? 'N/A').' - '.$variant->name),
-                    'description' => $variant->sku,
-                ]),
-        };
+                    })
+                    ->orderBy('sku')
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn (VariantItem $variant) => [
+                        'value' => $variant->id,
+                        'label' => trim(($variant->product?->name ?? 'N/A').' - '.$variant->name),
+                        'description' => $variant->sku,
+                    ]),
+            };
+        });
 
-        return response()->json($options->values());
+        return response()->json(collect($options)->values());
     }
 
     private function orders(string $search, int $limit, bool $onlyWithoutShipping = false)

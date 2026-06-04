@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Models\User;
-use Inertia\Inertia;
-use App\Services\UserService;
 use App\Http\Controllers\Controller;
-use Spatie\Permission\Models\Role;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
-
+use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -20,15 +19,19 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        return Inertia::render('Dashboard/Users/Index', [
-            'users' => $this->userService->paginate(
-                $request->search,
-                $request->role,
-                $request->status
-            ),
-            'roles' => Role::orderBy('name')->get(),
-            'filters' => $request->only('search', 'role', 'status'),
-        ]);
+        $props = list_cache()->rememberRequest('users', $request, function () use ($request) {
+            return [
+                'users' => $this->userService->paginate(
+                    $request->search,
+                    $request->role,
+                    $request->status
+                ),
+                'roles' => Role::orderBy('name')->get(),
+                'filters' => $request->only('search', 'role', 'status'),
+            ];
+        });
+
+        return Inertia::render('Dashboard/Users/Index', $props);
     }
 
     public function create()

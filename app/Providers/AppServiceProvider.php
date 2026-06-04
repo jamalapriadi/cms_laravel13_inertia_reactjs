@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Models\Shop\CustomerAccessToken;
 use App\Models\Shop\ProductStockUnit;
+use App\Observers\ListCacheObserver;
 use App\Observers\ProductStockUnitObserver;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
@@ -29,8 +31,18 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         ProductStockUnit::observe(ProductStockUnitObserver::class);
+        $this->registerListCacheObservers();
 
         $this->configureDefaults();
+    }
+
+    private function registerListCacheObservers(): void
+    {
+        foreach (array_keys(config('list-cache.invalidation', [])) as $modelClass) {
+            if (class_exists($modelClass) && is_a($modelClass, Model::class, true)) {
+                $modelClass::observe(ListCacheObserver::class);
+            }
+        }
     }
 
     /**

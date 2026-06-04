@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Store;
 
-use App\Http\Controllers\Controller;
 use App\Exports\ProductsExport;
 use App\Exports\ProductsImportTemplateExport;
-use App\Imports\ProductsImport;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Store\Product\ProductImportRequest;
 use App\Http\Requests\Store\Product\ProductRequest;
 use App\Http\Requests\Store\Product\ProductUpdateRequest;
+use App\Imports\ProductsImport;
 use App\Models\Brand;
 use App\Models\Shop\Category;
 use App\Models\Shop\Product;
@@ -20,8 +20,8 @@ use App\Support\UniqueSlug;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -34,51 +34,55 @@ class ProductController extends Controller
         $categoryId = $request->query('category_id');
         $brandId = $request->query('brand_id');
 
-        $products = Product::query()
-            ->with(['category', 'brand', 'variantItems'])
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%")
-                        ->orWhere('meta_title', 'like', "%{$search}%")
-                        ->orWhereHas('variantItems', function ($qv) use ($search) {
-                            $qv->where('sku', 'like', "%{$search}%")
-                                ->orWhereHas('stockUnits', function ($stockUnitQuery) use ($search) {
-                                    $stockUnitQuery->where('imei_serial_number', 'like', "%{$search}%");
-                                });
-                        });
-                });
-            })
-            ->when($categoryId, function ($query, $categoryId) {
-                $query->where('category_id', $categoryId);
-            })
-            ->when($brandId, function ($query, $brandId) {
-                $query->where('brand_id', $brandId);
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('products', $request, function () use ($search, $categoryId, $brandId) {
+            $products = Product::query()
+                ->with(['category', 'brand', 'variantItems'])
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%")
+                            ->orWhere('meta_title', 'like', "%{$search}%")
+                            ->orWhereHas('variantItems', function ($qv) use ($search) {
+                                $qv->where('sku', 'like', "%{$search}%")
+                                    ->orWhereHas('stockUnits', function ($stockUnitQuery) use ($search) {
+                                        $stockUnitQuery->where('imei_serial_number', 'like', "%{$search}%");
+                                    });
+                            });
+                    });
+                })
+                ->when($categoryId, function ($query, $categoryId) {
+                    $query->where('category_id', $categoryId);
+                })
+                ->when($brandId, function ($query, $brandId) {
+                    $query->where('brand_id', $brandId);
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        $categories = Category::select('id', 'name')->get();
-        $brands = Brand::select('id', 'name')->where('is_active', true)->get();
+            $categories = Category::select('id', 'name')->get();
+            $brands = Brand::select('id', 'name')->where('is_active', true)->get();
 
-        return Inertia::render('Dashboard/Store/Product/Index', [
-            'products' => $products,
-            'categories' => $categories,
-            'brands' => $brands,
-            'summary' => [
-                'products' => Product::count(),
-                'product_variants' => ProductVariant::count(),
-                'variant_items' => VariantItem::count(),
-                'brands' => Brand::count(),
-                'categories' => Category::count(),
-            ],
-            'filters' => [
-                'search' => $search,
-                'category_id' => $categoryId,
-                'brand_id' => $brandId,
-            ],
-        ]);
+            return [
+                'products' => $products,
+                'categories' => $categories,
+                'brands' => $brands,
+                'summary' => [
+                    'products' => Product::count(),
+                    'product_variants' => ProductVariant::count(),
+                    'variant_items' => VariantItem::count(),
+                    'brands' => Brand::count(),
+                    'categories' => Category::count(),
+                ],
+                'filters' => [
+                    'search' => $search,
+                    'category_id' => $categoryId,
+                    'brand_id' => $brandId,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/Product/Index', $props);
     }
 
     /**
@@ -96,7 +100,7 @@ class ProductController extends Controller
      */
     public function template()
     {
-        return Excel::download(new ProductsImportTemplateExport(), 'products-import-template.xlsx');
+        return Excel::download(new ProductsImportTemplateExport, 'products-import-template.xlsx');
     }
 
     /**
@@ -104,7 +108,7 @@ class ProductController extends Controller
      */
     public function import(ProductImportRequest $request)
     {
-        Excel::import(new ProductsImport(), $request->file('file'));
+        Excel::import(new ProductsImport, $request->file('file'));
 
         return redirect()->route('products.index')->with('success', 'Products imported successfully.');
     }

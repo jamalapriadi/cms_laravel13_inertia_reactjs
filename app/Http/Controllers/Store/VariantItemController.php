@@ -24,34 +24,38 @@ class VariantItemController extends Controller
         $search = $request->query('search');
         $productId = $request->query('product_id');
 
-        $variantItems = VariantItem::query()
-            ->with(['product', 'options.variant'])
-            ->withCount(['stockUnits', 'availableStockUnits'])
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%")
-                        ->orWhereHas('product', function ($productQuery) use ($search) {
-                            $productQuery->where('name', 'like', "%{$search}%");
-                        })
-                        ->orWhereHas('options', function ($optionQuery) use ($search) {
-                            $optionQuery->where('value', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when($productId, fn ($query, $productId) => $query->where('product_id', $productId))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('variant-items', $request, function () use ($search, $productId) {
+            $variantItems = VariantItem::query()
+                ->with(['product', 'options.variant'])
+                ->withCount(['stockUnits', 'availableStockUnits'])
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%")
+                            ->orWhereHas('product', function ($productQuery) use ($search) {
+                                $productQuery->where('name', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('options', function ($optionQuery) use ($search) {
+                                $optionQuery->where('value', 'like', "%{$search}%");
+                            });
+                    });
+                })
+                ->when($productId, fn ($query, $productId) => $query->where('product_id', $productId))
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Store/VariantItem/Index', [
-            'variantItems' => $variantItems,
-            'products' => Product::select('id', 'name')->orderBy('name')->get(),
-            'filters' => [
-                'search' => $search,
-                'product_id' => $productId,
-            ],
-        ]);
+            return [
+                'variantItems' => $variantItems,
+                'products' => Product::select('id', 'name')->orderBy('name')->get(),
+                'filters' => [
+                    'search' => $search,
+                    'product_id' => $productId,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/VariantItem/Index', $props);
     }
 
     public function create(Request $request)

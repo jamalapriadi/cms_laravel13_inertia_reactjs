@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\User;
 
-use Inertia\Inertia;
-use Illuminate\Http\Request;
-use App\Services\Dashboard\PermissionService;
 use App\Http\Controllers\Controller;
-use Spatie\Permission\Models\Permission;
 use App\Http\Requests\Permission\StorePermissionRequest;
 use App\Http\Requests\Permission\UpdatePermissionRequest;
+use App\Services\Dashboard\PermissionService;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
@@ -20,10 +20,14 @@ class PermissionController extends Controller
     {
         $filters = $request->only('search');
 
-        return Inertia::render('Dashboard/Permissions/Index', [
-            'permissions' => $this->permissionService->getAll($filters),
-            'filters' => $filters,
-        ]);
+        $props = list_cache()->rememberRequest('permissions', $request, function () use ($filters) {
+            return [
+                'permissions' => $this->permissionService->getAll($filters),
+                'filters' => $filters,
+            ];
+        });
+
+        return Inertia::render('Dashboard/Permissions/Index', $props);
     }
 
     public function create()

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Dashboard\Menu;
 use App\Models\Dashboard\Option;
 use App\Services\Dashboard\MenuService;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -14,18 +14,21 @@ class MenuController extends Controller
 {
     public function index(Request $request)
     {
-        $menus = Menu::query()
-            ->when($request->search, fn ($q) =>
-                $q->where('name', 'like', '%' . $request->search . '%')
-            )
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('menus', $request, function () use ($request) {
+            $menus = Menu::query()
+                ->when($request->search, fn ($q) => $q->where('name', 'like', '%'.$request->search.'%')
+                )
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Menus/Index', [
-            'menus' => $menus,
-            'filters' => $request->only('search'),
-        ]);
+            return [
+                'menus' => $menus,
+                'filters' => $request->only('search'),
+            ];
+        });
+
+        return Inertia::render('Dashboard/Menus/Index', $props);
     }
 
     public function create()

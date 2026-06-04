@@ -12,37 +12,40 @@ class KabupatenController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Kabupaten::with('province');
+        $props = list_cache()->rememberRequest('wilayah', $request, function () use ($request) {
+            $query = Kabupaten::with('province');
 
-        // 🔎 Search
-        if ($request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+            // 🔎 Search
+            if ($request->search) {
+                $query->where('name', 'like', '%'.$request->search.'%');
+            }
 
-        // 🏷 Filter Province
-        if ($request->province_id) {
-            $query->where('province_id', $request->province_id);
-        }
+            // 🏷 Filter Province
+            if ($request->province_id) {
+                $query->where('province_id', $request->province_id);
+            }
 
-        $kabupatens = $query
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+            $kabupatens = $query
+                ->orderBy('name')
+                ->paginate(10)
+                ->withQueryString();
 
-        $provinces = Province::orderBy('name')->get();
+            $provinces = Province::orderBy('name')->get();
 
-        return Inertia::render('Dashboard/Wilayah/Kabupatens/Index', [
-            'kabupatens' => $kabupatens,
-            'provinces' => $provinces,
-            'filters' => $request->only(['search', 'province_id']),
-        ]);
+            return [
+                'kabupatens' => $kabupatens,
+                'provinces' => $provinces,
+                'filters' => $request->only(['search', 'province_id']),
+            ];
+        });
+
+        return Inertia::render('Dashboard/Wilayah/Kabupatens/Index', $props);
     }
-
 
     public function create()
     {
         return Inertia::render('Dashboard/Wilayah/Kabupatens/Create', [
-            'provinces' => Province::orderBy('name')->get()
+            'provinces' => Province::orderBy('name')->get(),
         ]);
     }
 
@@ -64,7 +67,7 @@ class KabupatenController extends Controller
     {
         return Inertia::render('Dashboard/Wilayah/Kabupatens/Edit', [
             'kabupaten' => $kabupaten,
-            'provinces' => Province::orderBy('name')->get()
+            'provinces' => Province::orderBy('name')->get(),
         ]);
     }
 
@@ -75,7 +78,7 @@ class KabupatenController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        $kabupaten->update($request->only('province_id','name'));
+        $kabupaten->update($request->only('province_id', 'name'));
 
         return redirect()->route('kabupatens.index')
             ->with('success', 'Kabupaten berhasil diupdate');

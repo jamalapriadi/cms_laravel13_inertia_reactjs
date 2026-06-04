@@ -19,46 +19,50 @@ class CustomerController extends Controller
         $search = $request->input('search');
         $status = $request->input('status');
 
-        $totalCustomers = Customer::count();
-        $activeCustomers = Customer::where('is_active', true)->count();
-        $disabledCustomers = Customer::where('is_active', false)->count();
-        $customersWithOrders = Customer::has('orders')->count();
-        $customersWithCarts = Customer::has('carts')->count();
-        $totalRevenue = Order::where('payment_status', 'paid')->sum('grand_total');
+        $props = list_cache()->rememberRequest('customers', $request, function () use ($search, $status) {
+            $totalCustomers = Customer::count();
+            $activeCustomers = Customer::where('is_active', true)->count();
+            $disabledCustomers = Customer::where('is_active', false)->count();
+            $customersWithOrders = Customer::has('orders')->count();
+            $customersWithCarts = Customer::has('carts')->count();
+            $totalRevenue = Order::where('payment_status', 'paid')->sum('grand_total');
 
-        $customers = Customer::query()
-            ->withCount(['orders', 'carts'])
-            ->withSum(['orders as paid_revenue' => function ($query) {
-                $query->where('payment_status', 'paid');
-            }], 'grand_total')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
-                });
-            })
-            ->when($status === 'active', fn ($query) => $query->where('is_active', true))
-            ->when($status === 'disabled', fn ($query) => $query->where('is_active', false))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            $customers = Customer::query()
+                ->withCount(['orders', 'carts'])
+                ->withSum(['orders as paid_revenue' => function ($query) {
+                    $query->where('payment_status', 'paid');
+                }], 'grand_total')
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    });
+                })
+                ->when($status === 'active', fn ($query) => $query->where('is_active', true))
+                ->when($status === 'disabled', fn ($query) => $query->where('is_active', false))
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Store/Customer/Index', [
-            'customers' => $customers,
-            'summary' => [
-                'total_customers' => (int) $totalCustomers,
-                'active_customers' => (int) $activeCustomers,
-                'disabled_customers' => (int) $disabledCustomers,
-                'customers_with_orders' => (int) $customersWithOrders,
-                'customers_with_carts' => (int) $customersWithCarts,
-                'total_revenue' => (float) $totalRevenue,
-            ],
-            'filters' => [
-                'search' => $search,
-                'status' => $status,
-            ],
-        ]);
+            return [
+                'customers' => $customers,
+                'summary' => [
+                    'total_customers' => (int) $totalCustomers,
+                    'active_customers' => (int) $activeCustomers,
+                    'disabled_customers' => (int) $disabledCustomers,
+                    'customers_with_orders' => (int) $customersWithOrders,
+                    'customers_with_carts' => (int) $customersWithCarts,
+                    'total_revenue' => (float) $totalRevenue,
+                ],
+                'filters' => [
+                    'search' => $search,
+                    'status' => $status,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/Customer/Index', $props);
     }
 
     public function show(Customer $customer): Response

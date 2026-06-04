@@ -22,92 +22,96 @@ class StockMovementController extends Controller
         $type = $request->input('type');
         $variantId = $request->input('product_variant_id');
 
-        // 1. Calculate General Summary Metrics (Total count, total in, total out, net change)
-        $totalMovements = StockMovement::count();
+        $props = list_cache()->rememberRequest('stock-movements', $request, function () use ($search, $type, $variantId) {
+            // 1. Calculate General Summary Metrics (Total count, total in, total out, net change)
+            $totalMovements = StockMovement::count();
 
-        $stockIn = StockMovement::whereIn('type', ['purchase', 'return', 'cancel'])
-            ->sum('qty') + StockMovement::where('type', 'adjustment')->where('qty', '>', 0)->sum('qty');
+            $stockIn = StockMovement::whereIn('type', ['purchase', 'return', 'cancel'])
+                ->sum('qty') + StockMovement::where('type', 'adjustment')->where('qty', '>', 0)->sum('qty');
 
-        $stockOut = StockMovement::where('type', 'sale')
-            ->sum('qty') + abs(StockMovement::where('type', 'adjustment')->where('qty', '<', 0)->sum('qty'));
+            $stockOut = StockMovement::where('type', 'sale')
+                ->sum('qty') + abs(StockMovement::where('type', 'adjustment')->where('qty', '<', 0)->sum('qty'));
 
-        $netChange = $stockIn - $stockOut;
+            $netChange = $stockIn - $stockOut;
 
-        // 2. Calculate Type Distribution
-        $typeDistribution = StockMovement::select('type', DB::raw('count(*) as count'), DB::raw('sum(qty) as total_qty'))
-            ->groupBy('type')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'type' => $item->type,
-                    'count' => (int) $item->count,
-                    'total_qty' => (int) $item->total_qty,
-                ];
-            });
-
-        // 3. Top active product variants
-        $topVariants = StockMovement::select('product_variant_id', DB::raw('count(*) as count'))
-            ->groupBy('product_variant_id')
-            ->orderBy('count', 'desc')
-            ->limit(5)
-            ->get()
-            ->map(function ($item) {
-                $variant = VariantItem::with('product')->find($item->product_variant_id);
-
-                return [
-                    'variant_id' => $item->product_variant_id,
-                    'sku' => $variant?->sku ?? 'N/A',
-                    'product_name' => $variant?->product?->name ?? 'Deleted Product',
-                    'variant_name' => $variant?->name ?? 'Default',
-                    'count' => (int) $item->count,
-                ];
-            });
-
-        // 4. Query and Filter Movements
-        $movements = StockMovement::query()
-            ->with(['variant.product', 'stockUnit'])
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('note', 'like', "%{$search}%")
-                        ->orWhereHas('variant', function ($vQ) use ($search) {
-                            $vQ->where('sku', 'like', "%{$search}%")
-                                ->orWhere('name', 'like', "%{$search}%")
-                                ->orWhereHas('product', function ($pQ) use ($search) {
-                                    $pQ->where('name', 'like', "%{$search}%");
-                                });
-                        });
+            // 2. Calculate Type Distribution
+            $typeDistribution = StockMovement::select('type', DB::raw('count(*) as count'), DB::raw('sum(qty) as total_qty'))
+                ->groupBy('type')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'type' => $item->type,
+                        'count' => (int) $item->count,
+                        'total_qty' => (int) $item->total_qty,
+                    ];
                 });
-            })
-            ->when($type, function ($query, $type) {
-                $query->where('type', $type);
-            })
-            ->when($variantId, function ($query, $variantId) {
-                $query->where('product_variant_id', $variantId);
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
 
-        // 5. Fetch all variants for dropdown option helper
-        $variants = $this->variantOptions();
+            // 3. Top active product variants
+            $topVariants = StockMovement::select('product_variant_id', DB::raw('count(*) as count'))
+                ->groupBy('product_variant_id')
+                ->orderBy('count', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function ($item) {
+                    $variant = VariantItem::with('product')->find($item->product_variant_id);
 
-        return Inertia::render('Dashboard/Store/StockMovement/Index', [
-            'movements' => $movements,
-            'variants' => $variants,
-            'summary' => [
-                'total_movements' => (int) $totalMovements,
-                'stock_in' => (int) $stockIn,
-                'stock_out' => (int) $stockOut,
-                'net_change' => (int) $netChange,
-                'type_distribution' => $typeDistribution,
-                'top_active_variants' => $topVariants,
-            ],
-            'filters' => [
-                'search' => $search,
-                'type' => $type,
-                'product_variant_id' => $variantId,
-            ],
-        ]);
+                    return [
+                        'variant_id' => $item->product_variant_id,
+                        'sku' => $variant?->sku ?? 'N/A',
+                        'product_name' => $variant?->product?->name ?? 'Deleted Product',
+                        'variant_name' => $variant?->name ?? 'Default',
+                        'count' => (int) $item->count,
+                    ];
+                });
+
+            // 4. Query and Filter Movements
+            $movements = StockMovement::query()
+                ->with(['variant.product', 'stockUnit'])
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('note', 'like', "%{$search}%")
+                            ->orWhereHas('variant', function ($vQ) use ($search) {
+                                $vQ->where('sku', 'like', "%{$search}%")
+                                    ->orWhere('name', 'like', "%{$search}%")
+                                    ->orWhereHas('product', function ($pQ) use ($search) {
+                                        $pQ->where('name', 'like', "%{$search}%");
+                                    });
+                            });
+                    });
+                })
+                ->when($type, function ($query, $type) {
+                    $query->where('type', $type);
+                })
+                ->when($variantId, function ($query, $variantId) {
+                    $query->where('product_variant_id', $variantId);
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
+
+            // 5. Fetch all variants for dropdown option helper
+            $variants = $this->variantOptions();
+
+            return [
+                'movements' => $movements,
+                'variants' => $variants,
+                'summary' => [
+                    'total_movements' => (int) $totalMovements,
+                    'stock_in' => (int) $stockIn,
+                    'stock_out' => (int) $stockOut,
+                    'net_change' => (int) $netChange,
+                    'type_distribution' => $typeDistribution,
+                    'top_active_variants' => $topVariants,
+                ],
+                'filters' => [
+                    'search' => $search,
+                    'type' => $type,
+                    'product_variant_id' => $variantId,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/StockMovement/Index', $props);
     }
 
     private function variantOptions()

@@ -18,25 +18,29 @@ class SupplierController extends Controller
     {
         $search = $request->query('search');
 
-        $suppliers = Supplier::query()
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
-                });
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('suppliers', $request, function () use ($search) {
+            $suppliers = Supplier::query()
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('code', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    });
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Store/Supplier/Index', [
-            'suppliers' => $suppliers,
-            'filters' => [
-                'search' => $search,
-            ],
-        ]);
+            return [
+                'suppliers' => $suppliers,
+                'filters' => [
+                    'search' => $search,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/Supplier/Index', $props);
     }
 
     /**

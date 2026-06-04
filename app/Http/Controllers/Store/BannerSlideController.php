@@ -22,33 +22,37 @@ class BannerSlideController extends Controller
         $position = trim((string) $request->query('position', ''));
         $isActive = $this->parseNullableBoolean($request->query('is_active'));
 
-        $slides = BannerSlide::query()
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($builder) use ($search) {
-                    $builder->where('title', 'like', "%{$search}%")
-                        ->orWhere('subtitle', 'like', "%{$search}%");
-                });
-            })
-            ->type($type !== '' ? $type : null)
-            ->position($position !== '' ? $position : null)
-            ->when($isActive !== null, fn ($query) => $query->where('is_active', $isActive))
-            ->orderBy('sort_order')
-            ->latest()
-            ->paginate(10)
-            ->withQueryString()
-            ->through(fn (BannerSlide $slide) => BannerSlideResource::make($slide)->resolve());
+        $props = list_cache()->rememberRequest('banner-slides', $request, function () use ($search, $type, $position, $isActive) {
+            $slides = BannerSlide::query()
+                ->when($search !== '', function ($query) use ($search) {
+                    $query->where(function ($builder) use ($search) {
+                        $builder->where('title', 'like', "%{$search}%")
+                            ->orWhere('subtitle', 'like', "%{$search}%");
+                    });
+                })
+                ->type($type !== '' ? $type : null)
+                ->position($position !== '' ? $position : null)
+                ->when($isActive !== null, fn ($query) => $query->where('is_active', $isActive))
+                ->orderBy('sort_order')
+                ->latest()
+                ->paginate(10)
+                ->withQueryString()
+                ->through(fn (BannerSlide $slide) => BannerSlideResource::make($slide)->resolve());
 
-        return Inertia::render('Dashboard/Store/BannerSlide/Index', [
-            'slides' => $slides,
-            'typeOptions' => $this->typeOptions(),
-            'positionOptions' => $this->positionOptions(),
-            'filters' => [
-                'search' => $search,
-                'type' => $type,
-                'position' => $position,
-                'is_active' => $isActive,
-            ],
-        ]);
+            return [
+                'slides' => $slides,
+                'typeOptions' => $this->typeOptions(),
+                'positionOptions' => $this->positionOptions(),
+                'filters' => [
+                    'search' => $search,
+                    'type' => $type,
+                    'position' => $position,
+                    'is_active' => $isActive,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/BannerSlide/Index', $props);
     }
 
     public function create(): Response

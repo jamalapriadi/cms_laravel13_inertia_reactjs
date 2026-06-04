@@ -20,35 +20,39 @@ class FaqController extends Controller
         $isActive = $this->parseNullableBoolean($request->query('is_active'));
         $showHome = $this->parseNullableBoolean($request->query('show_home'));
 
-        $faqs = Faq::query()
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($builder) use ($search) {
-                    $builder->where('question', 'like', "%{$search}%")
-                        ->orWhere('answer', 'like', "%{$search}%");
-                });
-            })
-            ->type($type !== '' ? $type : null)
-            ->position($position !== '' ? $position : null)
-            ->when($isActive !== null, fn ($query) => $query->where('is_active', $isActive))
-            ->when($showHome !== null, fn ($query) => $query->where('show_home', $showHome))
-            ->orderBy('sort_order')
-            ->latest()
-            ->paginate(10)
-            ->withQueryString()
-            ->through(fn (Faq $faq) => FaqResource::make($faq)->resolve());
+        $props = list_cache()->rememberRequest('faqs', $request, function () use ($search, $type, $position, $isActive, $showHome) {
+            $faqs = Faq::query()
+                ->when($search !== '', function ($query) use ($search) {
+                    $query->where(function ($builder) use ($search) {
+                        $builder->where('question', 'like', "%{$search}%")
+                            ->orWhere('answer', 'like', "%{$search}%");
+                    });
+                })
+                ->type($type !== '' ? $type : null)
+                ->position($position !== '' ? $position : null)
+                ->when($isActive !== null, fn ($query) => $query->where('is_active', $isActive))
+                ->when($showHome !== null, fn ($query) => $query->where('show_home', $showHome))
+                ->orderBy('sort_order')
+                ->latest()
+                ->paginate(10)
+                ->withQueryString()
+                ->through(fn (Faq $faq) => FaqResource::make($faq)->resolve());
 
-        return Inertia::render('Dashboard/Store/Faq/Index', [
-            'faqs' => $faqs,
-            'typeOptions' => $this->typeOptions(),
-            'positionOptions' => $this->positionOptions(),
-            'filters' => [
-                'search' => $search,
-                'type' => $type,
-                'position' => $position,
-                'is_active' => $isActive,
-                'show_home' => $showHome,
-            ],
-        ]);
+            return [
+                'faqs' => $faqs,
+                'typeOptions' => $this->typeOptions(),
+                'positionOptions' => $this->positionOptions(),
+                'filters' => [
+                    'search' => $search,
+                    'type' => $type,
+                    'position' => $position,
+                    'is_active' => $isActive,
+                    'show_home' => $showHome,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/Faq/Index', $props);
     }
 
     public function create(): Response

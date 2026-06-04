@@ -22,20 +22,24 @@ class CategoryController extends Controller
     {
         $search = $request->query('search');
 
-        $categories = Category::query()
-            ->with('parent')
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%");
-            })
-            ->orderBy('sort_order', 'asc')
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('categories', $request, function () use ($search) {
+            $categories = Category::query()
+                ->with('parent')
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', "%{$search}%");
+                })
+                ->orderBy('sort_order', 'asc')
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Store/Category/Index', [
-            'categories' => $categories,
-            'filters' => ['search' => $search],
-        ]);
+            return [
+                'categories' => $categories,
+                'filters' => ['search' => $search],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/Category/Index', $props);
     }
 
     /**

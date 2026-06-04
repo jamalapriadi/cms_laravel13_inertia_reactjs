@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Dashboard\Kecamatan;
 use App\Models\Dashboard\Kabupaten;
+use App\Models\Dashboard\Kecamatan;
 use App\Models\Dashboard\Province;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,30 +13,34 @@ class KecamatanController extends Controller
 {
     public function index(Request $request)
     {
-        $kecamatans = Kecamatan::with('kabupaten.province')
-            ->when($request->province_id, function ($query) use ($request) {
-                $query->whereHas('kabupaten', function ($q) use ($request) {
-                    $q->where('province_id', $request->province_id);
-                });
-            })
-            ->when($request->kabupaten_id, function ($query) use ($request) {
-                $query->where('kabupaten_id', $request->kabupaten_id);
-            })
-            ->when($request->search, function ($query) use ($request) {
-                $query->where('name', 'like', '%' . $request->search . '%');
-            })
-            ->orderBy('id')
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('wilayah', $request, function () use ($request) {
+            $kecamatans = Kecamatan::with('kabupaten.province')
+                ->when($request->province_id, function ($query) use ($request) {
+                    $query->whereHas('kabupaten', function ($q) use ($request) {
+                        $q->where('province_id', $request->province_id);
+                    });
+                })
+                ->when($request->kabupaten_id, function ($query) use ($request) {
+                    $query->where('kabupaten_id', $request->kabupaten_id);
+                })
+                ->when($request->search, function ($query) use ($request) {
+                    $query->where('name', 'like', '%'.$request->search.'%');
+                })
+                ->orderBy('id')
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Wilayah/Kecamatans/Index', [
-            'kecamatans' => $kecamatans,
-            'filters' => $request->only('search', 'province_id', 'kabupaten_id'),
-            'provinces' => Province::orderBy('name')->get(),
-            'kabupatens' => $request->province_id
-                ? Kabupaten::where('province_id', $request->province_id)->orderBy('name')->get()
-                : []
-        ]);
+            return [
+                'kecamatans' => $kecamatans,
+                'filters' => $request->only('search', 'province_id', 'kabupaten_id'),
+                'provinces' => Province::orderBy('name')->get(),
+                'kabupatens' => $request->province_id
+                    ? Kabupaten::where('province_id', $request->province_id)->orderBy('name')->get()
+                    : [],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Wilayah/Kecamatans/Index', $props);
     }
 
     public function create()

@@ -16,9 +16,13 @@ class OptionController extends Controller
 
     public function index()
     {
-        return Inertia::render('Options/Index', [
-            'options' => $this->service->paginate(),
-        ]);
+        $props = list_cache()->rememberRequest('options', request(), function () {
+            return [
+                'options' => $this->service->paginate(),
+            ];
+        });
+
+        return Inertia::render('Options/Index', $props);
     }
 
     public function store(Request $request)

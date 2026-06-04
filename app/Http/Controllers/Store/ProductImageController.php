@@ -22,25 +22,29 @@ class ProductImageController extends Controller
     {
         $productId = $request->query('product_id');
 
-        $images = ProductImage::query()
-            ->with(['product'])
-            ->when($productId, function ($query, $productId) {
-                $query->where('product_id', $productId);
-            })
-            ->orderBy('sort_order', 'asc')
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('product-images', $request, function () use ($productId) {
+            $images = ProductImage::query()
+                ->with(['product'])
+                ->when($productId, function ($query, $productId) {
+                    $query->where('product_id', $productId);
+                })
+                ->orderBy('sort_order', 'asc')
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        $products = Product::select('id', 'name')->get();
+            $products = Product::select('id', 'name')->get();
 
-        return Inertia::render('Dashboard/Store/ProductImage/Index', [
-            'images' => $images,
-            'products' => $products,
-            'filters' => [
-                'product_id' => $productId,
-            ],
-        ]);
+            return [
+                'images' => $images,
+                'products' => $products,
+                'filters' => [
+                    'product_id' => $productId,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/ProductImage/Index', $props);
     }
 
     /**

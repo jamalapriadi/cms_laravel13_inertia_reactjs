@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
-use App\Models\Unit;
 use App\Http\Requests\Store\Unit\UnitRequest;
 use App\Http\Requests\Store\Unit\UnitUpdateRequest;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -18,19 +18,23 @@ class UnitController extends Controller
     {
         $search = $request->query('search');
 
-        $units = Unit::query()
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%");
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('units', $request, function () use ($search) {
+            $units = Unit::query()
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Store/Unit/Index', [
-            'units' => $units,
-            'filters' => ['search' => $search],
-        ]);
+            return [
+                'units' => $units,
+                'filters' => ['search' => $search],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/Unit/Index', $props);
     }
 
     /**
@@ -47,12 +51,12 @@ class UnitController extends Controller
     public function store(UnitRequest $request)
     {
         $data = $request->validated();
-        
+
         if (auth()->check()) {
             $data['created_by'] = auth()->id();
             $data['updated_by'] = auth()->id();
         }
-        
+
         Unit::create($data);
 
         return redirect()->route('units.index')->with('success', 'Unit created successfully.');

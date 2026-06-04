@@ -25,31 +25,35 @@ class SupplierReturnController extends Controller
         $search = $request->query('search');
         $status = $request->query('status');
 
-        $returns = SupplierReturn::query()
-            ->with(['supplier', 'creator'])
-            ->withCount('items')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('return_number', 'like', "%{$search}%")
-                        ->orWhereHas('supplier', function ($sq) use ($search) {
-                            $sq->where('name', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when($status, function ($query, $status) {
-                $query->where('status', $status);
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('supplier-returns', $request, function () use ($search, $status) {
+            $returns = SupplierReturn::query()
+                ->with(['supplier', 'creator'])
+                ->withCount('items')
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('return_number', 'like', "%{$search}%")
+                            ->orWhereHas('supplier', function ($sq) use ($search) {
+                                $sq->where('name', 'like', "%{$search}%");
+                            });
+                    });
+                })
+                ->when($status, function ($query, $status) {
+                    $query->where('status', $status);
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Store/SupplierReturn/Index', [
-            'returns' => $returns,
-            'filters' => [
-                'search' => $search,
-                'status' => $status,
-            ],
-        ]);
+            return [
+                'returns' => $returns,
+                'filters' => [
+                    'search' => $search,
+                    'status' => $status,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/SupplierReturn/Index', $props);
     }
 
     /**

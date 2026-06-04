@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\ProductCollectionResource;
 use App\Models\Shop\ProductCollection;
+use App\Services\Cache\ListCacheService;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -16,39 +17,43 @@ class ProductCollectionController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $collections = ProductCollection::query()
-            ->active()
-            ->withCount('items')
-            ->with([
-                'items' => fn ($query) => $query
-                    ->whereHas('product', fn (Builder $productQuery) => $this->publicProductConstraint($productQuery))
-                    ->with([
-                        'product' => fn (Builder $productQuery) => $this->publicProductConstraint($productQuery)
-                            ->with([
-                                'category',
-                                'brand',
-                                'images' => fn ($imageQuery) => $imageQuery->orderByDesc('is_primary')->orderBy('sort_order')->latest(),
-                                'variantItems' => fn ($variantQuery) => $variantQuery
-                                    ->where('is_active', true)
-                                    ->with(['unit', 'options.variant'])
-                                    ->withCount('availableStockUnits')
-                                    ->orderBy('selling_price'),
-                            ])
-                            ->withCount('availableStockUnits'),
-                        'variantItem' => fn ($variantQuery) => $variantQuery
-                            ->where('is_active', true)
-                            ->with(['unit', 'options.variant'])
-                            ->withCount('availableStockUnits'),
-                    ])
-                    ->orderBy('sort_order')
-                    ->latest(),
-            ])
-            ->orderBy('sort_order')
-            ->latest()
-            ->get();
+        $collections = app(ListCacheService::class)->rememberRequest('api.product-collections', $request, function () use ($request): array {
+            $collections = ProductCollection::query()
+                ->active()
+                ->withCount('items')
+                ->with([
+                    'items' => fn ($query) => $query
+                        ->whereHas('product', fn (Builder $productQuery) => $this->publicProductConstraint($productQuery))
+                        ->with([
+                            'product' => fn (Builder $productQuery) => $this->publicProductConstraint($productQuery)
+                                ->with([
+                                    'category',
+                                    'brand',
+                                    'images' => fn ($imageQuery) => $imageQuery->orderByDesc('is_primary')->orderBy('sort_order')->latest(),
+                                    'variantItems' => fn ($variantQuery) => $variantQuery
+                                        ->where('is_active', true)
+                                        ->with(['unit', 'options.variant'])
+                                        ->withCount('availableStockUnits')
+                                        ->orderBy('selling_price'),
+                                ])
+                                ->withCount('availableStockUnits'),
+                            'variantItem' => fn ($variantQuery) => $variantQuery
+                                ->where('is_active', true)
+                                ->with(['unit', 'options.variant'])
+                                ->withCount('availableStockUnits'),
+                        ])
+                        ->orderBy('sort_order')
+                        ->latest(),
+                ])
+                ->orderBy('sort_order')
+                ->latest()
+                ->get();
+
+            return ProductCollectionResource::collection($collections)->resolve($request);
+        });
 
         return $this->successResponse(
-            ProductCollectionResource::collection($collections)->resolve($request),
+            $collections,
             'Product collections retrieved successfully'
         );
     }

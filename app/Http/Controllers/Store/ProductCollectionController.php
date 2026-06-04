@@ -26,34 +26,38 @@ class ProductCollectionController extends Controller
         $isActive = $this->parseNullableBoolean($request->query('is_active'));
         $showHome = $this->parseNullableBoolean($request->query('show_home'));
 
-        $collections = ProductCollection::query()
-            ->withCount('items')
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($builder) use ($search) {
-                    $builder->where('name', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%")
-                        ->orWhere('type', 'like', "%{$search}%");
-                });
-            })
-            ->type($type)
-            ->when($isActive !== null, fn ($query) => $query->where('is_active', $isActive))
-            ->when($showHome !== null, fn ($query) => $query->where('show_home', $showHome))
-            ->orderBy('sort_order')
-            ->latest()
-            ->paginate(10)
-            ->withQueryString()
-            ->through(fn (ProductCollection $collection) => ProductCollectionResource::make($collection)->resolve());
+        $props = list_cache()->rememberRequest('product-collections', $request, function () use ($search, $type, $isActive, $showHome) {
+            $collections = ProductCollection::query()
+                ->withCount('items')
+                ->when($search !== '', function ($query) use ($search) {
+                    $query->where(function ($builder) use ($search) {
+                        $builder->where('name', 'like', "%{$search}%")
+                            ->orWhere('slug', 'like', "%{$search}%")
+                            ->orWhere('type', 'like', "%{$search}%");
+                    });
+                })
+                ->type($type)
+                ->when($isActive !== null, fn ($query) => $query->where('is_active', $isActive))
+                ->when($showHome !== null, fn ($query) => $query->where('show_home', $showHome))
+                ->orderBy('sort_order')
+                ->latest()
+                ->paginate(10)
+                ->withQueryString()
+                ->through(fn (ProductCollection $collection) => ProductCollectionResource::make($collection)->resolve());
 
-        return Inertia::render('Dashboard/Store/ProductCollection/Index', [
-            'collections' => $collections,
-            'typeOptions' => $this->typeOptions(),
-            'filters' => [
-                'search' => $search,
-                'type' => $type,
-                'is_active' => $isActive,
-                'show_home' => $showHome,
-            ],
-        ]);
+            return [
+                'collections' => $collections,
+                'typeOptions' => $this->typeOptions(),
+                'filters' => [
+                    'search' => $search,
+                    'type' => $type,
+                    'is_active' => $isActive,
+                    'show_home' => $showHome,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/ProductCollection/Index', $props);
     }
 
     public function create(): Response
@@ -88,41 +92,45 @@ class ProductCollectionController extends Controller
     {
         $search = trim((string) $request->query('search', ''));
 
-        $productCollection->loadCount('items');
+        $props = list_cache()->rememberRequest('product-collections', $request, function () use ($search, $productCollection) {
+            $productCollection->loadCount('items');
 
-        $items = ProductCollectionItem::query()
-            ->where('product_collection_id', $productCollection->id)
-            ->with([
-                'product',
-                'variantItem.options.variant',
-                'variantItem.stockUnits',
-            ])
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($builder) use ($search) {
-                    $builder->whereHas('product', function ($productQuery) use ($search) {
-                        $productQuery->where('name', 'like', "%{$search}%")
-                            ->orWhere('sku', 'like', "%{$search}%")
-                            ->orWhere('slug', 'like', "%{$search}%");
-                    })->orWhereHas('variantItem', function ($variantQuery) use ($search) {
-                        $variantQuery->where('name', 'like', "%{$search}%")
-                            ->orWhere('sku', 'like', "%{$search}%")
-                            ->orWhereHas('options', fn ($optionQuery) => $optionQuery->where('value', 'like', "%{$search}%"));
+            $items = ProductCollectionItem::query()
+                ->where('product_collection_id', $productCollection->id)
+                ->with([
+                    'product',
+                    'variantItem.options.variant',
+                    'variantItem.stockUnits',
+                ])
+                ->when($search !== '', function ($query) use ($search) {
+                    $query->where(function ($builder) use ($search) {
+                        $builder->whereHas('product', function ($productQuery) use ($search) {
+                            $productQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('sku', 'like', "%{$search}%")
+                                ->orWhere('slug', 'like', "%{$search}%");
+                        })->orWhereHas('variantItem', function ($variantQuery) use ($search) {
+                            $variantQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('sku', 'like', "%{$search}%")
+                                ->orWhereHas('options', fn ($optionQuery) => $optionQuery->where('value', 'like', "%{$search}%"));
+                        });
                     });
-                });
-            })
-            ->orderBy('sort_order')
-            ->latest()
-            ->paginate(15)
-            ->withQueryString()
-            ->through(fn (ProductCollectionItem $item) => ProductCollectionItemResource::make($item)->resolve());
+                })
+                ->orderBy('sort_order')
+                ->latest()
+                ->paginate(15)
+                ->withQueryString()
+                ->through(fn (ProductCollectionItem $item) => ProductCollectionItemResource::make($item)->resolve());
 
-        return Inertia::render('Dashboard/Store/ProductCollection/Show', [
-            'collection' => ProductCollectionResource::make($productCollection)->resolve(),
-            'items' => $items,
-            'filters' => [
-                'search' => $search,
-            ],
-        ]);
+            return [
+                'collection' => ProductCollectionResource::make($productCollection)->resolve(),
+                'items' => $items,
+                'filters' => [
+                    'search' => $search,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/ProductCollection/Show', $props);
     }
 
     public function edit(ProductCollection $productCollection): Response
@@ -179,64 +187,66 @@ class ProductCollectionController extends Controller
         $search = trim((string) ($validated['query'] ?? ''));
         $limit = (int) ($validated['limit'] ?? 20);
 
-        $products = Product::query()
-            ->select(['id', 'name', 'slug', 'sku', 'has_variant'])
-            ->with([
-                'variantItems' => function ($query) {
-                    $query->select([
-                        'id',
-                        'product_id',
-                        'name',
-                        'sku',
-                        'selling_price',
-                        'stock',
-                        'image',
-                        'is_active',
-                    ])->with(['options.variant']);
-                },
-            ])
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($builder) use ($search) {
-                    $builder->where('name', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%")
-                        ->orWhereHas('variantItems', function ($variantQuery) use ($search) {
-                            $variantQuery->where('sku', 'like', "%{$search}%")
-                                ->orWhere('name', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->orderBy('name')
-            ->limit($limit)
-            ->get();
+        $result = list_cache()->rememberRequest('search-options', $request, function () use ($search, $limit) {
+            $products = Product::query()
+                ->select(['id', 'name', 'slug', 'sku', 'has_variant'])
+                ->with([
+                    'variantItems' => function ($query) {
+                        $query->select([
+                            'id',
+                            'product_id',
+                            'name',
+                            'sku',
+                            'selling_price',
+                            'stock',
+                            'image',
+                            'is_active',
+                        ])->with(['options.variant']);
+                    },
+                ])
+                ->when($search !== '', function ($query) use ($search) {
+                    $query->where(function ($builder) use ($search) {
+                        $builder->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%")
+                            ->orWhere('slug', 'like', "%{$search}%")
+                            ->orWhereHas('variantItems', function ($variantQuery) use ($search) {
+                                $variantQuery->where('sku', 'like', "%{$search}%")
+                                    ->orWhere('name', 'like', "%{$search}%");
+                            });
+                    });
+                })
+                ->orderBy('name')
+                ->limit($limit)
+                ->get();
 
-        $result = $products->map(function (Product $product) {
-            return [
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-                'product_slug' => $product->slug,
-                'product_sku' => $product->sku,
-                'has_variant' => (bool) $product->has_variant,
-                'variant_items' => $product->variantItems
-                    ->map(function ($variantItem) {
-                        $optionsLabel = $variantItem->options
-                            ->map(fn ($option) => trim(($option->variant?->name ?? '').': '.$option->value))
-                            ->filter()
-                            ->implode(' / ');
+            return $products->map(function (Product $product) {
+                return [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'product_slug' => $product->slug,
+                    'product_sku' => $product->sku,
+                    'has_variant' => (bool) $product->has_variant,
+                    'variant_items' => $product->variantItems
+                        ->map(function ($variantItem) {
+                            $optionsLabel = $variantItem->options
+                                ->map(fn ($option) => trim(($option->variant?->name ?? '').': '.$option->value))
+                                ->filter()
+                                ->implode(' / ');
 
-                        return [
-                            'id' => $variantItem->id,
-                            'name' => $variantItem->name,
-                            'options_label' => $optionsLabel,
-                            'sku' => $variantItem->sku,
-                            'selling_price' => (float) $variantItem->selling_price,
-                            'stock' => $variantItem->stock,
-                            'is_active' => (bool) $variantItem->is_active,
-                        ];
-                    })
-                    ->values(),
-            ];
-        })->values();
+                            return [
+                                'id' => $variantItem->id,
+                                'name' => $variantItem->name,
+                                'options_label' => $optionsLabel,
+                                'sku' => $variantItem->sku,
+                                'selling_price' => (float) $variantItem->selling_price,
+                                'stock' => $variantItem->stock,
+                                'is_active' => (bool) $variantItem->is_active,
+                            ];
+                        })
+                        ->values(),
+                ];
+            })->values();
+        });
 
         return response()->json($result);
     }

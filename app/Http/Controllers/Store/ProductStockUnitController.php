@@ -33,58 +33,62 @@ class ProductStockUnitController extends Controller
         $status = $request->query('status');
         $variantId = $request->query('product_variant_id');
 
-        $stockUnits = ProductStockUnit::query()
-            ->with(['variant.product', 'product'])
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('imei_serial_number', 'like', "%{$search}%")
-                        ->orWhere('barcode', 'like', "%{$search}%")
-                        ->orWhere('grade', 'like', "%{$search}%")
-                        ->orWhere('network_compatibility', 'like', "%{$search}%")
-                        ->orWhereHas('product', function ($productQuery) use ($search) {
-                            $productQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('sku', 'like', "%{$search}%");
-                        })
-                        ->orWhereHas('variant', function ($variantQuery) use ($search) {
-                            $variantQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('sku', 'like', "%{$search}%")
-                                ->orWhereHas('product', function ($productQuery) use ($search) {
-                                    $productQuery->where('name', 'like', "%{$search}%");
-                                });
-                        });
-                });
-            })
-            ->when($status, function ($query, $status) {
-                $query->where('status', $status);
-            })
-            ->when($variantId, function ($query, $variantId) {
-                $query->where('product_variant_id', $variantId);
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('product-stock-units', $request, function () use ($search, $status, $variantId) {
+            $stockUnits = ProductStockUnit::query()
+                ->with(['variant.product', 'product'])
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('imei_serial_number', 'like', "%{$search}%")
+                            ->orWhere('barcode', 'like', "%{$search}%")
+                            ->orWhere('grade', 'like', "%{$search}%")
+                            ->orWhere('network_compatibility', 'like', "%{$search}%")
+                            ->orWhereHas('product', function ($productQuery) use ($search) {
+                                $productQuery->where('name', 'like', "%{$search}%")
+                                    ->orWhere('sku', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('variant', function ($variantQuery) use ($search) {
+                                $variantQuery->where('name', 'like', "%{$search}%")
+                                    ->orWhere('sku', 'like', "%{$search}%")
+                                    ->orWhereHas('product', function ($productQuery) use ($search) {
+                                        $productQuery->where('name', 'like', "%{$search}%");
+                                    });
+                            });
+                    });
+                })
+                ->when($status, function ($query, $status) {
+                    $query->where('status', $status);
+                })
+                ->when($variantId, function ($query, $variantId) {
+                    $query->where('product_variant_id', $variantId);
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        $variants = $this->variantOptions();
+            $variants = $this->variantOptions();
 
-        $totalStockUnits = ProductStockUnit::count();
-        $availableStockUnits = ProductStockUnit::where('status', 'available')->count();
+            $totalStockUnits = ProductStockUnit::count();
+            $availableStockUnits = ProductStockUnit::where('status', 'available')->count();
 
-        return Inertia::render('Dashboard/Store/ProductStockUnit/Index', [
-            'stockUnits' => $stockUnits,
-            'variants' => $variants,
-            'summary' => [
-                'products' => Product::count(),
-                'product_variants' => VariantItem::count(),
-                'stock_units' => $totalStockUnits,
-                'available_stock_units' => $availableStockUnits,
-                'non_available_stock_units' => $totalStockUnits - $availableStockUnits,
-            ],
-            'filters' => [
-                'search' => $search,
-                'status' => $status,
-                'product_variant_id' => $variantId,
-            ],
-        ]);
+            return [
+                'stockUnits' => $stockUnits,
+                'variants' => $variants,
+                'summary' => [
+                    'products' => Product::count(),
+                    'product_variants' => VariantItem::count(),
+                    'stock_units' => $totalStockUnits,
+                    'available_stock_units' => $availableStockUnits,
+                    'non_available_stock_units' => $totalStockUnits - $availableStockUnits,
+                ],
+                'filters' => [
+                    'search' => $search,
+                    'status' => $status,
+                    'product_variant_id' => $variantId,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/ProductStockUnit/Index', $props);
     }
 
     public function create(): Response
@@ -95,16 +99,16 @@ class ProductStockUnitController extends Controller
             ->orderBy('name')
             ->get()
             ->map(fn ($p) => [
-            'id' => $p->id,
-            'name' => $p->name,
-            'sku' => $p->sku,
-            'has_variant' => $p->has_variant,
-            'variant_items' => $p->variantItems->map(fn ($vi) => [
-                'id' => $vi->id,
-                'name' => $vi->name,
-                'sku' => $vi->sku,
-            ]),
-        ]);
+                'id' => $p->id,
+                'name' => $p->name,
+                'sku' => $p->sku,
+                'has_variant' => $p->has_variant,
+                'variant_items' => $p->variantItems->map(fn ($vi) => [
+                    'id' => $vi->id,
+                    'name' => $vi->name,
+                    'sku' => $vi->sku,
+                ]),
+            ]);
 
         return Inertia::render('Dashboard/Store/ProductStockUnit/Create', [
             'products' => $products,
@@ -147,16 +151,16 @@ class ProductStockUnitController extends Controller
             ->orderBy('name')
             ->get()
             ->map(fn ($p) => [
-            'id' => $p->id,
-            'name' => $p->name,
-            'sku' => $p->sku,
-            'has_variant' => $p->has_variant,
-            'variant_items' => $p->variantItems->map(fn ($vi) => [
-                'id' => $vi->id,
-                'name' => $vi->name,
-                'sku' => $vi->sku,
-            ]),
-        ]);
+                'id' => $p->id,
+                'name' => $p->name,
+                'sku' => $p->sku,
+                'has_variant' => $p->has_variant,
+                'variant_items' => $p->variantItems->map(fn ($vi) => [
+                    'id' => $vi->id,
+                    'name' => $vi->name,
+                    'sku' => $vi->sku,
+                ]),
+            ]);
 
         return Inertia::render('Dashboard/Store/ProductStockUnit/Edit', [
             'stockUnit' => $productStockUnit,

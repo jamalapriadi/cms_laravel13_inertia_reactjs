@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\PostShowRequest;
 use App\Http\Resources\Api\V1\PostDetailResource;
 use App\Http\Resources\Api\V1\PostResource;
 use App\Services\Api\V1\PostService;
+use App\Services\Cache\ListCacheService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
@@ -97,16 +98,23 @@ class PostController extends Controller
     )]
     public function index(PostIndexRequest $request): JsonResponse
     {
-        $posts = $this->postService->paginatePublished($request->validated());
+        $payload = app(ListCacheService::class)->rememberRequest('api.posts', $request, function () use ($request): array {
+            $posts = $this->postService->paginatePublished($request->validated());
+
+            return [
+                'data' => PostResource::collection($posts->getCollection())->resolve($request),
+                'meta' => [
+                    'current_page' => $posts->currentPage(),
+                    'per_page' => $posts->perPage(),
+                    'total' => $posts->total(),
+                    'last_page' => $posts->lastPage(),
+                ],
+            ];
+        });
 
         return $this->successResponseWithMeta(
-            PostResource::collection($posts->getCollection())->resolve($request),
-            [
-                'current_page' => $posts->currentPage(),
-                'per_page' => $posts->perPage(),
-                'total' => $posts->total(),
-                'last_page' => $posts->lastPage(),
-            ],
+            $payload['data'],
+            $payload['meta'],
             'Posts retrieved successfully'
         );
     }

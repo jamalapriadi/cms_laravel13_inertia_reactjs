@@ -2,8 +2,8 @@
 
 namespace App\Services\Dashboard;
 
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleService
 {
@@ -51,6 +51,7 @@ class RoleService
     public function syncPermissions(Role $role, array $permissions = [])
     {
         $role->syncPermissions($permissions);
+        list_cache()->clearMany(['roles', 'permissions', 'users']);
 
         return $role->load('permissions');
     }

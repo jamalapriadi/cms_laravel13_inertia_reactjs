@@ -18,47 +18,51 @@ class PostController extends Controller
 {
     public function index(Request $request, LanguageManager $languageManager)
     {
-        $posts = Post::with([
-            'author',
-            'translations:id,post_id,language_id,status',
-        ])
-            ->when($request->search, function ($q) use ($request) {
-                $q->where('title', 'like', "%{$request->search}%");
-            })
-            ->latest();
+        $props = list_cache()->rememberRequest('posts', $request, function () use ($request, $languageManager) {
+            $posts = Post::with([
+                'author',
+                'translations:id,post_id,language_id,status',
+            ])
+                ->when($request->search, function ($q) use ($request) {
+                    $q->where('title', 'like', "%{$request->search}%");
+                })
+                ->latest();
 
-        if ($request->filled('status')) {
-            $status = $request->status;
+            if ($request->filled('status')) {
+                $status = $request->status;
 
-            if ($status != 'all') {
-                $posts = $posts->where('status', $request->status);
+                if ($status != 'all') {
+                    $posts = $posts->where('status', $request->status);
+                }
+
+            } else {
+                $posts = $posts->where('status', '!=', 'trash');
             }
 
-        } else {
-            $posts = $posts->where('status', '!=', 'trash');
-        }
+            $posts = $posts->paginate(10)
+                ->withQueryString();
 
-        $posts = $posts->paginate(10)
-            ->withQueryString();
+            $enabledLanguages = $languageManager->getEnabledLanguages()
+                ->map(fn (Language $language) => [
+                    'id' => $language->id,
+                    'code' => strtolower((string) $language->code),
+                    'name' => $language->english_name,
+                ])
+                ->values();
 
-        $enabledLanguages = $languageManager->getEnabledLanguages()
-            ->map(fn (Language $language) => [
-                'id' => $language->id,
-                'code' => strtolower((string) $language->code),
-                'name' => $language->english_name,
-            ])
-            ->values();
+            return [
+                'posts' => $posts,
+                'filters' => $request->only('search', 'status'),
+                'enabledLanguages' => $enabledLanguages,
+                'defaultLanguage' => $languageManager->getDefaultLanguage()?->only([
+                    'id',
+                    'code',
+                    'english_name',
+                ]),
+            ];
+        });
 
-        return Inertia::render('Dashboard/Posts/Index', [
-            'posts' => $posts,
-            'filters' => $request->only('search', 'status'),
-            'enabledLanguages' => $enabledLanguages,
-            'defaultLanguage' => $languageManager->getDefaultLanguage()?->only([
-                'id',
-                'code',
-                'english_name',
-            ]),
-        ]);
+        return Inertia::render('Dashboard/Posts/Index', $props);
     }
 
     public function create()

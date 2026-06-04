@@ -20,29 +20,33 @@ class ProductSpecificationController extends Controller
         $search = $request->query('search');
         $productId = $request->query('product_id');
 
-        $specifications = ProductSpecification::query()
-            ->with(['product'])
-            ->when($search, function ($query, $search) {
-                $query->where('spec_name', 'like', "%{$search}%")
-                    ->orWhere('spec_value', 'like', "%{$search}%");
-            })
-            ->when($productId, function ($query, $productId) {
-                $query->where('product_id', $productId);
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('product-specifications', $request, function () use ($search, $productId) {
+            $specifications = ProductSpecification::query()
+                ->with(['product'])
+                ->when($search, function ($query, $search) {
+                    $query->where('spec_name', 'like', "%{$search}%")
+                        ->orWhere('spec_value', 'like', "%{$search}%");
+                })
+                ->when($productId, function ($query, $productId) {
+                    $query->where('product_id', $productId);
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        $products = Product::select('id', 'name')->get();
+            $products = Product::select('id', 'name')->get();
 
-        return Inertia::render('Dashboard/Store/ProductSpecification/Index', [
-            'specifications' => $specifications,
-            'products' => $products,
-            'filters' => [
-                'search' => $search,
-                'product_id' => $productId,
-            ],
-        ]);
+            return [
+                'specifications' => $specifications,
+                'products' => $products,
+                'filters' => [
+                    'search' => $search,
+                    'product_id' => $productId,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/ProductSpecification/Index', $props);
     }
 
     /**

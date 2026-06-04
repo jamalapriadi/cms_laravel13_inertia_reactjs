@@ -18,33 +18,37 @@ class ProductVariantController extends Controller
         $search = $request->query('search');
         $productId = $request->query('product_id');
 
-        $variants = ProductVariant::query()
-            ->with(['product', 'options'])
-            ->withCount('options')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhereHas('product', function ($productQuery) use ($search) {
-                            $productQuery->where('name', 'like', "%{$search}%");
-                        })
-                        ->orWhereHas('options', function ($optionQuery) use ($search) {
-                            $optionQuery->where('value', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when($productId, fn ($query, $productId) => $query->where('product_id', $productId))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $props = list_cache()->rememberRequest('product-variants', $request, function () use ($search, $productId) {
+            $variants = ProductVariant::query()
+                ->with(['product', 'options'])
+                ->withCount('options')
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhereHas('product', function ($productQuery) use ($search) {
+                                $productQuery->where('name', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('options', function ($optionQuery) use ($search) {
+                                $optionQuery->where('value', 'like', "%{$search}%");
+                            });
+                    });
+                })
+                ->when($productId, fn ($query, $productId) => $query->where('product_id', $productId))
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Dashboard/Store/ProductVariant/Index', [
-            'variants' => $variants,
-            'products' => Product::select('id', 'name')->orderBy('name')->get(),
-            'filters' => [
-                'search' => $search,
-                'product_id' => $productId,
-            ],
-        ]);
+            return [
+                'variants' => $variants,
+                'products' => Product::select('id', 'name')->orderBy('name')->get(),
+                'filters' => [
+                    'search' => $search,
+                    'product_id' => $productId,
+                ],
+            ];
+        });
+
+        return Inertia::render('Dashboard/Store/ProductVariant/Index', $props);
     }
 
     public function create(Request $request)

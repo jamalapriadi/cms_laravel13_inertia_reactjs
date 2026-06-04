@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\User;
 
-use Inertia\Inertia;
-use App\Services\Dashboard\RoleService;
 use App\Http\Controllers\Controller;
-use Spatie\Permission\Models\Role;
 use App\Http\Requests\Role\StoreRoleRequest;
 use App\Http\Requests\Role\UpdateRoleRequest;
+use App\Services\Dashboard\RoleService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
@@ -20,10 +20,14 @@ class RoleController extends Controller
     {
         $filters = $request->only('search');
 
-        return Inertia::render('Dashboard/Roles/Index', [
-            'roles' => $this->roleService->getAll($filters),
-            'filters' => $filters,
-        ]);
+        $props = list_cache()->rememberRequest('roles', $request, function () use ($filters) {
+            return [
+                'roles' => $this->roleService->getAll($filters),
+                'filters' => $filters,
+            ];
+        });
+
+        return Inertia::render('Dashboard/Roles/Index', $props);
     }
 
     public function create()
