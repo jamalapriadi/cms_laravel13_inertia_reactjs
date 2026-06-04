@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\NormalizeMediaPathsCommand;
+use App\Console\Commands\StorageHealthCheckCommand;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Auth\AuthenticationException;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         NormalizeMediaPathsCommand::class,
+        StorageHealthCheckCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);

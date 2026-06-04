@@ -52,6 +52,7 @@ class MediaController extends Controller
             : $disk->files($path);
 
         $directories = collect($directories)
+            ->reject(fn (string $directory) => $this->isHiddenPath($directory))
             ->filter(fn (string $directory) => ! $search || str_contains(strtolower(basename($directory)), strtolower($search)))
             ->sort()
             ->values()
@@ -67,11 +68,17 @@ class MediaController extends Controller
 
         $files = collect($files)
             ->filter(function (string $file) use ($date, $disk, $search) {
+                if ($this->isHiddenPath($file) || ! $this->isAllowedImageFile($file)) {
+                    return false;
+                }
+
                 if ($search && ! str_contains(strtolower(basename($file)), strtolower($search))) {
                     return false;
                 }
 
-                if ($date && date('Y-m-d', $disk->lastModified($file)) !== $date) {
+                $lastModified = $this->safeLastModified($disk, $file);
+
+                if ($date && (! $lastModified || date('Y-m-d', $lastModified) !== $date)) {
                     return false;
                 }
 
@@ -79,15 +86,19 @@ class MediaController extends Controller
             })
             ->sort()
             ->values()
-            ->map(fn (string $file) => [
-                'type' => 'file',
-                'name' => basename($file),
-                'path' => $file,
-                'url' => Storage::disk('public')->url($file),
-                'mime_type' => $disk->mimeType($file),
-                'size' => $disk->size($file),
-                'last_modified' => date('Y-m-d H:i:s', $disk->lastModified($file)),
-            ]);
+            ->map(function (string $file) use ($disk) {
+                $lastModified = $this->safeLastModified($disk, $file);
+
+                return [
+                    'type' => 'file',
+                    'name' => basename($file),
+                    'path' => $file,
+                    'url' => Storage::disk('public')->url($file),
+                    'mime_type' => $this->safeMimeType($disk, $file),
+                    'size' => $this->safeSize($disk, $file),
+                    'last_modified' => $lastModified ? date('Y-m-d H:i:s', $lastModified) : null,
+                ];
+            });
 
         $storageItems = $directories
             ->concat($files)
@@ -216,5 +227,50 @@ class MediaController extends Controller
         return response()->json([
             'url' => Storage::disk('public')->url($path),
         ]);
+    }
+
+    private function isHiddenPath(string $path): bool
+    {
+        return collect(explode('/', trim($path, '/')))
+            ->contains(fn (string $segment) => str_starts_with($segment, '.'));
+    }
+
+    private function isAllowedImageFile(string $path): bool
+    {
+        return in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), [
+            'jpg',
+            'jpeg',
+            'png',
+            'webp',
+            'gif',
+            'svg',
+        ], true);
+    }
+
+    private function safeMimeType($disk, string $path): ?string
+    {
+        try {
+            return $disk->mimeType($path) ?: null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function safeSize($disk, string $path): ?int
+    {
+        try {
+            return $disk->size($path) ?: null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function safeLastModified($disk, string $path): ?int
+    {
+        try {
+            return $disk->lastModified($path) ?: null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }
