@@ -25,8 +25,12 @@ return new class extends Migration
 
         // 3. Backfill product_id for existing stock units
         DB::table('product_stock_units')
-            ->join('variant_items', 'product_stock_units.product_variant_id', '=', 'variant_items.id')
-            ->update(['product_stock_units.product_id' => DB::raw('variant_items.product_id')]);
+            ->whereNotNull('product_variant_id')
+            ->update([
+                'product_id' => DB::raw(
+                    '(select product_id from variant_items where variant_items.id = product_stock_units.product_variant_id)'
+                ),
+            ]);
 
         // 4. Set product_id to NOT NULL
         Schema::table('product_stock_units', function (Blueprint $table) {

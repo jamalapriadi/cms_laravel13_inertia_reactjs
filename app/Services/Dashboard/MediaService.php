@@ -37,7 +37,7 @@ class MediaService
         $uuid = Str::uuid();
         $folder = 'media/'.date('Y/m');
 
-        $extension = $file->getClientOriginalExtension();
+        $extension = strtolower($file->getClientOriginalExtension());
         $filename = $uuid.'.'.$extension;
 
         $path = $file->storeAs($folder, $filename, 'public');
@@ -47,14 +47,17 @@ class MediaService
         $size = $file->getSize();
 
         // Convert supported raster images to webp. Keep ico/svg as-is.
-        if (in_array($file->getMimeType(), [
+        $uploadedMimeType = $file->getMimeType();
+
+        if (in_array($uploadedMimeType, [
             'image/jpeg',
             'image/png',
             'image/gif',
             'image/webp',
+            'image/x-webp',
             'image/bmp',
             'image/avif',
-        ], true)) {
+        ], true) || $extension === 'webp') {
 
             $image = $this->imageManager->decodePath($file->getRealPath());
 
@@ -76,7 +79,7 @@ class MediaService
 
         $mimeType = $path === ($webpPath ?? null)
             ? 'image/webp'
-            : $file->getMimeType();
+            : $uploadedMimeType;
 
         return Media::create([
             'user_id' => $userId,

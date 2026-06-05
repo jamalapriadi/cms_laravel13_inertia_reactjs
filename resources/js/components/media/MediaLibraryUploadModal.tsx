@@ -19,6 +19,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { isImageMedia, mediaUrl } from '@/lib/media';
 
 export interface MediaLibraryItem {
     type: 'folder' | 'file';
@@ -59,9 +60,7 @@ export default function MediaLibraryUploadModal({
     );
     const [uploading, setUploading] = useState(false);
 
-    const isImage = (item: MediaLibraryItem) =>
-        typeof item.mime_type === 'string' &&
-        item.mime_type.startsWith('image/');
+    const isImage = (item: MediaLibraryItem) => isImageMedia(item);
 
     const onDrop = useCallback(
         async (acceptedFiles: File[]) => {
@@ -104,7 +103,11 @@ export default function MediaLibraryUploadModal({
                                 type: 'file',
                                 name: media.file_name,
                                 path: media.path,
-                                url: result.url ?? result.location,
+                                url:
+                                    result.url ??
+                                    result.location ??
+                                    media.url ??
+                                    mediaUrl(media.path),
                                 mime_type: media.mime_type,
                                 size: media.size,
                                 last_modified: media.updated_at ?? null,
@@ -144,8 +147,6 @@ export default function MediaLibraryUploadModal({
             setTab('library');
             router.reload({
                 only: ['storageItems', 'breadcrumbs', 'currentPath'],
-                preserveScroll: true,
-                preserveState: true,
             });
         },
         [autoSelectUploaded, onClose, onSelectFile, onUploaded],
@@ -153,6 +154,14 @@ export default function MediaLibraryUploadModal({
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
+        accept: {
+            'image/jpeg': ['.jpg', '.jpeg'],
+            'image/png': ['.png'],
+            'image/gif': ['.gif'],
+            'image/webp': ['.webp'],
+            'image/svg+xml': ['.svg'],
+            'image/x-icon': ['.ico'],
+        },
         multiple: true,
     });
 

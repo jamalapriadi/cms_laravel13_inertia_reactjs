@@ -250,10 +250,22 @@ class MediaController extends Controller
     private function safeMimeType($disk, string $path): ?string
     {
         try {
-            return $disk->mimeType($path) ?: null;
+            return $disk->mimeType($path) ?: $this->mimeTypeFromExtension($path);
         } catch (\Throwable) {
-            return null;
+            return $this->mimeTypeFromExtension($path);
         }
+    }
+
+    private function mimeTypeFromExtension(string $path): ?string
+    {
+        return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'svg' => 'image/svg+xml',
+            default => null,
+        };
     }
 
     private function safeSize($disk, string $path): ?int
