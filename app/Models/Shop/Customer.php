@@ -57,6 +57,11 @@ class Customer extends Authenticatable
         return $this->hasMany(CustomerAccessToken::class);
     }
 
+    public function emailOtps(): HasMany
+    {
+        return $this->hasMany(CustomerEmailOtp::class);
+    }
+
     public function createAccessToken(string $name = 'customer-api'): string
     {
         $plainTextToken = Str::random(64);

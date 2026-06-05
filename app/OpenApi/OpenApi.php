@@ -15,7 +15,7 @@ use OpenApi\Attributes as OA;
         new OA\Server(url: 'https://api.gitatrading-store.com', description: 'Production'),
     ],
     tags: [
-        new OA\Tag(name: 'Customer Authentication', description: 'API untuk register, login, forgot password, reset password, cek user login, dan logout customer.'),
+        new OA\Tag(name: 'Customer Authentication', description: 'API untuk register, login, OTP aktivasi akun, forgot password, reset password, cek user login, dan logout customer.'),
         new OA\Tag(name: 'Products', description: 'API publik untuk produk, kategori produk, brand, dan koleksi produk.'),
         new OA\Tag(name: 'Cart', description: 'API cart frontend Next.js untuk guest cart, customer cart, dan merge cart saat login.'),
         new OA\Tag(name: 'Checkout', description: 'API checkout customer login dari active cart menjadi order.'),
