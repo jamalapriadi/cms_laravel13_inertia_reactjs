@@ -24,7 +24,7 @@ return new class extends Migration
                 ->on('customers')
                 ->cascadeOnDelete();
 
-            $table->index(['customer_id', 'type', 'verified_at', 'invalidated_at']);
+            $table->index(['customer_id', 'type', 'verified_at', 'invalidated_at'], 'customer_email_otps_lookup_idx');
         });
     }
 
