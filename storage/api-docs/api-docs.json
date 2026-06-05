@@ -22,7 +22,7 @@
                     "Customer Authentication"
                 ],
                 "summary": "Register customer",
-                "description": "Endpoint untuk register customer frontend Next.js dan mengembalikan bearer token.",
+                "description": "Endpoint untuk register customer frontend Next.js dan mengirim OTP aktivasi akun ke email.",
                 "operationId": "ae7f84063dd948763951671929f2dfb8",
                 "requestBody": {
                     "required": true,
@@ -36,11 +36,11 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Customer registered successfully.",
+                        "description": "Customer registered and OTP sent successfully.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/CustomerAuthResponse"
+                                    "$ref": "#/components/schemas/CustomerRegisterOtpResponse"
                                 }
                             }
                         }
@@ -98,6 +98,100 @@
                                     "success": false,
                                     "message": "Email atau password salah.",
                                     "errors": []
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Customer account is not active yet.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerRequiresOtpResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/verify-otp": {
+            "post": {
+                "tags": [
+                    "Customer Authentication"
+                ],
+                "summary": "Verify customer email OTP",
+                "description": "Endpoint untuk verifikasi OTP aktivasi akun customer.",
+                "operationId": "7541de78920481f9e868ee60a849c746",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerVerifyOtpRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Customer email OTP verified successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerOtpVerifiedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid or expired OTP.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/resend-otp": {
+            "post": {
+                "tags": [
+                    "Customer Authentication"
+                ],
+                "summary": "Resend customer email OTP",
+                "description": "Endpoint untuk mengirim ulang OTP aktivasi akun customer.",
+                "operationId": "d0461321f3d39b3f8ce7b21d1474fa13",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerResendOtpRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Customer email OTP resent successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerOtpResentResponse"
                                 }
                             }
                         }
@@ -1744,22 +1838,22 @@
                     },
                     "image": {
                         "type": "string",
-                        "example": "banner_slides/hero.webp",
+                        "example": "media/2026/06/hero.webp",
                         "nullable": true
                     },
                     "image_url": {
                         "type": "string",
-                        "example": "http://localhost:8000/storage/banner_slides/hero.webp",
+                        "example": "https://img.gitatrading-store.com/media/2026/06/hero.webp",
                         "nullable": true
                     },
                     "mobile_image": {
                         "type": "string",
-                        "example": "banner_slides/mobile/hero.webp",
+                        "example": "media/2026/06/hero-mobile.webp",
                         "nullable": true
                     },
                     "mobile_image_url": {
                         "type": "string",
-                        "example": "http://localhost:8000/storage/banner_slides/mobile/hero.webp",
+                        "example": "https://img.gitatrading-store.com/media/2026/06/hero-mobile.webp",
                         "nullable": true
                     },
                     "button_text": {
@@ -1919,7 +2013,7 @@
                     },
                     "thumbnail": {
                         "type": "string",
-                        "example": "https://gitatrading-store.com/storage/products/iphone-15-pro.jpg",
+                        "example": "https://img.gitatrading-store.com/media/2026/06/iphone-15-pro.webp",
                         "nullable": true
                     },
                     "is_publish": {
@@ -1953,7 +2047,7 @@
                     },
                     "image": {
                         "type": "string",
-                        "example": "https://gitatrading-store.com/storage/products/iphone-15-pro-black.jpg",
+                        "example": "https://img.gitatrading-store.com/media/2026/06/iphone-15-pro-black.webp",
                         "nullable": true
                     },
                     "selling_price": {
@@ -2747,6 +2841,39 @@
                 },
                 "type": "object"
             },
+            "CustomerVerifyOtpRequest": {
+                "required": [
+                    "email",
+                    "otp"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "jane@example.com"
+                    },
+                    "otp": {
+                        "type": "string",
+                        "example": "123456",
+                        "maxLength": 6,
+                        "minLength": 6
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerResendOtpRequest": {
+                "required": [
+                    "email"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "jane@example.com"
+                    }
+                },
+                "type": "object"
+            },
             "CustomerForgotPasswordRequest": {
                 "required": [
                     "email"
@@ -2831,6 +2958,145 @@
                                     }
                                 ],
                                 "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerRegisterOtpResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Registrasi berhasil. Kode OTP telah dikirim ke email untuk aktivasi akun."
+                    },
+                    "data": {
+                        "required": [
+                            "email",
+                            "requires_otp"
+                        ],
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "example": "jane@example.com"
+                            },
+                            "requires_otp": {
+                                "type": "boolean",
+                                "example": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerRequiresOtpResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Akun belum aktif. Silakan verifikasi OTP yang dikirim ke email."
+                    },
+                    "data": {
+                        "required": [
+                            "email",
+                            "requires_otp"
+                        ],
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "example": "jane@example.com"
+                            },
+                            "requires_otp": {
+                                "type": "boolean",
+                                "example": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerOtpVerifiedResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Verifikasi OTP berhasil. Akun Anda sudah aktif."
+                    },
+                    "data": {
+                        "required": [
+                            "email",
+                            "is_active"
+                        ],
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "example": "jane@example.com"
+                            },
+                            "is_active": {
+                                "type": "boolean",
+                                "example": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerOtpResentResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Kode OTP baru telah dikirim ke email Anda."
+                    },
+                    "data": {
+                        "required": [
+                            "email"
+                        ],
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "example": "jane@example.com"
                             }
                         },
                         "type": "object"
@@ -2998,7 +3264,7 @@
                     },
                     "thumbnail": {
                         "type": "string",
-                        "example": "https://gitatrading-store.com/storage/posts/thumbnail.jpg",
+                        "example": "https://img.gitatrading-store.com/media/2026/06/post-thumbnail.webp",
                         "nullable": true
                     },
                     "published_at": {
@@ -3445,7 +3711,7 @@
     "tags": [
         {
             "name": "Customer Authentication",
-            "description": "API untuk register, login, forgot password, reset password, cek user login, dan logout customer."
+            "description": "API untuk register, login, OTP aktivasi akun, forgot password, reset password, cek user login, dan logout customer."
         },
         {
             "name": "Products",

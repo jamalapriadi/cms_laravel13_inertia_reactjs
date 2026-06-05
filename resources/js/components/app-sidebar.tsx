@@ -20,7 +20,10 @@ export function AppSidebar() {
     const { url, props } = usePage();
 
     // ✅ ambil role dari user (dari Laravel)
-    const role = props.auth?.user?.role || 'editor';
+    const role =
+        typeof props.auth?.user?.role === 'string'
+            ? props.auth.user.role
+            : 'editor';
 
     const menus = filterSidebar(sidebarConfig, role);
 

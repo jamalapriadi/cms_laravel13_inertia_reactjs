@@ -64,7 +64,12 @@ class AppServiceProvider extends ServiceProvider
                 ->where('token', hash('sha256', $plainTextToken))
                 ->first();
 
-            if (! $accessToken || $accessToken->isExpired() || ! $accessToken->customer?->is_active) {
+            if (
+                ! $accessToken
+                || $accessToken->isExpired()
+                || ! $accessToken->customer?->is_active
+                || $accessToken->customer->email_verified_at === null
+            ) {
                 return null;
             }
 

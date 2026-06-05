@@ -37,6 +37,23 @@ use OpenApi\Attributes as OA;
     type: 'object',
 )]
 #[OA\Schema(
+    schema: 'CustomerVerifyOtpRequest',
+    required: ['email', 'otp'],
+    properties: [
+        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jane@example.com'),
+        new OA\Property(property: 'otp', type: 'string', minLength: 6, maxLength: 6, example: '123456'),
+    ],
+    type: 'object',
+)]
+#[OA\Schema(
+    schema: 'CustomerResendOtpRequest',
+    required: ['email'],
+    properties: [
+        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jane@example.com'),
+    ],
+    type: 'object',
+)]
+#[OA\Schema(
     schema: 'CustomerForgotPasswordRequest',
     required: ['email'],
     properties: [
@@ -69,6 +86,77 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'token', type: 'string', example: 'plain-text-api-token'),
                 new OA\Property(property: 'token_type', type: 'string', example: 'Bearer'),
                 new OA\Property(property: 'cart', ref: '#/components/schemas/Cart', nullable: true),
+            ],
+            type: 'object',
+        ),
+    ],
+    type: 'object',
+)]
+#[OA\Schema(
+    schema: 'CustomerRegisterOtpResponse',
+    required: ['success', 'message', 'data'],
+    properties: [
+        new OA\Property(property: 'success', type: 'boolean', example: true),
+        new OA\Property(property: 'message', type: 'string', example: 'Registrasi berhasil. Kode OTP telah dikirim ke email untuk aktivasi akun.'),
+        new OA\Property(
+            property: 'data',
+            required: ['email', 'requires_otp'],
+            properties: [
+                new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jane@example.com'),
+                new OA\Property(property: 'requires_otp', type: 'boolean', example: true),
+            ],
+            type: 'object',
+        ),
+    ],
+    type: 'object',
+)]
+#[OA\Schema(
+    schema: 'CustomerRequiresOtpResponse',
+    required: ['success', 'message', 'data'],
+    properties: [
+        new OA\Property(property: 'success', type: 'boolean', example: false),
+        new OA\Property(property: 'message', type: 'string', example: 'Akun belum aktif. Silakan verifikasi OTP yang dikirim ke email.'),
+        new OA\Property(
+            property: 'data',
+            required: ['email', 'requires_otp'],
+            properties: [
+                new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jane@example.com'),
+                new OA\Property(property: 'requires_otp', type: 'boolean', example: true),
+            ],
+            type: 'object',
+        ),
+    ],
+    type: 'object',
+)]
+#[OA\Schema(
+    schema: 'CustomerOtpVerifiedResponse',
+    required: ['success', 'message', 'data'],
+    properties: [
+        new OA\Property(property: 'success', type: 'boolean', example: true),
+        new OA\Property(property: 'message', type: 'string', example: 'Verifikasi OTP berhasil. Akun Anda sudah aktif.'),
+        new OA\Property(
+            property: 'data',
+            required: ['email', 'is_active'],
+            properties: [
+                new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jane@example.com'),
+                new OA\Property(property: 'is_active', type: 'boolean', example: true),
+            ],
+            type: 'object',
+        ),
+    ],
+    type: 'object',
+)]
+#[OA\Schema(
+    schema: 'CustomerOtpResentResponse',
+    required: ['success', 'message', 'data'],
+    properties: [
+        new OA\Property(property: 'success', type: 'boolean', example: true),
+        new OA\Property(property: 'message', type: 'string', example: 'Kode OTP baru telah dikirim ke email Anda.'),
+        new OA\Property(
+            property: 'data',
+            required: ['email'],
+            properties: [
+                new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jane@example.com'),
             ],
             type: 'object',
         ),

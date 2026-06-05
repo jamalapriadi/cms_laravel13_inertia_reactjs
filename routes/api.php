@@ -48,6 +48,12 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('login', [CustomerAuthController::class, 'login'])
             ->middleware('throttle:5,1')
             ->name('login');
+        Route::post('verify-otp', [CustomerAuthController::class, 'verifyOtp'])
+            ->middleware('throttle:10,1')
+            ->name('verify-otp');
+        Route::post('resend-otp', [CustomerAuthController::class, 'resendOtp'])
+            ->middleware('throttle:3,1')
+            ->name('resend-otp');
         Route::post('forgot-password', [CustomerAuthController::class, 'forgotPassword'])
             ->middleware('throttle:5,1')
             ->name('forgot-password');

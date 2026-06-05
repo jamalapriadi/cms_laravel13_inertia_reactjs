@@ -18,6 +18,7 @@ import {
     ArrowDownLeft,
     ArrowUpRight,
     CircleHelp,
+    RssIcon,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -25,6 +26,8 @@ export interface SidebarItem {
     href: string;
     icon?: React.ElementType;
     permission?: string;
+    target?: '_blank' | '_self';
+    rel?: string;
     children?: SidebarItem[];
 }
 
@@ -151,7 +154,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 icon: ScanBarcode,
                 permission: 'stock-unit.view',
             },
-            
+
             {
                 title: 'Orders',
                 href: '/dashboard/orders',
@@ -206,7 +209,6 @@ export const sidebarConfig: SidebarGroup[] = [
                 icon: ArrowUpRight,
                 permission: 'supplier-returns.view',
             },
-            
         ],
     },
 
@@ -239,8 +241,16 @@ export const sidebarConfig: SidebarGroup[] = [
             {
                 title: 'Site Contents',
                 href: '/dashboard/config/site-contents',
+                icon: RssIcon,
+                permission: 'settings.manage',
+            },
+            {
+                title: 'API Documentation',
+                href: '/api/documentation',
                 icon: FileText,
                 permission: 'settings.manage',
+                target: '_blank',
+                rel: 'noopener noreferrer',
             },
             {
                 title: 'General Settings',
@@ -248,7 +258,6 @@ export const sidebarConfig: SidebarGroup[] = [
                 icon: Settings,
                 permission: 'settings.manage',
             },
-            
         ],
     },
 ];

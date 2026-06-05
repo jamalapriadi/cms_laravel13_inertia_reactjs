@@ -2,7 +2,11 @@ import { Link } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
     SidebarMenuButton,
     SidebarMenuItem,
@@ -12,13 +16,20 @@ import {
 } from '@/components/ui/sidebar';
 
 import { cn } from '@/lib/utils';
+import type { SidebarItem as SidebarItemType } from '@/config/sidebar';
 
-export default function SidebarItem({ item, url }: any) {
+interface SidebarItemProps {
+    item: SidebarItemType;
+    url: string;
+}
+
+export default function SidebarItem({ item, url }: SidebarItemProps) {
     const isActive = url.startsWith(item.href);
     const Icon = item.icon;
-    const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+    const children = item.children ?? [];
+    const hasChildren = children.length > 0;
     const isChildActive = hasChildren
-        ? item.children.some((child: any) => url.startsWith(child.href))
+        ? children.some((child) => url.startsWith(child.href))
         : false;
     const [open, setOpen] = useState(false);
     const isOpen = open || isActive || isChildActive;
@@ -49,8 +60,10 @@ export default function SidebarItem({ item, url }: any) {
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarMenuSub>
-                            {item.children.map((child: any) => {
-                                const isChildCurrent = url.startsWith(child.href);
+                            {children.map((child) => {
+                                const isChildCurrent = url.startsWith(
+                                    child.href,
+                                );
 
                                 return (
                                     <SidebarMenuSubItem key={child.href}>
@@ -58,7 +71,11 @@ export default function SidebarItem({ item, url }: any) {
                                             asChild
                                             isActive={isChildCurrent}
                                         >
-                                            <Link href={child.href}>
+                                            <Link
+                                                href={child.href}
+                                                target={child.target}
+                                                rel={child.rel}
+                                            >
                                                 <span>{child.title}</span>
                                             </Link>
                                         </SidebarMenuSubButton>
@@ -81,7 +98,12 @@ export default function SidebarItem({ item, url }: any) {
                     isActive && 'bg-muted font-semibold text-foreground',
                 )}
             >
-                <Link href={item.href} className="flex items-center gap-2">
+                <Link
+                    href={item.href}
+                    target={item.target}
+                    rel={item.rel}
+                    className="flex items-center gap-2"
+                >
                     {Icon && <Icon className="size-4" />}
                     <span className="text-xs">{item.title}</span>
                 </Link>
