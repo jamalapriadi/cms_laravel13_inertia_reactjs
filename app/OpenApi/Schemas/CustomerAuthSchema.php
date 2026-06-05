@@ -151,7 +151,12 @@ use OpenApi\Attributes as OA;
     required: ['success', 'message', 'data'],
     properties: [
         new OA\Property(property: 'success', type: 'boolean', example: true),
-        new OA\Property(property: 'message', type: 'string', example: 'Kode OTP baru telah dikirim ke email Anda.'),
+        new OA\Property(
+            property: 'message',
+            description: 'Pesan sukses resend OTP. Jika OTP baru berhasil dibuat tetapi email gagal dikirim, response tetap sukses dengan pesan aman tanpa detail SMTP.',
+            type: 'string',
+            example: 'Kode OTP baru telah dikirim ke email Anda.',
+        ),
         new OA\Property(
             property: 'data',
             required: ['email'],

@@ -4,8 +4,10 @@ use App\Models\Shop\Customer;
 use App\Models\Shop\CustomerEmailOtp;
 use App\Notifications\CustomerEmailVerificationOtpNotification;
 use App\Notifications\CustomerResetPasswordNotification;
+use Illuminate\Contracts\Notifications\Dispatcher as NotificationDispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 
@@ -46,6 +48,42 @@ test('customer can register through api and receive activation otp', function ()
             && $otp->otp_hash !== $notification->otp
             && Hash::check($notification->otp, $otp->otp_hash);
     });
+});
+
+test('customer register still succeeds when activation otp email fails', function () {
+    Log::shouldReceive('error')
+        ->once()
+        ->with('Failed to send customer email verification OTP.', Mockery::on(function (array $context) {
+            return $context['email'] === 'mail-fails@example.com'
+                && $context['exception'] instanceof RuntimeException;
+        }));
+
+    app()->instance(NotificationDispatcher::class, Mockery::mock(NotificationDispatcher::class, function ($mock) {
+        $mock->shouldReceive('send')
+            ->once()
+            ->andThrow(new RuntimeException('SMTP connection failed'));
+    }));
+
+    $response = $this->postJson('/api/v1/customer/register', [
+        'name' => 'Mail Fails',
+        'email' => 'mail-fails@example.com',
+        'phone' => '081234567891',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('message', 'Registrasi berhasil. Kode OTP telah dibuat, namun email OTP belum berhasil dikirim. Silakan coba kirim ulang OTP.')
+        ->assertJsonPath('data.email', 'mail-fails@example.com')
+        ->assertJsonPath('data.requires_otp', true);
+
+    $customer = Customer::where('email', 'mail-fails@example.com')->first();
+
+    expect($customer)->not->toBeNull()
+        ->and($customer->is_active)->toBeFalse()
+        ->and($customer->email_verified_at)->toBeNull()
+        ->and($customer->emailOtps)->toHaveCount(1);
 });
 
 test('customer can login view profile and logout through api', function () {
@@ -229,13 +267,72 @@ test('customer can resend otp and invalidate previous otp', function () {
     expect($oldOtp->refresh()->invalidated_at)->not->toBeNull()
         ->and($customer->emailOtps()->whereNull('verified_at')->whereNull('invalidated_at')->count())->toBe(1);
 
-    Notification::assertSentTo($customer, CustomerEmailVerificationOtpNotification::class);
+    Notification::assertSentTo($customer, CustomerEmailVerificationOtpNotification::class, function ($notification) use ($customer, $oldOtp) {
+        $latestOtp = $customer->emailOtps()
+            ->whereNull('verified_at')
+            ->whereNull('invalidated_at')
+            ->latest()
+            ->first();
+
+        return $latestOtp !== null
+            && $latestOtp->isNot($oldOtp)
+            && $latestOtp->type === CustomerEmailOtp::TYPE_EMAIL_VERIFICATION
+            && $latestOtp->email === 'resend@example.com'
+            && $latestOtp->otp_hash !== $notification->otp
+            && Hash::check($notification->otp, $latestOtp->otp_hash);
+    });
 
     $this->postJson('/api/v1/customer/verify-otp', [
         'email' => 'resend@example.com',
         'otp' => '123456',
     ])->assertUnprocessable()
         ->assertJsonPath('message', 'Kode OTP tidak valid.');
+});
+
+test('customer resend otp still creates latest otp when email fails', function () {
+    Log::shouldReceive('error')
+        ->once()
+        ->with('Failed to send customer email verification OTP.', Mockery::on(function (array $context) {
+            return $context['email'] === 'resend-mail-fails@example.com'
+                && $context['exception'] instanceof RuntimeException;
+        }));
+
+    app()->instance(NotificationDispatcher::class, Mockery::mock(NotificationDispatcher::class, function ($mock) {
+        $mock->shouldReceive('send')
+            ->once()
+            ->andThrow(new RuntimeException('SMTP connection failed'));
+    }));
+
+    $customer = Customer::create([
+        'name' => 'Resend Mail Fails',
+        'email' => 'resend-mail-fails@example.com',
+        'password' => Hash::make('password123'),
+        'email_verified_at' => null,
+        'is_active' => false,
+    ]);
+
+    $oldOtp = $customer->emailOtps()->create([
+        'email' => 'resend-mail-fails@example.com',
+        'otp_hash' => Hash::make('123456'),
+        'type' => CustomerEmailOtp::TYPE_EMAIL_VERIFICATION,
+        'expires_at' => now()->addMinutes(10),
+    ]);
+
+    $this->postJson('/api/v1/customer/resend-otp', [
+        'email' => 'resend-mail-fails@example.com',
+    ])->assertSuccessful()
+        ->assertJsonPath('message', 'Kode OTP baru telah dibuat, namun email OTP belum berhasil dikirim. Silakan coba lagi nanti.')
+        ->assertJsonPath('data.email', 'resend-mail-fails@example.com');
+
+    $latestOtp = $customer->emailOtps()
+        ->whereNull('verified_at')
+        ->whereNull('invalidated_at')
+        ->latest()
+        ->first();
+
+    expect($oldOtp->refresh()->invalidated_at)->not->toBeNull()
+        ->and($latestOtp)->not->toBeNull()
+        ->and($latestOtp->isNot($oldOtp))->toBeTrue();
 });
 
 test('customer can request api password reset link', function () {
