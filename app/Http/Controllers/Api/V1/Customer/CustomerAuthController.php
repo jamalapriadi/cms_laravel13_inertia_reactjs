@@ -18,14 +18,17 @@ use App\Notifications\CustomerEmailVerificationOtpNotification;
 use App\Services\Api\V1\CartService;
 use App\Traits\ApiResponse;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
+use Throwable;
 
 class CustomerAuthController extends Controller
 {
@@ -75,12 +78,15 @@ class CustomerAuthController extends Controller
             return [$customer, $this->createEmailVerificationOtp($customer)];
         });
 
-        $this->sendEmailVerificationOtp($customer, $otp);
+        $emailSent = $this->sendEmailVerificationOtp($customer, $otp);
 
         return $this->successResponse([
             'email' => $customer->email,
             'requires_otp' => true,
-        ], 'Registrasi berhasil. Kode OTP telah dikirim ke email untuk aktivasi akun.', 201);
+        ], $emailSent
+            ? 'Registrasi berhasil. Kode OTP telah dikirim ke email untuk aktivasi akun.'
+            : 'Registrasi berhasil. Kode OTP telah dibuat, namun email OTP belum berhasil dikirim. Silakan coba kirim ulang OTP.',
+            201);
     }
 
     #[OA\Post(
@@ -214,7 +220,7 @@ class CustomerAuthController extends Controller
 
     #[OA\Post(
         path: '/api/v1/customer/resend-otp',
-        description: 'Endpoint untuk mengirim ulang OTP aktivasi akun customer.',
+        description: 'Endpoint untuk membuat OTP aktivasi akun customer terbaru, menginvalidasi OTP pending sebelumnya, dan mengirim OTP terbaru ke email customer.',
         summary: 'Resend customer email OTP',
         requestBody: new OA\RequestBody(
             required: true,
@@ -231,6 +237,11 @@ class CustomerAuthController extends Controller
                 response: 422,
                 description: 'Validation error.',
                 content: new OA\JsonContent(ref: '#/components/schemas/ValidationErrorResponse'),
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Customer not found.',
+                content: new OA\JsonContent(ref: '#/components/schemas/ApiErrorResponse'),
             ),
         ],
     )]
@@ -257,11 +268,13 @@ class CustomerAuthController extends Controller
             return $this->createEmailVerificationOtp($customer);
         });
 
-        $this->sendEmailVerificationOtp($customer, $otp);
+        $emailSent = $this->sendEmailVerificationOtp($customer, $otp);
 
         return $this->successResponse([
             'email' => $customer->email,
-        ], 'Kode OTP baru telah dikirim ke email Anda.');
+        ], $emailSent
+            ? 'Kode OTP baru telah dikirim ke email Anda.'
+            : 'Kode OTP baru telah dibuat, namun email OTP belum berhasil dikirim. Silakan coba lagi nanti.');
     }
 
     #[OA\Post(
@@ -399,9 +412,17 @@ class CustomerAuthController extends Controller
     {
         $accessToken = $request->attributes->get('customer_access_token');
 
+        if (! $accessToken instanceof CustomerAccessToken && $request->bearerToken()) {
+            $accessToken = CustomerAccessToken::query()
+                ->where('token', hash('sha256', $request->bearerToken()))
+                ->first();
+        }
+
         if ($accessToken instanceof CustomerAccessToken) {
             $accessToken->delete();
         }
+
+        Auth::guard('customer_api')->forgetUser();
 
         return $this->successResponse(null, 'Logout berhasil.');
     }
@@ -425,12 +446,24 @@ class CustomerAuthController extends Controller
         return $otp;
     }
 
-    protected function sendEmailVerificationOtp(Customer $customer, string $otp): void
+    protected function sendEmailVerificationOtp(Customer $customer, string $otp): bool
     {
-        $customer->notify(new CustomerEmailVerificationOtpNotification(
-            $otp,
-            $this->emailVerificationOtpExpirationMinutes(),
-        ));
+        try {
+            $customer->notify(new CustomerEmailVerificationOtpNotification(
+                $otp,
+                $this->emailVerificationOtpExpirationMinutes(),
+            ));
+
+            return true;
+        } catch (Throwable $exception) {
+            Log::error('Failed to send customer email verification OTP.', [
+                'customer_id' => $customer->getKey(),
+                'email' => $customer->email,
+                'exception' => $exception,
+            ]);
+
+            return false;
+        }
     }
 
     protected function emailVerificationOtpExpirationMinutes(): int
@@ -439,9 +472,9 @@ class CustomerAuthController extends Controller
     }
 
     /**
-     * @return Builder<CustomerEmailOtp>
+     * @return HasMany<CustomerEmailOtp, Customer>
      */
-    protected function latestPendingEmailVerificationOtp(Customer $customer): Builder
+    protected function latestPendingEmailVerificationOtp(Customer $customer): HasMany
     {
         return $customer->emailOtps()
             ->where('type', CustomerEmailOtp::TYPE_EMAIL_VERIFICATION)

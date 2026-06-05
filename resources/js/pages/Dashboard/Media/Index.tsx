@@ -39,6 +39,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { isImageMedia } from '@/lib/media';
 
 type StorageItem = MediaLibraryItem;
 
@@ -101,9 +102,7 @@ export default function Index({
         return `${value.toFixed(value >= 10 ? 0 : 1)} ${units[unitIndex]}`;
     };
 
-    const isImage = (item: StorageItem) =>
-        typeof item.mime_type === 'string' &&
-        item.mime_type.startsWith('image/');
+    const isImage = (item: StorageItem) => isImageMedia(item);
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);

@@ -54,6 +54,26 @@ test('media page can open a storage folder', function () {
     );
 });
 
+test('media library treats webp files as previewable images', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    Storage::disk('public')->put('media/2026/06/banner.webp', 'webp image');
+
+    $response = $this
+        ->actingAs($user)
+        ->get('/dashboard/media/library?path=media/2026/06');
+
+    $response
+        ->assertSuccessful()
+        ->assertJsonPath('storageItems.0.type', 'file')
+        ->assertJsonPath('storageItems.0.name', 'banner.webp')
+        ->assertJsonPath('storageItems.0.path', 'media/2026/06/banner.webp')
+        ->assertJsonPath('storageItems.0.mime_type', 'image/webp')
+        ->assertJsonPath('storageItems.0.url', fn (string $url) => str_contains($url, '/storage/media/2026/06/banner.webp'));
+});
+
 test('media storage file can be permanently deleted', function () {
     Storage::fake('public');
 
@@ -90,4 +110,23 @@ test('media upload converts supported images to webp', function () {
         ->toHaveCount(1)
         ->and($files[0])
         ->toEndWith('.webp');
+});
+
+test('media json upload returns preview data for uploaded webp images', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->post('/dashboard/media/json', [
+            'file' => UploadedFile::fake()->image('hero.webp', 100, 100),
+        ]);
+
+    $response
+        ->assertSuccessful()
+        ->assertJsonPath('media.mime_type', 'image/webp')
+        ->assertJsonPath('media.file_name', fn (string $name) => str_ends_with($name, '.webp'))
+        ->assertJsonPath('media.path', fn (string $path) => str_starts_with($path, 'media/') && str_ends_with($path, '.webp'))
+        ->assertJsonPath('url', fn (string $url) => str_contains($url, '/storage/media/') && str_ends_with($url, '.webp'));
 });

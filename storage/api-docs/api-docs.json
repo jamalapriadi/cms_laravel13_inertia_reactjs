@@ -173,7 +173,7 @@
                     "Customer Authentication"
                 ],
                 "summary": "Resend customer email OTP",
-                "description": "Endpoint untuk mengirim ulang OTP aktivasi akun customer.",
+                "description": "Endpoint untuk membuat OTP aktivasi akun customer terbaru, menginvalidasi OTP pending sebelumnya, dan mengirim OTP terbaru ke email customer.",
                 "operationId": "d0461321f3d39b3f8ce7b21d1474fa13",
                 "requestBody": {
                     "required": true,
@@ -202,6 +202,16 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
                                 }
                             }
                         }
@@ -3085,6 +3095,7 @@
                         "example": true
                     },
                     "message": {
+                        "description": "Pesan sukses resend OTP. Jika OTP baru berhasil dibuat tetapi email gagal dikirim, response tetap sukses dengan pesan aman tanpa detail SMTP.",
                         "type": "string",
                         "example": "Kode OTP baru telah dikirim ke email Anda."
                     },
