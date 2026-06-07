@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { toast } from 'sonner';
+import { usePermission } from '@/lib/permissions';
 
 interface Role {
     id: number;
@@ -29,9 +30,15 @@ interface Props {
 }
 
 export default function Edit({ user, roles }: Props) {
+    const { hasPermission, hasRole } = usePermission();
+    const canAssignRole = hasPermission('users.assign-role');
+    const assignableRoles = hasRole('super-admin')
+        ? roles
+        : roles.filter((role) => role.name !== 'super-admin');
+
     const initialRoles = useMemo(() => user.roles.map((r) => r.name), [user]);
 
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, put, processing, errors, transform } = useForm({
         name: user.name,
         email: user.email,
         password: '',
@@ -56,6 +63,16 @@ export default function Edit({ user, roles }: Props) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
+
+        transform((payload) =>
+            canAssignRole
+                ? payload
+                : {
+                      name: payload.name,
+                      email: payload.email,
+                      password: payload.password,
+                  },
+        );
 
         put(`/dashboard/users/${user.id}`, {
             onStart: () => toast.loading('Updating user...'),
@@ -137,37 +154,38 @@ export default function Edit({ user, roles }: Props) {
                                 )}
                             </div>
 
-                            {/* Roles */}
-                            <div className="space-y-4">
-                                <Label>Assign Roles</Label>
+                            {canAssignRole && (
+                                <div className="space-y-4">
+                                    <Label>Assign Roles</Label>
 
-                                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                                    {roles.map((role) => (
-                                        <div
-                                            key={role.id}
-                                            className="flex items-center space-x-2"
-                                        >
-                                            <Checkbox
-                                                checked={data.roles.includes(
-                                                    role.name,
-                                                )}
-                                                onCheckedChange={() =>
-                                                    toggleRole(role.name)
-                                                }
-                                            />
-                                            <span className="text-sm">
-                                                {role.name}
-                                            </span>
-                                        </div>
-                                    ))}
+                                    <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                                        {assignableRoles.map((role) => (
+                                            <div
+                                                key={role.id}
+                                                className="flex items-center space-x-2"
+                                            >
+                                                <Checkbox
+                                                    checked={data.roles.includes(
+                                                        role.name,
+                                                    )}
+                                                    onCheckedChange={() =>
+                                                        toggleRole(role.name)
+                                                    }
+                                                />
+                                                <span className="text-sm">
+                                                    {role.name}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {errors.roles && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.roles}
+                                        </p>
+                                    )}
                                 </div>
-
-                                {errors.roles && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.roles}
-                                    </p>
-                                )}
-                            </div>
+                            )}
 
                             {/* Actions */}
                             <div className="flex justify-between">

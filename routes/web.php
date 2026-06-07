@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Dashboard\Cms\PostTranslationController;
 use App\Http\Controllers\Dashboard\KabupatenController;
 use App\Http\Controllers\Dashboard\KecamatanController;
 use App\Http\Controllers\Dashboard\KelurahanController;
-use App\Http\Controllers\Dashboard\Cms\PostTranslationController;
 use App\Http\Controllers\Dashboard\MediaController;
 use App\Http\Controllers\Dashboard\MenuController;
 use App\Http\Controllers\Dashboard\OptionController;
@@ -13,13 +13,13 @@ use App\Http\Controllers\Dashboard\PackageController;
 use App\Http\Controllers\Dashboard\PostCategoryController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\ProvinceController;
-use App\Http\Controllers\Dashboard\SiteContentController;
 use App\Http\Controllers\Dashboard\SettingController;
+use App\Http\Controllers\Dashboard\SiteContentController;
 use App\Http\Controllers\Dashboard\TaxonomyController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Store\BrandController;
-use App\Http\Controllers\Store\BarcodeScannerController;
 use App\Http\Controllers\Store\BannerSlideController;
+use App\Http\Controllers\Store\BarcodeScannerController;
+use App\Http\Controllers\Store\BrandController;
 use App\Http\Controllers\Store\CartController;
 use App\Http\Controllers\Store\CategoryController;
 use App\Http\Controllers\Store\CustomerController;
@@ -27,17 +27,17 @@ use App\Http\Controllers\Store\FaqController;
 use App\Http\Controllers\Store\IncomingGoodsController;
 use App\Http\Controllers\Store\OrderController;
 use App\Http\Controllers\Store\PaymentController;
-use App\Http\Controllers\Store\ProductController;
 use App\Http\Controllers\Store\ProductCollectionController;
 use App\Http\Controllers\Store\ProductCollectionItemController;
+use App\Http\Controllers\Store\ProductController;
 use App\Http\Controllers\Store\ProductImageController;
 use App\Http\Controllers\Store\ProductSpecificationController;
 use App\Http\Controllers\Store\ProductStockUnitController;
 use App\Http\Controllers\Store\ProductVariantController;
-use App\Http\Controllers\Store\StockUnitBarcodeController;
 use App\Http\Controllers\Store\SearchOptionController;
 use App\Http\Controllers\Store\ShippingController;
 use App\Http\Controllers\Store\StockMovementController;
+use App\Http\Controllers\Store\StockUnitBarcodeController;
 use App\Http\Controllers\Store\SupplierController;
 use App\Http\Controllers\Store\SupplierReturnController;
 use App\Http\Controllers\Store\UnitController;
@@ -79,7 +79,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::get('/kecamatan/{kabupaten}', [KelurahanController::class, 'getKecamatan']);
 });
 
-Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], function () {
+Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'prefix' => 'dashboard'], function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('provinces', ProvinceController::class);
@@ -91,9 +91,9 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
     Route::put('menus/{menu}/builder', [MenuController::class, 'updateBuilder'])->name('menus.builder.update');
     Route::resource('menus', MenuController::class);
 
-    Route::resource('roles', RoleController::class);
-    Route::resource('permissions', PermissionController::class);
-    Route::resource('users', UserController::class);
+    Route::resource('roles', RoleController::class)->except(['show']);
+    Route::resource('permissions', PermissionController::class)->except(['show']);
+    Route::resource('users', UserController::class)->except(['show']);
     Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
     Route::resource('post-categories', PostCategoryController::class);
@@ -192,13 +192,13 @@ Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'dashboard'], fu
         Route::get('/media', 'index')->name('dashboard.media');
         Route::get('/media/library', 'library')->name('dashboard.media.library');
         Route::get('/media/create', 'create')->name('dashboard.media.create');
-        Route::post('/media', 'store');
-        Route::post('/media/upload', 'upload');
-        Route::post('/media/json', 'store_json');
+        Route::post('/media', 'store')->name('dashboard.media.store');
+        Route::post('/media/upload', 'upload')->name('dashboard.media.upload');
+        Route::post('/media/json', 'store_json')->name('dashboard.media.json');
         Route::delete('/media/storage-file', 'destroyStorageFile')->name('dashboard.media.storage-file.destroy');
-        Route::put('/media/{medium}', 'update');
-        Route::delete('/media/{medium}', 'destroy');
-        Route::post('/upload-image', 'store_image');
+        Route::put('/media/{medium}', 'update')->name('dashboard.media.update');
+        Route::delete('/media/{medium}', 'destroy')->name('dashboard.media.destroy');
+        Route::post('/upload-image', 'store_image')->name('dashboard.media.store-image');
     });
 });
 

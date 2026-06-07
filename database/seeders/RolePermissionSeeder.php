@@ -2,70 +2,55 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
+use App\Support\DashboardPermissions;
 use Illuminate\Database\Seeder;
-
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // reset cache
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        /**
-         * ✅ PERMISSIONS
-         */
-        $permissions = [
-            // Post
-            'post.view',
-            'post.create',
-            'post.update',
-            'post.delete',
-
-            // Category
-            'category.view',
-            'category.manage',
-
-            // Taxonomy
-            'taxonomy.view',
-            'taxonomy.manage',
-
-            // System
-            'menu.manage',
-            'media.manage',
-            'settings.manage',
-        ];
-
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+        foreach (DashboardPermissions::all() as $permission) {
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web',
+            ]);
         }
 
-        /**
-         * ✅ ROLES
-         */
-        $admin = Role::firstOrCreate(['name' => 'admin']);
-        $editor = Role::firstOrCreate(['name' => 'editor']);
+        foreach (DashboardPermissions::roles() as $roleName => $permissions) {
+            $role = Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => 'web',
+            ]);
 
-        /**
-         * ✅ ASSIGN PERMISSION
-         */
-        $admin->syncPermissions(Permission::all());
-
-        $editor->syncPermissions([
-            'post.view',
-            'post.create',
-            'post.update',
-        ]);
-
-        $allUser= \App\Models\User::all();
-        foreach($allUser as $key=>$user){
-            $user->assignRole('admin');
+            $role->syncPermissions($permissions);
         }
+
+        $this->assignInitialSuperAdmin();
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    private function assignInitialSuperAdmin(): void
+    {
+        if (User::role('super-admin')->exists()) {
+            return;
+        }
+
+        $user = User::query()
+            ->where('email', 'jamal.apriadi@gmail.com')
+            ->orWhere('email', config('app.admin_email'))
+            ->orWhereNotNull('email_verified_at')
+            ->oldest('id')
+            ->first();
+
+        $user ??= User::query()->oldest('id')->first();
+
+        $user?->assignRole('super-admin');
     }
 }

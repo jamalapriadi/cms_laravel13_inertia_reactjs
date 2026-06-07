@@ -33,6 +33,21 @@ export default function Edit({ role, permissions }: Props) {
         () => role.permissions.map((p) => p.name),
         [role],
     );
+    const groupedPermissions = useMemo(
+        () =>
+            permissions.reduce<Record<string, Permission[]>>(
+                (groups, permission) => {
+                    const [module] = permission.name.split('.');
+                    groups[module] = groups[module] ?? [];
+                    groups[module].push(permission);
+
+                    return groups;
+                },
+                {},
+            ),
+        [permissions],
+    );
+    const isSuperAdminRole = role.name === 'super-admin';
 
     const { data, setData, put, processing, errors } = useForm({
         name: role.name,
@@ -88,6 +103,7 @@ export default function Edit({ role, permissions }: Props) {
                                 <Label>Role Name</Label>
                                 <Input
                                     value={data.name}
+                                    disabled={isSuperAdminRole}
                                     onChange={(e) =>
                                         setData('name', e.target.value)
                                     }
@@ -103,27 +119,54 @@ export default function Edit({ role, permissions }: Props) {
                             <div className="space-y-4">
                                 <Label>Permissions</Label>
 
-                                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                                    {permissions.map((permission) => (
-                                        <div
-                                            key={permission.id}
-                                            className="flex items-center space-x-2"
-                                        >
-                                            <Checkbox
-                                                checked={data.permissions.includes(
-                                                    permission.name,
-                                                )}
-                                                onCheckedChange={() =>
-                                                    togglePermission(
-                                                        permission.name,
-                                                    )
-                                                }
-                                            />
-                                            <span className="text-sm">
-                                                {permission.name}
-                                            </span>
-                                        </div>
-                                    ))}
+                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                    {Object.entries(groupedPermissions).map(
+                                        ([module, modulePermissions]) => (
+                                            <div
+                                                key={module}
+                                                className="rounded-lg border p-4"
+                                            >
+                                                <h3 className="mb-3 text-sm font-semibold capitalize">
+                                                    {module.replaceAll(
+                                                        '-',
+                                                        ' ',
+                                                    )}
+                                                </h3>
+
+                                                <div className="space-y-2">
+                                                    {modulePermissions.map(
+                                                        (permission) => (
+                                                            <label
+                                                                key={
+                                                                    permission.id
+                                                                }
+                                                                className="flex items-center gap-2 text-sm"
+                                                            >
+                                                                <Checkbox
+                                                                    disabled={
+                                                                        isSuperAdminRole
+                                                                    }
+                                                                    checked={data.permissions.includes(
+                                                                        permission.name,
+                                                                    )}
+                                                                    onCheckedChange={() =>
+                                                                        togglePermission(
+                                                                            permission.name,
+                                                                        )
+                                                                    }
+                                                                />
+                                                                <span>
+                                                                    {
+                                                                        permission.name
+                                                                    }
+                                                                </span>
+                                                            </label>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ),
+                                    )}
                                 </div>
                             </div>
 

@@ -3,6 +3,7 @@
 namespace App\Services\Dashboard;
 
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class PermissionService
 {
@@ -19,10 +20,14 @@ class PermissionService
 
     public function store(array $data)
     {
-        return Permission::create([
+        $permission = Permission::create([
             'name' => $data['name'],
             'guard_name' => 'web',
         ]);
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        return $permission;
     }
 
     public function update(Permission $permission, array $data)
@@ -31,11 +36,17 @@ class PermissionService
             'name' => $data['name'],
         ]);
 
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         return $permission;
     }
 
     public function delete(Permission $permission)
     {
-        return $permission->delete();
+        $deleted = $permission->delete();
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        return $deleted;
     }
 }

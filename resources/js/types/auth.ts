@@ -3,6 +3,8 @@ export type User = {
     name: string;
     email: string;
     avatar?: string;
+    roles: string[];
+    permissions: string[];
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
     created_at: string;
@@ -12,6 +14,7 @@ export type User = {
 
 export type Auth = {
     user: User;
+    permissions: string[];
 };
 
 export type TwoFactorSetupData = {

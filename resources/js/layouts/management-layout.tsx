@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
+import { hasPermission } from '@/lib/permissions';
 
 interface Props {
     children: React.ReactNode;
@@ -8,24 +9,28 @@ interface Props {
 }
 
 export default function ManagementLayout({ children, breadcrumbs }: Props) {
-    const { url } = usePage();
+    const { url, props } = usePage();
 
     const menus = [
         {
             label: 'Summary',
             href: '/dashboard/config/management',
+            permission: 'settings.view',
         },
         {
             label: 'Users',
             href: '/dashboard/users',
+            permission: 'users.view',
         },
         {
             label: 'Roles',
             href: '/dashboard/roles',
+            permission: 'roles.view',
         },
         {
             label: 'Permissions',
             href: '/dashboard/permissions',
+            permission: 'permissions.view',
         },
     ];
 
@@ -38,24 +43,28 @@ export default function ManagementLayout({ children, breadcrumbs }: Props) {
                         Management
                     </h2>
 
-                    {menus.map((menu) => {
-                        const active = url.startsWith(menu.href);
+                    {menus
+                        .filter((menu) =>
+                            hasPermission(props.auth.user, menu.permission),
+                        )
+                        .map((menu) => {
+                            const active = url.startsWith(menu.href);
 
-                        return (
-                            <Link
-                                key={menu.href}
-                                href={menu.href}
-                                className={cn(
-                                    'block rounded-lg px-3 py-2 text-sm transition',
-                                    active
-                                        ? 'bg-primary text-white'
-                                        : 'hover:bg-muted',
-                                )}
-                            >
-                                {menu.label}
-                            </Link>
-                        );
-                    })}
+                            return (
+                                <Link
+                                    key={menu.href}
+                                    href={menu.href}
+                                    className={cn(
+                                        'block rounded-lg px-3 py-2 text-sm transition',
+                                        active
+                                            ? 'bg-primary text-white'
+                                            : 'hover:bg-muted',
+                                    )}
+                                >
+                                    {menu.label}
+                                </Link>
+                            );
+                        })}
                 </aside>
 
                 {/* PAGE CONTENT */}

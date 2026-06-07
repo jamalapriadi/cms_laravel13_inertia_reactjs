@@ -18,6 +18,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { DataTable } from '@/components/DataTable';
 import { toast } from 'sonner';
+import { usePermission } from '@/lib/permissions';
 
 interface Role {
     id: number;
@@ -50,6 +51,11 @@ export default function Index({ users, roles, filters }: Props) {
     const [status, setStatus] = useState(filters.status || '');
     const [confirmingUser, setConfirmingUser] = useState<UserItem | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const { hasPermission } = usePermission();
+    const canCreate = hasPermission('users.create');
+    const canEdit = hasPermission('users.edit');
+    const canDelete = hasPermission('users.delete');
+    const canUpdateStatus = hasPermission('users.update-status');
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -161,116 +167,140 @@ export default function Index({ users, roles, filters }: Props) {
             label: 'Created At',
             render: (row) => new Date(row.created_at).toLocaleDateString(),
         },
-        {
-            label: 'Status',
-            render: (row) => (
-                <div className="flex items-center gap-2">
-                    <Switch
-                        checked={row.is_active}
-                        onCheckedChange={() => {
-                            if (row.is_active) {
-                                // Mau deactivate → buka dialog
-                                setConfirmingUser(row);
-                            } else {
-                                // Mau activate → langsung toggle
-                                handleToggleStatus(row.id);
-                            }
-                        }}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                        {row.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                </div>
-            ),
-        },
-        {
-            label: 'Action',
-            render: (row) => (
-                <div className="flex gap-2">
-                    <Link href={`/dashboard/users/${row.id}/edit`}>
-                        <Button size="sm" variant="secondary">
-                            Edit
-                        </Button>
-                    </Link>
+        ...(canUpdateStatus
+            ? [
+                  {
+                      label: 'Status',
+                      render: (row: UserItem) => (
+                          <div className="flex items-center gap-2">
+                              <Switch
+                                  checked={row.is_active}
+                                  onCheckedChange={() => {
+                                      if (row.is_active) {
+                                          // Mau deactivate → buka dialog
+                                          setConfirmingUser(row);
+                                      } else {
+                                          // Mau activate → langsung toggle
+                                          handleToggleStatus(row.id);
+                                      }
+                                  }}
+                              />
+                              <span className="text-xs text-muted-foreground">
+                                  {row.is_active ? 'Active' : 'Inactive'}
+                              </span>
+                          </div>
+                      ),
+                  },
+              ]
+            : []),
+        ...(canEdit || canDelete || canUpdateStatus
+            ? [
+                  {
+                      label: 'Action',
+                      render: (row: UserItem) => (
+                          <div className="flex gap-2">
+                              {canEdit && (
+                                  <Link
+                                      href={`/dashboard/users/${row.id}/edit`}
+                                  >
+                                      <Button size="sm" variant="secondary">
+                                          Edit
+                                      </Button>
+                                  </Link>
+                              )}
 
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => setDeletingId(row.id)}
-                            >
-                                Delete
-                            </Button>
-                        </AlertDialogTrigger>
+                              {canDelete && (
+                                  <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                          <Button
+                                              size="sm"
+                                              variant="destructive"
+                                              onClick={() =>
+                                                  setDeletingId(row.id)
+                                              }
+                                          >
+                                              Delete
+                                          </Button>
+                                      </AlertDialogTrigger>
 
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                    Are you sure?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
+                                      <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                              <AlertDialogTitle>
+                                                  Are you sure?
+                                              </AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                  This action cannot be undone.
+                                              </AlertDialogDescription>
+                                          </AlertDialogHeader>
 
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleDelete}>
-                                    Delete
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                                          <AlertDialogFooter>
+                                              <AlertDialogCancel>
+                                                  Cancel
+                                              </AlertDialogCancel>
+                                              <AlertDialogAction
+                                                  onClick={handleDelete}
+                                              >
+                                                  Delete
+                                              </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                  </AlertDialog>
+                              )}
 
-                    <AlertDialog
-                        open={!!confirmingUser}
-                        onOpenChange={() => setConfirmingUser(null)}
-                    >
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                    Deactivate User?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {confirmingUser && (
-                                        <>
-                                            You are about to deactivate{' '}
-                                            <strong>
-                                                {confirmingUser.name}
-                                            </strong>
-                                            . This user will no longer be able
-                                            to log in.
-                                            <br />
-                                            <br />
-                                            This action can be reversed later.
-                                        </>
-                                    )}
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
+                              <AlertDialog
+                                  open={!!confirmingUser}
+                                  onOpenChange={() => setConfirmingUser(null)}
+                              >
+                                  <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                          <AlertDialogTitle>
+                                              Deactivate User?
+                                          </AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                              {confirmingUser && (
+                                                  <>
+                                                      You are about to
+                                                      deactivate{' '}
+                                                      <strong>
+                                                          {confirmingUser.name}
+                                                      </strong>
+                                                      . This user will no longer
+                                                      be able to log in.
+                                                      <br />
+                                                      <br />
+                                                      This action can be
+                                                      reversed later.
+                                                  </>
+                                              )}
+                                          </AlertDialogDescription>
+                                      </AlertDialogHeader>
 
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogFooter>
+                                          <AlertDialogCancel>
+                                              Cancel
+                                          </AlertDialogCancel>
 
-                                <AlertDialogAction
-                                    onClick={() => {
-                                        if (confirmingUser) {
-                                            handleToggleStatus(
-                                                confirmingUser.id,
-                                            );
-                                            setConfirmingUser(null);
-                                        }
-                                    }}
-                                    className="bg-destructive text-white hover:bg-destructive/90"
-                                >
-                                    Yes, Deactivate
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </div>
-            ),
-        },
+                                          <AlertDialogAction
+                                              onClick={() => {
+                                                  if (confirmingUser) {
+                                                      handleToggleStatus(
+                                                          confirmingUser.id,
+                                                      );
+                                                      setConfirmingUser(null);
+                                                  }
+                                              }}
+                                              className="bg-destructive text-white hover:bg-destructive/90"
+                                          >
+                                              Yes, Deactivate
+                                          </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                  </AlertDialogContent>
+                              </AlertDialog>
+                          </div>
+                      ),
+                  },
+              ]
+            : []),
     ];
 
     return (
@@ -282,9 +312,11 @@ export default function Index({ users, roles, filters }: Props) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Users</h1>
 
-                    <Link href="/dashboard/users/create">
-                        <Button>Add New User</Button>
-                    </Link>
+                    {canCreate && (
+                        <Link href="/dashboard/users/create">
+                            <Button>Add New User</Button>
+                        </Link>
+                    )}
                 </div>
 
                 {/* FILTER */}

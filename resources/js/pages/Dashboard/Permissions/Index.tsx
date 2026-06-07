@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { DataTable } from '@/components/DataTable';
 import { toast } from 'sonner';
+import { usePermission } from '@/lib/permissions';
 
 interface PermissionItem {
     id: number;
@@ -33,6 +34,10 @@ interface Props {
 export default function Index({ permissions, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const { hasPermission } = usePermission();
+    const canCreate = hasPermission('permissions.create');
+    const canEdit = hasPermission('permissions.edit');
+    const canDelete = hasPermission('permissions.delete');
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Permissions', href: '/dashboard/permissions' },
@@ -66,48 +71,64 @@ export default function Index({ permissions, filters }: Props) {
             render: (row: PermissionItem) =>
                 new Date(row.created_at).toLocaleDateString(),
         },
-        {
-            label: 'Action',
-            render: (row: PermissionItem) => (
-                <div className="flex gap-2">
-                    <Link href={`/dashboard/permissions/${row.id}/edit`}>
-                        <Button size="sm" variant="secondary">
-                            Edit
-                        </Button>
-                    </Link>
+        ...(canEdit || canDelete
+            ? [
+                  {
+                      label: 'Action',
+                      render: (row: PermissionItem) => (
+                          <div className="flex gap-2">
+                              {canEdit && (
+                                  <Link
+                                      href={`/dashboard/permissions/${row.id}/edit`}
+                                  >
+                                      <Button size="sm" variant="secondary">
+                                          Edit
+                                      </Button>
+                                  </Link>
+                              )}
 
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => setDeletingId(row.id)}
-                            >
-                                Delete
-                            </Button>
-                        </AlertDialogTrigger>
+                              {canDelete && (
+                                  <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                          <Button
+                                              size="sm"
+                                              variant="destructive"
+                                              onClick={() =>
+                                                  setDeletingId(row.id)
+                                              }
+                                          >
+                                              Delete
+                                          </Button>
+                                      </AlertDialogTrigger>
 
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                    Are you sure?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
+                                      <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                              <AlertDialogTitle>
+                                                  Are you sure?
+                                              </AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                  This action cannot be undone.
+                                              </AlertDialogDescription>
+                                          </AlertDialogHeader>
 
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleDelete}>
-                                    Delete
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </div>
-            ),
-        },
+                                          <AlertDialogFooter>
+                                              <AlertDialogCancel>
+                                                  Cancel
+                                              </AlertDialogCancel>
+                                              <AlertDialogAction
+                                                  onClick={handleDelete}
+                                              >
+                                                  Delete
+                                              </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                  </AlertDialog>
+                              )}
+                          </div>
+                      ),
+                  },
+              ]
+            : []),
     ];
 
     return (
@@ -117,9 +138,11 @@ export default function Index({ permissions, filters }: Props) {
             <div className="flex flex-1 flex-col gap-6 rounded-xl p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Permissions</h1>
-                    <Link href="/dashboard/permissions/create">
-                        <Button>Add New Permission</Button>
-                    </Link>
+                    {canCreate && (
+                        <Link href="/dashboard/permissions/create">
+                            <Button>Add New Permission</Button>
+                        </Link>
+                    )}
                 </div>
 
                 <div className="flex gap-3">
