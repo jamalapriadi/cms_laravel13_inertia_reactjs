@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Dashboard\Cms\PageTranslationController;
 use App\Http\Controllers\Dashboard\Cms\PostTranslationController;
 use App\Http\Controllers\Dashboard\KabupatenController;
 use App\Http\Controllers\Dashboard\KecamatanController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Dashboard\MediaController;
 use App\Http\Controllers\Dashboard\MenuController;
 use App\Http\Controllers\Dashboard\OptionController;
 use App\Http\Controllers\Dashboard\PackageController;
+use App\Http\Controllers\Dashboard\PageController;
 use App\Http\Controllers\Dashboard\PostCategoryController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\ProvinceController;
@@ -108,6 +110,12 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
 
     Route::get('posts/usage-guide', [PostController::class, 'usageGuide'])->name('posts.usage-guide');
     Route::resource('posts', PostController::class);
+    Route::resource('pages', PageController::class)->except(['show']);
+    Route::prefix('cms/pages/{page}/translations')->name('dashboard.cms.pages.translations.')->group(function () {
+        Route::get('/', [PageTranslationController::class, 'index'])->name('index');
+        Route::get('/{language}', [PageTranslationController::class, 'edit'])->name('edit');
+        Route::put('/{language}', [PageTranslationController::class, 'update'])->name('update');
+    });
     Route::prefix('cms/posts/{post}/translations')->name('dashboard.cms.posts.translations.')->group(function () {
         Route::get('/', [PostTranslationController::class, 'index'])->name('index');
         Route::get('/{language}', [PostTranslationController::class, 'edit'])->name('edit');

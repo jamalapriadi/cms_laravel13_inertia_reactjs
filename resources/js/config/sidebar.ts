@@ -21,6 +21,7 @@ import {
     RssIcon,
     ShieldCheck,
     KeyRound,
+    StickyNote,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -89,6 +90,12 @@ export const sidebarConfig: SidebarGroup[] = [
                         permission: 'taxonomies.view',
                     },
                 ],
+            },
+            {
+                title: 'Pages',
+                href: '/dashboard/pages',
+                icon: StickyNote,
+                permission: 'pages.view',
             },
             {
                 title: 'Promo',

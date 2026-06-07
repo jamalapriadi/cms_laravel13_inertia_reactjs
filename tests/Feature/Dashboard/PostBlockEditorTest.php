@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureDashboardPermission;
 use App\Models\Block;
 use App\Models\Post;
 use App\Models\PostCategory;
@@ -9,6 +10,10 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->withoutMiddleware(EnsureDashboardPermission::class);
+});
 
 function nestedPostBlocks(): array
 {

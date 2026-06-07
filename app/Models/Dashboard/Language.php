@@ -3,6 +3,7 @@
 namespace App\Models\Dashboard;
 
 use App\Models\BlockTranslation;
+use App\Models\PageTranslation;
 use App\Models\PostTranslation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,11 +13,11 @@ class Language extends Model
 {
     use HasFactory;
 
-    protected $table = "languages";
+    protected $table = 'languages';
 
     public $appends = [
         'cca2',
-        'flag'
+        'flag',
     ];
 
     protected $fillable = [
@@ -37,18 +38,23 @@ class Language extends Model
 
     public function getFlagAttribute()
     {
-        $country = \App\Models\Dashboard\Country::where('cca2', strtoupper($this->code))->first();
+        $country = Country::where('cca2', strtoupper($this->code))->first();
 
         if ($country) {
             return $country->flag;
         }
 
-        return "";
+        return '';
     }
 
     public function postTranslations(): HasMany
     {
         return $this->hasMany(PostTranslation::class);
+    }
+
+    public function pageTranslations(): HasMany
+    {
+        return $this->hasMany(PageTranslation::class);
     }
 
     public function blockTranslations(): HasMany

@@ -31,8 +31,147 @@ class OpenApiController extends Controller
                     'name' => 'Posts',
                     'description' => 'Published posts and news content for the Next.js frontend.',
                 ],
+                [
+                    'name' => 'Pages',
+                    'description' => 'Published static and dynamic pages for the Next.js frontend.',
+                ],
             ],
             'paths' => [
+                '/pages' => [
+                    'get' => [
+                        'tags' => ['Pages'],
+                        'summary' => 'Get list of published pages',
+                        'description' => 'Returns paginated published pages. Supports search, locale/language, pagination, and sort filters.',
+                        'parameters' => [
+                            $this->queryParameter('search', 'Search pages by title, slug, excerpt, content, or translation content.'),
+                            $this->queryParameter('locale', 'Locale or language code.'),
+                            $this->queryParameter('language', 'Alias for locale.'),
+                            $this->queryParameter('per_page', 'Items per page. Minimum 1, maximum 100.', 'integer', 10),
+                            $this->queryParameter('page', 'Page number. Minimum 1.', 'integer', 1),
+                            [
+                                'name' => 'sort',
+                                'in' => 'query',
+                                'required' => false,
+                                'description' => 'Sort order.',
+                                'schema' => [
+                                    'type' => 'string',
+                                    'enum' => ['latest', 'oldest'],
+                                    'default' => 'latest',
+                                ],
+                            ],
+                        ],
+                        'responses' => [
+                            '200' => [
+                                'description' => 'Pages retrieved successfully.',
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => ['$ref' => '#/components/schemas/PageListResponse'],
+                                        'example' => [
+                                            'success' => true,
+                                            'message' => 'Pages retrieved successfully',
+                                            'data' => [
+                                                [
+                                                    'id' => 1,
+                                                    'title' => 'About Us',
+                                                    'slug' => 'about-us',
+                                                    'excerpt' => 'Tentang Gita Trading Store',
+                                                    'featured_image' => 'https://img.gitatrading-store.com/media/2026/06/about.webp',
+                                                    'published_at' => '2026-06-07T00:00:00.000000Z',
+                                                ],
+                                            ],
+                                            'meta' => [
+                                                'current_page' => 1,
+                                                'per_page' => 10,
+                                                'total' => 1,
+                                                'last_page' => 1,
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            '422' => ['$ref' => '#/components/responses/ValidationError'],
+                        ],
+                    ],
+                ],
+                '/pages/{slug}' => [
+                    'get' => [
+                        'tags' => ['Pages'],
+                        'summary' => 'Get page detail by slug',
+                        'description' => 'Returns a published page detail by base slug or translated slug, including ordered blocks and SEO data.',
+                        'parameters' => [
+                            [
+                                'name' => 'slug',
+                                'in' => 'path',
+                                'required' => true,
+                                'description' => 'Page slug or translated page slug.',
+                                'schema' => ['type' => 'string'],
+                            ],
+                            $this->queryParameter('locale', 'Locale or language code.'),
+                            $this->queryParameter('language', 'Alias for locale.'),
+                        ],
+                        'responses' => [
+                            '200' => [
+                                'description' => 'Page retrieved successfully.',
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => ['$ref' => '#/components/schemas/PageDetailResponse'],
+                                        'example' => [
+                                            'success' => true,
+                                            'message' => 'Page retrieved successfully',
+                                            'data' => [
+                                                'id' => 1,
+                                                'title' => 'About Us',
+                                                'slug' => 'about-us',
+                                                'excerpt' => 'Tentang Gita Trading Store',
+                                                'content' => '[{"type":"paragraph","data":{"text":"About us"}}]',
+                                                'status' => 'publish',
+                                                'featured_image' => 'https://img.gitatrading-store.com/media/2026/06/about.webp',
+                                                'published_at' => '2026-06-07T00:00:00.000000Z',
+                                                'blocks' => [
+                                                    [
+                                                        'id' => 1,
+                                                        'parent_id' => null,
+                                                        'type' => 'paragraph',
+                                                        'sort_order' => 0,
+                                                        'data' => ['text' => 'About us'],
+                                                        'styles' => new \stdClass,
+                                                        'children' => [],
+                                                    ],
+                                                ],
+                                                'seo' => [
+                                                    'title' => 'About Gita Trading Store',
+                                                    'description' => 'Supplier gadget terpercaya',
+                                                    'keywords' => 'gadget, trading, store',
+                                                ],
+                                                'og_image' => null,
+                                                'language' => [
+                                                    'id' => 1,
+                                                    'code' => 'id',
+                                                    'name' => 'Indonesian',
+                                                ],
+                                                'translations' => [],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            '404' => [
+                                'description' => 'Page not found.',
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => ['$ref' => '#/components/schemas/ErrorResponse'],
+                                        'example' => [
+                                            'success' => false,
+                                            'message' => 'Page not found',
+                                            'errors' => new \stdClass,
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            '422' => ['$ref' => '#/components/responses/ValidationError'],
+                        ],
+                    ],
+                ],
                 '/posts' => [
                     'get' => [
                         'tags' => ['Posts'],
@@ -197,6 +336,10 @@ class OpenApiController extends Controller
                     ],
                 ],
                 'schemas' => [
+                    'PageListResponse' => $this->pageListResponseSchema(),
+                    'PageDetailResponse' => $this->pageDetailResponseSchema(),
+                    'PageListItem' => $this->pageListItemSchema(),
+                    'PageDetail' => $this->pageDetailSchema(),
                     'PostListResponse' => $this->postListResponseSchema(),
                     'PostDetailResponse' => $this->postDetailResponseSchema(),
                     'PostListItem' => $this->postListItemSchema(),
@@ -225,6 +368,116 @@ class OpenApiController extends Controller
                 'type' => $type,
                 'default' => $default,
             ], fn (mixed $value): bool => $value !== null),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function pageListResponseSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'required' => ['success', 'message', 'data', 'meta'],
+            'properties' => [
+                'success' => ['type' => 'boolean'],
+                'message' => ['type' => 'string'],
+                'data' => [
+                    'type' => 'array',
+                    'items' => ['$ref' => '#/components/schemas/PageListItem'],
+                ],
+                'meta' => ['$ref' => '#/components/schemas/PaginationMeta'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function pageDetailResponseSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'required' => ['success', 'message', 'data'],
+            'properties' => [
+                'success' => ['type' => 'boolean'],
+                'message' => ['type' => 'string'],
+                'data' => ['$ref' => '#/components/schemas/PageDetail'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function pageListItemSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'id' => ['type' => 'integer'],
+                'title' => ['type' => 'string'],
+                'slug' => ['type' => 'string'],
+                'excerpt' => ['type' => 'string', 'nullable' => true],
+                'featured_image' => ['type' => 'string', 'nullable' => true],
+                'published_at' => ['type' => 'string', 'format' => 'date-time', 'nullable' => true],
+                'created_at' => ['type' => 'string', 'format' => 'date-time', 'nullable' => true],
+                'updated_at' => ['type' => 'string', 'format' => 'date-time', 'nullable' => true],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function pageDetailSchema(): array
+    {
+        return [
+            'allOf' => [
+                ['$ref' => '#/components/schemas/PageListItem'],
+                [
+                    'type' => 'object',
+                    'properties' => [
+                        'content' => ['type' => 'string', 'nullable' => true],
+                        'status' => ['type' => 'string'],
+                        'blocks' => [
+                            'type' => 'array',
+                            'items' => ['$ref' => '#/components/schemas/Block'],
+                        ],
+                        'seo' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'title' => ['type' => 'string', 'nullable' => true],
+                                'description' => ['type' => 'string', 'nullable' => true],
+                                'keywords' => ['type' => 'string', 'nullable' => true],
+                            ],
+                        ],
+                        'og_image' => ['type' => 'string', 'nullable' => true],
+                        'language' => [
+                            'type' => 'object',
+                            'nullable' => true,
+                            'properties' => [
+                                'id' => ['type' => 'integer'],
+                                'code' => ['type' => 'string'],
+                                'name' => ['type' => 'string', 'nullable' => true],
+                            ],
+                        ],
+                        'translations' => [
+                            'type' => 'array',
+                            'items' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'language_id' => ['type' => 'integer'],
+                                    'title' => ['type' => 'string'],
+                                    'slug' => ['type' => 'string'],
+                                    'excerpt' => ['type' => 'string', 'nullable' => true],
+                                    'published_at' => ['type' => 'string', 'format' => 'date-time', 'nullable' => true],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 
