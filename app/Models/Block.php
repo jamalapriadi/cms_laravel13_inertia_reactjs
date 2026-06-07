@@ -12,11 +12,12 @@ class Block extends Model
 {
     protected $fillable = [
         'post_id',
+        'page_id',
         'parent_id',
         'type',
         'props',
         'styles',
-        'order'
+        'order',
     ];
 
     protected $casts = [
@@ -37,6 +38,11 @@ class Block extends Model
     public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class);
+    }
+
+    public function page(): BelongsTo
+    {
+        return $this->belongsTo(Page::class);
     }
 
     public function translations(): HasMany

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\HomeController;
 use App\Http\Controllers\Api\V1\OpenApiController;
 use App\Http\Controllers\Api\V1\OrderController;
+use App\Http\Controllers\Api\V1\PageController;
 use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\ProductCollectionController;
 use App\Http\Controllers\Api\V1\ProductController;
@@ -23,6 +24,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::get('health', [HealthController::class, 'health'])->name('health');
 
     Route::get('home', HomeController::class)->name('home');
+    Route::get('pages', [PageController::class, 'index'])->name('pages.index');
+    Route::get('pages/{slug}', [PageController::class, 'show'])->name('pages.show');
     Route::get('posts', [PostController::class, 'index'])->name('posts.index');
     Route::get('posts/{slug}', [PostController::class, 'show'])->name('posts.show');
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');

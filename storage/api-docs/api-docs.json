@@ -508,6 +508,233 @@
                 }
             }
         },
+        "/api/v1/pages": {
+            "get": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "Get list of published pages",
+                "description": "Returns a paginated list of published pages for the Next.js frontend.",
+                "operationId": "282e098b932a8e3a274c8fef6551302b",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search by title, slug, excerpt, content, or translation content.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Locale or language code.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "name": "language",
+                        "in": "query",
+                        "description": "Alias for locale.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page. Min 1, max 100.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sort order.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "latest",
+                            "enum": [
+                                "latest",
+                                "oldest"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pages retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ],
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pages retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PageListItem"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/PaginationMeta"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pages/{slug}": {
+            "get": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "Get page detail by slug",
+                "description": "Returns a published page detail by base slug or translated slug, including ordered blocks and SEO data.",
+                "operationId": "13c3c0449d274e4f6966bc57a6dc6087",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Page slug or translated page slug.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "about-us"
+                        }
+                    },
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Locale or language code.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "name": "language",
+                        "in": "query",
+                        "description": "Alias for locale.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id",
+                            "nullable": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Page retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ],
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Page retrieved successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PageDetail"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Page not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "Page not found",
+                                    "errors": []
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/posts": {
             "get": {
                 "tags": [
@@ -3220,6 +3447,149 @@
                 },
                 "type": "object"
             },
+            "PageListItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "About Us"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "about-us"
+                    },
+                    "excerpt": {
+                        "type": "string",
+                        "example": "Tentang Gita Trading Store",
+                        "nullable": true
+                    },
+                    "featured_image": {
+                        "type": "string",
+                        "example": "https://img.gitatrading-store.com/media/2026/06/about.webp",
+                        "nullable": true
+                    },
+                    "published_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-06-07T00:00:00.000000Z",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PageDetail": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/PageListItem"
+                    },
+                    {
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "example": "[{\"type\":\"paragraph\",\"data\":{\"text\":\"About us\"}}]",
+                                "nullable": true
+                            },
+                            "status": {
+                                "type": "string",
+                                "example": "publish"
+                            },
+                            "blocks": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Block"
+                                }
+                            },
+                            "seo": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "About Gita Trading Store",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Supplier gadget terpercaya",
+                                        "nullable": true
+                                    },
+                                    "keywords": {
+                                        "type": "string",
+                                        "example": "gadget, trading, store",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "og_image": {
+                                "type": "string",
+                                "example": "https://img.gitatrading-store.com/media/2026/06/about-og.webp",
+                                "nullable": true
+                            },
+                            "language": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "code": {
+                                        "type": "string",
+                                        "example": "id"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Indonesian",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "translations": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "language_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Tentang Kami"
+                                        },
+                                        "slug": {
+                                            "type": "string",
+                                            "example": "tentang-kami"
+                                        },
+                                        "excerpt": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "published_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
             "PaginationMeta": {
                 "required": [
                     "current_page",
@@ -3747,6 +4117,10 @@
         {
             "name": "Posts",
             "description": "Published posts and news content"
+        },
+        {
+            "name": "Pages",
+            "description": "Published static and dynamic frontend pages"
         },
         {
             "name": "General / Master Data",

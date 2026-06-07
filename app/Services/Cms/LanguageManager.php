@@ -13,12 +13,12 @@ class LanguageManager
         $defaultCode = $this->normalizeCode(Option::getByKey('default_language'));
 
         if (! $defaultCode) {
-            return $this->getEnabledLanguages()->first();
+            return $this->fallbackLanguage();
         }
 
         return Language::query()
             ->whereRaw('LOWER(code) = ?', [$defaultCode])
-            ->first() ?? $this->getEnabledLanguages()->first();
+            ->first() ?? $this->fallbackLanguage();
     }
 
     public function getEnabledLanguages(): Collection
@@ -72,6 +72,15 @@ class LanguageManager
         return $normalized === '' ? null : $normalized;
     }
 
+    private function fallbackLanguage(): ?Language
+    {
+        return Language::query()
+            ->orderByDesc('active')
+            ->orderByDesc('major')
+            ->oldest('id')
+            ->first();
+    }
+
     /**
      * @return list<string>
      */
@@ -110,4 +119,3 @@ class LanguageManager
         return $single ? [$single] : [];
     }
 }
-

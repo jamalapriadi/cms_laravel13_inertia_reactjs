@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Block;
 use App\Models\Post;
 use App\Models\Term;
 use App\Models\TermTaxonomy;
+use App\Services\Cms\BlockTreeService;
 use App\Support\MediaPath;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -14,10 +14,14 @@ use Illuminate\Support\Str;
 
 class PostService
 {
+    public function __construct(
+        private readonly BlockTreeService $blockTreeService
+    ) {}
+
     public function create(array $data, int $userId): Post
     {
         return DB::transaction(function () use ($data, $userId) {
-            $blocks = $this->decodeBlocks($data['content'] ?? null);
+            $blocks = $this->blockTreeService->decode($data['content'] ?? null);
 
             $post = Post::create([
                 'user_id' => $userId,
@@ -29,7 +33,7 @@ class PostService
                 'published_at' => $this->resolvePublishedAt($data),
             ]);
 
-            $this->storeBlocks($post->id, $blocks);
+            $this->blockTreeService->syncForPost($post, $blocks);
             $this->syncTaxonomies($post, $data);
             $this->syncPostCategory($post, $data);
             $this->syncFeaturedImage($post, $data);
@@ -41,7 +45,7 @@ class PostService
     public function update(Post $post, array $data): Post
     {
         DB::transaction(function () use ($post, $data) {
-            $blocks = $this->decodeBlocks($data['blocks'] ?? null);
+            $blocks = $this->blockTreeService->decode($data['blocks'] ?? null);
 
             $post->update([
                 'title' => $data['title'],
@@ -50,8 +54,7 @@ class PostService
                 'published_at' => $this->resolvePublishedAt($data),
             ]);
 
-            $post->blocks()->delete();
-            $this->storeBlocks($post->id, $blocks);
+            $this->blockTreeService->syncForPost($post, $blocks);
 
             $this->syncTaxonomies($post, $data);
             $this->syncPostCategory($post, $data);
@@ -142,39 +145,6 @@ class PostService
         $post->metas()
             ->where('meta_key', 'featured_image')
             ->delete();
-    }
-
-    private function storeBlocks(int $postId, array $blocks, ?int $parentId = null): void
-    {
-        foreach ($blocks as $index => $block) {
-            $newBlock = Block::create([
-                'post_id' => $postId,
-                'parent_id' => $parentId,
-                'type' => $block['type'],
-                'props' => $block['data'] ?? [],
-                'styles' => $block['styles'] ?? [],
-                'order' => $index,
-            ]);
-
-            if (! empty($block['children'])) {
-                $this->storeBlocks(
-                    $postId,
-                    $block['children'],
-                    $newBlock->id
-                );
-            }
-        }
-    }
-
-    private function decodeBlocks(?string $blocks): array
-    {
-        if (empty($blocks)) {
-            return [];
-        }
-
-        $decoded = json_decode($blocks, true);
-
-        return is_array($decoded) ? $decoded : [];
     }
 
     public function delete(Post $post): bool

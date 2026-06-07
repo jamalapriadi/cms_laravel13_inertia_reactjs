@@ -9,6 +9,7 @@ use App\Models\Dashboard\Language;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\TermTaxonomy;
+use App\Services\Cms\BlockTreeService;
 use App\Services\Cms\LanguageManager;
 use App\Services\PostService;
 use Illuminate\Http\Request;
@@ -92,11 +93,11 @@ class PostController extends Controller
         return redirect()->route('posts.index');
     }
 
-    public function edit(Post $post)
+    public function edit(Post $post, BlockTreeService $blockTreeService)
     {
         $post->load(['tags.term', 'featuredImage', 'metas']);
 
-        $blocks = $this->buildTree(
+        $blocks = $blockTreeService->buildEditorTree(
             $post->blocks()->orderBy('order')->get()
         );
 
@@ -142,21 +143,5 @@ class PostController extends Controller
         $service->forceDelete($post);
 
         return back();
-    }
-
-    private function buildTree($blocks, $parentId = null)
-    {
-        return $blocks
-            ->where('parent_id', $parentId)
-            ->map(function ($block) use ($blocks) {
-                return [
-                    'id' => $block->id,
-                    'type' => $block->type,
-                    'data' => $block->props ?? [],
-                    'styles' => $block->styles ?? [],
-                    'children' => $this->buildTree($blocks, $block->id)->values(),
-                ];
-            })
-            ->values();
     }
 }

@@ -22,6 +22,7 @@ use OpenApi\Attributes as OA;
         new OA\Tag(name: 'Orders', description: 'API order customer login untuk list, detail, dan cancel order.'),
         new OA\Tag(name: 'Site Contents', description: 'API publik untuk dynamic frontend copy multi-language dengan cache dan invalidation dari dashboard.'),
         new OA\Tag(name: 'Posts', description: 'Published posts and news content'),
+        new OA\Tag(name: 'Pages', description: 'Published static and dynamic frontend pages'),
         new OA\Tag(name: 'General / Master Data', description: 'API publik untuk home data, banner, FAQ, dan data umum frontend.'),
         new OA\Tag(name: 'Health', description: 'API information and health checks'),
     ],

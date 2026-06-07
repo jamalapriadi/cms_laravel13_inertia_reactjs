@@ -15,6 +15,8 @@ use App\Models\Dashboard\Province;
 use App\Models\Dashboard\Template;
 use App\Models\Dashboard\Translation;
 use App\Models\Package;
+use App\Models\Page;
+use App\Models\PageTranslation;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\PostMeta;
@@ -68,6 +70,7 @@ return [
         'api.brands' => ['ttl' => 1800],
         'api.categories' => ['ttl' => 1800],
         'api.orders' => ['ttl' => 300],
+        'api.pages' => ['ttl' => 900],
         'api.posts' => ['ttl' => 900],
         'api.product-collections' => ['ttl' => 900],
         'api.products' => ['ttl' => 600],
@@ -82,6 +85,7 @@ return [
         'menus' => ['ttl' => 1800],
         'orders' => ['ttl' => 300],
         'options' => ['ttl' => 1800],
+        'pages' => ['ttl' => 600],
         'packages' => ['ttl' => 900],
         'payments' => ['ttl' => 300],
         'permissions' => ['ttl' => 1800],
@@ -111,8 +115,8 @@ return [
 
     'invalidation' => [
         BannerSlide::class => ['api.banner-slides', 'banner-slides'],
-        Block::class => ['api.posts', 'posts'],
-        BlockTranslation::class => ['api.posts', 'posts'],
+        Block::class => ['api.pages', 'api.posts', 'pages', 'posts'],
+        BlockTranslation::class => ['api.pages', 'api.posts', 'pages', 'posts'],
         Brand::class => ['api.brands', 'api.product-collections', 'api.products', 'brands', 'products', 'product-collections', 'search-options'],
         ShopBrand::class => ['api.brands', 'api.product-collections', 'api.products', 'brands', 'products', 'product-collections', 'search-options'],
         Cart::class => ['carts'],
@@ -125,7 +129,7 @@ return [
         Kabupaten::class => ['wilayah'],
         Kecamatan::class => ['wilayah'],
         Kelurahan::class => ['wilayah'],
-        Language::class => ['api.posts', 'api.site-contents', 'posts', 'site-contents', 'translations'],
+        Language::class => ['api.pages', 'api.posts', 'api.site-contents', 'pages', 'posts', 'site-contents', 'translations'],
         Menu::class => ['menus'],
         MenuItem::class => ['menus'],
         MenuItemTranslation::class => ['menus'],
@@ -133,6 +137,8 @@ return [
         Order::class => ['api.orders', 'orders', 'payments', 'shipping', 'stock-movements'],
         OrderItem::class => ['api.orders', 'api.products', 'orders', 'products'],
         Package::class => ['packages'],
+        Page::class => ['api.pages', 'pages'],
+        PageTranslation::class => ['api.pages', 'pages'],
         Payment::class => ['orders', 'payments'],
         Post::class => ['api.posts', 'posts'],
         PostCategory::class => ['api.posts', 'post-categories', 'posts'],
