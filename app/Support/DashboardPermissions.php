@@ -1,0 +1,338 @@
+<?php
+
+namespace App\Support;
+
+final class DashboardPermissions
+{
+    /**
+     * @return array<string, string[]>
+     */
+    public static function modules(): array
+    {
+        return [
+            'dashboard' => ['view'],
+            'provinces' => ['view', 'create', 'edit', 'delete'],
+            'kabupatens' => ['view', 'create', 'edit', 'delete'],
+            'kecamatans' => ['view', 'create', 'edit', 'delete'],
+            'kelurahans' => ['view', 'create', 'edit', 'delete'],
+            'menus' => ['view', 'create', 'edit', 'delete', 'builder'],
+            'roles' => ['view', 'create', 'edit', 'delete', 'assign-permission'],
+            'permissions' => ['view', 'create', 'edit', 'delete'],
+            'users' => ['view', 'create', 'edit', 'delete', 'assign-role', 'update-status'],
+            'post-categories' => ['view', 'create', 'edit', 'delete'],
+            'taxonomies' => ['view', 'create', 'edit', 'delete'],
+            'posts' => ['view', 'create', 'edit', 'delete', 'translate'],
+            'packages' => ['view', 'create', 'edit', 'delete'],
+            'brands' => ['view', 'create', 'edit', 'delete'],
+            'units' => ['view', 'create', 'edit', 'delete'],
+            'categories' => ['view', 'create', 'edit', 'delete'],
+            'products' => ['view', 'create', 'edit', 'delete', 'import', 'export'],
+            'product-variants' => ['view', 'create', 'edit', 'delete'],
+            'variant-items' => ['view', 'create', 'edit', 'delete'],
+            'product-stock-units' => ['view', 'create', 'edit', 'delete', 'barcode', 'print-barcode'],
+            'product-images' => ['view', 'create', 'edit', 'delete'],
+            'product-collections' => ['view', 'create', 'edit', 'delete', 'manage-items'],
+            'product-specifications' => ['view', 'create', 'edit', 'delete'],
+            'faqs' => ['view', 'create', 'edit', 'delete'],
+            'banner-slides' => ['view', 'create', 'edit', 'delete'],
+            'customers' => ['view', 'delete', 'update-status', 'reset-password'],
+            'carts' => ['view', 'create', 'edit', 'delete', 'manage-items'],
+            'payments' => ['view', 'detail', 'confirm', 'refund'],
+            'stock-movements' => ['view', 'create', 'edit', 'delete'],
+            'shippings' => ['view', 'create', 'edit', 'delete'],
+            'suppliers' => ['view', 'create', 'edit', 'delete'],
+            'incoming-goods' => ['view', 'create', 'edit', 'delete', 'print-barcode'],
+            'supplier-returns' => ['view', 'create', 'edit', 'delete'],
+            'orders' => ['view', 'detail', 'create', 'edit', 'delete', 'update-status', 'export'],
+            'settings' => ['view', 'update'],
+            'site-contents' => ['view', 'create', 'edit', 'delete'],
+            'options' => ['view', 'create', 'edit', 'delete'],
+            'media' => ['view', 'upload', 'edit', 'delete'],
+            'api-documentation' => ['view'],
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function all(): array
+    {
+        $permissions = [];
+
+        foreach (self::modules() as $module => $actions) {
+            foreach ($actions as $action) {
+                $permissions[] = "{$module}.{$action}";
+            }
+        }
+
+        return $permissions;
+    }
+
+    /**
+     * @return array<string, string[]>
+     */
+    public static function roles(): array
+    {
+        return [
+            'super-admin' => self::all(),
+            'owner' => self::permissionsForModules([
+                'dashboard',
+                'provinces',
+                'kabupatens',
+                'kecamatans',
+                'kelurahans',
+                'menus',
+                'users',
+                'post-categories',
+                'taxonomies',
+                'posts',
+                'packages',
+                'brands',
+                'units',
+                'categories',
+                'products',
+                'product-variants',
+                'variant-items',
+                'product-stock-units',
+                'product-images',
+                'product-collections',
+                'product-specifications',
+                'faqs',
+                'banner-slides',
+                'customers',
+                'carts',
+                'payments',
+                'stock-movements',
+                'shippings',
+                'suppliers',
+                'incoming-goods',
+                'supplier-returns',
+                'orders',
+                'settings',
+                'site-contents',
+                'options',
+                'media',
+                'api-documentation',
+            ]),
+            'admin' => self::except(self::all(), [
+                'roles.delete',
+                'permissions.create',
+                'permissions.edit',
+                'permissions.delete',
+                'settings.update',
+            ]),
+            'staff' => self::permissionsForModules([
+                'dashboard',
+                'products',
+                'product-stock-units',
+                'product-collections',
+                'customers',
+                'carts',
+                'orders',
+                'payments',
+                'shippings',
+                'media',
+            ], ['view', 'detail', 'upload']),
+            'warehouse' => self::permissionsForModules([
+                'dashboard',
+                'brands',
+                'units',
+                'categories',
+                'products',
+                'product-variants',
+                'variant-items',
+                'product-stock-units',
+                'product-images',
+                'stock-movements',
+                'shippings',
+                'suppliers',
+                'incoming-goods',
+                'supplier-returns',
+                'media',
+            ]),
+            'cashier' => self::permissionsForModules([
+                'dashboard',
+                'customers',
+                'carts',
+                'orders',
+                'payments',
+                'shippings',
+                'products',
+                'product-stock-units',
+            ], ['view', 'detail', 'create', 'edit', 'update-status', 'confirm', 'refund']),
+            'customer-service' => self::permissionsForModules([
+                'dashboard',
+                'customers',
+                'carts',
+                'orders',
+                'payments',
+                'shippings',
+                'faqs',
+                'site-contents',
+            ], ['view', 'detail', 'edit', 'update-status', 'reset-password']),
+        ];
+    }
+
+    public static function forRoute(?string $routeName): string|array|null
+    {
+        if ($routeName === null) {
+            return 'dashboard.view';
+        }
+
+        $explicit = [
+            'dashboard' => 'dashboard.view',
+            'menus.builder' => 'menus.builder',
+            'menus.builder.update' => ['menus.builder', 'menus.edit'],
+            'users.toggle-status' => 'users.update-status',
+            'taxonomies.index' => 'taxonomies.view',
+            'taxonomies.create' => 'taxonomies.create',
+            'taxonomies.store' => 'taxonomies.create',
+            'taxonomies.edit' => 'taxonomies.edit',
+            'taxonomies.update' => 'taxonomies.edit',
+            'taxonomies.destroy' => 'taxonomies.delete',
+            'posts.usage-guide' => 'posts.view',
+            'dashboard.cms.posts.translations.index' => 'posts.view',
+            'dashboard.cms.posts.translations.edit' => 'posts.translate',
+            'dashboard.cms.posts.translations.update' => 'posts.translate',
+            'ecommerce.search-options' => 'products.view',
+            'products.import' => 'products.import',
+            'products.template' => 'products.import',
+            'products.export' => 'products.export',
+            'product-stock-units.barcode.generate' => 'product-stock-units.barcode',
+            'product-stock-units.barcode.regenerate' => 'product-stock-units.barcode',
+            'product-stock-units.bulk-generate-barcode' => 'product-stock-units.barcode',
+            'product-stock-units.barcodes.print' => 'product-stock-units.print-barcode',
+            'product-stock-units.barcodes.print-selected' => 'product-stock-units.print-barcode',
+            'incoming-goods.barcodes.print' => 'incoming-goods.print-barcode',
+            'barcode-scanner.index' => 'product-stock-units.view',
+            'barcode-scanner.search' => 'product-stock-units.view',
+            'product-collections.options.products' => 'product-collections.view',
+            'product-collections.items.store' => 'product-collections.manage-items',
+            'product-collections.items.update' => 'product-collections.manage-items',
+            'product-collections.items.destroy' => 'product-collections.manage-items',
+            'customers.toggle-login' => 'customers.update-status',
+            'customers.reset-password' => 'customers.reset-password',
+            'carts.destroy-item' => 'carts.manage-items',
+            'orders.receipt' => 'orders.detail',
+            'config.main' => 'settings.view',
+            'config.general' => 'settings.view',
+            'config.preferences' => 'settings.view',
+            'config.management' => 'settings.view',
+            'config.customer' => 'settings.view',
+            'config.media' => 'settings.view',
+            'config.socialite' => 'settings.view',
+            'config.language' => 'settings.view',
+            'config.language.update' => 'settings.update',
+            'config.site-contents.usage' => 'site-contents.view',
+            'config.reading' => 'settings.view',
+            'dashboard.media' => 'media.view',
+            'dashboard.media.library' => 'media.view',
+            'dashboard.media.create' => 'media.upload',
+            'dashboard.media.store' => 'media.upload',
+            'dashboard.media.upload' => 'media.upload',
+            'dashboard.media.json' => 'media.upload',
+            'dashboard.media.storage-file.destroy' => 'media.delete',
+            'dashboard.media.update' => 'media.edit',
+            'dashboard.media.destroy' => 'media.delete',
+            'dashboard.media.store-image' => 'media.upload',
+        ];
+
+        if (array_key_exists($routeName, $explicit)) {
+            return $explicit[$routeName];
+        }
+
+        $resourceModules = [
+            'provinces',
+            'kabupatens',
+            'kecamatans',
+            'kelurahans',
+            'menus',
+            'roles',
+            'permissions',
+            'users',
+            'post-categories',
+            'posts',
+            'packages',
+            'brands',
+            'units',
+            'categories',
+            'products',
+            'product-variants',
+            'variant-items',
+            'product-stock-units',
+            'product-images',
+            'product-collections',
+            'product-specifications',
+            'faqs',
+            'banner-slides',
+            'customers',
+            'carts',
+            'payments',
+            'stock-movements',
+            'shippings',
+            'suppliers',
+            'incoming-goods',
+            'supplier-returns',
+            'orders',
+            'options',
+        ];
+
+        foreach ($resourceModules as $module) {
+            if (str_starts_with($routeName, "{$module}.")) {
+                return self::resourceRoutePermission($module, substr($routeName, strlen($module) + 1));
+            }
+        }
+
+        if (str_starts_with($routeName, 'config.site-contents.')) {
+            return self::resourceRoutePermission('site-contents', substr($routeName, strlen('config.site-contents') + 1));
+        }
+
+        return 'dashboard.view';
+    }
+
+    private static function resourceRoutePermission(string $module, string $action): string|array
+    {
+        return match ($action) {
+            'index' => "{$module}.view",
+            'show' => in_array($module, ['orders', 'payments'], true)
+                ? "{$module}.detail"
+                : "{$module}.view",
+            'create', 'store' => "{$module}.create",
+            'edit', 'update' => $module === 'roles'
+                ? ['roles.edit', 'roles.assign-permission']
+                : "{$module}.edit",
+            'destroy' => "{$module}.delete",
+            default => "{$module}.view",
+        };
+    }
+
+    /**
+     * @param  string[]  $modules
+     * @param  string[]|null  $actions
+     * @return string[]
+     */
+    private static function permissionsForModules(array $modules, ?array $actions = null): array
+    {
+        $permissions = [];
+
+        foreach ($modules as $module) {
+            foreach (self::modules()[$module] ?? [] as $action) {
+                if ($actions === null || in_array($action, $actions, true)) {
+                    $permissions[] = "{$module}.{$action}";
+                }
+            }
+        }
+
+        return $permissions;
+    }
+
+    /**
+     * @param  string[]  $permissions
+     * @param  string[]  $excluded
+     * @return string[]
+     */
+    private static function except(array $permissions, array $excluded): array
+    {
+        return array_values(array_diff($permissions, $excluded));
+    }
+}

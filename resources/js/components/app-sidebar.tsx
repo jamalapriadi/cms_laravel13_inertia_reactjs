@@ -19,13 +19,7 @@ import { filterSidebar } from '@/utils/sidebar';
 export function AppSidebar() {
     const { url, props } = usePage();
 
-    // ✅ ambil role dari user (dari Laravel)
-    const role =
-        typeof props.auth?.user?.role === 'string'
-            ? props.auth.user.role
-            : 'editor';
-
-    const menus = filterSidebar(sidebarConfig, role);
+    const menus = filterSidebar(sidebarConfig, props.auth.user);
 
     return (
         <Sidebar

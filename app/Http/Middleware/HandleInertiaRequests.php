@@ -42,8 +42,19 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                // 'user' => $request->user(),
-                'user' => $user,
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'email_verified_at' => $user->email_verified_at,
+                    'two_factor_enabled' => $user->hasEnabledTwoFactorAuthentication(),
+                    'roles' => method_exists($user, 'getRoleNames')
+                        ? $user->getRoleNames()->values()
+                        : [],
+                    'permissions' => method_exists($user, 'getAllPermissions')
+                        ? $user->getAllPermissions()->pluck('name')->values()
+                        : [],
+                ] : null,
                 'permissions' => $user && method_exists($user, 'getAllPermissions')
                     ? $user->getAllPermissions()->pluck('name')
                     : [],

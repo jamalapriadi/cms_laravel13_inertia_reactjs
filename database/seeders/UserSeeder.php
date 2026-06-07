@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -15,13 +15,15 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // 1. Buat Akun Super Admin (Utama)
-        User::create([
-            'name' => 'Jamal Apriadi',
-            'email' => 'jamal.apriadi@gmail.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('Laravel13'), // Ganti dengan password yang aman
-            'remember_token' => \Illuminate\Support\Str::random(10),
-        ]);
+        User::updateOrCreate(
+            ['email' => 'jamal.apriadi@gmail.com'],
+            [
+                'name' => 'Jamal Apriadi',
+                'email_verified_at' => now(),
+                'password' => Hash::make('Laravel13'),
+                'remember_token' => Str::random(10),
+            ],
+        );
 
     }
 }

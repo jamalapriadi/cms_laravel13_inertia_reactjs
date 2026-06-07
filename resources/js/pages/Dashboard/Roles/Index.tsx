@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { DataTable } from '@/components/DataTable';
 import { toast } from 'sonner';
+import { usePermission } from '@/lib/permissions';
 
 interface RoleItem {
     id: number;
@@ -36,6 +37,11 @@ interface Props {
 export default function Index({ roles, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const { hasPermission } = usePermission();
+    const canCreate = hasPermission('roles.create');
+    const canEdit =
+        hasPermission('roles.edit') && hasPermission('roles.assign-permission');
+    const canDelete = hasPermission('roles.delete');
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -104,48 +110,64 @@ export default function Index({ roles, filters }: Props) {
             label: 'Created At',
             render: (row) => new Date(row.created_at).toLocaleDateString(),
         },
-        {
-            label: 'Action',
-            render: (row) => (
-                <div className="flex gap-2">
-                    <Link href={`/dashboard/roles/${row.id}/edit`}>
-                        <Button size="sm" variant="secondary">
-                            Edit
-                        </Button>
-                    </Link>
+        ...(canEdit || canDelete
+            ? [
+                  {
+                      label: 'Action',
+                      render: (row: RoleItem) => (
+                          <div className="flex gap-2">
+                              {canEdit && (
+                                  <Link
+                                      href={`/dashboard/roles/${row.id}/edit`}
+                                  >
+                                      <Button size="sm" variant="secondary">
+                                          Edit
+                                      </Button>
+                                  </Link>
+                              )}
 
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => setDeletingId(row.id)}
-                            >
-                                Delete
-                            </Button>
-                        </AlertDialogTrigger>
+                              {canDelete && row.name !== 'super-admin' && (
+                                  <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                          <Button
+                                              size="sm"
+                                              variant="destructive"
+                                              onClick={() =>
+                                                  setDeletingId(row.id)
+                                              }
+                                          >
+                                              Delete
+                                          </Button>
+                                      </AlertDialogTrigger>
 
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                    Are you sure?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
+                                      <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                              <AlertDialogTitle>
+                                                  Are you sure?
+                                              </AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                  This action cannot be undone.
+                                              </AlertDialogDescription>
+                                          </AlertDialogHeader>
 
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleDelete}>
-                                    Delete
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </div>
-            ),
-        },
+                                          <AlertDialogFooter>
+                                              <AlertDialogCancel>
+                                                  Cancel
+                                              </AlertDialogCancel>
+                                              <AlertDialogAction
+                                                  onClick={handleDelete}
+                                              >
+                                                  Delete
+                                              </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                  </AlertDialog>
+                              )}
+                          </div>
+                      ),
+                  },
+              ]
+            : []),
     ];
 
     return (
@@ -157,9 +179,11 @@ export default function Index({ roles, filters }: Props) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Roles</h1>
 
-                    <Link href="/dashboard/roles/create">
-                        <Button>Add New Role</Button>
-                    </Link>
+                    {canCreate && (
+                        <Link href="/dashboard/roles/create">
+                            <Button>Add New Role</Button>
+                        </Link>
+                    )}
                 </div>
 
                 {/* FILTER */}
