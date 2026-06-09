@@ -17,6 +17,12 @@ interface LanguageOption {
     value: string;
 }
 
+interface ProductCategoryOption {
+    id: string;
+    name: string;
+    slug: string;
+}
+
 function normalizeLanguages(languages: Array<string | Record<string, string>>): LanguageOption[] {
     return languages
         .map((language) => {
@@ -37,11 +43,13 @@ export default function Builder({
     items,
     languages,
     default_language,
+    productCategories,
 }: {
     menu: Menu;
     items: any[];
     languages: Array<string | Record<string, string>>;
     default_language: string;
+    productCategories: ProductCategoryOption[];
 }) {
     const { errors } = usePage().props as any;
 
@@ -56,7 +64,18 @@ export default function Builder({
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        setTree(items || []);
+        let cancelled = false;
+        const nextTree = items || [];
+
+        queueMicrotask(() => {
+            if (!cancelled) {
+                setTree(nextTree);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
     }, [items]);
 
     function handleSave() {
@@ -118,7 +137,12 @@ export default function Builder({
                     </div>
                 )}
 
-                <MenuBuilder tree={tree} setTree={setTree} locale={locale} />
+                <MenuBuilder
+                    tree={tree}
+                    setTree={setTree}
+                    locale={locale}
+                    productCategories={productCategories}
+                />
             </div>
         </>
     );

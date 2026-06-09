@@ -5,6 +5,12 @@ import {
     useSensors,
     PointerSensor,
 } from '@dnd-kit/core';
+import type {
+    DragEndEvent,
+    DragMoveEvent,
+    DragOverEvent,
+    DragStartEvent,
+} from '@dnd-kit/core';
 
 import {
     SortableContext,
@@ -12,13 +18,19 @@ import {
 } from '@dnd-kit/sortable';
 
 import { useMemo, useState } from 'react';
-import { flattenTree, buildTree, getProjection } from '@/utils/tree';
+import { buildTree, flattenTree, getProjection } from '@/utils/tree';
+import type { TreeMenuItem } from '@/utils/tree';
 import MenuItemNode from './MenuItemNode';
 
-export default function MenuTree({ data = [], setData, locale }: any) {
-    const [activeId, setActiveId] = useState(null);
+export default function MenuTree({ data = [], setData, locale, productCategories = [] }: {
+    data?: TreeMenuItem[];
+    setData: (updater: TreeMenuItem[] | ((previous: TreeMenuItem[]) => TreeMenuItem[])) => void;
+    locale: string;
+    productCategories?: Array<{ id: string; name: string; slug: string }>;
+}) {
+    const [, setActiveId] = useState<string | number | null>(null);
     const [offsetX, setOffsetX] = useState(0);
-    const [overId, setOverId] = useState(null);
+    const [overId, setOverId] = useState<string | number | null>(null);
 
     const sensors = useSensors(useSensor(PointerSensor));
 
@@ -34,19 +46,19 @@ export default function MenuTree({ data = [], setData, locale }: any) {
         }));
     }, [data, locale]);
 
-    function handleDragStart(event) {
+    function handleDragStart(event: DragStartEvent) {
         setActiveId(event.active.id);
     }
 
-    function handleDragMove(event) {
+    function handleDragMove(event: DragMoveEvent) {
         setOffsetX(event.delta.x);
     }
 
-    function handleDragOver(event) {
+    function handleDragOver(event: DragOverEvent) {
         setOverId(event.over?.id || null);
     }
 
-    function updateItem(tree, id, payload) {
+    function updateItem(tree: TreeMenuItem[], id: string | number, payload: Record<string, any>): TreeMenuItem[] {
         return tree.map((item) => {
             if (String(item.id) === String(id)) {
                 return {
@@ -70,7 +82,7 @@ export default function MenuTree({ data = [], setData, locale }: any) {
         });
     }
 
-    function deleteItem(tree, id) {
+    function deleteItem(tree: TreeMenuItem[], id: string | number): TreeMenuItem[] {
         return tree
             .filter((item) => String(item.id) !== String(id))
             .map((item) => ({
@@ -79,14 +91,18 @@ export default function MenuTree({ data = [], setData, locale }: any) {
             }));
     }
 
-    function handleDragEnd(event) {
+    function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
 
-        if (!over) return;
+        if (!over) {
+            return;
+        }
 
         const projection = getProjection(flat, active.id, over.id, offsetX);
 
-        if (!projection) return;
+        if (!projection) {
+            return;
+        }
 
         const { depth, parentId, newItems } = projection;
 
@@ -94,16 +110,19 @@ export default function MenuTree({ data = [], setData, locale }: any) {
             if (String(item.id) === String(active.id)) {
                 return { ...item, depth, parentId };
             }
+
             return item;
         });
 
         const normalized = movedItems.map((item, index, arr) => {
-            if (item.depth === 0) {
+            const itemDepth = item.depth ?? 0;
+
+            if (itemDepth === 0) {
                 return { ...item, parentId: null };
             }
 
             for (let i = index - 1; i >= 0; i--) {
-                if (arr[i].depth === item.depth - 1) {
+                if ((arr[i].depth ?? 0) === itemDepth - 1) {
                     return { ...item, parentId: arr[i].id };
                 }
             }
@@ -144,42 +163,32 @@ export default function MenuTree({ data = [], setData, locale }: any) {
 
                             return (
                                 <div key={item.id} className="relative">
-                                {overId === item.id && (
-                                    <div className="absolute -top-1 right-0 left-0 h-1 rounded bg-blue-500" />
-                                )}
-
-                                <div className="flex items-center gap-2">
-                                    <div className="flex-1">
-                                        <MenuItemNode
-                                            item={item}
-                                            locale={locale}
-                                            onChange={(
-                                                id: any,
-                                                payload: any,
-                                            ) => {
-                                                setData((prev: any) =>
-                                                    updateItem(
-                                                        prev,
-                                                        id,
-                                                        payload,
-                                                    ),
-                                                );
-                                            }}
-                                            onDelete={(id: any) => {
-                                                setData((prev: any) =>
-                                                    deleteItem(prev, id),
-                                                );
-                                            }}
-                                        />
-                                    </div>
-
-                                    {!hasTranslation && (
-                                        <span className="text-xs whitespace-nowrap text-red-500">
-                                            No translation
-                                        </span>
+                                    {overId === item.id && (
+                                        <div className="absolute -top-1 right-0 left-0 h-1 rounded bg-blue-500" />
                                     )}
+
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex-1">
+                                            <MenuItemNode
+                                                item={item}
+                                                locale={locale}
+                                                productCategories={productCategories}
+                                                onChange={(id, payload) => {
+                                                    setData((prev) => updateItem(prev, id, payload));
+                                                }}
+                                                onDelete={(id) => {
+                                                    setData((prev) => deleteItem(prev, id));
+                                                }}
+                                            />
+                                        </div>
+
+                                        {!hasTranslation && (
+                                            <span className="text-xs whitespace-nowrap text-red-500">
+                                                No translation
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
                             );
                         })
                     ) : (

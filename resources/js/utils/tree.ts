@@ -5,15 +5,30 @@ export interface MenuItem {
     children?: MenuItem[];
 }
 
+export interface TreeMenuItem {
+    id: string | number;
+    title?: string;
+    url?: string;
+    type?: string;
+    target?: string;
+    icon?: string | null;
+    meta?: Record<string, unknown>;
+    translations?: Record<string, { title?: string; url?: string }>;
+    children?: TreeMenuItem[];
+    parentId?: string | number | null;
+    depth?: number;
+    index?: number;
+}
+
 /**
  * FLATTEN TREE
  */
 export function flattenTree(
-    items: MenuItem[],
-    parentId: any = null,
+    items: TreeMenuItem[],
+    parentId: string | number | null = null,
     depth = 0,
-) {
-    let result: any[] = [];
+): TreeMenuItem[] {
+    let result: TreeMenuItem[] = [];
 
     items.forEach((item, index) => {
         result.push({
@@ -36,19 +51,23 @@ export function flattenTree(
 /**
  * BUILD TREE FROM FLAT
  */
-export function buildTree(flat) {
-    const map = new Map();
-    const roots = [];
+export function buildTree(flat: TreeMenuItem[]): TreeMenuItem[] {
+    const map = new Map<string | number, TreeMenuItem>();
+    const roots: TreeMenuItem[] = [];
 
-    flat.forEach((item) => {
+    flat.forEach((item: TreeMenuItem) => {
         map.set(item.id, { ...item, children: [] });
     });
 
-    flat.forEach((item) => {
+    flat.forEach((item: TreeMenuItem) => {
         const node = map.get(item.id);
 
+        if (!node) {
+            return;
+        }
+
         if (item.parentId && map.has(item.parentId)) {
-            map.get(item.parentId).children.push(node);
+            map.get(item.parentId)?.children?.push(node);
         } else {
             roots.push(node);
         }
@@ -58,10 +77,10 @@ export function buildTree(flat) {
 }
 
 export function getProjection(
-    flat,
-    activeId,
-    overId,
-    offsetX,
+    flat: TreeMenuItem[],
+    activeId: string | number,
+    overId: string | number,
+    offsetX: number,
     indentationWidth = 20,
 ) {
     const activeIndex = flat.findIndex((i) => i.id === activeId);
@@ -73,7 +92,7 @@ export function getProjection(
 
     const previousItem = newItems[overIndex - 1];
 
-    let depth = previousItem ? previousItem.depth : 0;
+    let depth = previousItem?.depth ?? 0;
 
     // 🔥 HITUNG DEPTH BERDASARKAN DRAG X
     depth += Math.round(offsetX / indentationWidth);

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dashboard\Menu\MenuBuilderUpdateRequest;
 use App\Models\Dashboard\Menu;
 use App\Models\Dashboard\Option;
+use App\Models\Shop\Category;
 use App\Services\Dashboard\MenuService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class MenuController extends Controller
@@ -99,6 +102,11 @@ class MenuController extends Controller
         $default_language = strtolower(Option::where('key', 'default_language')->first()?->value ?? 'id');
         $menuData = $service->getMenuTree($menu->slug);
         $languages = Option::where('key', 'languages')->first()?->value ?? [];
+        $productCategories = Category::query()
+            ->select('id', 'name', 'slug')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
 
         if (is_string($languages)) {
             $languages = json_decode($languages, true) ?: [];
@@ -111,16 +119,13 @@ class MenuController extends Controller
                 ? $service->buildTree($menuData->items)
                 : [],
             'default_language' => $default_language,
+            'productCategories' => $productCategories,
         ]);
     }
 
-    public function updateBuilder(Request $request, Menu $menu, MenuService $service)
+    public function updateBuilder(MenuBuilderUpdateRequest $request, Menu $menu, MenuService $service)
     {
-        $data = $request->validate([
-            'items' => 'nullable|array',
-        ]);
-
-        $items = $data['items'] ?? [];
+        $items = $request->validated('items') ?? [];
 
         try {
             $service->validateTree($items);
@@ -131,6 +136,12 @@ class MenuController extends Controller
                 ->back()
                 ->with('success', 'Menu updated');
 
+        } catch (ValidationException $e) {
+            return redirect()
+                ->back()
+                ->withErrors([
+                    'menu' => collect($e->errors())->flatten()->first() ?? 'Validasi menu gagal.',
+                ]);
         } catch (\Throwable $e) {
             return redirect()
                 ->back()
