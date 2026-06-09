@@ -1,15 +1,47 @@
 import MenuSourcePanel from './MenuSourcePanel';
 import MenuTree from './MenuTree';
 
-export default function MenuBuilder({ tree, setTree, locale }: any) {
+function getDefaultMeta(type: string) {
+    if (type === 'dropdown') {
+        return {
+            dropdown_layout: 'mega_menu',
+            columns: 4,
+        };
+    }
+
+    if (type === 'dynamic') {
+        return {
+            source: 'products',
+            filter: {
+                category_id: null,
+            },
+            limit: 6,
+            sort: 'latest',
+            layout: 'product_grid',
+            show_image: true,
+            show_price: true,
+            show_excerpt: false,
+            cta_label: '',
+            cta_url: '',
+        };
+    }
+
+    return {};
+}
+
+export default function MenuBuilder({ tree, setTree, locale, productCategories }: any) {
     function handleAdd(item: any) {
+        const type = item.type || 'custom';
+
         const newItem = {
             id: `temp-${Date.now()}`,
             parentId: null,
             depth: 0,
             url: item.url || '',
-            type: 'custom',
+            type,
             target: '_self',
+            icon: null,
+            meta: item.meta || getDefaultMeta(type),
             children: [],
             translations: {
                 [locale]: {
@@ -30,7 +62,12 @@ export default function MenuBuilder({ tree, setTree, locale }: any) {
             </div>
 
             <div className="lg:col-span-8">
-                <MenuTree data={tree} setData={setTree} locale={locale} />
+                <MenuTree
+                    data={tree}
+                    setData={setTree}
+                    locale={locale}
+                    productCategories={productCategories}
+                />
             </div>
         </div>
     );

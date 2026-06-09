@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Customer\CustomerAuthController;
 use App\Http\Controllers\Api\V1\FaqController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\HomeController;
+use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\OpenApiController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PageController;
@@ -24,6 +25,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::get('health', [HealthController::class, 'health'])->name('health');
 
     Route::get('home', HomeController::class)->name('home');
+    Route::get('menus/{slug}', [MenuController::class, 'show'])->name('menus.show');
     Route::get('pages', [PageController::class, 'index'])->name('pages.index');
     Route::get('pages/{slug}', [PageController::class, 'show'])->name('pages.show');
     Route::get('posts', [PostController::class, 'index'])->name('posts.index');
