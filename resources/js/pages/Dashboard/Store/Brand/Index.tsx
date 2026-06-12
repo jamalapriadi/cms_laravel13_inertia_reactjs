@@ -1,5 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { Package, Tags } from 'lucide-react';
 import { useState } from 'react';
+import type { ElementType } from 'react';
 
 import { DataTable } from '@/components/DataTable';
 
@@ -29,19 +31,64 @@ interface Brand {
     name: string;
     slug: string;
     description?: string | null;
+    products_count?: number | null;
     is_active: boolean;
     created_at: string;
 }
 
 interface Props {
     brands: LaravelPagination<Brand>;
+    summary: {
+        brands: number;
+        products: number;
+    };
 
     filters: {
         search?: string;
     };
 }
 
-export default function Index({ brands, filters }: Props) {
+const formatCount = (value: number | null | undefined) => {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+        return '0';
+    }
+
+    return Math.trunc(numericValue)
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+
+function SummaryCard({
+    title,
+    value,
+    icon: Icon,
+}: {
+    title: string;
+    value: number;
+    icon: ElementType;
+}) {
+    return (
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                    {title}
+                </span>
+
+                <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                    <Icon className="h-4 w-4" />
+                </div>
+            </div>
+
+            <p className="mt-4 text-3xl font-extrabold tracking-tight text-foreground">
+                {formatCount(value)}
+            </p>
+        </div>
+    );
+}
+
+export default function Index({ brands, summary, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
 
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -95,6 +142,13 @@ export default function Index({ brands, filters }: Props) {
             label: 'Description',
             render: (row: Brand) => (
                 <span className="text-sm">{row.description || '-'}</span>
+            ),
+        },
+
+        {
+            label: 'Total Product',
+            render: (row: Brand) => (
+                <span className="font-medium">{formatCount(row.products_count)}</span>
             ),
         },
 
@@ -156,6 +210,20 @@ export default function Index({ brands, filters }: Props) {
                 </div>
 
                 <hr />
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <SummaryCard
+                        title="Total Brand"
+                        value={summary.brands}
+                        icon={Tags}
+                    />
+
+                    <SummaryCard
+                        title="Total Product Dalam Brand"
+                        value={summary.products}
+                        icon={Package}
+                    />
+                </div>
 
                 {/* FILTER */}
                 <div className="flex gap-3">
