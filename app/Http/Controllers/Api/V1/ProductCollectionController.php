@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\ProductIndexRequest;
+use App\Http\Resources\Api\V1\ProductCollectionDetailResource;
 use App\Http\Resources\Api\V1\ProductCollectionResource;
 use App\Models\Shop\ProductCollection;
+use App\Services\Api\V1\ProductCatalogService;
 use App\Services\Cache\ListCacheService;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +18,10 @@ class ProductCollectionController extends Controller
 {
     use ApiResponse;
 
+    public function __construct(
+        private readonly ProductCatalogService $productCatalogService
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
         $collections = app(ListCacheService::class)->rememberRequest('api.product-collections', $request, function () use ($request): array {
@@ -23,20 +30,11 @@ class ProductCollectionController extends Controller
                 ->withCount('items')
                 ->with([
                     'items' => fn ($query) => $query
-                        ->whereHas('product', fn (Builder $productQuery) => $this->publicProductConstraint($productQuery))
+                        ->whereHas('product', fn (Builder $productQuery) => $this->productCatalogService->constrainPublicVisibility($productQuery))
                         ->with([
-                            'product' => fn (Builder $productQuery) => $this->publicProductConstraint($productQuery)
-                                ->with([
-                                    'category',
-                                    'brand',
-                                    'images' => fn ($imageQuery) => $imageQuery->orderByDesc('is_primary')->orderBy('sort_order')->latest(),
-                                    'variantItems' => fn ($variantQuery) => $variantQuery
-                                        ->where('is_active', true)
-                                        ->with(['unit', 'options.variant'])
-                                        ->withCount('availableStockUnits')
-                                        ->orderBy('selling_price'),
-                                ])
-                                ->withCount('availableStockUnits'),
+                            'product' => fn (Builder $productQuery) => $this->productCatalogService->decorateProductCardQuery(
+                                $this->productCatalogService->constrainPublicVisibility($productQuery)
+                            ),
                             'variantItem' => fn ($variantQuery) => $variantQuery
                                 ->where('is_active', true)
                                 ->with(['unit', 'options.variant'])
@@ -58,14 +56,40 @@ class ProductCollectionController extends Controller
         );
     }
 
-    private function publicProductConstraint(Builder $query): Builder
+    public function showBySlug(ProductIndexRequest $request, string $slug): JsonResponse
     {
-        return $query
-            ->where('is_publish', true)
-            ->whereHas('category', fn (Builder $categoryQuery) => $categoryQuery->where('is_publish', true))
-            ->where(function (Builder $builder): void {
-                $builder->whereNull('brand_id')
-                    ->orWhereHas('brand', fn (Builder $brandQuery) => $brandQuery->where('is_active', true));
-            });
+        $filters = $request->validated();
+
+        $payload = app(ListCacheService::class)->rememberRequest("api.product-collections.show.{$slug}", $request, function () use ($filters, $request, $slug): ?array {
+            $collection = ProductCollection::query()
+                ->active()
+                ->withCount('items')
+                ->where('slug', $slug)
+                ->first();
+
+            if (! $collection) {
+                return null;
+            }
+
+            $products = $this->productCatalogService->paginateForFilters(
+                $filters,
+                $request,
+                ['collection_id' => $collection->id]
+            );
+
+            return [
+                ...ProductCollectionDetailResource::make($collection)->resolve($request),
+                'products' => $products,
+            ];
+        });
+
+        if (! $payload) {
+            return $this->errorResponse('Product collection not found', 404);
+        }
+
+        return $this->successResponse(
+            $payload,
+            'Product collection retrieved successfully'
+        );
     }
 }

@@ -39,6 +39,7 @@ class ProductResource extends JsonResource
             'stock_total' => $stock,
             'has_stock' => $hasStock,
             'stock_status' => $hasStock ? 'in_stock' : 'out_of_stock',
+            'sold_count' => (int) ($this->sold_count ?? 0),
             'has_variant' => (bool) $this->has_variant,
             'is_publish' => (bool) $this->is_publish,
             'status' => (bool) $this->is_publish ? 'published' : 'draft',

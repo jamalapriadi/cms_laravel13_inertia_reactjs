@@ -31,11 +31,17 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::get('posts', [PostController::class, 'index'])->name('posts.index');
     Route::get('posts/{slug}', [PostController::class, 'show'])->name('posts.show');
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('category/{slug}', [CategoryController::class, 'showBySlug'])->name('category.show');
+    Route::get('categories/{slug}', [CategoryController::class, 'showBySlug'])->name('categories.show');
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::get('products/{slug}', [ProductController::class, 'show'])->name('products.show');
     Route::get('brands', [BrandController::class, 'index'])->name('brands.index');
+    Route::get('brand/{slug}', [BrandController::class, 'showBySlug'])->name('brand.show');
+    Route::get('brands/{slug}', [BrandController::class, 'showBySlug'])->name('brands.show');
     Route::get('banner-slides', [BannerSlideController::class, 'index'])->name('banner-slides.index');
     Route::get('product-collections', [ProductCollectionController::class, 'index'])->name('product-collections.index');
+    Route::get('product-collection/{slug}', [ProductCollectionController::class, 'showBySlug'])->name('product-collection.show');
+    Route::get('product-collections/{slug}', [ProductCollectionController::class, 'showBySlug'])->name('product-collections.show');
     Route::get('faqs', [FaqController::class, 'index'])->name('faqs.index');
     Route::get('site-contents', [SiteContentController::class, 'index'])->name('site-contents.index');
     Route::get('site-contents/{group}', [SiteContentController::class, 'group'])->name('site-contents.group');
