@@ -38,11 +38,25 @@ use OpenApi\Attributes as OA;
             schema: new OA\Schema(type: 'string', example: 'phones'),
         ),
         new OA\Parameter(
+            name: 'category_id',
+            description: 'UUID kategori produk.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'string', format: 'uuid'),
+        ),
+        new OA\Parameter(
             name: 'brand',
             description: 'Slug atau UUID brand produk.',
             in: 'query',
             required: false,
             schema: new OA\Schema(type: 'string', example: 'apple'),
+        ),
+        new OA\Parameter(
+            name: 'brand_id',
+            description: 'UUID brand produk.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'string', format: 'uuid'),
         ),
         new OA\Parameter(
             name: 'collection',
@@ -77,7 +91,7 @@ use OpenApi\Attributes as OA;
             description: 'Sorting katalog publik.',
             in: 'query',
             required: false,
-            schema: new OA\Schema(type: 'string', enum: ['latest', 'oldest', 'name', 'name_asc', 'name_desc', 'price_low', 'price_high', 'price_asc', 'price_desc'], example: 'price_asc'),
+            schema: new OA\Schema(type: 'string', enum: ['latest', 'oldest', 'name', 'name_asc', 'name_desc', 'price_low', 'price_high', 'price_asc', 'price_desc', 'best_selling'], example: 'price_asc'),
         ),
         new OA\Parameter(
             name: 'per_page',
@@ -152,6 +166,37 @@ use OpenApi\Attributes as OA;
     ],
 )]
 #[OA\Get(
+    path: '/api/v1/category/{slug}',
+    description: 'Menampilkan detail category berdasarkan slug, lengkap dengan parent category, children category, dan daftar produk publik yang mengikuti filter katalog. Alias plural `/api/v1/categories/{slug}` juga tersedia.',
+    summary: 'Get category detail',
+    tags: ['Products'],
+    parameters: [
+        new OA\Parameter(
+            name: 'slug',
+            description: 'Slug category.',
+            in: 'path',
+            required: true,
+            schema: new OA\Schema(type: 'string', example: 'office-furniture'),
+        ),
+        new OA\Parameter(name: 'search', in: 'query', required: false, schema: new OA\Schema(type: 'string', example: 'chair')),
+        new OA\Parameter(name: 'brand', in: 'query', required: false, schema: new OA\Schema(type: 'string', example: 'ikea')),
+        new OA\Parameter(name: 'brand_id', in: 'query', required: false, schema: new OA\Schema(type: 'string', format: 'uuid')),
+        new OA\Parameter(name: 'min_price', in: 'query', required: false, schema: new OA\Schema(type: 'number', format: 'float', example: 100000)),
+        new OA\Parameter(name: 'max_price', in: 'query', required: false, schema: new OA\Schema(type: 'number', format: 'float', example: 500000)),
+        new OA\Parameter(name: 'sort', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['latest', 'oldest', 'name', 'name_asc', 'name_desc', 'price_low', 'price_high', 'price_asc', 'price_desc', 'best_selling'], example: 'price_asc')),
+        new OA\Parameter(name: 'has_stock', in: 'query', required: false, schema: new OA\Schema(type: 'boolean', example: true)),
+        new OA\Parameter(name: 'per_page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', example: 12)),
+        new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', example: 1)),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Category detail endpoint response.',
+            content: new OA\JsonContent(ref: '#/components/schemas/PlaceholderDetailResponse'),
+        ),
+    ],
+)]
+#[OA\Get(
     path: '/api/v1/brands',
     description: 'Endpoint publik untuk daftar brand ecommerce. Response saat ini mengikuti kontrak placeholder yang tersedia di controller.',
     summary: 'List brands',
@@ -172,6 +217,37 @@ use OpenApi\Attributes as OA;
     ],
 )]
 #[OA\Get(
+    path: '/api/v1/brand/{slug}',
+    description: 'Menampilkan detail brand berdasarkan slug beserta daftar produk publik yang mendukung filter katalog. Alias plural `/api/v1/brands/{slug}` juga tersedia.',
+    summary: 'Get brand detail',
+    tags: ['Products'],
+    parameters: [
+        new OA\Parameter(
+            name: 'slug',
+            description: 'Slug brand.',
+            in: 'path',
+            required: true,
+            schema: new OA\Schema(type: 'string', example: 'apple'),
+        ),
+        new OA\Parameter(name: 'search', in: 'query', required: false, schema: new OA\Schema(type: 'string', example: 'iphone')),
+        new OA\Parameter(name: 'category', in: 'query', required: false, schema: new OA\Schema(type: 'string', example: 'phones')),
+        new OA\Parameter(name: 'category_id', in: 'query', required: false, schema: new OA\Schema(type: 'string', format: 'uuid')),
+        new OA\Parameter(name: 'min_price', in: 'query', required: false, schema: new OA\Schema(type: 'number', format: 'float', example: 100000)),
+        new OA\Parameter(name: 'max_price', in: 'query', required: false, schema: new OA\Schema(type: 'number', format: 'float', example: 500000)),
+        new OA\Parameter(name: 'sort', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['latest', 'oldest', 'name', 'name_asc', 'name_desc', 'price_low', 'price_high', 'price_asc', 'price_desc', 'best_selling'], example: 'latest')),
+        new OA\Parameter(name: 'has_stock', in: 'query', required: false, schema: new OA\Schema(type: 'boolean', example: true)),
+        new OA\Parameter(name: 'per_page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', example: 12)),
+        new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', example: 1)),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Brand detail endpoint response.',
+            content: new OA\JsonContent(ref: '#/components/schemas/PlaceholderDetailResponse'),
+        ),
+    ],
+)]
+#[OA\Get(
     path: '/api/v1/product-collections',
     description: 'Endpoint publik untuk daftar koleksi produk ecommerce. Response saat ini mengikuti kontrak placeholder yang tersedia di controller.',
     summary: 'List product collections',
@@ -188,6 +264,39 @@ use OpenApi\Attributes as OA;
                     'data' => ['items' => [], 'meta' => ['status' => 'placeholder']],
                 ],
             ),
+        ),
+    ],
+)]
+#[OA\Get(
+    path: '/api/v1/product-collection/{slug}',
+    description: 'Menampilkan detail product collection berdasarkan slug beserta daftar produk publik yang mendukung filter katalog. Alias plural `/api/v1/product-collections/{slug}` juga tersedia.',
+    summary: 'Get product collection detail',
+    tags: ['Products'],
+    parameters: [
+        new OA\Parameter(
+            name: 'slug',
+            description: 'Slug product collection.',
+            in: 'path',
+            required: true,
+            schema: new OA\Schema(type: 'string', example: 'best-office-setup'),
+        ),
+        new OA\Parameter(name: 'search', in: 'query', required: false, schema: new OA\Schema(type: 'string', example: 'desk')),
+        new OA\Parameter(name: 'category', in: 'query', required: false, schema: new OA\Schema(type: 'string', example: 'office-furniture')),
+        new OA\Parameter(name: 'category_id', in: 'query', required: false, schema: new OA\Schema(type: 'string', format: 'uuid')),
+        new OA\Parameter(name: 'brand', in: 'query', required: false, schema: new OA\Schema(type: 'string', example: 'ikea')),
+        new OA\Parameter(name: 'brand_id', in: 'query', required: false, schema: new OA\Schema(type: 'string', format: 'uuid')),
+        new OA\Parameter(name: 'min_price', in: 'query', required: false, schema: new OA\Schema(type: 'number', format: 'float', example: 100000)),
+        new OA\Parameter(name: 'max_price', in: 'query', required: false, schema: new OA\Schema(type: 'number', format: 'float', example: 500000)),
+        new OA\Parameter(name: 'sort', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['latest', 'oldest', 'name', 'name_asc', 'name_desc', 'price_low', 'price_high', 'price_asc', 'price_desc', 'best_selling'], example: 'best_selling')),
+        new OA\Parameter(name: 'has_stock', in: 'query', required: false, schema: new OA\Schema(type: 'boolean', example: true)),
+        new OA\Parameter(name: 'per_page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', example: 12)),
+        new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', example: 1)),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Product collection detail endpoint response.',
+            content: new OA\JsonContent(ref: '#/components/schemas/PlaceholderDetailResponse'),
         ),
     ],
 )]

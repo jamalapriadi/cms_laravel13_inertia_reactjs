@@ -22,7 +22,9 @@ class ProductIndexRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:191'],
+            'category_id' => ['nullable', 'uuid'],
             'brand' => ['nullable', 'string', 'max:191'],
+            'brand_id' => ['nullable', 'uuid'],
             'collection' => ['nullable', 'string', 'max:191'],
             'min_price' => ['nullable', 'numeric', 'min:0'],
             'max_price' => ['nullable', 'numeric', 'min:0', 'gte:min_price'],
@@ -39,6 +41,7 @@ class ProductIndexRequest extends FormRequest
                 'price_high',
                 'price_asc',
                 'price_desc',
+                'best_selling',
             ])],
         ];
     }
