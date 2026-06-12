@@ -1514,7 +1514,7 @@
                     "Products"
                 ],
                 "summary": "Get category detail",
-                "description": "Menampilkan detail category berdasarkan slug, lengkap dengan parent category, children category, dan daftar produk publik yang mengikuti filter katalog. Alias plural `/api/v1/categories/{slug}` juga tersedia.",
+                "description": "Menampilkan detail category berdasarkan slug, lengkap dengan parent category beserta sibling category pada `parent.children`, children category langsung pada field `children`, dan daftar produk publik yang mengikuti filter katalog. Alias plural `/api/v1/categories/{slug}` juga tersedia.",
                 "operationId": "02ada966b4a1ca61ed76d60aabe36102",
                 "parameters": [
                     {
