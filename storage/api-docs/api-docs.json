@@ -1280,8 +1280,123 @@
                     "Products"
                 ],
                 "summary": "List products",
-                "description": "Endpoint publik untuk daftar produk ecommerce. Response saat ini mengikuti kontrak placeholder yang tersedia di controller.",
+                "description": "Endpoint publik untuk daftar produk ecommerce dengan dukungan filter pencarian, kategori, brand, koleksi, range harga customer/frontend, status stok, dan sorting katalog.",
                 "operationId": "af025eea451d2ffef5b35062d4157755",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Cari berdasarkan nama produk, slug, SKU, deskripsi, nama brand, nama kategori, atau SKU/nama variant item.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "iphone"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Slug atau UUID kategori produk.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "phones"
+                        }
+                    },
+                    {
+                        "name": "brand",
+                        "in": "query",
+                        "description": "Slug atau UUID brand produk.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "apple"
+                        }
+                    },
+                    {
+                        "name": "collection",
+                        "in": "query",
+                        "description": "Slug atau UUID product collection aktif.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "featured-phones"
+                        }
+                    },
+                    {
+                        "name": "min_price",
+                        "in": "query",
+                        "description": "Filter harga jual minimum untuk frontend/customer.",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 100000
+                        }
+                    },
+                    {
+                        "name": "max_price",
+                        "in": "query",
+                        "description": "Filter harga jual maksimum untuk frontend/customer.",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 500000
+                        }
+                    },
+                    {
+                        "name": "has_stock",
+                        "in": "query",
+                        "description": "Jika true, hanya tampilkan produk dengan stok tersedia.",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting katalog publik.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "price_asc",
+                            "enum": [
+                                "latest",
+                                "oldest",
+                                "name",
+                                "name_asc",
+                                "name_desc",
+                                "price_low",
+                                "price_high",
+                                "price_asc",
+                                "price_desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Jumlah item per halaman.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 12
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Nomor halaman pagination.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Products endpoint response.",

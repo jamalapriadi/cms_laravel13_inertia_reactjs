@@ -24,10 +24,34 @@ class ProductIndexRequest extends FormRequest
             'category' => ['nullable', 'string', 'max:191'],
             'brand' => ['nullable', 'string', 'max:191'],
             'collection' => ['nullable', 'string', 'max:191'],
+            'min_price' => ['nullable', 'numeric', 'min:0'],
+            'max_price' => ['nullable', 'numeric', 'min:0', 'gte:min_price'],
+            'has_stock' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
-            'sort' => ['nullable', 'string', Rule::in(['latest', 'oldest', 'name', 'price_low', 'price_high'])],
+            'sort' => ['nullable', 'string', Rule::in([
+                'latest',
+                'oldest',
+                'name',
+                'name_asc',
+                'name_desc',
+                'price_low',
+                'price_high',
+                'price_asc',
+                'price_desc',
+            ])],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('has_stock')) {
+            return;
+        }
+
+        $this->merge([
+            'has_stock' => filter_var($this->input('has_stock'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+        ]);
     }
 
     protected function failedValidation(Validator $validator): void

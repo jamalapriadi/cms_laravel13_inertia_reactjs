@@ -84,6 +84,12 @@ class Product extends Model
         return $this->hasMany(VariantItem::class);
     }
 
+    public function activeVariantItems(): HasMany
+    {
+        return $this->hasMany(VariantItem::class)
+            ->where('is_active', true);
+    }
+
     public function stockUnits(): HasMany
     {
         return $this->hasMany(ProductStockUnit::class, 'product_id');
@@ -92,6 +98,16 @@ class Product extends Model
     public function availableStockUnits(): HasMany
     {
         return $this->hasMany(ProductStockUnit::class, 'product_id')->where('status', 'available');
+    }
+
+    public function frontendAvailableStockUnits(): HasMany
+    {
+        return $this->hasMany(ProductStockUnit::class, 'product_id')
+            ->where('status', 'available')
+            ->where(function ($query) {
+                $query->whereNull('product_variant_id')
+                    ->orWhereHas('variantItem', fn ($variantQuery) => $variantQuery->where('is_active', true));
+            });
     }
 
     public function orderItems()

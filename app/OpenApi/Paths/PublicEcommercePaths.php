@@ -19,9 +19,81 @@ use OpenApi\Attributes as OA;
 )]
 #[OA\Get(
     path: '/api/v1/products',
-    description: 'Endpoint publik untuk daftar produk ecommerce. Response saat ini mengikuti kontrak placeholder yang tersedia di controller.',
+    description: 'Endpoint publik untuk daftar produk ecommerce dengan dukungan filter pencarian, kategori, brand, koleksi, range harga customer/frontend, status stok, dan sorting katalog.',
     summary: 'List products',
     tags: ['Products'],
+    parameters: [
+        new OA\Parameter(
+            name: 'search',
+            description: 'Cari berdasarkan nama produk, slug, SKU, deskripsi, nama brand, nama kategori, atau SKU/nama variant item.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'string', example: 'iphone'),
+        ),
+        new OA\Parameter(
+            name: 'category',
+            description: 'Slug atau UUID kategori produk.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'string', example: 'phones'),
+        ),
+        new OA\Parameter(
+            name: 'brand',
+            description: 'Slug atau UUID brand produk.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'string', example: 'apple'),
+        ),
+        new OA\Parameter(
+            name: 'collection',
+            description: 'Slug atau UUID product collection aktif.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'string', example: 'featured-phones'),
+        ),
+        new OA\Parameter(
+            name: 'min_price',
+            description: 'Filter harga jual minimum untuk frontend/customer.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'number', format: 'float', example: 100000),
+        ),
+        new OA\Parameter(
+            name: 'max_price',
+            description: 'Filter harga jual maksimum untuk frontend/customer.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'number', format: 'float', example: 500000),
+        ),
+        new OA\Parameter(
+            name: 'has_stock',
+            description: 'Jika true, hanya tampilkan produk dengan stok tersedia.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'boolean', example: true),
+        ),
+        new OA\Parameter(
+            name: 'sort',
+            description: 'Sorting katalog publik.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'string', enum: ['latest', 'oldest', 'name', 'name_asc', 'name_desc', 'price_low', 'price_high', 'price_asc', 'price_desc'], example: 'price_asc'),
+        ),
+        new OA\Parameter(
+            name: 'per_page',
+            description: 'Jumlah item per halaman.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'integer', example: 12),
+        ),
+        new OA\Parameter(
+            name: 'page',
+            description: 'Nomor halaman pagination.',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'integer', example: 1),
+        ),
+    ],
     responses: [
         new OA\Response(
             response: 200,

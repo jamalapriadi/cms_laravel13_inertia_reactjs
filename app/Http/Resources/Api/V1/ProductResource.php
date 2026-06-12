@@ -16,7 +16,8 @@ class ProductResource extends JsonResource
     {
         $priceRange = $this->priceRange();
         $sellingPrice = $priceRange['min'] ?? (float) $this->base_price;
-        $stock = (int) ($this->available_stock_units_count ?? 0);
+        $stock = $this->stockTotal();
+        $hasStock = $stock > 0;
 
         return [
             'id' => $this->id,
@@ -28,12 +29,16 @@ class ProductResource extends JsonResource
             'categories' => EcommerceCategoryResource::collection(collect([$this->whenLoaded('category')])->filter()),
             'thumbnail' => $this->thumbnail(),
             'price' => (float) $this->base_price,
+            'min_price' => $priceRange['min'],
+            'max_price' => $priceRange['max'],
             'selling_price' => $sellingPrice,
             'discount_price' => null,
             'final_price' => $sellingPrice,
             'price_range' => $priceRange,
             'stock' => $stock,
-            'stock_status' => $stock > 0 ? 'in_stock' : 'out_of_stock',
+            'stock_total' => $stock,
+            'has_stock' => $hasStock,
+            'stock_status' => $hasStock ? 'in_stock' : 'out_of_stock',
             'has_variant' => (bool) $this->has_variant,
             'is_publish' => (bool) $this->is_publish,
             'status' => (bool) $this->is_publish ? 'published' : 'draft',
@@ -47,6 +52,15 @@ class ProductResource extends JsonResource
      */
     protected function priceRange(): array
     {
+        if ($this->variant_min_price !== null || $this->variant_max_price !== null) {
+            $basePrice = (float) $this->base_price;
+
+            return [
+                'min' => (float) ($this->variant_min_price ?? $basePrice),
+                'max' => (float) ($this->variant_max_price ?? $basePrice),
+            ];
+        }
+
         $prices = $this->relationLoaded('variantItems')
             ? $this->variantItems
                 ->where('is_active', true)
@@ -69,6 +83,15 @@ class ProductResource extends JsonResource
             'min' => (float) $prices->min(),
             'max' => (float) $prices->max(),
         ];
+    }
+
+    protected function stockTotal(): int
+    {
+        if ($this->stock_total !== null) {
+            return (int) $this->stock_total;
+        }
+
+        return (int) ($this->available_stock_units_count ?? 0);
     }
 
     protected function thumbnail(): ?string
