@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Store\Brand\BrandRequest;
 use App\Http\Requests\Store\Brand\BrandUpdateRequest;
 use App\Models\Brand;
+use App\Models\Shop\Product;
 use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -22,17 +23,28 @@ class BrandController extends Controller
     {
         $search = $request->query('search');
 
-        $props = list_cache()->rememberRequest('brands', $request, function () use ($search) {
+        $props = list_cache()->rememberRequest('brands-v2', $request, function () use ($search) {
             $brands = Brand::query()
+                ->withCount('products')
                 ->when($search, function ($query, $search) {
                     $query->where('name', 'like', "%{$search}%");
                 })
                 ->latest()
                 ->paginate(10)
+                ->through(fn (Brand $brand): array => [
+                    ...$brand->toArray(),
+                    'products_count' => (int) ($brand->products_count ?? 0),
+                ])
                 ->withQueryString();
 
             return [
                 'brands' => $brands,
+                'summary' => [
+                    'brands' => Brand::query()->count(),
+                    'products' => Product::query()
+                        ->whereHas('brand')
+                        ->count(),
+                ],
                 'filters' => ['search' => $search],
             ];
         });
