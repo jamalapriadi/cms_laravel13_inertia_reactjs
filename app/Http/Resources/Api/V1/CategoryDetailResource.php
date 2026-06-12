@@ -19,7 +19,16 @@ class CategoryDetailResource extends JsonResource
             'slug' => $this->slug,
             'description' => $this->description ?? null,
             'image' => $this->mediaUrl($this->image),
-            'parent' => CategoryResource::make($this->whenLoaded('parent')),
+            'parent' => $this->whenLoaded('parent', function (): array {
+                return [
+                    'id' => $this->parent->id,
+                    'name' => $this->parent->name,
+                    'slug' => $this->parent->slug,
+                    'children' => CategoryResource::collection(
+                        $this->parent->relationLoaded('children') ? $this->parent->children : collect()
+                    ),
+                ];
+            }),
             'children' => CategoryResource::collection($this->whenLoaded('children')),
         ];
     }

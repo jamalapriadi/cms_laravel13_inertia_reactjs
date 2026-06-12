@@ -167,7 +167,7 @@ use OpenApi\Attributes as OA;
 )]
 #[OA\Get(
     path: '/api/v1/category/{slug}',
-    description: 'Menampilkan detail category berdasarkan slug, lengkap dengan parent category, children category, dan daftar produk publik yang mengikuti filter katalog. Alias plural `/api/v1/categories/{slug}` juga tersedia.',
+    description: 'Menampilkan detail category berdasarkan slug, lengkap dengan parent category beserta sibling category pada `parent.children`, children category langsung pada field `children`, dan daftar produk publik yang mengikuti filter katalog. Alias plural `/api/v1/categories/{slug}` juga tersedia.',
     summary: 'Get category detail',
     tags: ['Products'],
     parameters: [

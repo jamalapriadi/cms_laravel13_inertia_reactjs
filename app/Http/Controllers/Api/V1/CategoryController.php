@@ -58,7 +58,14 @@ class CategoryController extends Controller
             $category = Category::query()
                 ->where('is_publish', true)
                 ->with([
-                    'parent',
+                    'parent' => fn ($query) => $query
+                        ->where('is_publish', true)
+                        ->with([
+                            'children' => fn ($childQuery) => $childQuery
+                                ->where('is_publish', true)
+                                ->orderBy('sort_order')
+                                ->orderBy('name'),
+                        ]),
                     'children' => fn ($query) => $query
                         ->where('is_publish', true)
                         ->orderBy('sort_order')
