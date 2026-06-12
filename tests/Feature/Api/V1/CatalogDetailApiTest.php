@@ -228,6 +228,29 @@ test('child category detail keeps category locked even when conflicting query pa
         'parent_id' => $parent->id,
         'name' => 'Office Chair',
         'slug' => 'office-chair',
+        'sort_order' => 2,
+    ]);
+
+    catalogDetailCreateCategory([
+        'parent_id' => $parent->id,
+        'name' => 'Office Desk',
+        'slug' => 'office-desk',
+        'sort_order' => 1,
+    ]);
+
+    catalogDetailCreateCategory([
+        'parent_id' => $parent->id,
+        'name' => 'Storage Cabinet',
+        'slug' => 'storage-cabinet',
+        'sort_order' => 3,
+    ]);
+
+    catalogDetailCreateCategory([
+        'parent_id' => $parent->id,
+        'name' => 'Hidden Shelf',
+        'slug' => 'hidden-shelf',
+        'sort_order' => 0,
+        'is_publish' => false,
     ]);
 
     $otherCategory = catalogDetailCreateCategory([
@@ -252,8 +275,14 @@ test('child category detail keeps category locked even when conflicting query pa
     $response->assertSuccessful()
         ->assertJsonPath('data.slug', 'office-chair')
         ->assertJsonPath('data.parent.slug', 'office-furniture')
+        ->assertJsonPath('data.parent.children.0.slug', 'office-desk')
+        ->assertJsonPath('data.parent.children.1.slug', 'office-chair')
+        ->assertJsonPath('data.parent.children.2.slug', 'storage-cabinet')
         ->assertJsonPath('data.products.meta.total', 1)
         ->assertJsonPath('data.products.data.0.slug', 'ergonomic-chair-product');
+
+    expect(collect($response->json('data.parent.children'))->pluck('slug')->all())
+        ->toBe(['office-desk', 'office-chair', 'storage-cabinet']);
 });
 
 test('category detail supports best selling sort using paid orders only', function () {
