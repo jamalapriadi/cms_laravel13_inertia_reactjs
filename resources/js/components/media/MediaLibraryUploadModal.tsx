@@ -154,14 +154,6 @@ export default function MediaLibraryUploadModal({
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
-        accept: {
-            'image/jpeg': ['.jpg', '.jpeg'],
-            'image/png': ['.png'],
-            'image/gif': ['.gif'],
-            'image/webp': ['.webp'],
-            'image/svg+xml': ['.svg'],
-            'image/x-icon': ['.ico'],
-        },
         multiple: true,
     });
 

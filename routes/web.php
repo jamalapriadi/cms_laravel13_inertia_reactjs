@@ -10,7 +10,10 @@ use App\Http\Controllers\Customer\Auth\CustomerVerifyEmailController;
 use App\Http\Controllers\Customer\CustomerDashboardController;
 use App\Http\Controllers\Dashboard\Cms\PageTranslationController;
 use App\Http\Controllers\Dashboard\Cms\PostTranslationController;
+use App\Http\Controllers\Dashboard\ContentTypeController;
 use App\Http\Controllers\Dashboard\KabupatenController;
+use App\Http\Controllers\Dashboard\CustomFieldGroupController;
+use App\Http\Controllers\Dashboard\DynamicContentEntryController;
 use App\Http\Controllers\Dashboard\KecamatanController;
 use App\Http\Controllers\Dashboard\KelurahanController;
 use App\Http\Controllers\Dashboard\MediaController;
@@ -161,6 +164,22 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
     Route::get('posts/usage-guide', [PostController::class, 'usageGuide'])->name('posts.usage-guide');
     Route::resource('posts', PostController::class);
     Route::resource('pages', PageController::class)->except(['show']);
+    Route::resource('content-types', ContentTypeController::class)->except(['show']);
+    Route::resource('custom-fields', CustomFieldGroupController::class)
+        ->parameters(['custom-fields' => 'customFieldGroup'])
+        ->except(['show']);
+    Route::post('custom-fields/{customFieldGroup}/fields', [CustomFieldGroupController::class, 'storeField'])->name('custom-fields.fields.store');
+    Route::put('custom-fields/{customFieldGroup}/fields/{customField}', [CustomFieldGroupController::class, 'updateField'])->name('custom-fields.fields.update');
+    Route::delete('custom-fields/{customFieldGroup}/fields/{customField}', [CustomFieldGroupController::class, 'destroyField'])->name('custom-fields.fields.destroy');
+    Route::patch('custom-fields/{customFieldGroup}/fields/{customField}/move', [CustomFieldGroupController::class, 'moveField'])->name('custom-fields.fields.move');
+    Route::prefix('content/{contentType:slug}')->name('dynamic-content.')->group(function () {
+        Route::get('/', [DynamicContentEntryController::class, 'index'])->name('index');
+        Route::get('/create', [DynamicContentEntryController::class, 'create'])->name('create');
+        Route::post('/', [DynamicContentEntryController::class, 'store'])->name('store');
+        Route::get('/{contentEntry}/edit', [DynamicContentEntryController::class, 'edit'])->name('edit');
+        Route::put('/{contentEntry}', [DynamicContentEntryController::class, 'update'])->name('update');
+        Route::delete('/{contentEntry}', [DynamicContentEntryController::class, 'destroy'])->name('destroy');
+    });
     Route::prefix('cms/pages/{page}/translations')->name('dashboard.cms.pages.translations.')->group(function () {
         Route::get('/', [PageTranslationController::class, 'index'])->name('index');
         Route::get('/{language}', [PageTranslationController::class, 'edit'])->name('edit');

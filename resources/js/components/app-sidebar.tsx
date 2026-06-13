@@ -18,8 +18,31 @@ import { filterSidebar } from '@/utils/sidebar';
 
 export function AppSidebar() {
     const { url, props } = usePage();
+    const dynamicContentTypes = Array.isArray(props.dynamicContentTypes)
+        ? props.dynamicContentTypes
+        : [];
+    const resolvedSidebarConfig = sidebarConfig.map((group) => ({
+        ...group,
+        items: group.items.map((item) => {
+            if (item.title !== 'Dynamic Content') {
+                return item;
+            }
 
-    const menus = filterSidebar(sidebarConfig, props.auth.user);
+            const children = dynamicContentTypes.map((contentType) => ({
+                title: contentType.name,
+                href: `/my-admin/dashboard/content/${contentType.slug}`,
+                permission: 'dynamic-contents.view',
+            }));
+
+            return {
+                ...item,
+                href: children[0]?.href ?? item.href,
+                children,
+            };
+        }),
+    }));
+
+    const menus = filterSidebar(resolvedSidebarConfig, props.auth.user);
 
     return (
         <Sidebar

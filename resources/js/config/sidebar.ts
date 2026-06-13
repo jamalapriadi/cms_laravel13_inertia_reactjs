@@ -98,6 +98,13 @@ export const sidebarConfig: SidebarGroup[] = [
                 permission: 'pages.view',
             },
             {
+                title: 'Dynamic Content',
+                href: '/my-admin/dashboard/content-types',
+                icon: FileText,
+                permission: 'dynamic-contents.view',
+                children: [],
+            },
+            {
                 title: 'Promo',
                 href: '/my-admin/dashboard/ecommerce/product-collections',
                 icon: BadgeDollarSign,
@@ -266,17 +273,35 @@ export const sidebarConfig: SidebarGroup[] = [
                 icon: Menu,
                 permission: 'menus.view',
             },
-            {
-                title: 'FAQ',
-                href: '/my-admin/dashboard/ecommerce/faqs',
-                icon: CircleHelp,
-                permission: 'faqs.view',
-            },
+            // {
+            //     title: 'FAQ',
+            //     href: '/my-admin/dashboard/ecommerce/faqs',
+            //     icon: CircleHelp,
+            //     permission: 'faqs.view',
+            // },
             {
                 title: 'Site Contents',
                 href: '/my-admin/dashboard/config/site-contents',
                 icon: RssIcon,
                 permission: 'site-contents.view',
+            },
+            {
+                title: 'Content Builder',
+                href: '/my-admin/dashboard/content-types',
+                icon: FolderTree,
+                permission: 'content-types.view',
+                children: [
+                    {
+                        title: 'Content Types',
+                        href: '/my-admin/dashboard/content-types',
+                        permission: 'content-types.view',
+                    },
+                    {
+                        title: 'Custom Fields',
+                        href: '/my-admin/dashboard/custom-fields',
+                        permission: 'custom-fields.view',
+                    },
+                ],
             },
             {
                 title: 'API Documentation',
