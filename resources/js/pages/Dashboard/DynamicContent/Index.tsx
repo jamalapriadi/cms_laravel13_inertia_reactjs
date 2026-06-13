@@ -7,7 +7,7 @@ import {
     destroy,
     edit,
     index,
-} from '@/actions/Jamalapriadi/DynamicContentBuilder/Http/Controllers/Dashboard/DynamicContentEntryController';
+} from '@/actions/App/Http/Controllers/Dashboard/DynamicContentEntryController';
 import { DataTable } from '@/components/DataTable';
 import {
     AlertDialog,
