@@ -502,7 +502,7 @@ export default function Edit({
                     </Card>
 
                     <div className="flex justify-end gap-3">
-                        <Link href="/dashboard/posts">
+                        <Link href="/my-admin/dashboard/posts">
                             <Button type="button" variant="outline">
                                 Back
                             </Button>
@@ -528,7 +528,7 @@ function FieldError({ message }: { message?: string }) {
 Edit.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
-            { title: 'Posts', href: '/dashboard/posts' },
+            { title: 'Posts', href: '/my-admin/dashboard/posts' },
             { title: 'Translations', href: '#' },
         ]}
     >

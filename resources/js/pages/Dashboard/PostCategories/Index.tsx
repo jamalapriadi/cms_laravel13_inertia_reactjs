@@ -63,7 +63,7 @@ export default function Index({ categories, parents, filters }: Props) {
      * ✅ FILTER
      */
     const applyFilter = () => {
-        get('/dashboard/post-categories', {
+        get('/my-admin/dashboard/post-categories', {
             preserveState: true,
             preserveScroll: true,
         });
@@ -77,7 +77,7 @@ export default function Index({ categories, parents, filters }: Props) {
             return;
         }
 
-        destroy(`/dashboard/post-categories/${deletingId}`, {
+        destroy(`/my-admin/dashboard/post-categories/${deletingId}`, {
             preserveScroll: true,
 
             onStart: () => toast.loading('Deleting...', { id: 'delete' }),
@@ -109,7 +109,7 @@ export default function Index({ categories, parents, filters }: Props) {
             label: 'Action',
             render: (row: Category) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/post-categories/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/post-categories/${row.id}/edit`}>
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>
@@ -160,7 +160,7 @@ export default function Index({ categories, parents, filters }: Props) {
                         </p>
                     </div>
 
-                    <Link href="/dashboard/post-categories/create">
+                    <Link href="/my-admin/dashboard/post-categories/create">
                         <Button>Add Category</Button>
                     </Link>
                 </div>
@@ -217,7 +217,7 @@ Index.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             {
                 title: 'Post Categories',
-                href: '/dashboard/post-categories',
+                href: '/my-admin/dashboard/post-categories',
             },
         ]}
     >

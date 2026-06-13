@@ -70,7 +70,7 @@ export default function Index({ variantItems, products, filters }: Props) {
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/variant-items',
+            '/my-admin/dashboard/ecommerce/variant-items',
             { search, product_id: productId },
             { preserveState: true, replace: true },
         );
@@ -171,7 +171,7 @@ export default function Index({ variantItems, products, filters }: Props) {
             render: (row: VariantItem) => (
                 <div className="flex gap-2">
                     <Link
-                        href={`/dashboard/ecommerce/variant-items/${row.id}/edit`}
+                        href={`/my-admin/dashboard/ecommerce/variant-items/${row.id}/edit`}
                     >
                         <Button size="icon" variant="secondary" title="Edit">
                             <Pencil className="h-4 w-4" />
@@ -203,7 +203,7 @@ export default function Index({ variantItems, products, filters }: Props) {
                         </p>
                     </div>
                     <Link
-                        href={`/dashboard/ecommerce/variant-items/create${productId ? `?product_id=${productId}` : ''}`}
+                        href={`/my-admin/dashboard/ecommerce/variant-items/create${productId ? `?product_id=${productId}` : ''}`}
                     >
                         <Button>
                             <Plus className="h-4 w-4" />
@@ -283,7 +283,7 @@ export default function Index({ variantItems, products, filters }: Props) {
                             onClick={() =>
                                 deletingId &&
                                 router.delete(
-                                    `/dashboard/ecommerce/variant-items/${deletingId}`,
+                                    `/my-admin/dashboard/ecommerce/variant-items/${deletingId}`,
                                     { onFinish: () => setDeletingId(null) },
                                 )
                             }

@@ -2,9 +2,11 @@
 
 use App\Console\Commands\NormalizeMediaPathsCommand;
 use App\Console\Commands\StorageHealthCheckCommand;
+use App\Http\Middleware\EnsureCustomerAuthenticated;
 use App\Http\Middleware\EnsureDashboardPermission;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RedirectIfCustomerAuthenticated;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -36,6 +38,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'dashboard.permission' => EnsureDashboardPermission::class,
+            'customer.auth' => EnsureCustomerAuthenticated::class,
+            'customer.guest' => RedirectIfCustomerAuthenticated::class,
         ]);
 
         $middleware->web(append: [

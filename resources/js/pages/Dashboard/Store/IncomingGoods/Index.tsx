@@ -53,7 +53,7 @@ export default function Index({ incomingGoods, filters }: Props) {
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/incoming-goods',
+            '/my-admin/dashboard/ecommerce/incoming-goods',
             { search, status },
             {
                 preserveState: true,
@@ -65,7 +65,7 @@ export default function Index({ incomingGoods, filters }: Props) {
     const clearFilter = () => {
         setSearch('');
         setStatus('');
-        router.get('/dashboard/ecommerce/incoming-goods', {}, { replace: true });
+        router.get('/my-admin/dashboard/ecommerce/incoming-goods', {}, { replace: true });
     };
 
     const handleDelete = () => {
@@ -73,7 +73,7 @@ export default function Index({ incomingGoods, filters }: Props) {
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/incoming-goods/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/incoming-goods/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -141,7 +141,7 @@ export default function Index({ incomingGoods, filters }: Props) {
             label: 'Action',
             render: (row: IncomingGoods) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/ecommerce/incoming-goods/${row.id}`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/incoming-goods/${row.id}`}>
                         <Button size="sm" variant="secondary" title="View Detail">
                             <Eye className="h-3.5 w-3.5" />
                         </Button>
@@ -149,7 +149,7 @@ export default function Index({ incomingGoods, filters }: Props) {
 
                     {row.status === 'pending' && (
                         <>
-                            <Link href={`/dashboard/ecommerce/incoming-goods/${row.id}/edit`}>
+                            <Link href={`/my-admin/dashboard/ecommerce/incoming-goods/${row.id}/edit`}>
                                 <Button size="sm" variant="secondary" title="Edit">
                                     <Edit className="h-3.5 w-3.5" />
                                 </Button>
@@ -187,7 +187,7 @@ export default function Index({ incomingGoods, filters }: Props) {
                         </p>
                     </div>
 
-                    <Link href="/dashboard/ecommerce/incoming-goods/create">
+                    <Link href="/my-admin/dashboard/ecommerce/incoming-goods/create">
                         <Button className="gap-2">
                             <Plus className="h-4 w-4" />
                             Record Purchase

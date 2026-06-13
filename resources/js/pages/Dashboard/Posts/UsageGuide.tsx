@@ -224,10 +224,10 @@ export default function PostDetail() {
 UsageGuide.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
-            { title: 'Posts', href: '/dashboard/posts' },
+            { title: 'Posts', href: '/my-admin/dashboard/posts' },
             {
                 title: 'Cara Penggunaan',
-                href: '/dashboard/posts/usage-guide',
+                href: '/my-admin/dashboard/posts/usage-guide',
             },
         ]}
     >

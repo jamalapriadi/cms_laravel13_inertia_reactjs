@@ -46,12 +46,12 @@ export default function Index({ roles, filters }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Roles',
-            href: '/dashboard/roles',
+            href: '/my-admin/dashboard/roles',
         },
     ];
 
     function applyFilter() {
-        router.get('/dashboard/roles', { search }, { preserveState: true });
+        router.get('/my-admin/dashboard/roles', { search }, { preserveState: true });
     }
 
     const handleDelete = () => {
@@ -59,7 +59,7 @@ export default function Index({ roles, filters }: Props) {
 
         const toastId = toast.loading('Deleting role...');
 
-        router.delete(`/dashboard/roles/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/roles/${deletingId}`, {
             preserveScroll: true,
 
             onSuccess: () => {
@@ -118,7 +118,7 @@ export default function Index({ roles, filters }: Props) {
                           <div className="flex gap-2">
                               {canEdit && (
                                   <Link
-                                      href={`/dashboard/roles/${row.id}/edit`}
+                                      href={`/my-admin/dashboard/roles/${row.id}/edit`}
                                   >
                                       <Button size="sm" variant="secondary">
                                           Edit
@@ -180,7 +180,7 @@ export default function Index({ roles, filters }: Props) {
                     <h1 className="text-2xl font-bold">Roles</h1>
 
                     {canCreate && (
-                        <Link href="/dashboard/roles/create">
+                        <Link href="/my-admin/dashboard/roles/create">
                             <Button>Add New Role</Button>
                         </Link>
                     )}

@@ -21,7 +21,7 @@ function Show(_a) {
             <div className="container mx-auto space-y-8 px-6 py-10">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                        <react_1.Link href="/dashboard/ecommerce/products">
+                        <react_1.Link href="/my-admin/dashboard/ecommerce/products">
                             <button_1.Button size="icon" variant="secondary">
                                 <lucide_react_1.ArrowLeft className="h-4 w-4"/>
                             </button_1.Button>
@@ -36,7 +36,7 @@ function Show(_a) {
                             </p>
                         </div>
                     </div>
-                    <react_1.Link href={"/dashboard/ecommerce/products/".concat(product.id, "/edit")}>
+                    <react_1.Link href={"/my-admin/dashboard/ecommerce/products/".concat(product.id, "/edit")}>
                         <button_1.Button variant="secondary">Edit Product</button_1.Button>
                     </react_1.Link>
                 </div>
@@ -92,7 +92,7 @@ function Show(_a) {
                                             <lucide_react_1.Layers className="h-4 w-4"/>
                                             Product Variants
                                         </card_1.CardTitle>
-                                        <react_1.Link href={"/dashboard/ecommerce/product-variants/create?product_id=".concat(product.id)}>
+                                        <react_1.Link href={"/my-admin/dashboard/ecommerce/product-variants/create?product_id=".concat(product.id)}>
                                             <button_1.Button size="sm">
                                                 <lucide_react_1.Plus className="h-4 w-4"/>
                                                 Add Variant
@@ -108,7 +108,7 @@ function Show(_a) {
                                                         <p className="font-medium">
                                                             {variant.name}
                                                         </p>
-                                                        <react_1.Link href={"/dashboard/ecommerce/product-variants/".concat(variant.id, "/edit")}>
+                                                        <react_1.Link href={"/my-admin/dashboard/ecommerce/product-variants/".concat(variant.id, "/edit")}>
                                                             <button_1.Button size="sm" variant="secondary">
                                                                 Edit
                                                             </button_1.Button>
@@ -135,7 +135,7 @@ function Show(_a) {
                                             <lucide_react_1.Package className="h-4 w-4"/>
                                             Variant Items
                                         </card_1.CardTitle>
-                                        <react_1.Link href={"/dashboard/ecommerce/variant-items/create?product_id=".concat(product.id)}>
+                                        <react_1.Link href={"/my-admin/dashboard/ecommerce/variant-items/create?product_id=".concat(product.id)}>
                                             <button_1.Button size="sm">
                                                 <lucide_react_1.Plus className="h-4 w-4"/>
                                                 Generate Items
@@ -206,7 +206,7 @@ function Show(_a) {
                                                                     </badge_1.Badge>
                                                                 </table_1.TableCell>
                                                                 <table_1.TableCell>
-                                                                    <react_1.Link href={"/dashboard/ecommerce/variant-items/".concat(item.id, "/edit")}>
+                                                                    <react_1.Link href={"/my-admin/dashboard/ecommerce/variant-items/".concat(item.id, "/edit")}>
                                                                         <button_1.Button size="sm" variant="secondary">
                                                                             Edit
                                                                         </button_1.Button>
@@ -241,7 +241,7 @@ function Show(_a) {
                                             Total
                                         </p>
                                     </div>
-                                    <react_1.Link href={"/dashboard/ecommerce/product-stock-units/create?product_id=".concat(product.id)}>
+                                    <react_1.Link href={"/my-admin/dashboard/ecommerce/product-stock-units/create?product_id=".concat(product.id)}>
                                         <button_1.Button size="sm">
                                             <lucide_react_1.Plus className="h-4 w-4"/>
                                             Add Stock Unit
@@ -288,7 +288,7 @@ function Show(_a) {
                                                             {unit.note || '-'}
                                                         </table_1.TableCell>
                                                         <table_1.TableCell>
-                                                            <react_1.Link href={"/dashboard/ecommerce/product-stock-units/".concat(unit.id, "/edit")}>
+                                                            <react_1.Link href={"/my-admin/dashboard/ecommerce/product-stock-units/".concat(unit.id, "/edit")}>
                                                                 <button_1.Button size="sm" variant="secondary">
                                                                     Edit
                                                                 </button_1.Button>

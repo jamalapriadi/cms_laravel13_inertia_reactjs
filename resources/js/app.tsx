@@ -3,7 +3,9 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
-import CustomerLayout from '@/layouts/customer-layout';
+import CustomerAuthLayout from '@/layouts/customer-auth-layout';
+import CustomerDashboardLayout from '@/layouts/customer-dashboard-layout';
+import PublicLayout from '@/layouts/public-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -14,12 +16,14 @@ createInertiaApp({
         switch (true) {
             case name === 'welcome':
                 return null;
+            case name.startsWith('Landing/'):
+                return PublicLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;
-            case name.startsWith('Onboard/Auth/'):
-                return AuthLayout;
+            case name.startsWith('Customer/Auth/'):
+                return CustomerAuthLayout;
             case name.startsWith('Customer/'):
-                return CustomerLayout;
+                return CustomerDashboardLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
             default:

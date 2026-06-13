@@ -63,7 +63,7 @@ export default function Index({ collections, typeOptions, filters }: Props) {
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/product-collections',
+            '/my-admin/dashboard/ecommerce/product-collections',
             {
                 search,
                 type: type || undefined,
@@ -82,7 +82,7 @@ export default function Index({ collections, typeOptions, filters }: Props) {
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/product-collections/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/product-collections/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -155,13 +155,13 @@ export default function Index({ collections, typeOptions, filters }: Props) {
             label: 'Actions',
             render: (row: ProductCollection) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/ecommerce/product-collections/${row.id}`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/product-collections/${row.id}`}>
                         <Button size="sm" variant="secondary" title="View">
                             <Eye className="h-3.5 w-3.5" />
                         </Button>
                     </Link>
                     <Link
-                        href={`/dashboard/ecommerce/product-collections/${row.id}/edit`}
+                        href={`/my-admin/dashboard/ecommerce/product-collections/${row.id}/edit`}
                     >
                         <Button size="sm" variant="secondary" title="Edit">
                             <Pencil className="h-3.5 w-3.5" />
@@ -195,7 +195,7 @@ export default function Index({ collections, typeOptions, filters }: Props) {
                         </p>
                     </div>
 
-                    <Link href="/dashboard/ecommerce/product-collections/create">
+                    <Link href="/my-admin/dashboard/ecommerce/product-collections/create">
                         <Button className="gap-2">
                             <Plus className="h-4 w-4" />
                             Add Collection

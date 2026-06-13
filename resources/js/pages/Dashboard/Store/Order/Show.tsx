@@ -56,11 +56,11 @@ export default function Show({ order }: Props) {
 
     const handleUpdateStatus = (e: React.FormEvent) => {
         e.preventDefault();
-        put(`/dashboard/orders/${order.id}`);
+        put(`/my-admin/dashboard/orders/${order.id}`);
     };
 
     const handlePrintReceipt = () => {
-        window.open(`/dashboard/orders/${order.id}/receipt`, '_blank');
+        window.open(`/my-admin/dashboard/orders/${order.id}/receipt`, '_blank');
     };
 
     // Color helpers for Badges
@@ -104,7 +104,7 @@ export default function Show({ order }: Props) {
             <div className="container mx-auto space-y-8 px-4 py-6">
                 {/* BREADCRUMB / BACK LINK */}
                 <div className="flex items-center justify-between">
-                    <Link href="/dashboard/orders">
+                    <Link href="/my-admin/dashboard/orders">
                         <Button variant="outline" size="sm">
                             &larr; Back to Orders
                         </Button>

@@ -14,27 +14,27 @@ import { NavUser } from './nav-user';
 const menus = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: '/my-admin/dashboard',
         icon: LayoutDashboard,
     },
     {
         title: 'Users',
-        href: '/users',
+        href: '/my-admin/dashboard/users',
         icon: Users,
     },
     {
         title: 'Orders',
-        href: '/orders',
+        href: '/my-admin/dashboard/orders',
         icon: ShoppingCart,
     },
     {
         title: 'Reports',
-        href: '/reports',
+        href: '/my-admin/dashboard/reports',
         icon: FileText,
     },
     {
         title: 'Settings',
-        href: '/settings',
+        href: '/my-admin/settings/profile',
         icon: Settings,
     },
 ];

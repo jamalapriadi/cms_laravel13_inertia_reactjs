@@ -3,6 +3,7 @@
 namespace App\Models\Shop;
 
 use App\Notifications\CustomerResetPasswordNotification;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,9 +11,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-class Customer extends Authenticatable
+class Customer extends Authenticatable implements MustVerifyEmail
 {
     use HasUuids, Notifiable, SoftDeletes;
+
+    protected string $guard = 'customer';
 
     protected $fillable = [
         'name',
@@ -47,7 +50,7 @@ class Customer extends Authenticatable
         return $this->hasMany(Cart::class);
     }
 
-    public function orders()
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }

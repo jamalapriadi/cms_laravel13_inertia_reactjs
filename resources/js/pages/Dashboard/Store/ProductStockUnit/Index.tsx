@@ -155,7 +155,7 @@ export default function Index({
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/product-stock-units',
+            '/my-admin/dashboard/ecommerce/product-stock-units',
             {
                 search,
                 status,
@@ -174,7 +174,7 @@ export default function Index({
         setVariantId('');
         setSelectedIds([]);
 
-        router.get('/dashboard/ecommerce/product-stock-units', {}, { replace: true });
+        router.get('/my-admin/dashboard/ecommerce/product-stock-units', {}, { replace: true });
     };
 
     const toggleSelect = (id: string, checked: boolean) => {
@@ -203,7 +203,7 @@ export default function Index({
         }
 
         router.post(
-            '/dashboard/ecommerce/product-stock-units/bulk-generate-barcode',
+            '/my-admin/dashboard/ecommerce/product-stock-units/bulk-generate-barcode',
             { stock_unit_ids: selectedIds },
             { preserveScroll: true },
         );
@@ -215,14 +215,14 @@ export default function Index({
         }
 
         router.post(
-            '/dashboard/ecommerce/product-stock-units/barcodes/print-selected',
+            '/my-admin/dashboard/ecommerce/product-stock-units/barcodes/print-selected',
             { stock_unit_ids: selectedIds },
             { preserveScroll: true },
         );
     };
 
     const handlePrintAllFiltered = () => {
-        router.get('/dashboard/ecommerce/product-stock-units/barcodes/print', {
+        router.get('/my-admin/dashboard/ecommerce/product-stock-units/barcodes/print', {
             search,
             status,
             product_variant_id: variantId,
@@ -234,7 +234,7 @@ export default function Index({
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/product-stock-units/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/product-stock-units/${deletingId}`, {
             preserveScroll: true,
             onFinish: () => setDeletingId(null),
         });
@@ -315,13 +315,13 @@ export default function Index({
             label: 'Actions',
             render: (row: ProductStockUnit) => (
                 <div className="flex flex-wrap items-center gap-2">
-                    <Link href={`/dashboard/ecommerce/product-stock-units/${row.id}`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/product-stock-units/${row.id}`}>
                         <Button size="sm" variant="secondary" title="Detail">
                             <Eye className="h-3.5 w-3.5" />
                         </Button>
                     </Link>
 
-                    <Link href={`/dashboard/ecommerce/product-stock-units/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/product-stock-units/${row.id}/edit`}>
                         <Button size="sm" variant="secondary" title="Edit">
                             <Edit className="h-3.5 w-3.5" />
                         </Button>
@@ -333,7 +333,7 @@ export default function Index({
                             variant="outline"
                             className="gap-1"
                             onClick={() =>
-                                router.post(`/dashboard/ecommerce/product-stock-units/${row.id}/generate-barcode`, {}, { preserveScroll: true })
+                                router.post(`/my-admin/dashboard/ecommerce/product-stock-units/${row.id}/generate-barcode`, {}, { preserveScroll: true })
                             }
                         >
                             <Barcode className="h-3.5 w-3.5" />
@@ -343,7 +343,7 @@ export default function Index({
 
                     {row.barcode && (
                         <>
-                            <Link href={`/dashboard/ecommerce/product-stock-units/barcodes/print?ids=${row.id}`}>
+                            <Link href={`/my-admin/dashboard/ecommerce/product-stock-units/barcodes/print?ids=${row.id}`}>
                                 <Button size="sm" variant="outline">
                                     Print
                                 </Button>
@@ -360,7 +360,7 @@ export default function Index({
                                     }
 
                                     router.post(
-                                        `/dashboard/ecommerce/product-stock-units/${row.id}/regenerate-barcode`,
+                                        `/my-admin/dashboard/ecommerce/product-stock-units/${row.id}/regenerate-barcode`,
                                         {},
                                         { preserveScroll: true },
                                     );
@@ -399,13 +399,13 @@ export default function Index({
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                        <Link href="/dashboard/ecommerce/barcode-scanner">
+                        <Link href="/my-admin/dashboard/ecommerce/barcode-scanner">
                             <Button variant="outline" className="gap-2">
                                 <ScanBarcode className="h-4 w-4" />
                                 Barcode Scanner
                             </Button>
                         </Link>
-                        <Link href="/dashboard/ecommerce/product-stock-units/create">
+                        <Link href="/my-admin/dashboard/ecommerce/product-stock-units/create">
                             <Button className="gap-2">
                                 <Plus className="h-4 w-4" />
                                 Add Stok Unit

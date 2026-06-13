@@ -15,10 +15,10 @@ export default function Customer({ options }: Props) {
     const [initialized, setInitialized] = useState(false);
 
     const { data, setData, post, processing } = useForm({
-        customer_can_register: false,
-        customer_can_login: false,
-        customer_can_reset_password: false,
-        customer_can_verify_email: false,
+        allow_customer_registration: false,
+        allow_customer_login: false,
+        allow_password_reset: false,
+        require_email_verification: false,
     });
 
     /**
@@ -57,7 +57,7 @@ export default function Customer({ options }: Props) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        post('/dashboard/options', {
+        post('/my-admin/dashboard/options', {
             preserveScroll: true,
             onStart: () => toast.loading('Saving...', { id: 'save' }),
             onSuccess: () =>
@@ -100,37 +100,37 @@ export default function Customer({ options }: Props) {
                         <div className="col-span-2 space-y-4 rounded-xl bg-card p-6 shadow">
                             <SwitchField
                                 label="Allow Customer Registration"
-                                description="Enable public customer sign up."
-                                checked={data.customer_can_register}
+                                description="Jika aktif, customer bisa membuat akun baru melalui /auth/register."
+                                checked={data.allow_customer_registration}
                                 onChange={(val) =>
-                                    setData('customer_can_register', val)
+                                    setData('allow_customer_registration', val)
                                 }
                             />
 
                             <SwitchField
                                 label="Allow Customer Login"
-                                description="Enable login access."
-                                checked={data.customer_can_login}
+                                description="Jika aktif, customer bisa login melalui /auth/login."
+                                checked={data.allow_customer_login}
                                 onChange={(val) =>
-                                    setData('customer_can_login', val)
+                                    setData('allow_customer_login', val)
                                 }
                             />
 
                             <SwitchField
                                 label="Allow Password Reset"
-                                description="Customers can reset forgotten passwords."
-                                checked={data.customer_can_reset_password}
+                                description="Jika aktif, customer bisa menggunakan fitur lupa password dan recovery password."
+                                checked={data.allow_password_reset}
                                 onChange={(val) =>
-                                    setData('customer_can_reset_password', val)
+                                    setData('allow_password_reset', val)
                                 }
                             />
 
                             <SwitchField
                                 label="Require Email Verification"
-                                description="Customers must verify email before activation."
-                                checked={data.customer_can_verify_email}
+                                description="Jika aktif, customer harus verifikasi email sebelum bisa mengakses dashboard."
+                                checked={data.require_email_verification}
                                 onChange={(val) =>
-                                    setData('customer_can_verify_email', val)
+                                    setData('require_email_verification', val)
                                 }
                             />
                         </div>
@@ -184,11 +184,11 @@ Customer.layout = {
     breadcrumbs: [
         {
             title: 'Pengaturan',
-            href: '/dashboard/config/main',
+            href: '/my-admin/dashboard/config/main',
         },
         {
             title: 'Customer',
-            href: '/dashboard/config/customer',
+            href: '/my-admin/dashboard/config/customer',
         },
     ],
 };

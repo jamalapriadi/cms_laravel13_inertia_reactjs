@@ -125,7 +125,10 @@ class ProductStockUnitController extends Controller
             }
         });
 
-        if (str_contains(url()->previous(), '/dashboard/ecommerce/product-stock-units/create')) {
+        if (
+            str_contains(url()->previous(), '/my-admin/dashboard/ecommerce/product-stock-units/create')
+            || str_contains(url()->previous(), '/dashboard/ecommerce/product-stock-units/create')
+        ) {
             return redirect()->route('product-stock-units.index')->with('success', 'Stock unit added successfully.');
         }
 
@@ -184,7 +187,10 @@ class ProductStockUnitController extends Controller
             }
         });
 
-        if (str_contains(url()->previous(), "/dashboard/ecommerce/product-stock-units/{$productStockUnit->id}/edit")) {
+        if (
+            str_contains(url()->previous(), "/my-admin/dashboard/ecommerce/product-stock-units/{$productStockUnit->id}/edit")
+            || str_contains(url()->previous(), "/dashboard/ecommerce/product-stock-units/{$productStockUnit->id}/edit")
+        ) {
             return redirect()->route('product-stock-units.index')->with('success', 'Stock unit updated successfully.');
         }
 

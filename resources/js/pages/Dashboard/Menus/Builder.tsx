@@ -82,7 +82,7 @@ export default function Builder({
         setSaving(true);
 
         router.put(
-            `/dashboard/menus/${menu.id}/builder`,
+            `/my-admin/dashboard/menus/${menu.id}/builder`,
             { items: tree },
             {
                 preserveScroll: true,
@@ -150,7 +150,7 @@ export default function Builder({
 
 Builder.layout = {
     breadcrumbs: [
-        { title: 'Menus', href: '/dashboard/menus' },
+        { title: 'Menus', href: '/my-admin/dashboard/menus' },
         { title: 'Builder', href: '#' },
     ],
 };

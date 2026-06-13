@@ -41,7 +41,7 @@ function Index(_a) {
         setIsImportDialogOpen(false);
     };
     var downloadImportTemplate = function () {
-        window.location.href = '/dashboard/ecommerce/products/template';
+        window.location.href = '/my-admin/dashboard/ecommerce/products/template';
     };
     var triggerImport = function () {
         var _a;
@@ -53,7 +53,7 @@ function Index(_a) {
         if (!file) {
             return;
         }
-        react_1.router.post('/dashboard/ecommerce/products/import', { file: file }, {
+        react_1.router.post('/my-admin/dashboard/ecommerce/products/import', { file: file }, {
             forceFormData: true,
             preserveState: true,
             onFinish: function () {
@@ -70,13 +70,13 @@ function Index(_a) {
             params.append('category_id', categoryId);
         if (brandId)
             params.append('brand_id', brandId);
-        window.location.href = "/dashboard/ecommerce/products/export".concat(params.toString() ? "?".concat(params.toString()) : '');
+        window.location.href = "/my-admin/dashboard/ecommerce/products/export".concat(params.toString() ? "?".concat(params.toString()) : '');
     };
     /**
      * FILTER
      */
     var applyFilter = function () {
-        react_1.router.get('/dashboard/ecommerce/products', {
+        react_1.router.get('/my-admin/dashboard/ecommerce/products', {
             search: search,
             category_id: categoryId,
             brand_id: brandId,
@@ -92,7 +92,7 @@ function Index(_a) {
         if (!deletingId) {
             return;
         }
-        react_1.router.delete("/dashboard/ecommerce/products/".concat(deletingId), {
+        react_1.router.delete("/my-admin/dashboard/ecommerce/products/".concat(deletingId), {
             onFinish: function () { return setDeletingId(null); },
         });
     };
@@ -146,13 +146,13 @@ function Index(_a) {
         {
             label: 'Action',
             render: function (row) { return (<div className="flex flex-wrap gap-2">
-                    <react_1.Link href={"/dashboard/ecommerce/products/".concat(row.id)}>
+                    <react_1.Link href={"/my-admin/dashboard/ecommerce/products/".concat(row.id)}>
                         <button_1.Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/5">
                             Detail
                         </button_1.Button>
                     </react_1.Link>
 
-                    <react_1.Link href={"/dashboard/ecommerce/products/".concat(row.id, "/edit")}>
+                    <react_1.Link href={"/my-admin/dashboard/ecommerce/products/".concat(row.id, "/edit")}>
                         <button_1.Button size="sm" variant="secondary">
                             Edit
                         </button_1.Button>
@@ -187,7 +187,7 @@ function Index(_a) {
                             Import Excel
                         </button_1.Button>
 
-                        <react_1.Link href="/dashboard/ecommerce/products/create">
+                        <react_1.Link href="/my-admin/dashboard/ecommerce/products/create">
                             <button_1.Button>Add Product</button_1.Button>
                         </react_1.Link>
                     </div>

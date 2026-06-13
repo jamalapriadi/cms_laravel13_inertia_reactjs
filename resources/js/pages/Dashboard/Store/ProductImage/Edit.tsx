@@ -72,7 +72,7 @@ export default function Edit({ productImage: initialImage, products }: Props) {
      */
     const onSubmit = (data: ImageFormData) => {
         router.post(
-            `/dashboard/ecommerce/product-images/${initialImage.id}`,
+            `/my-admin/dashboard/ecommerce/product-images/${initialImage.id}`,
             {
                 _method: 'put',
                 ...data,
@@ -228,7 +228,7 @@ export default function Edit({ productImage: initialImage, products }: Props) {
                             variant="outline"
                             onClick={() =>
                                 router.visit(
-                                    '/dashboard/ecommerce/product-images',
+                                    '/my-admin/dashboard/ecommerce/product-images',
                                 )
                             }
                         >

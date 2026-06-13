@@ -66,7 +66,7 @@ export default function Create({ typeOptions, positionOptions }: Props) {
             end_at: current.end_at || null,
         }));
 
-        post('/dashboard/ecommerce/banner-slides', { forceFormData: true });
+        post('/my-admin/dashboard/ecommerce/banner-slides', { forceFormData: true });
     };
 
     return (
@@ -75,7 +75,7 @@ export default function Create({ typeOptions, positionOptions }: Props) {
 
             <div className="container mx-auto max-w-4xl space-y-8 px-6 py-8">
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard/ecommerce/banner-slides">
+                    <Link href="/my-admin/dashboard/ecommerce/banner-slides">
                         <Button variant="outline" size="icon">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
@@ -241,7 +241,7 @@ export default function Create({ typeOptions, positionOptions }: Props) {
                     </div>
 
                     <div className="flex justify-end gap-3">
-                        <Link href="/dashboard/ecommerce/banner-slides">
+                        <Link href="/my-admin/dashboard/ecommerce/banner-slides">
                             <Button type="button" variant="outline">
                                 Cancel
                             </Button>

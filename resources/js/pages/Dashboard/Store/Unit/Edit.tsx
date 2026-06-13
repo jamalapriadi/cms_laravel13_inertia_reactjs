@@ -61,7 +61,7 @@ export default function Edit({ unit }: Props) {
      * SUBMIT
      */
     const onSubmit = (data: UnitFormData) => {
-        router.put(`/dashboard/units/${unit.id}`, data, {
+        router.put(`/my-admin/dashboard/units/${unit.id}`, data, {
             preserveScroll: true,
             onStart: () => {
                 setProcessing(true);
@@ -178,7 +178,7 @@ export default function Edit({ unit }: Props) {
                         <Button
                             type="button"
                             variant="secondary"
-                            onClick={() => router.visit('/dashboard/units')}
+                            onClick={() => router.visit('/my-admin/dashboard/units')}
                         >
                             Cancel
                         </Button>

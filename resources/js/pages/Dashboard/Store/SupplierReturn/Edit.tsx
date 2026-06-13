@@ -47,7 +47,7 @@ export default function Edit({ supplierReturn, suppliers, stockUnits }: Props) {
                 suppliers={suppliers}
                 stockUnits={stockUnits}
                 initialData={initialData}
-                submitUrl={`/dashboard/ecommerce/supplier-returns/${supplierReturn.id}`}
+                submitUrl={`/my-admin/dashboard/ecommerce/supplier-returns/${supplierReturn.id}`}
                 method="put"
                 title="Edit Retur Barang"
                 description="Ubah draft retur barang sebelum transaksi diselesaikan."

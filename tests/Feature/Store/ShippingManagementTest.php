@@ -91,7 +91,7 @@ test('authenticated user can view shipping list with metrics', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/shipping');
+        ->get('/my-admin/dashboard/ecommerce/shipping');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -129,7 +129,7 @@ test('user can filter shipping records', function () {
 
     // Filter by courier = jne
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/shipping?courier=jne');
+        ->get('/my-admin/dashboard/ecommerce/shipping?courier=jne');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -140,7 +140,7 @@ test('user can filter shipping records', function () {
 
     // Filter by search = Bob
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/shipping?search=Bob');
+        ->get('/my-admin/dashboard/ecommerce/shipping?search=Bob');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -158,7 +158,7 @@ test('user can create shipping record and trigger order sync', function () {
     $this->assertEquals('pending', $order->status);
 
     $response = $this->actingAs($user)
-        ->post('/dashboard/ecommerce/shipping', [
+        ->post('/my-admin/dashboard/ecommerce/shipping', [
             'order_id' => $order->id,
             'courier' => 'sicepat',
             'tracking_number' => 'REG999',
@@ -167,7 +167,7 @@ test('user can create shipping record and trigger order sync', function () {
             'shipping_address' => 'Surabaya',
         ]);
 
-    $response->assertRedirect('/dashboard/ecommerce/shipping');
+    $response->assertRedirect('/my-admin/dashboard/ecommerce/shipping');
 
     $this->assertDatabaseHas('shippings', [
         'order_id' => $order->id,
@@ -195,7 +195,7 @@ test('user can update shipping status to delivered and sync order to completed',
     ]);
 
     $response = $this->actingAs($user)
-        ->put("/dashboard/ecommerce/shipping/{$shipping->id}", [
+        ->put("/my-admin/dashboard/ecommerce/shipping/{$shipping->id}", [
             'order_id' => $order->id,
             'courier' => 'jne',
             'tracking_number' => 'JNE444',
@@ -204,7 +204,7 @@ test('user can update shipping status to delivered and sync order to completed',
             'shipping_address' => 'Jakarta',
         ]);
 
-    $response->assertRedirect('/dashboard/ecommerce/shipping');
+    $response->assertRedirect('/my-admin/dashboard/ecommerce/shipping');
 
     $this->assertDatabaseHas('shippings', [
         'id' => $shipping->id,
@@ -234,8 +234,8 @@ test('user can delete a shipping record', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->delete("/dashboard/ecommerce/shipping/{$shipping->id}");
+        ->delete("/my-admin/dashboard/ecommerce/shipping/{$shipping->id}");
 
-    $response->assertRedirect('/dashboard/ecommerce/shipping');
+    $response->assertRedirect('/my-admin/dashboard/ecommerce/shipping');
     $this->assertDatabaseMissing('shippings', ['id' => $shipping->id]);
 });

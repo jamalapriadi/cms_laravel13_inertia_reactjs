@@ -16,6 +16,25 @@ interface MimeType {
     value: boolean;
 }
 
+interface MediaFormData {
+    thumbnail_size_w: string;
+    thumbnail_size_h: string;
+    medium_size_w: string;
+    medium_size_h: string;
+    large_size_w: string;
+    large_size_h: string;
+    max_upload_file: string;
+    upload_mimetype: MimeType[];
+}
+
+type SizeField =
+    | 'thumbnail_size_w'
+    | 'thumbnail_size_h'
+    | 'medium_size_w'
+    | 'medium_size_h'
+    | 'large_size_w'
+    | 'large_size_h';
+
 export default function Media({ options }: Props) {
     const [initialized, setInitialized] = useState(false);
     const [newMime, setNewMime] = useState('');
@@ -29,7 +48,7 @@ export default function Media({ options }: Props) {
         { key: 'application/pdf', value: false },
     ];
 
-    const { data, setData, post, processing } = useForm({
+    const { data, setData, post, processing } = useForm<MediaFormData>({
         thumbnail_size_w: '',
         thumbnail_size_h: '',
         medium_size_w: '',
@@ -37,8 +56,26 @@ export default function Media({ options }: Props) {
         large_size_w: '',
         large_size_h: '',
         max_upload_file: '',
-        upload_mimetype: [] as MimeType[],
+        upload_mimetype: [],
     });
+
+    const sizeSections: Array<{ title: string; w: SizeField; h: SizeField }> = [
+        {
+            title: 'Thumbnail Size',
+            w: 'thumbnail_size_w',
+            h: 'thumbnail_size_h',
+        },
+        {
+            title: 'Medium Size',
+            w: 'medium_size_w',
+            h: 'medium_size_h',
+        },
+        {
+            title: 'Large Size',
+            w: 'large_size_w',
+            h: 'large_size_h',
+        },
+    ];
 
     /**
      * ✅ Mapping options → form state
@@ -95,7 +132,7 @@ export default function Media({ options }: Props) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        post('/dashboard/options', {
+        post('/my-admin/dashboard/options', {
             preserveScroll: true,
             onStart: () => toast.loading('Saving...', { id: 'save' }),
             onSuccess: () =>
@@ -172,23 +209,7 @@ export default function Media({ options }: Props) {
 
                     <form onSubmit={submit} className="space-y-12">
                         {/* Image Sizes */}
-                        {[
-                            {
-                                title: 'Thumbnail Size',
-                                w: 'thumbnail_size_w',
-                                h: 'thumbnail_size_h',
-                            },
-                            {
-                                title: 'Medium Size',
-                                w: 'medium_size_w',
-                                h: 'medium_size_h',
-                            },
-                            {
-                                title: 'Large Size',
-                                w: 'large_size_w',
-                                h: 'large_size_h',
-                            },
-                        ].map((section) => (
+                        {sizeSections.map((section) => (
                             <section
                                 key={section.title}
                                 className="grid grid-cols-3 gap-8"
@@ -203,23 +224,17 @@ export default function Media({ options }: Props) {
                                     <Input
                                         type="number"
                                         placeholder="Width"
-                                        value={data[section.w] as string}
+                                        value={data[section.w]}
                                         onChange={(e) =>
-                                            setData(
-                                                section.w as any,
-                                                e.target.value,
-                                            )
+                                            setData(section.w, e.target.value)
                                         }
                                     />
                                     <Input
                                         type="number"
                                         placeholder="Height"
-                                        value={data[section.h] as string}
+                                        value={data[section.h]}
                                         onChange={(e) =>
-                                            setData(
-                                                section.h as any,
-                                                e.target.value,
-                                            )
+                                            setData(section.h, e.target.value)
                                         }
                                     />
                                 </div>
@@ -340,11 +355,11 @@ Media.layout = {
     breadcrumbs: [
         {
             title: 'Pengaturan',
-            href: '/dashboard/config/main',
+            href: '/my-admin/dashboard/config/main',
         },
         {
             title: 'Media',
-            href: '/dashboard/config/media',
+            href: '/my-admin/dashboard/config/media',
         },
     ],
 };

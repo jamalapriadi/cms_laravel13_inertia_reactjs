@@ -36,7 +36,7 @@ interface Props {
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Kecamatans', href: '/dashboard/kecamatans' },
+    { title: 'Kecamatans', href: '/my-admin/dashboard/kecamatans' },
 ];
 
 export default function Index({
@@ -52,7 +52,7 @@ export default function Index({
 
     function applyFilter() {
         router.get(
-            '/dashboard/kecamatans',
+            '/my-admin/dashboard/kecamatans',
             {
                 search,
                 province_id: provinceId,
@@ -65,7 +65,7 @@ export default function Index({
     function handleDelete() {
         if (!deletingId) return;
 
-        router.delete(`/dashboard/kecamatans/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/kecamatans/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     }
@@ -99,7 +99,7 @@ export default function Index({
             label: 'Action',
             render: (row) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/kecamatans/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/kecamatans/${row.id}/edit`}>
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>
@@ -152,7 +152,7 @@ export default function Index({
                 {/* HEADER */}
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Kecamatans</h1>
-                    <Link href="/dashboard/kecamatans/create">
+                    <Link href="/my-admin/dashboard/kecamatans/create">
                         <Button>Add Kecamatan</Button>
                     </Link>
                 </div>

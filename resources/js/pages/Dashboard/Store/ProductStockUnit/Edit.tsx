@@ -98,7 +98,7 @@ export default function Edit({ stockUnit, products }: Props) {
                     : Number(formData.battery_health),
             grade: formData.grade || null,
         }));
-        put(`/dashboard/ecommerce/product-stock-units/${stockUnit.id}`);
+        put(`/my-admin/dashboard/ecommerce/product-stock-units/${stockUnit.id}`);
     };
 
     return (
@@ -107,7 +107,7 @@ export default function Edit({ stockUnit, products }: Props) {
 
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard/ecommerce/product-stock-units">
+                    <Link href="/my-admin/dashboard/ecommerce/product-stock-units">
                         <Button variant="outline" size="sm">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
@@ -322,7 +322,7 @@ export default function Edit({ stockUnit, products }: Props) {
                     </div>
 
                     <div className="flex justify-between gap-3">
-                        <Link href="/dashboard/ecommerce/product-stock-units">
+                        <Link href="/my-admin/dashboard/ecommerce/product-stock-units">
                             <Button type="button" variant="outline">
                                 Cancel
                             </Button>

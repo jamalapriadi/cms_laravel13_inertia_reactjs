@@ -64,7 +64,7 @@ export default function Create({ products = [], selectedProductId }: Props) {
     };
 
     const submit = () => {
-        router.post('/dashboard/ecommerce/product-variants', payload, {
+        router.post('/my-admin/dashboard/ecommerce/product-variants', payload, {
             preserveScroll: true,
             onStart: () => {
                 setProcessing(true);

@@ -8,6 +8,12 @@ test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
 
     $response->assertOk();
+    expect(route('login', absolute: false))->toBe('/my-admin/login');
+});
+
+test('legacy login path redirects to the new admin login path', function () {
+    $this->get('/login')
+        ->assertRedirect('/my-admin/login');
 });
 
 test('users can authenticate using the login screen', function () {
@@ -44,6 +50,7 @@ test('users with two factor enabled are redirected to two factor challenge', fun
     ]);
 
     $response->assertRedirect(route('two-factor.login'));
+    expect(route('two-factor.login', absolute: false))->toBe('/my-admin/two-factor-challenge');
     $response->assertSessionHas('login.id', $user->id);
     $this->assertGuest();
 });

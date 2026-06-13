@@ -40,11 +40,11 @@ interface Props {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Kelurahans',
-        href: '/dashboard/kelurahans',
+        href: '/my-admin/dashboard/kelurahans',
     },
     {
         title: 'Create',
-        href: '/dashboard/kelurahans/create',
+        href: '/my-admin/dashboard/kelurahans/create',
     },
 ];
 
@@ -93,7 +93,7 @@ export default function Create({ provinces }: Props) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        post('/dashboard/kelurahans');
+        post('/my-admin/dashboard/kelurahans');
     }
 
     return (

@@ -70,7 +70,7 @@ export default function Show({
 }: Props) {
     const toggleLogin = () => {
         router.patch(
-            `/dashboard/ecommerce/customers/${customer.id}/toggle-login`,
+            `/my-admin/dashboard/ecommerce/customers/${customer.id}/toggle-login`,
             {},
             { preserveScroll: true },
         );
@@ -78,7 +78,7 @@ export default function Show({
 
     const resetPassword = () => {
         router.post(
-            `/dashboard/ecommerce/customers/${customer.id}/reset-password`,
+            `/my-admin/dashboard/ecommerce/customers/${customer.id}/reset-password`,
             {},
             { preserveScroll: true },
         );
@@ -91,7 +91,7 @@ export default function Show({
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                        <Link href="/dashboard/ecommerce/customers">
+                        <Link href="/my-admin/dashboard/ecommerce/customers">
                             <Button variant="outline" size="icon">
                                 <ArrowLeft className="h-4 w-4" />
                             </Button>
@@ -190,7 +190,7 @@ export default function Show({
                                         <tr key={order.id}>
                                             <td className="py-3">
                                                 <Link
-                                                    href={`/dashboard/orders/${order.id}`}
+                                                    href={`/my-admin/dashboard/orders/${order.id}`}
                                                     className="font-semibold text-primary hover:underline"
                                                 >
                                                     {order.invoice_number}
@@ -232,7 +232,7 @@ export default function Show({
                         {recentCarts.map((cart) => (
                             <Link
                                 key={cart.id}
-                                href={`/dashboard/ecommerce/carts/${cart.id}`}
+                                href={`/my-admin/dashboard/ecommerce/carts/${cart.id}`}
                                 className="rounded-lg border p-4 transition hover:bg-muted/50"
                             >
                                 <p className="font-mono text-xs font-semibold">

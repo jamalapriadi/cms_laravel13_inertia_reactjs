@@ -99,7 +99,7 @@ export default function Index({
     });
 
     const applyFilter = () => {
-        get('/dashboard/pages', {
+        get('/my-admin/dashboard/pages', {
             preserveState: true,
             preserveScroll: true,
         });
@@ -338,7 +338,7 @@ export default function Index({
 }
 
 Index.layout = (page: React.ReactNode) => (
-    <AppLayout breadcrumbs={[{ title: 'Pages', href: '/dashboard/pages' }]}>
+    <AppLayout breadcrumbs={[{ title: 'Pages', href: '/my-admin/dashboard/pages' }]}>
         {page}
     </AppLayout>
 );

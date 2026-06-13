@@ -97,7 +97,7 @@ export default function Create({ categories, brands, units }: Props) {
     }, [hasVariant, setValue]);
 
     const onSubmit = (data: ProductFormData) => {
-        router.post('/dashboard/ecommerce/products', data, {
+        router.post('/my-admin/dashboard/ecommerce/products', data, {
             forceFormData: true,
             preserveScroll: true,
             onStart: () => {
@@ -341,7 +341,7 @@ export default function Create({ categories, brands, units }: Props) {
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/dashboard/ecommerce/products')
+                                router.visit('/my-admin/dashboard/ecommerce/products')
                             }
                         >
                             Cancel

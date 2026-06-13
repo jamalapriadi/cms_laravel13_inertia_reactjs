@@ -27,18 +27,18 @@ export default function Edit({ permission }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Permissions',
-            href: '/dashboard/permissions',
+            href: '/my-admin/dashboard/permissions',
         },
         {
             title: 'Edit',
-            href: `/dashboard/permissions/${permission.id}/edit`,
+            href: `/my-admin/dashboard/permissions/${permission.id}/edit`,
         },
     ];
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
 
-        put(`/dashboard/permissions/${permission.id}`, {
+        put(`/my-admin/dashboard/permissions/${permission.id}`, {
             onStart: () => toast.loading('Updating permission...'),
             onSuccess: () => {
                 toast.dismiss();

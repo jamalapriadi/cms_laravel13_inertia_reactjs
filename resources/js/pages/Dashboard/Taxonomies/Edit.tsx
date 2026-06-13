@@ -55,7 +55,7 @@ export default function Edit({ taxonomy, item }: Props) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        put(`/dashboard/taxonomies/${taxonomy}/${item.id}`, {
+        put(`/my-admin/dashboard/taxonomies/${taxonomy}/${item.id}`, {
             onStart: () => toast.loading('Updating...', { id: 'update' }),
             onSuccess: () =>
                 toast.success('Data berhasil diupdate', { id: 'update' }),
@@ -158,7 +158,7 @@ Edit.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             {
                 title: 'Taxonomies',
-                href: '/dashboard/taxonomies/tags',
+                href: '/my-admin/dashboard/taxonomies/tags',
             },
             {
                 title: 'Edit',

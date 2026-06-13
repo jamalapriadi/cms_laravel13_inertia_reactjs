@@ -61,7 +61,7 @@ export default function Index({
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/product-variants',
+            '/my-admin/dashboard/ecommerce/product-variants',
             { search, product_id: productId },
             { preserveState: true, replace: true },
         );
@@ -98,7 +98,7 @@ export default function Index({
             render: (row: ProductVariant) => (
                 <div className="flex gap-2">
                     <Link
-                        href={`/dashboard/ecommerce/product-variants/${row.id}/edit`}
+                        href={`/my-admin/dashboard/ecommerce/product-variants/${row.id}/edit`}
                     >
                         <Button size="icon" variant="secondary" title="Edit">
                             <Pencil className="h-4 w-4" />
@@ -131,7 +131,7 @@ export default function Index({
                         </p>
                     </div>
                     <Link
-                        href={`/dashboard/ecommerce/product-variants/create${productId ? `?product_id=${productId}` : ''}`}
+                        href={`/my-admin/dashboard/ecommerce/product-variants/create${productId ? `?product_id=${productId}` : ''}`}
                     >
                         <Button>
                             <Plus className="h-4 w-4" />
@@ -210,7 +210,7 @@ export default function Index({
                             onClick={() =>
                                 deletingId &&
                                 router.delete(
-                                    `/dashboard/ecommerce/product-variants/${deletingId}`,
+                                    `/my-admin/dashboard/ecommerce/product-variants/${deletingId}`,
                                     { onFinish: () => setDeletingId(null) },
                                 )
                             }

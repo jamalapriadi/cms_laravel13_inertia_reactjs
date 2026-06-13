@@ -124,7 +124,7 @@ export default function General({ options }: Props) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        post('/dashboard/options', {
+        post('/my-admin/dashboard/options', {
             forceFormData: true,
             preserveScroll: true,
             onStart: () => toast.loading('Saving...', { id: 'save' }),
@@ -654,11 +654,11 @@ General.layout = {
     breadcrumbs: [
         {
             title: 'Pengaturan',
-            href: '/dashboard/config/main', // ❗ FIXED (bukan ConfigMain())
+            href: '/my-admin/dashboard/config/main', // ❗ FIXED (bukan ConfigMain())
         },
         {
             title: 'General',
-            href: '/dashboard/config/general', // ❗ FIXED (bukan ConfigMain())
+            href: '/my-admin/dashboard/config/general', // ❗ FIXED (bukan ConfigMain())
         },
     ],
 };

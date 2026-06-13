@@ -68,7 +68,7 @@ export default function Edit({
                 variants={variants}
                 networks={networks}
                 initialData={initialData}
-                submitUrl={`/dashboard/ecommerce/incoming-goods/${incomingGoods.id}`}
+                submitUrl={`/my-admin/dashboard/ecommerce/incoming-goods/${incomingGoods.id}`}
                 method="put"
                 title="Edit Barang Masuk"
                 description="Ubah draft transaksi barang masuk sebelum diselesaikan."

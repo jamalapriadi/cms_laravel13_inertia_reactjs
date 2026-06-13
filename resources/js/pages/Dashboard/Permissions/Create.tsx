@@ -17,18 +17,18 @@ export default function Create() {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Permissions',
-            href: '/dashboard/permissions',
+            href: '/my-admin/dashboard/permissions',
         },
         {
             title: 'Create',
-            href: '/dashboard/permissions/create',
+            href: '/my-admin/dashboard/permissions/create',
         },
     ];
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
 
-        post('/dashboard/permissions', {
+        post('/my-admin/dashboard/permissions', {
             onStart: () => toast.loading('Saving permission...'),
             onSuccess: () => {
                 toast.dismiss();

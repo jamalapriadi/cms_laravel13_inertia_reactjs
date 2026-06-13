@@ -40,12 +40,12 @@ export default function Index({ permissions, filters }: Props) {
     const canDelete = hasPermission('permissions.delete');
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Permissions', href: '/dashboard/permissions' },
+        { title: 'Permissions', href: '/my-admin/dashboard/permissions' },
     ];
 
     function applyFilter() {
         router.get(
-            '/dashboard/permissions',
+            '/my-admin/dashboard/permissions',
             { search },
             { preserveState: true },
         );
@@ -56,7 +56,7 @@ export default function Index({ permissions, filters }: Props) {
 
         const toastId = toast.loading('Deleting permission...');
 
-        router.delete(`/dashboard/permissions/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/permissions/${deletingId}`, {
             onSuccess: () => toast.success('Deleted!', { id: toastId }),
             onError: () => toast.error('Failed!', { id: toastId }),
             onFinish: () => setDeletingId(null),
@@ -79,7 +79,7 @@ export default function Index({ permissions, filters }: Props) {
                           <div className="flex gap-2">
                               {canEdit && (
                                   <Link
-                                      href={`/dashboard/permissions/${row.id}/edit`}
+                                      href={`/my-admin/dashboard/permissions/${row.id}/edit`}
                                   >
                                       <Button size="sm" variant="secondary">
                                           Edit
@@ -139,7 +139,7 @@ export default function Index({ permissions, filters }: Props) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Permissions</h1>
                     {canCreate && (
-                        <Link href="/dashboard/permissions/create">
+                        <Link href="/my-admin/dashboard/permissions/create">
                             <Button>Add New Permission</Button>
                         </Link>
                     )}

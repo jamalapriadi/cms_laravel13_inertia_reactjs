@@ -60,7 +60,7 @@ export default function Index({ specifications, products, filters }: Props) {
      */
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/product-specifications',
+            '/my-admin/dashboard/ecommerce/product-specifications',
             {
                 search,
                 product_id: productId,
@@ -81,7 +81,7 @@ export default function Index({ specifications, products, filters }: Props) {
         }
 
         router.delete(
-            `/dashboard/ecommerce/product-specifications/${deletingId}`,
+            `/my-admin/dashboard/ecommerce/product-specifications/${deletingId}`,
             {
                 onFinish: () => setDeletingId(null),
             },
@@ -119,7 +119,7 @@ export default function Index({ specifications, products, filters }: Props) {
             render: (row: ProductSpecification) => (
                 <div className="flex gap-2">
                     <Link
-                        href={`/dashboard/ecommerce/product-specifications/${row.id}/edit`}
+                        href={`/my-admin/dashboard/ecommerce/product-specifications/${row.id}/edit`}
                     >
                         <Button size="sm" variant="secondary">
                             Edit
@@ -156,7 +156,7 @@ export default function Index({ specifications, products, filters }: Props) {
                     </div>
 
                     <Link
-                        href={`/dashboard/ecommerce/product-specifications/create${productId ? `?product_id=${productId}` : ''}`}
+                        href={`/my-admin/dashboard/ecommerce/product-specifications/create${productId ? `?product_id=${productId}` : ''}`}
                     >
                         <Button>Add Specification</Button>
                     </Link>

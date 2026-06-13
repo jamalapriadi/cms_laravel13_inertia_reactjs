@@ -46,7 +46,7 @@ export default function Create() {
      * SUBMIT
      */
     const onSubmit = (data: UnitFormData) => {
-        router.post('/dashboard/units', data, {
+        router.post('/my-admin/dashboard/units', data, {
             preserveScroll: true,
             onStart: () => {
                 setProcessing(true);
@@ -163,7 +163,7 @@ export default function Create() {
                         <Button
                             type="button"
                             variant="secondary"
-                            onClick={() => router.visit('/dashboard/units')}
+                            onClick={() => router.visit('/my-admin/dashboard/units')}
                         >
                             Cancel
                         </Button>

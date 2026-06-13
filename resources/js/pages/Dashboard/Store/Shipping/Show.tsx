@@ -50,7 +50,7 @@ interface Props {
 
 export default function Show({ shipping }: Props) {
     const handlePrintReceipt = () => {
-        window.open(`/dashboard/orders/${shipping.order_id}/receipt`, '_blank');
+        window.open(`/my-admin/dashboard/orders/${shipping.order_id}/receipt`, '_blank');
     };
 
     const getStatusStep = () => {
@@ -100,7 +100,7 @@ export default function Show({ shipping }: Props) {
                 {/* HEADER */}
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <Link href="/dashboard/ecommerce/shipping">
+                        <Link href="/my-admin/dashboard/ecommerce/shipping">
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -124,7 +124,7 @@ export default function Show({ shipping }: Props) {
 
                     <div className="flex items-center gap-3">
                         <Link
-                            href={`/dashboard/ecommerce/shipping/${shipping.id}/edit`}
+                            href={`/my-admin/dashboard/ecommerce/shipping/${shipping.id}/edit`}
                         >
                             <Button variant="outline">Edit Details</Button>
                         </Link>
@@ -320,7 +320,7 @@ export default function Show({ shipping }: Props) {
 
                                 <div className="pt-2">
                                     <Link
-                                        href={`/dashboard/orders/${shipping.order_id}`}
+                                        href={`/my-admin/dashboard/orders/${shipping.order_id}`}
                                     >
                                         <Button
                                             variant="outline"

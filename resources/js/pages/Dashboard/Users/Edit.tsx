@@ -46,8 +46,8 @@ export default function Edit({ user, roles }: Props) {
     });
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Users', href: '/dashboard/users' },
-        { title: 'Edit', href: `/dashboard/users/${user.id}/edit` },
+        { title: 'Users', href: '/my-admin/dashboard/users' },
+        { title: 'Edit', href: `/my-admin/dashboard/users/${user.id}/edit` },
     ];
 
     function toggleRole(roleName: string) {
@@ -74,7 +74,7 @@ export default function Edit({ user, roles }: Props) {
                   },
         );
 
-        put(`/dashboard/users/${user.id}`, {
+        put(`/my-admin/dashboard/users/${user.id}`, {
             onStart: () => toast.loading('Updating user...'),
             onSuccess: () => {
                 toast.dismiss();

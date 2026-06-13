@@ -80,7 +80,7 @@ export default function Edit({ variantItem, units, productOptions }: Props) {
 
     const submit = () => {
         router.put(
-            `/dashboard/ecommerce/variant-items/${variantItem.id}`,
+            `/my-admin/dashboard/ecommerce/variant-items/${variantItem.id}`,
             form,
             {
                 preserveScroll: true,

@@ -51,7 +51,7 @@ export default function Index({ units, filters }: Props) {
      */
     const applyFilter = () => {
         router.get(
-            '/dashboard/units',
+            '/my-admin/dashboard/units',
             { search },
             {
                 preserveState: true,
@@ -68,7 +68,7 @@ export default function Index({ units, filters }: Props) {
             return;
         }
 
-        router.delete(`/dashboard/units/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/units/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -117,7 +117,7 @@ export default function Index({ units, filters }: Props) {
             label: 'Action',
             render: (row: Unit) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/units/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/units/${row.id}/edit`}>
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>
@@ -150,7 +150,7 @@ export default function Index({ units, filters }: Props) {
                         </p>
                     </div>
 
-                    <Link href="/dashboard/units/create">
+                    <Link href="/my-admin/dashboard/units/create">
                         <Button>Add Unit</Button>
                     </Link>
                 </div>

@@ -83,7 +83,7 @@ test('authenticated user can view payment list with summary metrics', function (
     ]);
 
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/payments');
+        ->get('/my-admin/dashboard/ecommerce/payments');
 
     $response->assertSuccessful();
     $response->assertSee('TRX-111111');
@@ -144,7 +144,7 @@ test('user can filter payments by status, method, and query terms', function () 
 
     // Filter by status = pending
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/payments?status=pending');
+        ->get('/my-admin/dashboard/ecommerce/payments?status=pending');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -155,7 +155,7 @@ test('user can filter payments by status, method, and query terms', function () 
 
     // Filter by payment_method = bank_transfer
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/payments?payment_method=bank_transfer');
+        ->get('/my-admin/dashboard/ecommerce/payments?payment_method=bank_transfer');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -166,7 +166,7 @@ test('user can filter payments by status, method, and query terms', function () 
 
     // Filter by search = Jane
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/payments?search=Jane');
+        ->get('/my-admin/dashboard/ecommerce/payments?search=Jane');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -204,7 +204,7 @@ test('user can view payment details', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->get("/dashboard/ecommerce/payments/{$payment->id}");
+        ->get("/my-admin/dashboard/ecommerce/payments/{$payment->id}");
 
     $response->assertSuccessful();
     $response->assertSee('TRX-BCA-123');

@@ -64,7 +64,7 @@ export default function Index({ payments, summary, filters }: Props) {
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/payments',
+            '/my-admin/dashboard/ecommerce/payments',
             {
                 search,
                 status,
@@ -82,7 +82,7 @@ export default function Index({ payments, summary, filters }: Props) {
         setStatus('');
         setMethod('');
         router.get(
-            '/dashboard/ecommerce/payments',
+            '/my-admin/dashboard/ecommerce/payments',
             {},
             {
                 preserveState: true,
@@ -139,7 +139,7 @@ export default function Index({ payments, summary, filters }: Props) {
             render: (row: Payment) =>
                 row.order ? (
                     <Link
-                        href={`/dashboard/orders/${row.order.id}`}
+                        href={`/my-admin/dashboard/orders/${row.order.id}`}
                         className="text-sm font-semibold text-primary hover:underline"
                     >
                         {row.order.invoice_number}
@@ -197,7 +197,7 @@ export default function Index({ payments, summary, filters }: Props) {
         {
             label: 'Actions',
             render: (row: Payment) => (
-                <Link href={`/dashboard/ecommerce/payments/${row.id}`}>
+                <Link href={`/my-admin/dashboard/ecommerce/payments/${row.id}`}>
                     <Button
                         size="sm"
                         variant="outline"

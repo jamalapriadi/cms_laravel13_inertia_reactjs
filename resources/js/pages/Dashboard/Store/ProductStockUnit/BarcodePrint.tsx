@@ -38,7 +38,7 @@ export default function BarcodePrint({ stockUnits, context }: Props) {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Link href="/dashboard/ecommerce/product-stock-units">
+                        <Link href="/my-admin/dashboard/ecommerce/product-stock-units">
                             <Button variant="outline" className="gap-2">
                                 <ArrowLeft className="h-4 w-4" />
                                 Back

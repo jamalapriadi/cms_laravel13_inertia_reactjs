@@ -33,14 +33,16 @@ interface Props {
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Kecamatans', href: '/dashboard/kecamatans' },
+    { title: 'Kecamatans', href: '/my-admin/dashboard/kecamatans' },
     { title: 'Edit', href: '#' },
 ];
 
 export default function Edit({ kecamatan, provinces }: Props) {
     const { data, setData, put, processing, errors } = useForm({
-        province_id: kecamatan.kabupaten?.province?.id || '',
-        kabupaten_id: kecamatan.kabupaten_id,
+        province_id: kecamatan.kabupaten?.province?.id
+            ? String(kecamatan.kabupaten.province.id)
+            : '',
+        kabupaten_id: String(kecamatan.kabupaten_id),
         name: kecamatan.name,
     });
 
@@ -73,7 +75,7 @@ export default function Edit({ kecamatan, provinces }: Props) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        put(`/dashboard/kecamatans/${kecamatan.id}`);
+        put(`/my-admin/dashboard/kecamatans/${kecamatan.id}`);
     }
 
     return (
@@ -180,7 +182,7 @@ export default function Edit({ kecamatan, provinces }: Props) {
 
                         {/* BUTTON */}
                         <div className="flex justify-between gap-3">
-                            <Link href="/dashboard/kecamatans">
+                            <Link href="/my-admin/dashboard/kecamatans">
                                 <Button variant="outline" disabled={processing}>
                                     Cancel
                                 </Button>

@@ -28,7 +28,7 @@ interface Props {
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Provinces', href: '/dashboard/provinces' },
+    { title: 'Provinces', href: '/my-admin/dashboard/provinces' },
 ];
 
 export default function Index({ provinces, filters }: Props) {
@@ -36,13 +36,13 @@ export default function Index({ provinces, filters }: Props) {
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
     function applyFilter() {
-        router.get('/dashboard/provinces', { search }, { preserveState: true });
+        router.get('/my-admin/dashboard/provinces', { search }, { preserveState: true });
     }
 
     const handleDelete = () => {
         const toastId = toast.loading('Deleting...');
 
-        router.delete(`/dashboard/provinces/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/provinces/${deletingId}`, {
             preserveScroll: true,
 
             onSuccess: () => {
@@ -75,7 +75,7 @@ export default function Index({ provinces, filters }: Props) {
             label: 'Action',
             render: (row) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/provinces/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/provinces/${row.id}/edit`}>
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>
@@ -123,7 +123,7 @@ export default function Index({ provinces, filters }: Props) {
                 {/* HEADER */}
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Provinces</h1>
-                    <Link href="/dashboard/provinces/create">
+                    <Link href="/my-admin/dashboard/provinces/create">
                         <Button>Add Province</Button>
                     </Link>
                 </div>

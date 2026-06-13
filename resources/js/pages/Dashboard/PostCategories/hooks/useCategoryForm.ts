@@ -30,7 +30,7 @@ export function useCategoryForm({
 
     const onSubmit = (values: CategoryFormValues) => {
         if (isEdit && categoryId) {
-            router.put(`/dashboard/post-categories/${categoryId}`, values, {
+            router.put(`/my-admin/dashboard/post-categories/${categoryId}`, values, {
                 preserveScroll: true,
 
                 onStart: () => toast.loading('Updating...', { id: 'category' }),
@@ -44,7 +44,7 @@ export function useCategoryForm({
                     }),
             });
         } else {
-            router.post('/dashboard/post-categories', values, {
+            router.post('/my-admin/dashboard/post-categories', values, {
                 preserveScroll: true,
 
                 onStart: () => toast.loading('Saving...', { id: 'category' }),

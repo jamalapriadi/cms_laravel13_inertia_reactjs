@@ -147,7 +147,7 @@ export default function Show({ collection, items, filters }: Props) {
 
         try {
             const response = await fetch(
-                `/dashboard/ecommerce/product-collections/options/products?query=${encodeURIComponent(keyword)}&limit=20`,
+                `/my-admin/dashboard/ecommerce/product-collections/options/products?query=${encodeURIComponent(keyword)}&limit=20`,
                 {
                     headers: {
                         Accept: 'application/json',
@@ -183,7 +183,7 @@ export default function Show({ collection, items, filters }: Props) {
 
     const applySearch = () => {
         router.get(
-            `/dashboard/ecommerce/product-collections/${collection.id}`,
+            `/my-admin/dashboard/ecommerce/product-collections/${collection.id}`,
             {
                 search: search || undefined,
             },
@@ -197,7 +197,7 @@ export default function Show({ collection, items, filters }: Props) {
     const handleAddItem = (event: React.FormEvent) => {
         event.preventDefault();
 
-        post(`/dashboard/ecommerce/product-collections/${collection.id}/items`, {
+        post(`/my-admin/dashboard/ecommerce/product-collections/${collection.id}/items`, {
             onSuccess: () => {
                 reset('product_id', 'variant_item_id', 'sort_order');
             },
@@ -208,7 +208,7 @@ export default function Show({ collection, items, filters }: Props) {
         const draftSort = sortDrafts[row.id] ?? row.sort_order;
 
         router.put(
-            `/dashboard/ecommerce/product-collections/${collection.id}/items/${row.id}`,
+            `/my-admin/dashboard/ecommerce/product-collections/${collection.id}/items/${row.id}`,
             {
                 product_id: row.product_id,
                 variant_item_id: row.variant_item_id,
@@ -226,7 +226,7 @@ export default function Show({ collection, items, filters }: Props) {
         }
 
         router.delete(
-            `/dashboard/ecommerce/product-collections/${collection.id}/items/${deletingId}`,
+            `/my-admin/dashboard/ecommerce/product-collections/${collection.id}/items/${deletingId}`,
             {
                 onFinish: () => setDeletingId(null),
             },
@@ -333,7 +333,7 @@ export default function Show({ collection, items, filters }: Props) {
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-4">
-                        <Link href="/dashboard/ecommerce/product-collections">
+                        <Link href="/my-admin/dashboard/ecommerce/product-collections">
                             <Button variant="outline" size="icon">
                                 <ArrowLeft className="h-4 w-4" />
                             </Button>
@@ -349,7 +349,7 @@ export default function Show({ collection, items, filters }: Props) {
                     </div>
 
                     <Link
-                        href={`/dashboard/ecommerce/product-collections/${collection.id}/edit`}
+                        href={`/my-admin/dashboard/ecommerce/product-collections/${collection.id}/edit`}
                     >
                         <Button variant="secondary">Edit Collection</Button>
                     </Link>

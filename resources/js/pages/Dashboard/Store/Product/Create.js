@@ -63,7 +63,7 @@ function Create(_a) {
         }
     }, [hasVariant, setValue]);
     var onSubmit = function (data) {
-        react_1.router.post('/dashboard/ecommerce/products', data, {
+        react_1.router.post('/my-admin/dashboard/ecommerce/products', data, {
             forceFormData: true,
             preserveScroll: true,
             onStart: function () {
@@ -232,7 +232,7 @@ function Create(_a) {
 
                     <div className="container flex justify-between">
                         <button_1.Button type="button" variant="outline" onClick={function () {
-            return react_1.router.visit('/dashboard/ecommerce/products');
+            return react_1.router.visit('/my-admin/dashboard/ecommerce/products');
         }}>
                             Cancel
                         </button_1.Button>

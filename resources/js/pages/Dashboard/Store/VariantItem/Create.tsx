@@ -66,7 +66,7 @@ export default function Create({ products, product, combinations }: Props) {
 
     const loadCombinations = () => {
         if (productId) {
-            router.get('/dashboard/ecommerce/variant-items/create', {
+            router.get('/my-admin/dashboard/ecommerce/variant-items/create', {
                 product_id: productId,
             });
         }
@@ -74,7 +74,7 @@ export default function Create({ products, product, combinations }: Props) {
 
     const submit = () => {
         router.post(
-            '/dashboard/ecommerce/variant-items',
+            '/my-admin/dashboard/ecommerce/variant-items',
             {
                 product_id: productId,
                 items,

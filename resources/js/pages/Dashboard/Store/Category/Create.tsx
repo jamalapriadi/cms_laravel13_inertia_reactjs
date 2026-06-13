@@ -61,7 +61,7 @@ export default function Create({ categories }: Props) {
      * SUBMIT
      */
     const onSubmit = (data: CategoryFormData) => {
-        router.post('/dashboard/ecommerce/categories', data, {
+        router.post('/my-admin/dashboard/ecommerce/categories', data, {
             preserveScroll: true,
             onStart: () => {
                 setProcessing(true);
@@ -210,7 +210,7 @@ export default function Create({ categories }: Props) {
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/dashboard/ecommerce/categories')
+                                router.visit('/my-admin/dashboard/ecommerce/categories')
                             }
                         >
                             Cancel

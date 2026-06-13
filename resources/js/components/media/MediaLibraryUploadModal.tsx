@@ -85,7 +85,7 @@ export default function MediaLibraryUploadModal({
                         )
                         ?.getAttribute('content');
 
-                    fetch('/dashboard/media/json', {
+                    fetch('/my-admin/dashboard/media/json', {
                         method: 'POST',
                         headers: csrfToken
                             ? { 'X-CSRF-TOKEN': csrfToken }

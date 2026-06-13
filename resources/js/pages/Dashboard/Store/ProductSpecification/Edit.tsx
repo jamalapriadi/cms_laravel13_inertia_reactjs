@@ -65,7 +65,7 @@ export default function Edit({ specification: initialSpec, products }: Props) {
      */
     const onSubmit = (data: SpecFormData) => {
         router.put(
-            `/dashboard/ecommerce/product-specifications/${initialSpec.id}`,
+            `/my-admin/dashboard/ecommerce/product-specifications/${initialSpec.id}`,
             data,
             {
                 preserveScroll: true,
@@ -174,7 +174,7 @@ export default function Edit({ specification: initialSpec, products }: Props) {
                             variant="outline"
                             onClick={() =>
                                 router.visit(
-                                    '/dashboard/ecommerce/product-specifications',
+                                    '/my-admin/dashboard/ecommerce/product-specifications',
                                 )
                             }
                         >

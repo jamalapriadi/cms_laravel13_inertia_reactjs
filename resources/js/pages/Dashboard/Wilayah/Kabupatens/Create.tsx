@@ -41,11 +41,11 @@ interface Props {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Kabupatens',
-        href: '/dashboard/kabupatens',
+        href: '/my-admin/dashboard/kabupatens',
     },
     {
         title: 'Create',
-        href: '/dashboard/kabupatens/create',
+        href: '/my-admin/dashboard/kabupatens/create',
     },
 ];
 
@@ -95,7 +95,7 @@ export default function Create({ provinces }: Props) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        post('/dashboard/kabupatens', {
+        post('/my-admin/dashboard/kabupatens', {
             onStart: () => toast.loading('Saving...'),
             onSuccess: () => toast.dismiss(),
             onError: () => toast.dismiss(),

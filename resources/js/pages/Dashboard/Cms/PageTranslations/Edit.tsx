@@ -598,7 +598,7 @@ export default function Edit({
                     </Card>
 
                     <div className="flex justify-end gap-3">
-                        <Link href="/dashboard/pages">
+                        <Link href="/my-admin/dashboard/pages">
                             <Button type="button" variant="outline">
                                 Back
                             </Button>
@@ -636,7 +636,7 @@ function Field({
 Edit.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
-            { title: 'Pages', href: '/dashboard/pages' },
+            { title: 'Pages', href: '/my-admin/dashboard/pages' },
             { title: 'Translations', href: '#' },
         ]}
     >

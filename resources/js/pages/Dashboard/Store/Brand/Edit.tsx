@@ -77,7 +77,7 @@ export default function Edit({ brand: initialBrand }: Props) {
             : brandData;
 
         router.post(
-            `/dashboard/brands/${initialBrand.id}`,
+            `/my-admin/dashboard/brands/${initialBrand.id}`,
             {
                 _method: 'put',
                 ...payload,
@@ -196,7 +196,7 @@ export default function Edit({ brand: initialBrand }: Props) {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/dashboard/brands')}
+                            onClick={() => router.visit('/my-admin/dashboard/brands')}
                         >
                             Cancel
                         </Button>

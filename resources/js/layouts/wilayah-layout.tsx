@@ -13,19 +13,19 @@ export default function WilayahLayout({ children }: Props) {
     const menus = [
         {
             label: 'Provinsi',
-            href: '/dashboard/provinces',
+            href: '/my-admin/dashboard/provinces',
         },
         {
             label: 'Kabupaten / Kota',
-            href: '/dashboard/kabupatens',
+            href: '/my-admin/dashboard/kabupatens',
         },
         {
             label: 'Kecamatan',
-            href: '/dashboard/kecamatans',
+            href: '/my-admin/dashboard/kecamatans',
         },
         {
             label: 'Kelurahan',
-            href: '/dashboard/kelurahans',
+            href: '/my-admin/dashboard/kelurahans',
         },
     ];
 
@@ -72,7 +72,7 @@ WilayahLayout.layout = {
     breadcrumbs: [
         {
             title: 'Pengaturan',
-            href: '/dashboard/config/main',
+            href: '/my-admin/dashboard/config/main',
         },
         {
             title: 'Wilayah',
