@@ -68,7 +68,7 @@ export default function MenuSourcePanel({ onAdd }: { onAdd: (item: { title: stri
                         onClick={() =>
                             onAdd({
                                 title: 'Dynamic Products',
-                                type: 'dynamic',
+                                type: 'dynamic_products',
                                 meta: {
                                     source: 'products',
                                     filter: {

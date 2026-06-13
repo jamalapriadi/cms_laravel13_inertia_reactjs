@@ -9,7 +9,7 @@ function getDefaultMeta(type: string) {
         };
     }
 
-    if (type === 'dynamic') {
+    if (type === 'dynamic' || type === 'dynamic_products') {
         return {
             source: 'products',
             filter: {

@@ -27,6 +27,10 @@ class MenuItemResource extends JsonResource
             $payload['items'] = MenuDynamicProductResource::collection(collect($this['items'] ?? []));
         }
 
+        if ($this['type'] === 'dynamic_products') {
+            $payload['category'] = $this['category'] ?? null;
+        }
+
         return $payload;
     }
 }

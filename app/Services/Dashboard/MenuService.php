@@ -8,6 +8,7 @@ use App\Models\Dashboard\MenuItem;
 use App\Models\Dashboard\MenuItemTranslation;
 use App\Models\Shop\Category;
 use App\Models\Shop\Product;
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ use Illuminate\Validation\ValidationException;
 
 class MenuService
 {
-    private const MENU_TYPES = ['custom', 'page', 'category', 'dropdown', 'dynamic'];
+    private const MENU_TYPES = ['custom', 'page', 'category', 'dropdown', 'dynamic', 'dynamic_products'];
 
     private const MENU_TARGETS = ['_self', '_blank'];
 
@@ -32,12 +33,12 @@ class MenuService
     public function getMenuTree(string $slug): ?Menu
     {
         return Menu::query()
-                ->where('slug', $slug)
-                ->with([
-                    'items.translations',
-                    'items.children',
-                ])
-                ->first();
+            ->where('slug', $slug)
+            ->with([
+                'items.translations',
+                'items.children',
+            ])
+            ->first();
     }
 
     public function getResolvedMenu(string $slug, string $locale = 'id'): ?array
@@ -92,8 +93,33 @@ class MenuService
             'children' => $this->mapLocale($item->children, $locale),
         ];
 
-        if ($item->type === 'dynamic') {
-            $payload['items'] = $this->resolveDynamicItems($meta);
+        if ($item->type === 'dynamic' || $item->type === 'dynamic_products') {
+            $metaForResolution = $meta;
+            if ($item->type === 'dynamic_products') {
+                $metaForResolution['source'] = 'products';
+            }
+            $payload['items'] = $this->resolveDynamicItems($metaForResolution);
+        }
+
+        if ($item->type === 'dynamic_products') {
+            $categoryId = data_get($meta, 'filter.category_id');
+            $categoryData = null;
+            if ($categoryId) {
+                $category = Category::query()->with('parent')->find($categoryId);
+                if ($category) {
+                    $categoryData = [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'slug' => $category->slug,
+                        'parent' => $category->parent ? [
+                            'id' => $category->parent->id,
+                            'name' => $category->parent->name,
+                            'slug' => $category->parent->slug,
+                        ] : null,
+                    ];
+                }
+            }
+            $payload['category'] = $categoryData;
         }
 
         return $payload;
@@ -264,6 +290,8 @@ class MenuService
             'meta.source' => ['nullable', 'string', Rule::in(self::DYNAMIC_SOURCES)],
             'meta.filter' => ['nullable', 'array'],
             'meta.filter.category_id' => ['nullable', 'uuid', "exists:{$categoryTable},id"],
+            'meta.filter.category_ids' => ['nullable', 'array'],
+            'meta.filter.category_ids.*' => ['uuid', "exists:{$categoryTable},id"],
             'meta.limit' => ['nullable', 'integer', 'min:1', 'max:20'],
             'meta.sort' => ['nullable', 'string', Rule::in(self::DYNAMIC_SORTS)],
             'meta.layout' => ['nullable', 'string', Rule::in(self::DYNAMIC_LAYOUTS)],
@@ -320,7 +348,6 @@ class MenuService
     }
 
     /**
-     * @param  mixed  $meta
      * @return array<string, mixed>
      */
     private function normalizeMeta(mixed $meta): array
@@ -341,8 +368,33 @@ class MenuService
     {
         $source = $meta['source'] ?? null;
 
-        if ($source !== 'products') {
+        if ($source !== 'products' && $source !== 'categories') {
             return [];
+        }
+
+        if ($source === 'categories') {
+            $categoryIds = data_get($meta, 'filter.category_ids') ?? [];
+            if (empty($categoryIds)) {
+                return [];
+            }
+
+            $categories = Category::query()
+                ->whereIn('id', $categoryIds)
+                ->where('is_publish', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+
+            return $categories->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'price' => null,
+                    'image' => $category->image ? MediaPath::url($category->image) : null,
+                    'url' => '/category/'.$category->slug,
+                ];
+            })->all();
         }
 
         $limit = max(1, min((int) ($meta['limit'] ?? 6), 20));

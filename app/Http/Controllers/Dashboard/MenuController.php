@@ -103,7 +103,7 @@ class MenuController extends Controller
         $menuData = $service->getMenuTree($menu->slug);
         $languages = Option::where('key', 'languages')->first()?->value ?? [];
         $productCategories = Category::query()
-            ->select('id', 'name', 'slug')
+            ->select('id', 'parent_id', 'name', 'slug')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
