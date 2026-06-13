@@ -2,7 +2,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import type React from 'react';
 import { toast } from 'sonner';
 
-import { index, store, update } from '@/actions/Jamalapriadi/DynamicContentBuilder/Http/Controllers/Dashboard/ContentTypeController';
+import { index, store, update } from '@/actions/App/Http/Controllers/Dashboard/ContentTypeController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

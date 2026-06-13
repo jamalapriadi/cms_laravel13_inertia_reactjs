@@ -7,7 +7,7 @@ import {
     destroy,
     edit,
     index,
-} from '@/actions/Jamalapriadi/DynamicContentBuilder/Http/Controllers/Dashboard/CustomFieldGroupController';
+} from '@/actions/App/Http/Controllers/Dashboard/CustomFieldGroupController';
 import { DataTable } from '@/components/DataTable';
 import {
     AlertDialog,

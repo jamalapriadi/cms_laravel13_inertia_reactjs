@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Jamalapriadi\DynamicContentBuilder\Http\Controllers\Dashboard\ContentTypeController;
-use Jamalapriadi\DynamicContentBuilder\Http\Controllers\Dashboard\CustomFieldGroupController;
-use Jamalapriadi\DynamicContentBuilder\Http\Controllers\Dashboard\DynamicContentEntryController;
+use App\Http\Controllers\Dashboard\ContentTypeController;
+use App\Http\Controllers\Dashboard\CustomFieldGroupController;
+use App\Http\Controllers\Dashboard\DynamicContentEntryController;
 use Jamalapriadi\DynamicContentBuilder\Http\Controllers\Dashboard\MediaLibraryController;
 
 $prefix = trim((string) config('dynamic-content-builder.dashboard.prefix', 'dashboard'), '/');
