@@ -13,6 +13,7 @@ use OpenApi\Attributes as OA;
         ], example: 'uuid-or-id'),
         new OA\Property(property: 'name', type: 'string', nullable: true, example: 'News'),
         new OA\Property(property: 'slug', type: 'string', nullable: true, example: 'news'),
+        new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Category description content'),
     ],
     type: 'object',
 )]
