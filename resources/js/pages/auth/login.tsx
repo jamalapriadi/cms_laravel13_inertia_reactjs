@@ -44,6 +44,7 @@ export default function Login({ status, canResetPassword }: Props) {
         register: formRegister,
         handleSubmit,
         setValue,
+        setError,
         watch,
         formState: { errors, isSubmitting },
     } = useForm<LoginFormData>({
@@ -64,6 +65,14 @@ export default function Login({ status, canResetPassword }: Props) {
 
             onFinish: () => {
                 setValue('password', '');
+            },
+            onError: (errors) => {
+                if (errors.email) {
+                    setError('email', { type: 'server', message: errors.email });
+                }
+                if (errors.password) {
+                    setError('password', { type: 'server', message: errors.password });
+                }
             },
         });
     };
