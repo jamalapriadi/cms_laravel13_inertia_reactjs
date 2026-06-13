@@ -189,8 +189,8 @@ export default function Edit({ page, blocks }: Props) {
 Edit.layout = (page: React.ReactNode) => (
     <PageEditorLayout
         breadcrumbs={[
-            { title: 'Pages', href: '/dashboard/pages' },
-            { title: 'Edit', href: '/dashboard/pages' },
+            { title: 'Pages', href: '/my-admin/dashboard/pages' },
+            { title: 'Edit', href: '/my-admin/dashboard/pages' },
         ]}
     >
         {page}

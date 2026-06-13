@@ -68,15 +68,15 @@ Usage.layout = {
     breadcrumbs: [
         {
             title: 'Pengaturan',
-            href: '/dashboard/config/main',
+            href: '/my-admin/dashboard/config/main',
         },
         {
             title: 'Site Contents',
-            href: '/dashboard/config/site-contents',
+            href: '/my-admin/dashboard/config/site-contents',
         },
         {
             title: 'Cara Penggunaan',
-            href: '/dashboard/config/site-contents/usage',
+            href: '/my-admin/dashboard/config/site-contents/usage',
         },
     ],
 };

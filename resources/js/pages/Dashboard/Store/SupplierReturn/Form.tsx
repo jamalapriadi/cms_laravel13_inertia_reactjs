@@ -163,7 +163,7 @@ export default function SupplierReturnForm({
                     variant="outline"
                     size="icon"
                     onClick={() =>
-                        router.visit('/dashboard/ecommerce/supplier-returns')
+                        router.visit('/my-admin/dashboard/ecommerce/supplier-returns')
                     }
                 >
                     <ArrowLeft className="h-4 w-4" />
@@ -347,7 +347,7 @@ export default function SupplierReturnForm({
                         variant="outline"
                         onClick={() =>
                             router.visit(
-                                '/dashboard/ecommerce/supplier-returns',
+                                '/my-admin/dashboard/ecommerce/supplier-returns',
                             )
                         }
                     >

@@ -33,7 +33,7 @@ interface Props {
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Kelurahans', href: '/dashboard/kelurahans' },
+    { title: 'Kelurahans', href: '/my-admin/dashboard/kelurahans' },
 ];
 
 export default function Index({ kelurahans, provinsis, filters }: Props) {
@@ -76,7 +76,7 @@ export default function Index({ kelurahans, provinsis, filters }: Props) {
 
     function applyFilter() {
         router.get(
-            '/dashboard/kelurahans',
+            '/my-admin/dashboard/kelurahans',
             {
                 provinsi_id: provinsiId,
                 kabupaten_id: kabupatenId,
@@ -89,7 +89,7 @@ export default function Index({ kelurahans, provinsis, filters }: Props) {
     function handleDelete() {
         if (!deletingId) return;
 
-        router.delete(`/dashboard/kelurahans/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/kelurahans/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     }
@@ -123,7 +123,7 @@ export default function Index({ kelurahans, provinsis, filters }: Props) {
             label: 'Action',
             render: (row) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/kelurahans/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/kelurahans/${row.id}/edit`}>
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>
@@ -167,7 +167,7 @@ export default function Index({ kelurahans, provinsis, filters }: Props) {
                 {/* HEADER */}
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Kelurahans</h1>
-                    <Link href="/dashboard/kelurahans/create">
+                    <Link href="/my-admin/dashboard/kelurahans/create">
                         <Button>Add Kelurahan</Button>
                     </Link>
                 </div>

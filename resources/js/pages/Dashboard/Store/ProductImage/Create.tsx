@@ -71,7 +71,7 @@ export default function Create({ products }: Props) {
      * SUBMIT
      */
     const onSubmit = (data: ImageFormData) => {
-        router.post('/dashboard/ecommerce/product-images', data, {
+        router.post('/my-admin/dashboard/ecommerce/product-images', data, {
             preserveScroll: true,
             onStart: () => {
                 setProcessing(true);
@@ -202,7 +202,7 @@ export default function Create({ products }: Props) {
                             variant="outline"
                             onClick={() =>
                                 router.visit(
-                                    '/dashboard/ecommerce/product-images',
+                                    '/my-admin/dashboard/ecommerce/product-images',
                                 )
                             }
                         >

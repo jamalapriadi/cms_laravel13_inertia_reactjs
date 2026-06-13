@@ -133,7 +133,7 @@ export default function Show({ payment }: Props) {
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Link
-                                href="/dashboard/ecommerce/payments"
+                                href="/my-admin/dashboard/ecommerce/payments"
                                 className="hover:text-foreground hover:underline"
                             >
                                 Payments
@@ -153,7 +153,7 @@ export default function Show({ payment }: Props) {
                         </h1>
                     </div>
 
-                    <Link href="/dashboard/ecommerce/payments">
+                    <Link href="/my-admin/dashboard/ecommerce/payments">
                         <Button variant="outline">← Back to Payments</Button>
                     </Link>
                 </div>
@@ -361,7 +361,7 @@ export default function Show({ payment }: Props) {
                                             Invoice ID
                                         </span>
                                         <Link
-                                            href={`/dashboard/orders/${payment.order.id}`}
+                                            href={`/my-admin/dashboard/orders/${payment.order.id}`}
                                             className="text-sm font-bold text-primary hover:underline"
                                         >
                                             {payment.order.invoice_number}

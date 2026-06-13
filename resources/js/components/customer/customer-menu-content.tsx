@@ -7,7 +7,7 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
-import { logout } from '@/routes/customer';
+import { logout } from '@/routes/customer/auth';
 import { CustomerUserInfo } from './customer-user-info';
 import type { CustomerSession } from './customer-types';
 

@@ -61,7 +61,7 @@ export default function Show({ movement }: Props) {
             <div className="container mx-auto max-w-4xl space-y-8 px-6 py-8">
                 {/* HEADER */}
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard/ecommerce/stock-movements">
+                    <Link href="/my-admin/dashboard/ecommerce/stock-movements">
                         <Button
                             variant="outline"
                             size="sm"
@@ -247,7 +247,7 @@ export default function Show({ movement }: Props) {
 
                         <div className="border-t pt-4">
                             <Link
-                                href={`/dashboard/ecommerce/stock-movements/${movement.id}/edit`}
+                                href={`/my-admin/dashboard/ecommerce/stock-movements/${movement.id}/edit`}
                             >
                                 <Button className="w-full">
                                     Edit Movement Record

@@ -35,7 +35,7 @@ interface Props {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Kabupatens',
-        href: '/dashboard/kabupatens',
+        href: '/my-admin/dashboard/kabupatens',
     },
     {
         title: 'Edit',
@@ -51,7 +51,7 @@ export default function Edit({ kabupaten, provinces }: Props) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        put(`/dashboard/kabupatens/${kabupaten.id}`, {
+        put(`/my-admin/dashboard/kabupatens/${kabupaten.id}`, {
             onStart: () => toast.loading('Saving...'),
             onSuccess: () => toast.dismiss(),
             onError: () => toast.dismiss(),

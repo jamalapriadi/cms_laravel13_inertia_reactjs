@@ -14,22 +14,22 @@ export default function ManagementLayout({ children, breadcrumbs }: Props) {
     const menus = [
         {
             label: 'Summary',
-            href: '/dashboard/config/management',
+            href: '/my-admin/dashboard/config/management',
             permission: 'settings.view',
         },
         {
             label: 'Users',
-            href: '/dashboard/users',
+            href: '/my-admin/dashboard/users',
             permission: 'users.view',
         },
         {
             label: 'Roles',
-            href: '/dashboard/roles',
+            href: '/my-admin/dashboard/roles',
             permission: 'roles.view',
         },
         {
             label: 'Permissions',
-            href: '/dashboard/permissions',
+            href: '/my-admin/dashboard/permissions',
             permission: 'permissions.view',
         },
     ];

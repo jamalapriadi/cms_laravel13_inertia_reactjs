@@ -56,7 +56,7 @@ export default function Index({ orders, summary, filters }: Props) {
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/orders',
+            '/my-admin/dashboard/orders',
             {
                 search,
                 status,
@@ -74,7 +74,7 @@ export default function Index({ orders, summary, filters }: Props) {
         setStatus('');
         setPaymentStatus('');
         router.get(
-            '/dashboard/orders',
+            '/my-admin/dashboard/orders',
             {},
             {
                 preserveState: true,
@@ -87,7 +87,7 @@ export default function Index({ orders, summary, filters }: Props) {
         if (!deletingId) {
             return;
         }
-        router.delete(`/dashboard/orders/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/orders/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -193,7 +193,7 @@ export default function Index({ orders, summary, filters }: Props) {
             label: 'Actions',
             render: (row: Order) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/orders/${row.id}`}>
+                    <Link href={`/my-admin/dashboard/orders/${row.id}`}>
                         <Button
                             size="sm"
                             variant="outline"

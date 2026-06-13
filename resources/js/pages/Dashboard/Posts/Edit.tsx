@@ -579,8 +579,8 @@ export default function Edit({
 Edit.layout = (page: React.ReactNode) => (
     <PostEditorLayout
         breadcrumbs={[
-            { title: 'Posts', href: '/dashboard/posts' },
-            { title: 'Edit', href: '/dashboard/posts' },
+            { title: 'Posts', href: '/my-admin/dashboard/posts' },
+            { title: 'Edit', href: '/my-admin/dashboard/posts' },
         ]}
     >
         {page}

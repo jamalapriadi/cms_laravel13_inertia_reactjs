@@ -28,7 +28,7 @@ export default function Show({ supplier }: Props) {
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                        <Link href="/dashboard/ecommerce/suppliers">
+                        <Link href="/my-admin/dashboard/ecommerce/suppliers">
                             <Button variant="outline" size="icon">
                                 <ArrowLeft className="h-4 w-4" />
                             </Button>
@@ -44,7 +44,7 @@ export default function Show({ supplier }: Props) {
                     </div>
 
                     <Link
-                        href={`/dashboard/ecommerce/suppliers/${supplier.id}/edit`}
+                        href={`/my-admin/dashboard/ecommerce/suppliers/${supplier.id}/edit`}
                     >
                         <Button className="gap-2">
                             <Edit className="h-4 w-4" />

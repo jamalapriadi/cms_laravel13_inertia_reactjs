@@ -98,7 +98,7 @@ export default function Index({ brands, summary, filters }: Props) {
      */
     const applyFilter = () => {
         router.get(
-            '/dashboard/brands',
+            '/my-admin/dashboard/brands',
             { search },
             {
                 preserveState: true,
@@ -115,7 +115,7 @@ export default function Index({ brands, summary, filters }: Props) {
             return;
         }
 
-        router.delete(`/dashboard/brands/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/brands/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -171,7 +171,7 @@ export default function Index({ brands, summary, filters }: Props) {
             label: 'Action',
             render: (row: Brand) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/brands/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/brands/${row.id}/edit`}>
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>
@@ -204,7 +204,7 @@ export default function Index({ brands, summary, filters }: Props) {
                         </p>
                     </div>
 
-                    <Link href="/dashboard/brands/create">
+                    <Link href="/my-admin/dashboard/brands/create">
                         <Button>Add Brand</Button>
                     </Link>
                 </div>

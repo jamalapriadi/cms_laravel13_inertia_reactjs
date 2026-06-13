@@ -109,7 +109,7 @@ export default function TinyEditor({ value, onChange, height = 400 }: Props) {
                 const formData = new FormData();
                 formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-                const response = await fetch('/dashboard/media/upload', {
+                const response = await fetch('/my-admin/dashboard/media/upload', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN':

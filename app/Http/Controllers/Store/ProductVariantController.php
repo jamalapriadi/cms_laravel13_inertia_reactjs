@@ -152,7 +152,10 @@ class ProductVariantController extends Controller
     {
         $previous = url()->previous();
 
-        if (str_contains($previous, '/dashboard/ecommerce/products/')) {
+        if (
+            str_contains($previous, '/my-admin/dashboard/ecommerce/products/')
+            || str_contains($previous, '/dashboard/ecommerce/products/')
+        ) {
             return redirect()->back();
         }
 

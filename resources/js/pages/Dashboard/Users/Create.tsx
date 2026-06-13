@@ -35,8 +35,8 @@ export default function Create({ roles }: Props) {
     });
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Users', href: '/dashboard/users' },
-        { title: 'Create', href: '/dashboard/users/create' },
+        { title: 'Users', href: '/my-admin/dashboard/users' },
+        { title: 'Create', href: '/my-admin/dashboard/users/create' },
     ];
 
     function toggleRole(roleName: string) {
@@ -63,7 +63,7 @@ export default function Create({ roles }: Props) {
                   },
         );
 
-        post('/dashboard/users', {
+        post('/my-admin/dashboard/users', {
             onStart: () => toast.loading('Creating user...'),
             onSuccess: () => {
                 toast.dismiss();

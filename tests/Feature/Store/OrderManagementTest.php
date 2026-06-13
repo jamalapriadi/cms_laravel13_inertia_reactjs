@@ -84,7 +84,7 @@ test('authenticated user can view order list with summary metrics', function () 
     ]);
 
     $response = $this->actingAs($user)
-        ->get('/dashboard/orders');
+        ->get('/my-admin/dashboard/orders');
 
     $response->assertStatus(200);
     $response->assertSee('INV-2026-0001');
@@ -129,7 +129,7 @@ test('user can filter orders by status and payment status', function () {
 
     // Filter by order status = completed
     $response = $this->actingAs($user)
-        ->get('/dashboard/orders?status=completed');
+        ->get('/my-admin/dashboard/orders?status=completed');
 
     $response->assertStatus(200);
     $response->assertSee('INV-2026-0002');
@@ -137,7 +137,7 @@ test('user can filter orders by status and payment status', function () {
 
     // Filter by payment status = paid
     $response = $this->actingAs($user)
-        ->get('/dashboard/orders?payment_status=paid');
+        ->get('/my-admin/dashboard/orders?payment_status=paid');
 
     $response->assertStatus(200);
     $response->assertSee('INV-2026-0002');
@@ -145,7 +145,7 @@ test('user can filter orders by status and payment status', function () {
 
     // Filter by search query
     $response = $this->actingAs($user)
-        ->get('/dashboard/orders?search=Jane');
+        ->get('/my-admin/dashboard/orders?search=Jane');
 
     $response->assertStatus(200);
     $response->assertSee('INV-2026-0002');
@@ -201,7 +201,7 @@ test('user can view order details', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->get("/dashboard/orders/{$order->id}");
+        ->get("/my-admin/dashboard/orders/{$order->id}");
 
     $response->assertStatus(200);
     $response->assertSee('INV-2026-0001');
@@ -228,7 +228,7 @@ test('user can update order and payment status', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->put("/dashboard/orders/{$order->id}", [
+        ->put("/my-admin/dashboard/orders/{$order->id}", [
             'status' => 'processing',
             'payment_status' => 'paid',
         ]);
@@ -290,7 +290,7 @@ test('user can view order receipt print page', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->get("/dashboard/orders/{$order->id}/receipt");
+        ->get("/my-admin/dashboard/orders/{$order->id}/receipt");
 
     $response->assertStatus(200);
     $response->assertSee('INV-2026-0001');

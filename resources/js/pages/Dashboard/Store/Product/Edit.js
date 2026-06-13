@@ -92,7 +92,7 @@ function Edit(_a) {
         var thumbnail = data.thumbnail, productData = __rest(data, ["thumbnail"]);
         var payload = thumbnail !== undefined
             ? __assign(__assign({}, productData), { thumbnail: thumbnail }) : productData;
-        react_1.router.post("/dashboard/ecommerce/products/".concat(initialProduct.id), __assign({ _method: 'put' }, payload), {
+        react_1.router.post("/my-admin/dashboard/ecommerce/products/".concat(initialProduct.id), __assign({ _method: 'put' }, payload), {
             forceFormData: true,
             preserveScroll: true,
             onStart: function () {
@@ -254,7 +254,7 @@ function Edit(_a) {
 
                     <div className="container flex justify-between">
                         <button_1.Button type="button" variant="outline" onClick={function () {
-            return react_1.router.visit('/dashboard/ecommerce/products');
+            return react_1.router.visit('/my-admin/dashboard/ecommerce/products');
         }}>
                             Cancel
                         </button_1.Button>

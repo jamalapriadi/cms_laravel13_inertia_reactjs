@@ -17,18 +17,18 @@ export default function Create() {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Roles',
-            href: '/dashboard/roles',
+            href: '/my-admin/dashboard/roles',
         },
         {
             title: 'Create',
-            href: '/dashboard/roles/create',
+            href: '/my-admin/dashboard/roles/create',
         },
     ];
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
 
-        post('/dashboard/roles', {
+        post('/my-admin/dashboard/roles', {
             onStart: () => toast.loading('Saving role...'),
             onSuccess: () => {
                 toast.dismiss();

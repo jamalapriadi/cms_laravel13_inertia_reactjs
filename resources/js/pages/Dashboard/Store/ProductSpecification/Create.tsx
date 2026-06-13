@@ -63,7 +63,7 @@ export default function Create({ products }: Props) {
      * SUBMIT
      */
     const onSubmit = (data: SpecFormData) => {
-        router.post('/dashboard/ecommerce/product-specifications', data, {
+        router.post('/my-admin/dashboard/ecommerce/product-specifications', data, {
             preserveScroll: true,
             onStart: () => {
                 setProcessing(true);
@@ -167,7 +167,7 @@ export default function Create({ products }: Props) {
                             variant="outline"
                             onClick={() =>
                                 router.visit(
-                                    '/dashboard/ecommerce/product-specifications',
+                                    '/my-admin/dashboard/ecommerce/product-specifications',
                                 )
                             }
                         >

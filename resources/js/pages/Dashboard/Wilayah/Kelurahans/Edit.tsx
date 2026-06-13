@@ -46,7 +46,7 @@ interface Props {
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Kelurahans', href: '/dashboard/kelurahans' },
+    { title: 'Kelurahans', href: '/my-admin/dashboard/kelurahans' },
     { title: 'Edit', href: '#' },
 ];
 
@@ -136,7 +136,7 @@ export default function Edit({ kelurahan, provinces }: Props) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        put(`/dashboard/kelurahans/${kelurahan.id}`);
+        put(`/my-admin/dashboard/kelurahans/${kelurahan.id}`);
     }
 
     return (

@@ -42,7 +42,7 @@ export default function Edit({ variant, products = [] }: Props) {
 
     const submit = () => {
         router.put(
-            `/dashboard/ecommerce/product-variants/${variant.id}`,
+            `/my-admin/dashboard/ecommerce/product-variants/${variant.id}`,
             {
                 product_id: productId,
                 name,

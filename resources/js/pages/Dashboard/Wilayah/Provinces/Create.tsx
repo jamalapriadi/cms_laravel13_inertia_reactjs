@@ -7,8 +7,8 @@ import type { BreadcrumbItem } from '@/types';
 import AppLayout from '@/layouts/wilayah-layout';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Provinces', href: '/dashboard/provinces' },
-    { title: 'Create', href: '/dashboard/provinces/create' },
+    { title: 'Provinces', href: '/my-admin/dashboard/provinces' },
+    { title: 'Create', href: '/my-admin/dashboard/provinces/create' },
 ];
 
 export default function Create() {
@@ -19,7 +19,7 @@ export default function Create() {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        post('/dashboard/provinces', {
+        post('/my-admin/dashboard/provinces', {
             onStart: () => toast.loading('Saving...'),
             onSuccess: () => toast.dismiss(),
             onError: () => toast.dismiss(),
@@ -77,7 +77,7 @@ export default function Create() {
                         </div>
 
                         <div className="flex justify-between gap-3">
-                            <Link href="/dashboard/provinces">
+                            <Link href="/my-admin/dashboard/provinces">
                                 <Button variant="outline" disabled={processing}>
                                     Cancel
                                 </Button>

@@ -63,7 +63,7 @@ export default function Index({
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/banner-slides',
+            '/my-admin/dashboard/ecommerce/banner-slides',
             {
                 search,
                 type: type || undefined,
@@ -82,7 +82,7 @@ export default function Index({
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/banner-slides/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/banner-slides/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -155,7 +155,7 @@ export default function Index({
             render: (row: BannerSlide) => (
                 <div className="flex gap-2">
                     <Link
-                        href={`/dashboard/ecommerce/banner-slides/${row.id}/edit`}
+                        href={`/my-admin/dashboard/ecommerce/banner-slides/${row.id}/edit`}
                     >
                         <Button size="sm" variant="secondary">
                             <Pencil className="h-3.5 w-3.5" />
@@ -188,7 +188,7 @@ export default function Index({
                         </p>
                     </div>
 
-                    <Link href="/dashboard/ecommerce/banner-slides/create">
+                    <Link href="/my-admin/dashboard/ecommerce/banner-slides/create">
                         <Button className="gap-2">
                             <Plus className="h-4 w-4" />
                             Add Banner

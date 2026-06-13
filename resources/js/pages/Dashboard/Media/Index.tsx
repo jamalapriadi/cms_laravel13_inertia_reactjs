@@ -71,7 +71,7 @@ export default function Index({
 
     const handleFilter = (key: string, value: string) => {
         router.get(
-            '/dashboard/media',
+            '/my-admin/dashboard/media',
             { ...filters, path: currentPath, [key]: value },
             { preserveState: true, replace: true },
         );
@@ -79,7 +79,7 @@ export default function Index({
 
     const openFolder = (path: string) => {
         router.get(
-            '/dashboard/media',
+            '/my-admin/dashboard/media',
             { path, search: filters.search, date: filters.date },
             { preserveState: true },
         );
@@ -116,7 +116,7 @@ export default function Index({
 
         const toastId = toast.loading('Menghapus file...');
 
-        router.delete('/dashboard/media/storage-file', {
+        router.delete('/my-admin/dashboard/media/storage-file', {
             data: { path: selectedFile.path },
             preserveScroll: true,
             onSuccess: () => {
@@ -615,7 +615,7 @@ export default function Index({
  */
 Index.layout = {
     breadcrumbs: [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Media Library', href: '/dashboard/media' },
+        { title: 'Dashboard', href: '/my-admin/dashboard' },
+        { title: 'Media Library', href: '/my-admin/dashboard/media' },
     ],
 };

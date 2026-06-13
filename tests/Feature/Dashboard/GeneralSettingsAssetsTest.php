@@ -13,7 +13,7 @@ test('general settings stores uploaded asset urls under asset option keys', func
 
     $this
         ->actingAs($user)
-        ->post('/dashboard/options', [
+        ->post('/my-admin/dashboard/options', [
             'site_title' => 'Gita Trading',
             'favicon_ico_url' => '/storage/media/2026/05/favicon.ico',
             'logo_url' => '/storage/media/2026/05/logo.webp',
@@ -42,7 +42,7 @@ test('general settings can clear asset urls', function () {
 
     $this
         ->actingAs($user)
-        ->post('/dashboard/options', [
+        ->post('/my-admin/dashboard/options', [
             'logo_url' => '',
         ])
         ->assertRedirect();
@@ -79,7 +79,7 @@ test('media json upload keeps ico files as ico assets', function () {
 
     $response = $this
         ->actingAs($user)
-        ->post('/dashboard/media/json', [
+        ->post('/my-admin/dashboard/media/json', [
             'file' => $file,
         ]);
 

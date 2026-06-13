@@ -68,7 +68,7 @@ test('authenticated user can view stock movements list with summary metrics', fu
     ]);
 
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/stock-movements');
+        ->get('/my-admin/dashboard/ecommerce/stock-movements');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -105,7 +105,7 @@ test('user can filter stock movements', function () {
 
     // Filter by type = sale
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/stock-movements?type=sale');
+        ->get('/my-admin/dashboard/ecommerce/stock-movements?type=sale');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -116,7 +116,7 @@ test('user can filter stock movements', function () {
 
     // Filter by search = First
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/stock-movements?search=First');
+        ->get('/my-admin/dashboard/ecommerce/stock-movements?search=First');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -141,14 +141,14 @@ test('user can create a stock movement', function () {
 
     // Store purchase type
     $response = $this->actingAs($user)
-        ->post('/dashboard/ecommerce/stock-movements', [
+        ->post('/my-admin/dashboard/ecommerce/stock-movements', [
             'product_variant_id' => $variant->id,
             'product_stock_unit_id' => $stockUnit->id,
             'type' => 'purchase',
             'note' => 'Stock purchased',
         ]);
 
-    $response->assertRedirect('/dashboard/ecommerce/stock-movements');
+    $response->assertRedirect('/my-admin/dashboard/ecommerce/stock-movements');
     $this->assertDatabaseHas('stock_movements', [
         'product_variant_id' => $variant->id,
         'product_stock_unit_id' => $stockUnit->id,
@@ -167,14 +167,14 @@ test('user can create a stock movement', function () {
 
     // Store sale type
     $response = $this->actingAs($user)
-        ->post('/dashboard/ecommerce/stock-movements', [
+        ->post('/my-admin/dashboard/ecommerce/stock-movements', [
             'product_variant_id' => $variant->id,
             'product_stock_unit_id' => $stockUnit->id,
             'type' => 'sale',
             'note' => 'Customer order',
         ]);
 
-    $response->assertRedirect('/dashboard/ecommerce/stock-movements');
+    $response->assertRedirect('/my-admin/dashboard/ecommerce/stock-movements');
     $this->assertEquals(0, $variant->fresh()->stock);
     $this->assertSame('sold', $stockUnit->fresh()->status);
 });
@@ -208,14 +208,14 @@ test('user can update stock movement and recalculate variant stock levels', func
     $variant->syncStockFromUnits();
 
     $response = $this->actingAs($user)
-        ->put("/dashboard/ecommerce/stock-movements/{$movement->id}", [
+        ->put("/my-admin/dashboard/ecommerce/stock-movements/{$movement->id}", [
             'product_variant_id' => $variant->id,
             'product_stock_unit_id' => $stockUnit->id,
             'type' => 'sale',
             'note' => 'Updated sale note',
         ]);
 
-    $response->assertRedirect('/dashboard/ecommerce/stock-movements');
+    $response->assertRedirect('/my-admin/dashboard/ecommerce/stock-movements');
     $this->assertEquals(0, $variant->fresh()->stock);
     $this->assertSame('sold', $stockUnit->fresh()->status);
     $this->assertDatabaseHas('stock_movements', [
@@ -256,9 +256,9 @@ test('user can delete stock movement and reverse variant stock levels', function
     ]);
 
     $response = $this->actingAs($user)
-        ->delete("/dashboard/ecommerce/stock-movements/{$movement->id}");
+        ->delete("/my-admin/dashboard/ecommerce/stock-movements/{$movement->id}");
 
-    $response->assertRedirect('/dashboard/ecommerce/stock-movements');
+    $response->assertRedirect('/my-admin/dashboard/ecommerce/stock-movements');
     $this->assertEquals(1, $variant->fresh()->stock);
     $this->assertSame('available', $stockUnit->fresh()->status);
     $this->assertDatabaseMissing('stock_movements', ['id' => $movement->id]);

@@ -50,7 +50,7 @@ export const sidebarConfig: SidebarGroup[] = [
         items: [
             {
                 title: 'Dashboard',
-                href: '/dashboard',
+                href: '/my-admin/dashboard',
                 icon: LayoutGrid,
                 permission: 'dashboard.view',
             },
@@ -67,25 +67,25 @@ export const sidebarConfig: SidebarGroup[] = [
         items: [
             {
                 title: 'Posts',
-                href: '/dashboard/posts',
+                href: '/my-admin/dashboard/posts',
                 icon: FileText,
                 permission: 'posts.view',
                 children: [
                     {
                         title: 'All Posts',
-                        href: '/dashboard/posts',
+                        href: '/my-admin/dashboard/posts',
                         icon: FileText,
                         permission: 'posts.view',
                     },
                     {
                         title: 'Categories',
-                        href: '/dashboard/post-categories',
+                        href: '/my-admin/dashboard/post-categories',
                         icon: FolderTree,
                         permission: 'post-categories.view',
                     },
                     {
                         title: 'Tags',
-                        href: '/dashboard/taxonomies/tags',
+                        href: '/my-admin/dashboard/taxonomies/tags',
                         icon: Tags,
                         permission: 'taxonomies.view',
                     },
@@ -93,51 +93,51 @@ export const sidebarConfig: SidebarGroup[] = [
             },
             {
                 title: 'Pages',
-                href: '/dashboard/pages',
+                href: '/my-admin/dashboard/pages',
                 icon: StickyNote,
                 permission: 'pages.view',
             },
             {
                 title: 'Promo',
-                href: '/dashboard/ecommerce/product-collections',
+                href: '/my-admin/dashboard/ecommerce/product-collections',
                 icon: BadgeDollarSign,
                 permission: 'product-collections.view',
                 children: [
                     {
                         title: 'Product Collections',
-                        href: '/dashboard/ecommerce/product-collections',
+                        href: '/my-admin/dashboard/ecommerce/product-collections',
                         permission: 'product-collections.view',
                     },
                     {
                         title: 'Best Seller',
-                        href: '/dashboard/ecommerce/product-collections?type=best_seller',
+                        href: '/my-admin/dashboard/ecommerce/product-collections?type=best_seller',
                         permission: 'product-collections.view',
                     },
                     {
                         title: 'Exclusive Deals',
-                        href: '/dashboard/ecommerce/product-collections?type=exclusive_deals',
+                        href: '/my-admin/dashboard/ecommerce/product-collections?type=exclusive_deals',
                         permission: 'product-collections.view',
                     },
                     {
                         title: 'Big Sale',
-                        href: '/dashboard/ecommerce/product-collections?type=big_sale',
+                        href: '/my-admin/dashboard/ecommerce/product-collections?type=big_sale',
                         permission: 'product-collections.view',
                     },
                     {
                         title: 'Flash Sale',
-                        href: '/dashboard/ecommerce/product-collections?type=flash_sale',
+                        href: '/my-admin/dashboard/ecommerce/product-collections?type=flash_sale',
                         permission: 'product-collections.view',
                     },
                     {
                         title: 'Promo Lainnya',
-                        href: '/dashboard/ecommerce/product-collections?type=promo',
+                        href: '/my-admin/dashboard/ecommerce/product-collections?type=promo',
                         permission: 'product-collections.view',
                     },
                 ],
             },
             {
                 title: 'Banner Slides',
-                href: '/dashboard/ecommerce/banner-slides',
+                href: '/my-admin/dashboard/ecommerce/banner-slides',
                 icon: Image,
                 permission: 'banner-slides.view',
             },
@@ -154,68 +154,68 @@ export const sidebarConfig: SidebarGroup[] = [
         items: [
             {
                 title: 'Products',
-                href: '/dashboard/ecommerce/products',
+                href: '/my-admin/dashboard/ecommerce/products',
                 icon: Package,
                 permission: 'products.view',
             },
             {
                 title: 'Stok Unit',
-                href: '/dashboard/ecommerce/product-stock-units',
+                href: '/my-admin/dashboard/ecommerce/product-stock-units',
                 icon: ScanBarcode,
                 permission: 'product-stock-units.view',
             },
 
             {
                 title: 'Orders',
-                href: '/dashboard/orders',
+                href: '/my-admin/dashboard/orders',
                 icon: ClipboardList,
                 permission: 'orders.view',
             },
             {
                 title: 'Customers',
-                href: '/dashboard/ecommerce/customers',
+                href: '/my-admin/dashboard/ecommerce/customers',
                 icon: Users,
                 permission: 'customers.view',
             },
             {
                 title: 'Carts',
-                href: '/dashboard/ecommerce/carts',
+                href: '/my-admin/dashboard/ecommerce/carts',
                 icon: ShoppingCart,
                 permission: 'carts.view',
             },
             {
                 title: 'Payments',
-                href: '/dashboard/ecommerce/payments',
+                href: '/my-admin/dashboard/ecommerce/payments',
                 icon: ShoppingBag,
                 permission: 'payments.view',
             },
             {
                 title: 'Stock Movements',
-                href: '/dashboard/ecommerce/stock-movements',
+                href: '/my-admin/dashboard/ecommerce/stock-movements',
                 icon: Warehouse,
                 permission: 'stock-movements.view',
             },
             {
                 title: 'Shipping',
-                href: '/dashboard/ecommerce/shipping',
+                href: '/my-admin/dashboard/ecommerce/shipping',
                 icon: Truck,
                 permission: 'shippings.view',
             },
             {
                 title: 'Suppliers',
-                href: '/dashboard/ecommerce/suppliers',
+                href: '/my-admin/dashboard/ecommerce/suppliers',
                 icon: Users,
                 permission: 'suppliers.view',
             },
             {
                 title: 'Barang Masuk',
-                href: '/dashboard/ecommerce/incoming-goods',
+                href: '/my-admin/dashboard/ecommerce/incoming-goods',
                 icon: ArrowDownLeft,
                 permission: 'incoming-goods.view',
             },
             {
                 title: 'Retur Barang',
-                href: '/dashboard/ecommerce/supplier-returns',
+                href: '/my-admin/dashboard/ecommerce/supplier-returns',
                 icon: ArrowUpRight,
                 permission: 'supplier-returns.view',
             },
@@ -227,19 +227,19 @@ export const sidebarConfig: SidebarGroup[] = [
         items: [
             {
                 title: 'Users',
-                href: '/dashboard/users',
+                href: '/my-admin/dashboard/users',
                 icon: Users,
                 permission: 'users.view',
             },
             {
                 title: 'Roles',
-                href: '/dashboard/roles',
+                href: '/my-admin/dashboard/roles',
                 icon: ShieldCheck,
                 permission: 'roles.view',
             },
             {
                 title: 'Permissions',
-                href: '/dashboard/permissions',
+                href: '/my-admin/dashboard/permissions',
                 icon: KeyRound,
                 permission: 'permissions.view',
             },
@@ -256,25 +256,25 @@ export const sidebarConfig: SidebarGroup[] = [
         items: [
             {
                 title: 'Media',
-                href: '/dashboard/media',
+                href: '/my-admin/dashboard/media',
                 icon: Image,
                 permission: 'media.view',
             },
             {
                 title: 'Menus',
-                href: '/dashboard/menus',
+                href: '/my-admin/dashboard/menus',
                 icon: Menu,
                 permission: 'menus.view',
             },
             {
                 title: 'FAQ',
-                href: '/dashboard/ecommerce/faqs',
+                href: '/my-admin/dashboard/ecommerce/faqs',
                 icon: CircleHelp,
                 permission: 'faqs.view',
             },
             {
                 title: 'Site Contents',
-                href: '/dashboard/config/site-contents',
+                href: '/my-admin/dashboard/config/site-contents',
                 icon: RssIcon,
                 permission: 'site-contents.view',
             },
@@ -288,7 +288,7 @@ export const sidebarConfig: SidebarGroup[] = [
             },
             {
                 title: 'General Settings',
-                href: '/dashboard/config/main',
+                href: '/my-admin/dashboard/config/main',
                 icon: Settings,
                 permission: 'settings.view',
             },

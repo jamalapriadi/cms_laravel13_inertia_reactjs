@@ -66,7 +66,7 @@ export default function Edit({ supplier }: Props) {
     });
 
     const onSubmit = (data: SupplierFormData) => {
-        router.put(`/dashboard/ecommerce/suppliers/${supplier.id}`, data, {
+        router.put(`/my-admin/dashboard/ecommerce/suppliers/${supplier.id}`, data, {
             preserveScroll: true,
             onStart: () => {
                 setProcessing(true);
@@ -99,7 +99,7 @@ export default function Edit({ supplier }: Props) {
                         variant="outline"
                         size="icon"
                         onClick={() =>
-                            router.visit('/dashboard/ecommerce/suppliers')
+                            router.visit('/my-admin/dashboard/ecommerce/suppliers')
                         }
                     >
                         <ArrowLeft className="h-4 w-4" />
@@ -223,7 +223,7 @@ export default function Edit({ supplier }: Props) {
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/dashboard/ecommerce/suppliers')
+                                router.visit('/my-admin/dashboard/ecommerce/suppliers')
                             }
                         >
                             Cancel

@@ -24,7 +24,7 @@ export default function MediaImagePicker({ value, onChange, label }: Props) {
 
         try {
             const response = await fetch(
-                `/dashboard/media/library?path=${encodeURIComponent(path)}`,
+                `/my-admin/dashboard/media/library?path=${encodeURIComponent(path)}`,
             );
             const result = await response.json();
 

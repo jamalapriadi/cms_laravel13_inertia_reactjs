@@ -43,7 +43,7 @@ export default function DetailModal({ media, isOpen, onClose }: Props) {
         const toastId = toast.loading('Menyimpan...');
 
         router.put(
-            `/dashboard/media/${media.id}`,
+            `/my-admin/dashboard/media/${media.id}`,
             { alt: altText },
             {
                 onSuccess: () => {
@@ -65,7 +65,7 @@ export default function DetailModal({ media, isOpen, onClose }: Props) {
 
         const toastId = toast.loading('Menghapus media...');
 
-        router.delete(`/dashboard/media/${media.id}`, {
+        router.delete(`/my-admin/dashboard/media/${media.id}`, {
             onSuccess: () => {
                 toast.success('File berhasil dihapus', { id: toastId });
                 onClose();

@@ -14,11 +14,11 @@ interface Props {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Settings',
-        href: '/dashboard/settings',
+        href: '/my-admin/dashboard/config/main',
     },
     {
         title: 'Management',
-        href: '/dashboard/settings/management',
+        href: '/my-admin/dashboard/config/management',
     },
 ];
 

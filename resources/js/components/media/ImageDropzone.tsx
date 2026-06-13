@@ -29,7 +29,7 @@ export default function ImageDropzone({ value, onUploaded }: Props) {
         setLoading(true);
 
         try {
-            const res = await axios.post('/dashboard/media/upload', formData);
+            const res = await axios.post('/my-admin/dashboard/media/upload', formData);
 
             const media = res.data.media;
 

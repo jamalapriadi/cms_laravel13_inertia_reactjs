@@ -18,7 +18,7 @@ export default function Create({ suppliers, variants, networks }: Props) {
                 suppliers={suppliers}
                 variants={variants}
                 networks={networks}
-                submitUrl="/dashboard/ecommerce/incoming-goods"
+                submitUrl="/my-admin/dashboard/ecommerce/incoming-goods"
                 method="post"
                 title="Tambah Barang Masuk"
                 description="Catat pembelian produk dari supplier dan daftarkan serial stok unit."

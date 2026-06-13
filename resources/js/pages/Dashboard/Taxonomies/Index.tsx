@@ -75,7 +75,7 @@ export default function Index({ taxonomy, taxonomies, filters }: Props) {
      * ✅ FILTER
      */
     const applyFilter = () => {
-        get(`/dashboard/taxonomies/${taxonomy}`, {
+        get(`/my-admin/dashboard/taxonomies/${taxonomy}`, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -89,7 +89,7 @@ export default function Index({ taxonomy, taxonomies, filters }: Props) {
             return;
         }
 
-        destroy(`/dashboard/taxonomies/${taxonomy}/${deletingId}`, {
+        destroy(`/my-admin/dashboard/taxonomies/${taxonomy}/${deletingId}`, {
             preserveScroll: true,
             onStart: () => toast.loading('Deleting...', { id: 'delete' }),
             onSuccess: () =>
@@ -120,7 +120,7 @@ export default function Index({ taxonomy, taxonomies, filters }: Props) {
             render: (row: TaxonomyItem) => (
                 <div className="flex gap-2">
                     <Link
-                        href={`/dashboard/taxonomies/${taxonomy}/${row.id}/edit`}
+                        href={`/my-admin/dashboard/taxonomies/${taxonomy}/${row.id}/edit`}
                     >
                         <Button size="sm" variant="secondary">
                             Edit
@@ -172,7 +172,7 @@ export default function Index({ taxonomy, taxonomies, filters }: Props) {
                         </p>
                     </div>
 
-                    <Link href={`/dashboard/taxonomies/${taxonomy}/create`}>
+                    <Link href={`/my-admin/dashboard/taxonomies/${taxonomy}/create`}>
                         <Button>Add New</Button>
                     </Link>
                 </div>
@@ -226,7 +226,7 @@ Index.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             {
                 title: 'Taxonomies',
-                href: '/dashboard/taxonomies/categories', // default fallback
+                href: '/my-admin/dashboard/taxonomies/categories', // default fallback
             },
         ]}
     >

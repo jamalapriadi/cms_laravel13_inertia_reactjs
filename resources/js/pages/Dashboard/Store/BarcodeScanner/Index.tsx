@@ -31,7 +31,7 @@ export default function BarcodeScannerIndex({ search, stockUnit, notFound }: Pro
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
-        post('/dashboard/ecommerce/barcode-scanner/search', {
+        post('/my-admin/dashboard/ecommerce/barcode-scanner/search', {
             preserveScroll: true,
         });
     };
@@ -42,7 +42,7 @@ export default function BarcodeScannerIndex({ search, stockUnit, notFound }: Pro
 
             <div className="container mx-auto space-y-6 px-6 py-8">
                 <div className="flex items-center gap-3">
-                    <Link href="/dashboard/ecommerce/product-stock-units">
+                    <Link href="/my-admin/dashboard/ecommerce/product-stock-units">
                         <Button variant="outline" size="sm">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
@@ -109,7 +109,7 @@ export default function BarcodeScannerIndex({ search, stockUnit, notFound }: Pro
                         </div>
 
                         <div className="mt-5">
-                            <Link href={`/dashboard/ecommerce/product-stock-units/${stockUnit.id}`}>
+                            <Link href={`/my-admin/dashboard/ecommerce/product-stock-units/${stockUnit.id}`}>
                                 <Button variant="outline">View Detail Stock Unit</Button>
                             </Link>
                         </div>

@@ -66,7 +66,7 @@ export default function Show({ cart }: Props) {
             return;
         }
         router.delete(
-            `/dashboard/ecommerce/carts/${cart.id}/items/${deletingItemId}`,
+            `/my-admin/dashboard/ecommerce/carts/${cart.id}/items/${deletingItemId}`,
             {
                 onFinish: () => setDeletingItemId(null),
             },
@@ -74,7 +74,7 @@ export default function Show({ cart }: Props) {
     };
 
     const handleClearCart = () => {
-        router.delete(`/dashboard/ecommerce/carts/${cart.id}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/carts/${cart.id}`, {
             onFinish: () => setClearingCart(false),
         });
     };
@@ -87,7 +87,7 @@ export default function Show({ cart }: Props) {
                 {/* NAVIGATION BACK */}
                 <div>
                     <Link
-                        href="/dashboard/ecommerce/carts"
+                        href="/my-admin/dashboard/ecommerce/carts"
                         className="flex w-fit items-center gap-1 text-xs font-semibold text-primary hover:underline"
                     >
                         &larr; Back to Carts List

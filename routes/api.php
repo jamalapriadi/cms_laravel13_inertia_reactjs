@@ -48,7 +48,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::get('cart', [CartController::class, 'show'])->name('cart.show');
     Route::post('cart/items', [CartController::class, 'store'])->name('cart.items.store');
     Route::put('cart/items/{item}', [CartController::class, 'update'])->name('cart.items.update');
-    Route::patch('cart/items/{item}', [CartController::class, 'update'])->name('cart.items.patch');
+    Route::patch('cart/items/{item}', [CartController::class, 'patch'])->name('cart.items.patch');
     Route::delete('cart/items/{item}', [CartController::class, 'destroy'])->name('cart.items.destroy');
     Route::delete('cart', [CartController::class, 'clear'])->name('cart.clear');
 

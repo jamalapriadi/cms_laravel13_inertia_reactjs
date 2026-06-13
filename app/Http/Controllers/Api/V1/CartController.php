@@ -67,6 +67,11 @@ class CartController extends Controller
         return $this->cartResponse($cart, $request, 'Cart item updated successfully');
     }
 
+    public function patch(UpdateCartItemRequest $request, string $item): JsonResponse
+    {
+        return $this->update($request, $item);
+    }
+
     public function destroy(Request $request, string $item): JsonResponse
     {
         $cart = $this->resolvedCart($request);

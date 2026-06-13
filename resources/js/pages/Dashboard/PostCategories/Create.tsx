@@ -24,11 +24,11 @@ Create.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             {
                 title: 'Post Categories',
-                href: '/dashboard/post-categories',
+                href: '/my-admin/dashboard/post-categories',
             },
             {
                 title: 'Create',
-                href: '/dashboard/post-categories/create',
+                href: '/my-admin/dashboard/post-categories/create',
             },
         ]}
     >

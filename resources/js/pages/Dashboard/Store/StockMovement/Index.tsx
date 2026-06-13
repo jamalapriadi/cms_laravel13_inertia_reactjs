@@ -111,7 +111,7 @@ export default function Index({
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/stock-movements',
+            '/my-admin/dashboard/ecommerce/stock-movements',
             {
                 search,
                 type,
@@ -129,7 +129,7 @@ export default function Index({
         setType('');
         setVariantId('');
         router.get(
-            '/dashboard/ecommerce/stock-movements',
+            '/my-admin/dashboard/ecommerce/stock-movements',
             {},
             { replace: true },
         );
@@ -137,7 +137,7 @@ export default function Index({
 
     const handleDelete = () => {
         if (!deletingId) return;
-        router.delete(`/dashboard/ecommerce/stock-movements/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/stock-movements/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -263,7 +263,7 @@ export default function Index({
             render: (row: StockMovement) => (
                 <div className="flex items-center gap-2">
                     <Link
-                        href={`/dashboard/ecommerce/stock-movements/${row.id}`}
+                        href={`/my-admin/dashboard/ecommerce/stock-movements/${row.id}`}
                     >
                         <Button
                             size="sm"
@@ -275,7 +275,7 @@ export default function Index({
                         </Button>
                     </Link>
                     <Link
-                        href={`/dashboard/ecommerce/stock-movements/${row.id}/edit`}
+                        href={`/my-admin/dashboard/ecommerce/stock-movements/${row.id}/edit`}
                     >
                         <Button
                             size="sm"
@@ -317,7 +317,7 @@ export default function Index({
                         </p>
                     </div>
 
-                    <Link href="/dashboard/ecommerce/stock-movements/create">
+                    <Link href="/my-admin/dashboard/ecommerce/stock-movements/create">
                         <Button className="flex items-center gap-2">
                             <Plus className="h-4 w-4" />
                             Add Movement

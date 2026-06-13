@@ -60,14 +60,14 @@ function Create(_a) {
                 : null, product_variant_id: showVariantSelect
                 ? formData.product_variant_id || null
                 : null })); });
-        post('/dashboard/ecommerce/product-stock-units');
+        post('/my-admin/dashboard/ecommerce/product-stock-units');
     };
     return (<>
             <react_1.Head title="Create Stok Unit"/>
 
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex items-center gap-4">
-                    <react_1.Link href="/dashboard/ecommerce/product-stock-units">
+                    <react_1.Link href="/my-admin/dashboard/ecommerce/product-stock-units">
                         <button_1.Button variant="outline" size="sm">
                             <lucide_react_1.ArrowLeft className="h-4 w-4"/>
                         </button_1.Button>
@@ -175,7 +175,7 @@ function Create(_a) {
                     </div>
 
                     <div className="flex justify-between gap-3">
-                        <react_1.Link href="/dashboard/ecommerce/product-stock-units">
+                        <react_1.Link href="/my-admin/dashboard/ecommerce/product-stock-units">
                             <button_1.Button type="button" variant="outline">
                                 Cancel
                             </button_1.Button>

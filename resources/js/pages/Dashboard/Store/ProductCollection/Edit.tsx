@@ -77,7 +77,7 @@ export default function Edit({ collection, typeOptions }: Props) {
             description: current.description || null,
         }));
 
-        post(`/dashboard/ecommerce/product-collections/${collection.id}`, {
+        post(`/my-admin/dashboard/ecommerce/product-collections/${collection.id}`, {
             forceFormData: true,
         });
     };
@@ -88,7 +88,7 @@ export default function Edit({ collection, typeOptions }: Props) {
 
             <div className="container mx-auto max-w-4xl space-y-8 px-6 py-8">
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard/ecommerce/product-collections">
+                    <Link href="/my-admin/dashboard/ecommerce/product-collections">
                         <Button variant="outline" size="icon">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
@@ -239,7 +239,7 @@ export default function Edit({ collection, typeOptions }: Props) {
                     </div>
 
                     <div className="flex justify-end gap-3">
-                        <Link href="/dashboard/ecommerce/product-collections">
+                        <Link href="/my-admin/dashboard/ecommerce/product-collections">
                             <Button type="button" variant="outline">
                                 Cancel
                             </Button>

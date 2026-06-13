@@ -80,7 +80,7 @@ export default function Edit({ movement, variants, adjustment_action }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(`/dashboard/ecommerce/stock-movements/${movement.id}`);
+        put(`/my-admin/dashboard/ecommerce/stock-movements/${movement.id}`);
     };
 
     return (
@@ -90,7 +90,7 @@ export default function Edit({ movement, variants, adjustment_action }: Props) {
             <div className="container mx-auto max-w-4xl space-y-8 px-6 py-8">
                 {/* HEADER */}
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard/ecommerce/stock-movements">
+                    <Link href="/my-admin/dashboard/ecommerce/stock-movements">
                         <Button
                             variant="outline"
                             size="sm"
@@ -276,7 +276,7 @@ export default function Edit({ movement, variants, adjustment_action }: Props) {
 
                             {/* Submit button */}
                             <div className="flex justify-between gap-3">
-                                <Link href="/dashboard/ecommerce/stock-movements">
+                                <Link href="/my-admin/dashboard/ecommerce/stock-movements">
                                     <Button variant="outline" type="button">
                                         Cancel
                                     </Button>

@@ -24,7 +24,7 @@ PostLayout.layout = {
     breadcrumbs: [
         {
             title: 'Pengaturan',
-            href: '/dashboard/config/main',
+            href: '/my-admin/dashboard/config/main',
         },
         {
             title: 'Wilayah',

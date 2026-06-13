@@ -169,8 +169,8 @@ export default function Create() {
 Create.layout = (page: React.ReactNode) => (
     <PageEditorLayout
         breadcrumbs={[
-            { title: 'Pages', href: '/dashboard/pages' },
-            { title: 'Create', href: '/dashboard/pages/create' },
+            { title: 'Pages', href: '/my-admin/dashboard/pages' },
+            { title: 'Create', href: '/my-admin/dashboard/pages/create' },
         ]}
     >
         {page}

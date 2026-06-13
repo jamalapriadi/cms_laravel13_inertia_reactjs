@@ -25,7 +25,7 @@ export default function Editor({
         const formData = new FormData();
         formData.append('image', file);
 
-        const res = await axios.post('/dashboard/upload-image', formData);
+        const res = await axios.post('/my-admin/dashboard/upload-image', formData);
 
         return res.data.url;
     };

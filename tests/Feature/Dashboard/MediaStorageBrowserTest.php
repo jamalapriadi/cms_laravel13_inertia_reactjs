@@ -17,7 +17,7 @@ test('media page lists folders and files from public storage', function () {
 
     $response = $this
         ->actingAs($user)
-        ->get('/dashboard/media');
+        ->get('/my-admin/dashboard/media');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -40,7 +40,7 @@ test('media page can open a storage folder', function () {
 
     $response = $this
         ->actingAs($user)
-        ->get('/dashboard/media?path=media/2026/05');
+        ->get('/my-admin/dashboard/media?path=media/2026/05');
 
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
@@ -63,7 +63,7 @@ test('media library treats webp files as previewable images', function () {
 
     $response = $this
         ->actingAs($user)
-        ->get('/dashboard/media/library?path=media/2026/06');
+        ->get('/my-admin/dashboard/media/library?path=media/2026/06');
 
     $response
         ->assertSuccessful()
@@ -98,7 +98,7 @@ test('media upload converts supported images to webp', function () {
 
     $response = $this
         ->actingAs($user)
-        ->post('/dashboard/media', [
+        ->post('/my-admin/dashboard/media', [
             'file' => UploadedFile::fake()->image('avatar.jpg', 100, 100),
         ]);
 
@@ -119,7 +119,7 @@ test('media json upload returns preview data for uploaded webp images', function
 
     $response = $this
         ->actingAs($user)
-        ->post('/dashboard/media/json', [
+        ->post('/my-admin/dashboard/media/json', [
             'file' => UploadedFile::fake()->image('hero.webp', 100, 100),
         ]);
 

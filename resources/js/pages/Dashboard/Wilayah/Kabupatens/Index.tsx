@@ -34,7 +34,7 @@ interface Props {
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Kabupatens', href: '/dashboard/kabupatens' },
+    { title: 'Kabupatens', href: '/my-admin/dashboard/kabupatens' },
 ];
 
 export default function Index({ kabupatens, provinces, filters }: Props) {
@@ -44,7 +44,7 @@ export default function Index({ kabupatens, provinces, filters }: Props) {
 
     function applyFilter() {
         router.get(
-            '/dashboard/kabupatens',
+            '/my-admin/dashboard/kabupatens',
             { search, province_id: provinceId },
             { preserveState: true },
         );
@@ -53,7 +53,7 @@ export default function Index({ kabupatens, provinces, filters }: Props) {
     const handleDelete = () => {
         const toastId = toast.loading('Deleting...');
 
-        router.delete(`/dashboard/kabupatens/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/kabupatens/${deletingId}`, {
             preserveScroll: true,
 
             onSuccess: () => {
@@ -91,7 +91,7 @@ export default function Index({ kabupatens, provinces, filters }: Props) {
             label: 'Action',
             render: (row) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/kabupatens/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/kabupatens/${row.id}/edit`}>
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>
@@ -138,7 +138,7 @@ export default function Index({ kabupatens, provinces, filters }: Props) {
                 {/* HEADER */}
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Kabupatens</h1>
-                    <Link href="/dashboard/kabupatens/create">
+                    <Link href="/my-admin/dashboard/kabupatens/create">
                         <Button>Add Kabupaten</Button>
                     </Link>
                 </div>

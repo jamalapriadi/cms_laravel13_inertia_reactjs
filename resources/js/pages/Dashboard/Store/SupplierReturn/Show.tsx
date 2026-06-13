@@ -49,7 +49,7 @@ export default function Show({ supplierReturn }: Props) {
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                        <Link href="/dashboard/ecommerce/supplier-returns">
+                        <Link href="/my-admin/dashboard/ecommerce/supplier-returns">
                             <Button variant="outline" size="icon">
                                 <ArrowLeft className="h-4 w-4" />
                             </Button>
@@ -66,7 +66,7 @@ export default function Show({ supplierReturn }: Props) {
 
                     {supplierReturn.status === 'pending' && (
                         <Link
-                            href={`/dashboard/ecommerce/supplier-returns/${supplierReturn.id}/edit`}
+                            href={`/my-admin/dashboard/ecommerce/supplier-returns/${supplierReturn.id}/edit`}
                         >
                             <Button className="gap-2">
                                 <Edit className="h-4 w-4" />

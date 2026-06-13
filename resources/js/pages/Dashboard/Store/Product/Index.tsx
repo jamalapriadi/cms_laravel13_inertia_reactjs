@@ -115,7 +115,7 @@ export default function Index({
     };
 
     const downloadImportTemplate = () => {
-        window.location.href = '/dashboard/ecommerce/products/template';
+        window.location.href = '/my-admin/dashboard/ecommerce/products/template';
     };
 
     const triggerImport = () => {
@@ -130,7 +130,7 @@ export default function Index({
         }
 
         router.post(
-            '/dashboard/ecommerce/products/import',
+            '/my-admin/dashboard/ecommerce/products/import',
             { file },
             {
                 forceFormData: true,
@@ -150,7 +150,7 @@ export default function Index({
         if (categoryId) params.append('category_id', categoryId);
         if (brandId) params.append('brand_id', brandId);
 
-        window.location.href = `/dashboard/ecommerce/products/export${params.toString() ? `?${params.toString()}` : ''}`;
+        window.location.href = `/my-admin/dashboard/ecommerce/products/export${params.toString() ? `?${params.toString()}` : ''}`;
     };
 
     /**
@@ -158,7 +158,7 @@ export default function Index({
      */
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/products',
+            '/my-admin/dashboard/ecommerce/products',
             {
                 search,
                 category_id: categoryId,
@@ -179,7 +179,7 @@ export default function Index({
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/products/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/products/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -245,7 +245,7 @@ export default function Index({
             label: 'Action',
             render: (row: Product) => (
                 <div className="flex flex-wrap gap-2">
-                    <Link href={`/dashboard/ecommerce/products/${row.id}`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/products/${row.id}`}>
                         <Button
                             size="sm"
                             variant="outline"
@@ -255,7 +255,7 @@ export default function Index({
                         </Button>
                     </Link>
 
-                    <Link href={`/dashboard/ecommerce/products/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/products/${row.id}/edit`}>
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>
@@ -297,7 +297,7 @@ export default function Index({
                             Import Excel
                         </Button>
 
-                        <Link href="/dashboard/ecommerce/products/create">
+                        <Link href="/my-admin/dashboard/ecommerce/products/create">
                             <Button>Add Product</Button>
                         </Link>
                     </div>

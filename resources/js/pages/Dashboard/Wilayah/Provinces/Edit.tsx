@@ -19,8 +19,8 @@ interface Props {
 
 export default function Edit({ province }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Provinces', href: '/dashboard/provinces' },
-        { title: 'Edit', href: `/dashboard/provinces/${province.id}/edit` },
+        { title: 'Provinces', href: '/my-admin/dashboard/provinces' },
+        { title: 'Edit', href: `/my-admin/dashboard/provinces/${province.id}/edit` },
     ];
 
     const { data, setData, put, processing, errors } = useForm({
@@ -40,7 +40,7 @@ export default function Edit({ province }: Props) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        put(`/dashboard/provinces/${province.id}`, {
+        put(`/my-admin/dashboard/provinces/${province.id}`, {
             onStart: () => toast.loading('Saving...'),
             onSuccess: () => toast.dismiss(),
             onError: () => toast.dismiss(),
@@ -90,7 +90,7 @@ export default function Edit({ province }: Props) {
                         </div>
 
                         <div className="flex justify-between gap-3">
-                            <Link href="/dashboard/provinces">
+                            <Link href="/my-admin/dashboard/provinces">
                                 <Button variant="outline" disabled={processing}>
                                     Cancel
                                 </Button>

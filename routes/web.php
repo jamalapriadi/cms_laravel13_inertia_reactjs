@@ -1,7 +1,13 @@
 <?php
 
-use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
-use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Customer\Auth\CustomerAuthenticatedSessionController;
+use App\Http\Controllers\Customer\Auth\CustomerEmailVerificationNotificationController;
+use App\Http\Controllers\Customer\Auth\CustomerEmailVerificationPromptController;
+use App\Http\Controllers\Customer\Auth\CustomerNewPasswordController;
+use App\Http\Controllers\Customer\Auth\CustomerPasswordResetLinkController;
+use App\Http\Controllers\Customer\Auth\CustomerRegisteredUserController;
+use App\Http\Controllers\Customer\Auth\CustomerVerifyEmailController;
+use App\Http\Controllers\Customer\CustomerDashboardController;
 use App\Http\Controllers\Dashboard\Cms\PageTranslationController;
 use App\Http\Controllers\Dashboard\Cms\PostTranslationController;
 use App\Http\Controllers\Dashboard\KabupatenController;
@@ -19,6 +25,7 @@ use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\SiteContentController;
 use App\Http\Controllers\Dashboard\TaxonomyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\Store\BannerSlideController;
 use App\Http\Controllers\Store\BarcodeScannerController;
 use App\Http\Controllers\Store\BrandController;
@@ -47,41 +54,84 @@ use App\Http\Controllers\Store\VariantItemController;
 use App\Http\Controllers\User\PermissionController;
 use App\Http\Controllers\User\RoleController;
 use App\Http\Controllers\User\UserController;
+use App\Http\Middleware\EnsureCustomerAuthFeatureEnabled;
+use App\Http\Middleware\EnsureCustomerEmailVerified;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
+use Laravel\Fortify\Http\Controllers\VerifyEmailController;
 
 // Route::inertia('/', 'welcome', [
 //     'canRegister' => Features::enabled(Features::registration()),
 // ])->name('home');
 
-Route::middleware('guest')->group(function () {
+Route::get('/', [\Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::class, 'create'])
+    ->middleware(['guest'])
+    ->name('home');
 
-    Route::inertia('/', 'auth/login')->name('home');
+Route::prefix('auth')->name('customer.auth.')->group(function () {
+    Route::middleware('customer.guest')->group(function () {
+        Route::middleware([EnsureCustomerAuthFeatureEnabled::class.':login'])->group(function () {
+            Route::get('login', [CustomerAuthenticatedSessionController::class, 'create'])->name('login');
+            Route::post('login', [CustomerAuthenticatedSessionController::class, 'store'])->name('login.store');
+        });
 
+        Route::middleware([EnsureCustomerAuthFeatureEnabled::class.':registration'])->group(function () {
+            Route::get('register', [CustomerRegisteredUserController::class, 'create'])->name('register');
+            Route::post('register', [CustomerRegisteredUserController::class, 'store'])->name('register.store');
+        });
+
+        Route::middleware([EnsureCustomerAuthFeatureEnabled::class.':password_reset'])->group(function () {
+            Route::get('forgot-password', [CustomerPasswordResetLinkController::class, 'create'])->name('password.request');
+            Route::post('forgot-password', [CustomerPasswordResetLinkController::class, 'store'])->name('password.email');
+            Route::get('recovery-password/{token}', [CustomerNewPasswordController::class, 'create'])->name('password.reset');
+            Route::post('recovery-password', [CustomerNewPasswordController::class, 'store'])->name('password.store');
+        });
+    });
+
+    Route::middleware('customer.auth')->group(function () {
+        Route::get('verify-email', CustomerEmailVerificationPromptController::class)
+            ->name('verification.notice');
+
+        Route::get('verify-email/{id}/{hash}', CustomerVerifyEmailController::class)
+            ->middleware(['signed', 'throttle:6,1'])
+            ->name('verification.verify');
+
+        Route::post('email/verification-notification', CustomerEmailVerificationNotificationController::class)
+            ->middleware('throttle:6,1')
+            ->name('verification.send');
+
+        Route::post('logout', [CustomerAuthenticatedSessionController::class, 'destroy'])
+            ->name('logout');
+    });
 });
 
-Route::middleware('guest:customer')->prefix('onboard')->group(function () {
-    Route::get('login', [CustomerAuthController::class, 'login'])->name('customer.login');
-    Route::post('login', [CustomerAuthController::class, 'authenticate'])->name('customer.login.store');
-    Route::get('register', [CustomerAuthController::class, 'register'])->name('customer.register');
-    Route::post('register', [CustomerAuthController::class, 'store'])->name('customer.register.store');
-    Route::get('forgot-password', [CustomerAuthController::class, 'forgotPassword'])->name('customer.password.request');
-    Route::post('forgot-password', [CustomerAuthController::class, 'sendResetLink'])->name('customer.password.email');
-    Route::get('recovery-password', [CustomerAuthController::class, 'resetPassword'])->name('customer.password.reset');
-    Route::post('recovery-password', [CustomerAuthController::class, 'updatePassword'])->name('customer.password.update');
+Route::prefix('customer')->name('customer.')->middleware(['customer.auth', EnsureCustomerEmailVerified::class])->group(function () {
+    Route::get('dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
 });
 
-Route::middleware('auth:customer')->prefix('customer')->group(function () {
-    Route::get('dashboard', CustomerDashboardController::class)->name('customer.dashboard');
-    Route::post('logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
-});
+Route::redirect('/onboard/login', '/auth/login', 301);
+Route::redirect('/onboard/register', '/auth/register', 301);
+Route::redirect('/onboard/forgot-password', '/auth/forgot-password', 301);
+Route::get('/onboard/recovery-password', function (Request $request) {
+    $token = trim((string) $request->query('token'));
+
+    if ($token === '') {
+        return redirect()->route('customer.auth.password.request');
+    }
+
+    return redirect()->route('customer.auth.password.reset', [
+        'token' => $token,
+        'email' => $request->query('email'),
+    ]);
+})->name('legacy.customer.password.reset');
 
 Route::group(['prefix' => 'api'], function () {
     Route::get('/kabupaten/{provinsi}', [KelurahanController::class, 'getKabupaten']);
     Route::get('/kecamatan/{kabupaten}', [KelurahanController::class, 'getKecamatan']);
 });
 
-Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'prefix' => 'dashboard'], function () {
+Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'prefix' => 'my-admin/dashboard'], function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('provinces', ProvinceController::class);
@@ -211,3 +261,42 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
 });
 
 require __DIR__.'/settings.php';
+
+Route::redirect('/login', '/my-admin/login', 301);
+Route::redirect('/logout', '/my-admin/logout', 301);
+
+if (Features::enabled(Features::resetPasswords())) {
+    Route::redirect('/forgot-password', '/my-admin/forgot-password', 301);
+
+    Route::get('/reset-password/{token}', function (Request $request, string $token) {
+        $target = "/my-admin/reset-password/{$token}";
+        $queryString = $request->getQueryString();
+
+        return redirect()->to($queryString ? "{$target}?{$queryString}" : $target, 301);
+    })->name('legacy.password.reset');
+}
+
+if (Features::enabled(Features::registration())) {
+    Route::redirect('/register', '/my-admin/register', 301);
+}
+
+if (Features::enabled(Features::emailVerification())) {
+    Route::redirect('/email/verify', '/my-admin/email/verify', 301);
+
+    Route::get('/email/verify/{id}/{hash}', function (Request $request) {
+        return app(VerifyEmailController::class)($request);
+    })
+        ->middleware(['auth', 'signed', 'throttle:6,1'])
+        ->name('legacy.verification.verify');
+}
+
+if (Features::enabled(Features::twoFactorAuthentication())) {
+    Route::redirect('/two-factor-challenge', '/my-admin/two-factor-challenge', 301);
+}
+
+Route::get('/dashboard/{path?}', function (Request $request, ?string $path = null) {
+    $target = '/my-admin/dashboard'.($path ? "/{$path}" : '');
+    $queryString = $request->getQueryString();
+
+    return redirect()->to($queryString ? "{$target}?{$queryString}" : $target, 301);
+})->where('path', '.*');

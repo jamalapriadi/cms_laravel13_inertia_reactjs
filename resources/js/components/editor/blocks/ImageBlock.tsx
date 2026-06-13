@@ -12,7 +12,7 @@ function ImageEditor({ data, onChange }: any) {
         setIsUploading(true);
 
         try {
-            const response = await fetch('/dashboard/media/upload', {
+            const response = await fetch('/my-admin/dashboard/media/upload', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN':

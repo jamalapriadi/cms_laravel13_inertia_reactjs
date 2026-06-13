@@ -106,7 +106,7 @@ export default function Index({
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/shipping',
+            '/my-admin/dashboard/ecommerce/shipping',
             {
                 search,
                 status,
@@ -123,12 +123,12 @@ export default function Index({
         setSearch('');
         setStatus('');
         setCourier('');
-        router.get('/dashboard/ecommerce/shipping', {}, { replace: true });
+        router.get('/my-admin/dashboard/ecommerce/shipping', {}, { replace: true });
     };
 
     const handleDelete = () => {
         if (!deletingId) return;
-        router.delete(`/dashboard/ecommerce/shipping/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/shipping/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -227,7 +227,7 @@ export default function Index({
             label: 'Actions',
             render: (row: Shipping) => (
                 <div className="flex items-center gap-2">
-                    <Link href={`/dashboard/ecommerce/shipping/${row.id}`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/shipping/${row.id}`}>
                         <Button
                             size="sm"
                             variant="secondary"
@@ -237,7 +237,7 @@ export default function Index({
                             <Eye className="h-3.5 w-3.5" />
                         </Button>
                     </Link>
-                    <Link href={`/dashboard/ecommerce/shipping/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/shipping/${row.id}/edit`}>
                         <Button
                             size="sm"
                             variant="secondary"
@@ -278,7 +278,7 @@ export default function Index({
                         </p>
                     </div>
 
-                    <Link href="/dashboard/ecommerce/shipping/create">
+                    <Link href="/my-admin/dashboard/ecommerce/shipping/create">
                         <Button className="flex items-center gap-2">
                             <Plus className="h-4 w-4" />
                             Add Shipment

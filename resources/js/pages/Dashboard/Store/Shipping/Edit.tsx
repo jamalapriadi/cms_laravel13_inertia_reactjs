@@ -65,7 +65,7 @@ export default function Edit({ shipping, orders }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(`/dashboard/ecommerce/shipping/${shipping.id}`);
+        put(`/my-admin/dashboard/ecommerce/shipping/${shipping.id}`);
     };
 
     return (
@@ -75,7 +75,7 @@ export default function Edit({ shipping, orders }: Props) {
             <div className="container mx-auto max-w-4xl space-y-8 px-6 py-8">
                 {/* HEADER */}
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard/ecommerce/shipping">
+                    <Link href="/my-admin/dashboard/ecommerce/shipping">
                         <Button
                             variant="outline"
                             size="sm"
@@ -302,7 +302,7 @@ export default function Edit({ shipping, orders }: Props) {
 
                         {/* Submit Actions */}
                         <div className="flex justify-end gap-3 border-t border-border pt-4">
-                            <Link href="/dashboard/ecommerce/shipping">
+                            <Link href="/my-admin/dashboard/ecommerce/shipping">
                                 <Button type="button" variant="outline">
                                     Cancel
                                 </Button>

@@ -78,7 +78,7 @@ export default function Preferences({ options }: Props) {
 
         try {
             const response = await fetch(
-                `/dashboard/media/library?path=${encodeURIComponent(path)}`,
+                `/my-admin/dashboard/media/library?path=${encodeURIComponent(path)}`,
             );
             const result = await response.json();
 
@@ -113,7 +113,7 @@ export default function Preferences({ options }: Props) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        post('/dashboard/options', {
+        post('/my-admin/dashboard/options', {
             preserveScroll: true,
             onStart: () => toast.loading('Saving...', { id: 'save' }),
             onSuccess: () =>
@@ -381,11 +381,11 @@ Preferences.layout = {
     breadcrumbs: [
         {
             title: 'Pengaturan',
-            href: '/dashboard/config/main',
+            href: '/my-admin/dashboard/config/main',
         },
         {
             title: 'Preferences',
-            href: '/dashboard/config/preferences',
+            href: '/my-admin/dashboard/config/preferences',
         },
     ],
 };

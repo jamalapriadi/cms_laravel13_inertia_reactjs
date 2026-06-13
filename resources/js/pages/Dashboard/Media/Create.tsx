@@ -28,7 +28,7 @@ export default function CreateMedia() {
 
         files.forEach((file) => {
             router.post(
-                '/dashboard/media',
+                '/my-admin/dashboard/media',
                 { file },
                 {
                     forceFormData: true,
@@ -131,15 +131,15 @@ export default function CreateMedia() {
  */
 CreateMedia.layout = {
     breadcrumbs: [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Media', href: '/dashboard/media' },
-        { title: 'Upload', href: '/dashboard/media/create' },
+        { title: 'Dashboard', href: '/my-admin/dashboard' },
+        { title: 'Media', href: '/my-admin/dashboard/media' },
+        { title: 'Upload', href: '/my-admin/dashboard/media/create' },
     ],
 };
 
 // Index.layout = {
 //     breadcrumbs: [
-//         { title: 'Dashboard', href: '/dashboard' },
-//         { title: 'Media Library', href: '/dashboard/media' },
+//         { title: 'Dashboard', href: '/my-admin/dashboard' },
+//         { title: 'Media Library', href: '/my-admin/dashboard/media' },
 //     ],
 // };

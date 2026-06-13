@@ -6,7 +6,7 @@ export default function MediaDropzone() {
     const onDrop = useCallback((acceptedFiles: File[]) => {
         acceptedFiles.forEach((file) => {
             router.post(
-                '/dashboard/media',
+                '/my-admin/dashboard/media',
                 {
                     file,
                 },

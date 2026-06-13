@@ -4,15 +4,12 @@ namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Support\Arr;
 
 class CustomerResetPasswordNotification extends ResetPassword
 {
     protected function resetUrl($notifiable): string
     {
-        $frontendUrl = rtrim((string) config('customer.frontend_url'), '/');
-
-        return $frontendUrl.'/reset-password?'.Arr::query([
+        return route('customer.auth.password.reset', [
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
         ]);

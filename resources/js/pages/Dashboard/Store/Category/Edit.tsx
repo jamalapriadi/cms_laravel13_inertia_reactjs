@@ -88,7 +88,7 @@ export default function Edit({ category: initialCategory, categories }: Props) {
             image !== undefined ? { ...categoryData, image } : categoryData;
 
         router.post(
-            `/dashboard/ecommerce/categories/${initialCategory.id}`,
+            `/my-admin/dashboard/ecommerce/categories/${initialCategory.id}`,
             {
                 _method: 'put',
                 ...payload,
@@ -243,7 +243,7 @@ export default function Edit({ category: initialCategory, categories }: Props) {
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/dashboard/ecommerce/categories')
+                                router.visit('/my-admin/dashboard/ecommerce/categories')
                             }
                         >
                             Cancel

@@ -17,7 +17,7 @@ beforeEach(function () {
 
 test('it reuses cached list data for the same request context', function () {
     $service = app(ListCacheService::class);
-    $request = Request::create('/dashboard/ecommerce/products', 'GET', [
+    $request = Request::create('/my-admin/dashboard/ecommerce/products', 'GET', [
         'page' => 1,
         'search' => 'iphone',
     ]);
@@ -44,12 +44,12 @@ test('it reuses cached list data for the same request context', function () {
 test('it separates list cache entries by request parameters', function () {
     $service = app(ListCacheService::class);
 
-    $firstRequest = Request::create('/dashboard/ecommerce/products', 'GET', [
+    $firstRequest = Request::create('/my-admin/dashboard/ecommerce/products', 'GET', [
         'page' => 1,
         'search' => 'iphone',
     ]);
 
-    $secondRequest = Request::create('/dashboard/ecommerce/products', 'GET', [
+    $secondRequest = Request::create('/my-admin/dashboard/ecommerce/products', 'GET', [
         'page' => 2,
         'search' => 'iphone',
     ]);
@@ -74,7 +74,7 @@ test('it separates list cache entries by request parameters', function () {
 
 test('it clears cached entries for one module without cache tags', function () {
     $service = app(ListCacheService::class);
-    $request = Request::create('/dashboard/ecommerce/products', 'GET', ['page' => 1]);
+    $request = Request::create('/my-admin/dashboard/ecommerce/products', 'GET', ['page' => 1]);
 
     $runs = 0;
 

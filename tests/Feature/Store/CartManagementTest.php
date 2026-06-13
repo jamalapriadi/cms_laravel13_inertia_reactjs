@@ -82,7 +82,7 @@ test('authenticated user can view cart list with summary metrics and insights', 
     ]);
 
     $response = $this->actingAs($user)
-        ->get('/dashboard/ecommerce/carts');
+        ->get('/my-admin/dashboard/ecommerce/carts');
 
     $response->assertStatus(200);
 
@@ -127,7 +127,7 @@ test('user can filter carts by customer type and search query', function () {
 
     // Filter guest carts only
     $response = $this->actingAs($loggedInUser)
-        ->get('/dashboard/ecommerce/carts?customer_type=guest');
+        ->get('/my-admin/dashboard/ecommerce/carts?customer_type=guest');
 
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
@@ -138,7 +138,7 @@ test('user can filter carts by customer type and search query', function () {
 
     // Filter registered customer carts only
     $response = $this->actingAs($loggedInUser)
-        ->get('/dashboard/ecommerce/carts?customer_type=registered');
+        ->get('/my-admin/dashboard/ecommerce/carts?customer_type=registered');
 
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
@@ -150,7 +150,7 @@ test('user can filter carts by customer type and search query', function () {
 
     // Search by name
     $response = $this->actingAs($loggedInUser)
-        ->get('/dashboard/ecommerce/carts?search=Alice');
+        ->get('/my-admin/dashboard/ecommerce/carts?search=Alice');
 
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
@@ -198,7 +198,7 @@ test('user can view cart details', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->get("/dashboard/ecommerce/carts/{$cart->id}");
+        ->get("/my-admin/dashboard/ecommerce/carts/{$cart->id}");
 
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
@@ -256,7 +256,7 @@ test('user can delete a specific cart item', function () {
 
     // Delete item 1
     $response = $this->actingAs($user)
-        ->delete("/dashboard/ecommerce/carts/{$cart->id}/items/{$item1->id}");
+        ->delete("/my-admin/dashboard/ecommerce/carts/{$cart->id}/items/{$item1->id}");
 
     $response->assertRedirect();
     $this->assertDatabaseMissing('cart_items', ['id' => $item1->id]);
@@ -302,7 +302,7 @@ test('deleting the last cart item deletes the entire cart', function () {
 
     // Delete the only item
     $response = $this->actingAs($user)
-        ->delete("/dashboard/ecommerce/carts/{$cart->id}/items/{$item->id}");
+        ->delete("/my-admin/dashboard/ecommerce/carts/{$cart->id}/items/{$item->id}");
 
     $response->assertRedirect(route('carts.index'));
     $this->assertDatabaseMissing('cart_items', ['id' => $item->id]);
@@ -318,7 +318,7 @@ test('user can delete the entire cart', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->delete("/dashboard/ecommerce/carts/{$cart->id}");
+        ->delete("/my-admin/dashboard/ecommerce/carts/{$cart->id}");
 
     $response->assertRedirect(route('carts.index'));
     $this->assertDatabaseMissing('carts', ['id' => $cart->id]);

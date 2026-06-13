@@ -65,7 +65,7 @@ export default function Index({
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/faqs',
+            '/my-admin/dashboard/ecommerce/faqs',
             {
                 search,
                 type: type || undefined,
@@ -85,7 +85,7 @@ export default function Index({
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/faqs/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/faqs/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -154,7 +154,7 @@ export default function Index({
             label: 'Actions',
             render: (row: FaqItem) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/ecommerce/faqs/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/faqs/${row.id}/edit`}>
                         <Button size="sm" variant="secondary">
                             <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -184,7 +184,7 @@ export default function Index({
                         </p>
                     </div>
 
-                    <Link href="/dashboard/ecommerce/faqs/create">
+                    <Link href="/my-admin/dashboard/ecommerce/faqs/create">
                         <Button className="gap-2">
                             <Plus className="h-4 w-4" />
                             Add FAQ

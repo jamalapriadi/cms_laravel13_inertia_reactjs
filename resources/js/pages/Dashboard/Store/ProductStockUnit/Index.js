@@ -53,7 +53,7 @@ function Index(_a) {
     var _d = (0, react_2.useState)(filters.product_variant_id || ''), variantId = _d[0], setVariantId = _d[1];
     var _e = (0, react_2.useState)(null), deletingId = _e[0], setDeletingId = _e[1];
     var applyFilter = function () {
-        react_1.router.get('/dashboard/ecommerce/product-stock-units', {
+        react_1.router.get('/my-admin/dashboard/ecommerce/product-stock-units', {
             search: search,
             status: status,
             product_variant_id: variantId,
@@ -66,7 +66,7 @@ function Index(_a) {
         setSearch('');
         setStatus('');
         setVariantId('');
-        react_1.router.get('/dashboard/ecommerce/product-stock-units', {}, { replace: true });
+        react_1.router.get('/my-admin/dashboard/ecommerce/product-stock-units', {}, { replace: true });
     };
     var columns = [
         {
@@ -118,12 +118,12 @@ function Index(_a) {
         {
             label: 'Actions',
             render: function (row) { return (<div className="flex items-center gap-2">
-                    <react_1.Link href={"/dashboard/ecommerce/product-stock-units/".concat(row.id)}>
+                    <react_1.Link href={"/my-admin/dashboard/ecommerce/product-stock-units/".concat(row.id)}>
                         <button_1.Button size="sm" variant="secondary" title="Detail">
                             <lucide_react_1.Eye className="h-3.5 w-3.5"/>
                         </button_1.Button>
                     </react_1.Link>
-                    <react_1.Link href={"/dashboard/ecommerce/product-stock-units/".concat(row.id, "/edit")}>
+                    <react_1.Link href={"/my-admin/dashboard/ecommerce/product-stock-units/".concat(row.id, "/edit")}>
                         <button_1.Button size="sm" variant="secondary" title="Edit">
                             <lucide_react_1.Edit className="h-3.5 w-3.5"/>
                         </button_1.Button>
@@ -138,7 +138,7 @@ function Index(_a) {
         if (!deletingId) {
             return;
         }
-        react_1.router.delete("/dashboard/ecommerce/product-stock-units/".concat(deletingId), {
+        react_1.router.delete("/my-admin/dashboard/ecommerce/product-stock-units/".concat(deletingId), {
             preserveScroll: true,
             onFinish: function () { return setDeletingId(null); },
         });
@@ -158,7 +158,7 @@ function Index(_a) {
                         </p>
                     </div>
 
-                    <react_1.Link href="/dashboard/ecommerce/product-stock-units/create">
+                    <react_1.Link href="/my-admin/dashboard/ecommerce/product-stock-units/create">
                         <button_1.Button className="gap-2">
                             <lucide_react_1.Plus className="h-4 w-4"/>
                             Add Stok Unit

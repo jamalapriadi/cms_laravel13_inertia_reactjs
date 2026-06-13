@@ -72,7 +72,7 @@ export default function Index({ customers, summary, filters }: Props) {
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/customers',
+            '/my-admin/dashboard/ecommerce/customers',
             { search, status },
             { preserveState: true, replace: true },
         );
@@ -81,12 +81,12 @@ export default function Index({ customers, summary, filters }: Props) {
     const clearFilter = () => {
         setSearch('');
         setStatus('');
-        router.get('/dashboard/ecommerce/customers', {}, { replace: true });
+        router.get('/my-admin/dashboard/ecommerce/customers', {}, { replace: true });
     };
 
     const toggleLogin = (customer: Customer) => {
         router.patch(
-            `/dashboard/ecommerce/customers/${customer.id}/toggle-login`,
+            `/my-admin/dashboard/ecommerce/customers/${customer.id}/toggle-login`,
             {},
             { preserveScroll: true },
         );
@@ -98,7 +98,7 @@ export default function Index({ customers, summary, filters }: Props) {
         }
 
         router.post(
-            `/dashboard/ecommerce/customers/${resetId}/reset-password`,
+            `/my-admin/dashboard/ecommerce/customers/${resetId}/reset-password`,
             {},
             {
                 preserveScroll: true,
@@ -112,7 +112,7 @@ export default function Index({ customers, summary, filters }: Props) {
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/customers/${deleteId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/customers/${deleteId}`, {
             preserveScroll: true,
             onFinish: () => setDeleteId(null),
         });
@@ -184,7 +184,7 @@ export default function Index({ customers, summary, filters }: Props) {
             label: 'Actions',
             render: (row: Customer) => (
                 <div className="flex flex-wrap gap-2">
-                    <Link href={`/dashboard/ecommerce/customers/${row.id}`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/customers/${row.id}`}>
                         <Button size="sm" variant="secondary" title="Detail">
                             <Eye className="h-3.5 w-3.5" />
                         </Button>

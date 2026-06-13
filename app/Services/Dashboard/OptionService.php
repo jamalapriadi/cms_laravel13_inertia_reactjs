@@ -28,10 +28,12 @@ class OptionService
                     $value = json_encode($value);
                 }
 
-                Option::updateOrCreate(
+                $option = Option::updateOrCreate(
                     ['key' => $key],
                     ['value' => $value]
                 );
+
+                Cache::forget("option_{$key}");
             }
 
         });

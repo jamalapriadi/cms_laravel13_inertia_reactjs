@@ -30,7 +30,7 @@ export default function Edit({ menu }: Props) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        put(`/dashboard/menus/${menu.id}`, {
+        put(`/my-admin/dashboard/menus/${menu.id}`, {
             preserveScroll: true,
             onStart: () => toast.loading('Saving...', { id: 'save-menu' }),
             onSuccess: () => toast.success('Menu berhasil diperbarui', { id: 'save-menu' }),
@@ -85,7 +85,7 @@ export default function Edit({ menu }: Props) {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/dashboard/menus')}
+                            onClick={() => router.visit('/my-admin/dashboard/menus')}
                         >
                             Cancel
                         </Button>
@@ -102,7 +102,7 @@ export default function Edit({ menu }: Props) {
 
 Edit.layout = {
     breadcrumbs: [
-        { title: 'Menus', href: '/dashboard/menus' },
+        { title: 'Menus', href: '/my-admin/dashboard/menus' },
         { title: 'Edit', href: '#' },
     ],
 };

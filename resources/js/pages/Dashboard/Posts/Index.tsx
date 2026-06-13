@@ -96,7 +96,7 @@ export default function Index({
      * APPLY FILTER
      */
     const applyFilter = () => {
-        get('/dashboard/posts', {
+        get('/my-admin/dashboard/posts', {
             preserveState: true,
             preserveScroll: true,
         });
@@ -110,7 +110,7 @@ export default function Index({
             return;
         }
 
-        router.delete(`/dashboard/posts/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/posts/${deletingId}`, {
             preserveScroll: true,
             onStart: () => toast.loading('Deleting...', { id: 'delete' }),
             onSuccess: () =>
@@ -157,7 +157,7 @@ export default function Index({
             render: (row: Post) => (
                 <div className="space-y-2">
                     <div className="flex flex-wrap gap-2">
-                        <Link href={`/dashboard/posts/${row.id}/edit`}>
+                        <Link href={`/my-admin/dashboard/posts/${row.id}/edit`}>
                             <Button size="sm" variant="secondary">
                                 Edit
                             </Button>
@@ -286,10 +286,10 @@ export default function Index({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Link href="/dashboard/posts/usage-guide">
+                        <Link href="/my-admin/dashboard/posts/usage-guide">
                             <Button variant="outline">Cara Penggunaan</Button>
                         </Link>
-                        <Link href="/dashboard/posts/create">
+                        <Link href="/my-admin/dashboard/posts/create">
                             <Button>Add Post</Button>
                         </Link>
                     </div>
@@ -362,7 +362,7 @@ export default function Index({
  * LAYOUT
  */
 Index.layout = (page: React.ReactNode) => (
-    <AppLayout breadcrumbs={[{ title: 'Posts', href: '/dashboard/posts' }]}>
+    <AppLayout breadcrumbs={[{ title: 'Posts', href: '/my-admin/dashboard/posts' }]}>
         {page}
     </AppLayout>
 );

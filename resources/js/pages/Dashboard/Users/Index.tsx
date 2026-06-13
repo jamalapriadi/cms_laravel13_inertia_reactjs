@@ -60,13 +60,13 @@ export default function Index({ users, roles, filters }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Users',
-            href: '/dashboard/users',
+            href: '/my-admin/dashboard/users',
         },
     ];
 
     function applyFilter() {
         router.get(
-            '/dashboard/users',
+            '/my-admin/dashboard/users',
             { search, role, status },
             { preserveState: true },
         );
@@ -77,7 +77,7 @@ export default function Index({ users, roles, filters }: Props) {
 
         const toastId = toast.loading('Deleting user...');
 
-        router.delete(`/dashboard/users/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/users/${deletingId}`, {
             preserveScroll: true,
             onSuccess: () => {
                 toast.success('User deleted successfully!', {
@@ -99,7 +99,7 @@ export default function Index({ users, roles, filters }: Props) {
         const toastId = toast.loading('Updating status...');
 
         router.patch(
-            `/dashboard/users/${id}/toggle-status`,
+            `/my-admin/dashboard/users/${id}/toggle-status`,
             {},
             {
                 preserveScroll: true,
@@ -201,7 +201,7 @@ export default function Index({ users, roles, filters }: Props) {
                           <div className="flex gap-2">
                               {canEdit && (
                                   <Link
-                                      href={`/dashboard/users/${row.id}/edit`}
+                                      href={`/my-admin/dashboard/users/${row.id}/edit`}
                                   >
                                       <Button size="sm" variant="secondary">
                                           Edit
@@ -313,7 +313,7 @@ export default function Index({ users, roles, filters }: Props) {
                     <h1 className="text-2xl font-bold">Users</h1>
 
                     {canCreate && (
-                        <Link href="/dashboard/users/create">
+                        <Link href="/my-admin/dashboard/users/create">
                             <Button>Add New User</Button>
                         </Link>
                     )}

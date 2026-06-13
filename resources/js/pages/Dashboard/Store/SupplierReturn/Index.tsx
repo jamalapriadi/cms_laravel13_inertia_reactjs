@@ -52,7 +52,7 @@ export default function Index({ returns, filters }: Props) {
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/supplier-returns',
+            '/my-admin/dashboard/ecommerce/supplier-returns',
             { search, status },
             { preserveState: true, replace: true },
         );
@@ -62,7 +62,7 @@ export default function Index({ returns, filters }: Props) {
         setSearch('');
         setStatus('');
         router.get(
-            '/dashboard/ecommerce/supplier-returns',
+            '/my-admin/dashboard/ecommerce/supplier-returns',
             {},
             { replace: true },
         );
@@ -73,7 +73,7 @@ export default function Index({ returns, filters }: Props) {
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/supplier-returns/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/supplier-returns/${deletingId}`, {
             preserveScroll: true,
             onFinish: () => setDeletingId(null),
         });
@@ -123,7 +123,7 @@ export default function Index({ returns, filters }: Props) {
             render: (row: SupplierReturn) => (
                 <div className="flex gap-2">
                     <Link
-                        href={`/dashboard/ecommerce/supplier-returns/${row.id}`}
+                        href={`/my-admin/dashboard/ecommerce/supplier-returns/${row.id}`}
                     >
                         <Button size="sm" variant="secondary" title="Detail">
                             <Eye className="h-3.5 w-3.5" />
@@ -132,7 +132,7 @@ export default function Index({ returns, filters }: Props) {
                     {row.status === 'pending' && (
                         <>
                             <Link
-                                href={`/dashboard/ecommerce/supplier-returns/${row.id}/edit`}
+                                href={`/my-admin/dashboard/ecommerce/supplier-returns/${row.id}/edit`}
                             >
                                 <Button
                                     size="sm"
@@ -173,7 +173,7 @@ export default function Index({ returns, filters }: Props) {
                         </p>
                     </div>
 
-                    <Link href="/dashboard/ecommerce/supplier-returns/create">
+                    <Link href="/my-admin/dashboard/ecommerce/supplier-returns/create">
                         <Button className="gap-2">
                             <Plus className="h-4 w-4" />
                             Tambah Retur

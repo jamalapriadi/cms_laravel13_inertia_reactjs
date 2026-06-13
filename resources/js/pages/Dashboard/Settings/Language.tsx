@@ -101,7 +101,7 @@ export default function Language({
             return;
         }
 
-        post('/dashboard/options', {
+        post('/my-admin/dashboard/options', {
             preserveScroll: true,
             onStart: () => toast.loading('Saving...', { id: 'save' }),
             onSuccess: () =>
@@ -239,11 +239,11 @@ Language.layout = {
     breadcrumbs: [
         {
             title: 'Pengaturan',
-            href: '/dashboard/config/main',
+            href: '/my-admin/dashboard/config/main',
         },
         {
             title: 'Language',
-            href: '/dashboard/config/language',
+            href: '/my-admin/dashboard/config/language',
         },
     ],
 };

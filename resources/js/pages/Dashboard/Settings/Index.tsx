@@ -23,50 +23,50 @@ const MENUS: MenuItem[] = [
     {
         title: 'General',
         description: 'View and update your store information.',
-        href: '/dashboard/config/general',
+        href: '/my-admin/dashboard/config/general',
         icon: Settings,
     },
     {
         title: 'Preferences',
         description:
             'The title and meta description help define how your web shows up on search engines.',
-        href: '/dashboard/config/preferences',
+        href: '/my-admin/dashboard/config/preferences',
         icon: Search,
     },
     {
         title: 'Users & Permissions',
         description: 'View and manage what Users can see or do in your web.',
-        href: '/dashboard/config/management',
+        href: '/my-admin/dashboard/config/management',
         icon: Users,
     },
     {
         title: 'Customer',
         description: 'View and manage what Customer can do in your web.',
-        href: '/dashboard/config/customer',
+        href: '/my-admin/dashboard/config/customer',
         icon: Headphones,
     },
     {
         title: 'Media',
         description: 'Manage image sizes and media configuration.',
-        href: '/dashboard/config/media',
+        href: '/my-admin/dashboard/config/media',
         icon: Image,
     },
     {
         title: 'Language',
         description: 'Configuration for your site language.',
-        href: '/dashboard/config/language',
+        href: '/my-admin/dashboard/config/language',
         icon: Languages,
     },
     {
         title: 'Site Contents',
         description: 'Manage dynamic text keys and translations by active locale.',
-        href: '/dashboard/config/site-contents',
+        href: '/my-admin/dashboard/config/site-contents',
         icon: FileText,
     },
     {
         title: 'Wilayah',
         description: 'Manage wilayah.',
-        href: '/dashboard/provinces',
+        href: '/my-admin/dashboard/provinces',
         icon: Map,
     },
 ];
@@ -127,7 +127,7 @@ ConfigMain.layout = {
     breadcrumbs: [
         {
             title: 'Pengaturan',
-            href: '/dashboard/config/main',
+            href: '/my-admin/dashboard/config/main',
         },
     ],
 };

@@ -91,7 +91,7 @@ export default function Edit({
             })),
         }));
 
-        post(`/dashboard/config/site-contents/${siteContent.id}`);
+        post(`/my-admin/dashboard/config/site-contents/${siteContent.id}`);
     };
 
     return (
@@ -100,7 +100,7 @@ export default function Edit({
 
             <div className="container mx-auto max-w-5xl space-y-8 px-6 py-8">
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard/config/site-contents">
+                    <Link href="/my-admin/dashboard/config/site-contents">
                         <Button variant="outline" size="icon">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
@@ -185,7 +185,7 @@ export default function Edit({
                             <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
                                 Tidak ada bahasa aktif. Aktifkan dulu di
                                 {' '}
-                                /dashboard/config/language.
+                                /my-admin/dashboard/config/language.
                             </div>
                         ) : (
                             <div className="space-y-4">
@@ -211,7 +211,7 @@ export default function Edit({
                     </div>
 
                     <div className="flex justify-end gap-3">
-                        <Link href="/dashboard/config/site-contents">
+                        <Link href="/my-admin/dashboard/config/site-contents">
                             <Button type="button" variant="outline">
                                 Cancel
                             </Button>

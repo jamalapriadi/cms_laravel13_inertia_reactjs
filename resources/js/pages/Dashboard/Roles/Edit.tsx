@@ -55,8 +55,8 @@ export default function Edit({ role, permissions }: Props) {
     });
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Roles', href: '/dashboard/roles' },
-        { title: 'Edit', href: `/dashboard/roles/${role.id}/edit` },
+        { title: 'Roles', href: '/my-admin/dashboard/roles' },
+        { title: 'Edit', href: `/my-admin/dashboard/roles/${role.id}/edit` },
     ];
 
     function togglePermission(permissionName: string) {
@@ -73,7 +73,7 @@ export default function Edit({ role, permissions }: Props) {
     function submit(e: React.FormEvent) {
         e.preventDefault();
 
-        put(`/dashboard/roles/${role.id}`, {
+        put(`/my-admin/dashboard/roles/${role.id}`, {
             onStart: () => toast.loading('Updating role...'),
             onSuccess: () => {
                 toast.dismiss();

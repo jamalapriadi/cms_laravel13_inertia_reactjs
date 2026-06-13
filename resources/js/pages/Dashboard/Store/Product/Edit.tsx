@@ -133,7 +133,7 @@ export default function Edit({
                 : productData;
 
         router.post(
-            `/dashboard/ecommerce/products/${initialProduct.id}`,
+            `/my-admin/dashboard/ecommerce/products/${initialProduct.id}`,
             {
                 _method: 'put',
                 ...payload,
@@ -381,7 +381,7 @@ export default function Edit({
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/dashboard/ecommerce/products')
+                                router.visit('/my-admin/dashboard/ecommerce/products')
                             }
                         >
                             Cancel

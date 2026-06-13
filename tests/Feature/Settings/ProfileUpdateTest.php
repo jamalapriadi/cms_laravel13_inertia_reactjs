@@ -10,6 +10,12 @@ test('profile page is displayed', function () {
         ->get(route('profile.edit'));
 
     $response->assertOk();
+    expect(route('profile.edit', absolute: false))->toBe('/my-admin/settings/profile');
+});
+
+test('legacy settings path redirects to the new admin profile settings path', function () {
+    $this->get('/settings')
+        ->assertRedirect('/my-admin/settings/profile');
 });
 
 test('profile information can be updated', function () {

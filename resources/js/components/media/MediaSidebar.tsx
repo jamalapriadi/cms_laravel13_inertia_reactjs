@@ -18,7 +18,7 @@ export default function MediaSidebar({ media, onUpdate }: Props) {
         const value = e.target.value;
 
         router.put(
-            `/dashboard/media/${selectedMedia.id}`,
+            `/my-admin/dashboard/media/${selectedMedia.id}`,
             {
                 alt: value,
             },

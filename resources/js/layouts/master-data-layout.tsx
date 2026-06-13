@@ -24,32 +24,32 @@ export default function MasterDataLayout({ children }: Props) {
     const menus = [
         {
             label: 'Products',
-            href: '/dashboard/ecommerce/products',
+            href: '/my-admin/dashboard/ecommerce/products',
             icon: Package,
         },
         {
             label: 'Product Variants',
-            href: '/dashboard/ecommerce/product-variants',
+            href: '/my-admin/dashboard/ecommerce/product-variants',
             icon: Boxes,
         },
         {
             label: 'Variant Items',
-            href: '/dashboard/ecommerce/variant-items',
+            href: '/my-admin/dashboard/ecommerce/variant-items',
             icon: ScanBarcode,
         },
         {
             label: 'Brands',
-            href: '/dashboard/brands',
+            href: '/my-admin/dashboard/brands',
             icon: Tag,
         },
         {
             label: 'Product Categories',
-            href: '/dashboard/ecommerce/categories',
+            href: '/my-admin/dashboard/ecommerce/categories',
             icon: FolderTree,
         },
         {
             label: 'Units',
-            href: '/dashboard/units',
+            href: '/my-admin/dashboard/units',
             icon: ClipboardList,
         },
     ];
@@ -110,7 +110,7 @@ MasterDataLayout.layout = {
     breadcrumbs: [
         {
             title: 'Dashboard',
-            href: '/dashboard',
+            href: '/my-admin/dashboard',
         },
         {
             title: 'Ecommerce',

@@ -543,8 +543,8 @@ export default function Create({ categories = [], tags = [] }: any) {
 Create.layout = (page: React.ReactNode) => (
     <PostEditorLayout
         breadcrumbs={[
-            { title: 'Posts', href: '/dashboard/posts' },
-            { title: 'Create', href: '/dashboard/posts/create' },
+            { title: 'Posts', href: '/my-admin/dashboard/posts' },
+            { title: 'Create', href: '/my-admin/dashboard/posts/create' },
         ]}
     >
         {page}

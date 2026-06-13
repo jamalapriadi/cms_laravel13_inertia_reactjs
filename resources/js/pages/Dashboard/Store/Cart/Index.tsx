@@ -71,7 +71,7 @@ export default function Index({
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/carts',
+            '/my-admin/dashboard/ecommerce/carts',
             {
                 search,
                 customer_type: customerType,
@@ -87,7 +87,7 @@ export default function Index({
         setSearch('');
         setCustomerType('');
         router.get(
-            '/dashboard/ecommerce/carts',
+            '/my-admin/dashboard/ecommerce/carts',
             {},
             {
                 preserveState: true,
@@ -100,7 +100,7 @@ export default function Index({
         if (!deletingId) {
             return;
         }
-        router.delete(`/dashboard/ecommerce/carts/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/carts/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -201,7 +201,7 @@ export default function Index({
             label: 'Actions',
             render: (row: Cart) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/ecommerce/carts/${row.id}`}>
+                    <Link href={`/my-admin/dashboard/ecommerce/carts/${row.id}`}>
                         <Button
                             size="sm"
                             variant="outline"

@@ -45,7 +45,7 @@ export default function Index({ menus, filters }: Props) {
      */
     const applyFilter = () => {
         router.get(
-            '/dashboard/menus',
+            '/my-admin/dashboard/menus',
             { search },
             { preserveState: true, replace: true },
         );
@@ -59,7 +59,7 @@ export default function Index({ menus, filters }: Props) {
             return;
         }
 
-        router.delete(`/dashboard/menus/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/menus/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -96,13 +96,13 @@ export default function Index({ menus, filters }: Props) {
             label: 'Action',
             render: (row: Menu) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/menus/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/menus/${row.id}/edit`}>
                         <Button size="sm" variant="outline">
                             <Edit className="h-4 w-4" />
                         </Button>
                     </Link>
 
-                    <Link href={`/dashboard/menus/${row.id}/builder`}>
+                    <Link href={`/my-admin/dashboard/menus/${row.id}/builder`}>
                         <Button size="sm" variant="secondary">
                             <Hammer className="mr-2 h-4 w-4" />
                             Builder
@@ -133,7 +133,7 @@ export default function Index({ menus, filters }: Props) {
                         <p className="text-muted-foreground">Manage navigation menus</p>
                     </div>
 
-                    <Link href="/dashboard/menus/create">
+                    <Link href="/my-admin/dashboard/menus/create">
                         <Button>Add Menu</Button>
                     </Link>
                 </div>
@@ -201,5 +201,5 @@ export default function Index({ menus, filters }: Props) {
  * ✅ CONSISTENT LAYOUT
  */
 Index.layout = {
-    breadcrumbs: [{ title: 'Menus', href: '/dashboard/menus' }],
+    breadcrumbs: [{ title: 'Menus', href: '/my-admin/dashboard/menus' }],
 };

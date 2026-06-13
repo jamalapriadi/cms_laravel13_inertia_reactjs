@@ -49,7 +49,7 @@ export default function Create() {
     });
 
     const onSubmit = (data: SupplierFormData) => {
-        router.post('/dashboard/ecommerce/suppliers', data, {
+        router.post('/my-admin/dashboard/ecommerce/suppliers', data, {
             preserveScroll: true,
             onStart: () => {
                 setProcessing(true);
@@ -82,7 +82,7 @@ export default function Create() {
                         variant="outline"
                         size="icon"
                         onClick={() =>
-                            router.visit('/dashboard/ecommerce/suppliers')
+                            router.visit('/my-admin/dashboard/ecommerce/suppliers')
                         }
                     >
                         <ArrowLeft className="h-4 w-4" />
@@ -206,7 +206,7 @@ export default function Create() {
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/dashboard/ecommerce/suppliers')
+                                router.visit('/my-admin/dashboard/ecommerce/suppliers')
                             }
                         >
                             Cancel

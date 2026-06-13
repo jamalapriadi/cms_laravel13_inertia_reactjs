@@ -44,7 +44,7 @@ export default function Create({ taxonomy }: Props) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        post(`/dashboard/taxonomies/${taxonomy}`, {
+        post(`/my-admin/dashboard/taxonomies/${taxonomy}`, {
             onStart: () => toast.loading('Saving...', { id: 'save' }),
             onSuccess: () =>
                 toast.success('Data berhasil disimpan', { id: 'save' }),
@@ -135,7 +135,7 @@ Create.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             {
                 title: 'Taxonomies',
-                href: '/dashboard/taxonomies/tags',
+                href: '/my-admin/dashboard/taxonomies/tags',
             },
             {
                 title: 'Create',

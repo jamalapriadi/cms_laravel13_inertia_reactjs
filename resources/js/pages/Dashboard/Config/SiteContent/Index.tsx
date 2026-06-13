@@ -74,7 +74,7 @@ export default function Index({
 
     const applyFilter = () => {
         router.get(
-            '/dashboard/config/site-contents',
+            '/my-admin/dashboard/config/site-contents',
             {
                 search,
                 group: group || undefined,
@@ -93,7 +93,7 @@ export default function Index({
             return;
         }
 
-        router.delete(`/dashboard/config/site-contents/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/config/site-contents/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -173,7 +173,7 @@ export default function Index({
             label: 'Actions',
             render: (row: SiteContentItem) => (
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/config/site-contents/${row.id}/edit`}>
+                    <Link href={`/my-admin/dashboard/config/site-contents/${row.id}/edit`}>
                         <Button size="sm" variant="secondary">
                             <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -204,13 +204,13 @@ export default function Index({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Link href="/dashboard/config/site-contents/usage" target="_blank">
+                        <Link href="/my-admin/dashboard/config/site-contents/usage" target="_blank">
                             <Button variant="outline" className="gap-2">
                                 <BookOpen className="h-4 w-4" />
                                 Cara Penggunaan
                             </Button>
                         </Link>
-                        <Link href="/dashboard/config/site-contents/create">
+                        <Link href="/my-admin/dashboard/config/site-contents/create">
                             <Button className="gap-2">
                                 <Plus className="h-4 w-4" />
                                 Add Content

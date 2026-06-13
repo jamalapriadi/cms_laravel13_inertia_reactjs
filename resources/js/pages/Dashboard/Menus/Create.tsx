@@ -28,12 +28,12 @@ export default function Create() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        post('/dashboard/menus', {
+        post('/my-admin/dashboard/menus', {
             preserveScroll: true,
             onStart: () => toast.loading('Saving...', { id: 'save' }),
             onSuccess: () => {
                 toast.success('Menu berhasil dibuat!', { id: 'save' });
-                router.visit('/dashboard/menus');
+                router.visit('/my-admin/dashboard/menus');
             },
             onError: () => {
                 toast.error('Gagal membuat menu', { id: 'save' });
@@ -99,7 +99,7 @@ export default function Create() {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/dashboard/menus')}
+                            onClick={() => router.visit('/my-admin/dashboard/menus')}
                         >
                             Cancel
                         </Button>
@@ -119,7 +119,7 @@ export default function Create() {
  */
 Create.layout = {
     breadcrumbs: [
-        { title: 'Menus', href: '/dashboard/menus' },
-        { title: 'Create', href: '/dashboard/menus/create' },
+        { title: 'Menus', href: '/my-admin/dashboard/menus' },
+        { title: 'Create', href: '/my-admin/dashboard/menus/create' },
     ],
 };

@@ -179,7 +179,7 @@ export default function Show({ product }: Props) {
     const submitSpecification = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        postSpecification('/dashboard/ecommerce/product-specifications', {
+        postSpecification('/my-admin/dashboard/ecommerce/product-specifications', {
             preserveScroll: true,
             onSuccess: () => {
                 toast.success('Specification added successfully.');
@@ -207,7 +207,7 @@ export default function Show({ product }: Props) {
         }
 
         updateSpecification(
-            `/dashboard/ecommerce/product-specifications/${editingSpecificationId}`,
+            `/my-admin/dashboard/ecommerce/product-specifications/${editingSpecificationId}`,
             {
                 preserveScroll: true,
                 onSuccess: () => {
@@ -224,7 +224,7 @@ export default function Show({ product }: Props) {
         }
 
         router.delete(
-            `/dashboard/ecommerce/product-specifications/${deletingSpecificationId}`,
+            `/my-admin/dashboard/ecommerce/product-specifications/${deletingSpecificationId}`,
             {
                 preserveScroll: true,
                 onSuccess: () => {
@@ -238,7 +238,7 @@ export default function Show({ product }: Props) {
     const submitImages = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        postImages('/dashboard/ecommerce/product-images', {
+        postImages('/my-admin/dashboard/ecommerce/product-images', {
             preserveScroll: true,
             forceFormData: true,
             onSuccess: () => {
@@ -257,7 +257,7 @@ export default function Show({ product }: Props) {
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/product-images/${deletingImageId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/product-images/${deletingImageId}`, {
             preserveScroll: true,
             onSuccess: () => {
                 toast.success('Product image deleted successfully.');
@@ -279,7 +279,7 @@ export default function Show({ product }: Props) {
                 <div className="rounded-2xl border bg-gradient-to-r from-background via-background to-muted/40 p-4 shadow-sm sm:p-6">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="flex min-w-0 items-start gap-3">
-                            <Link href="/dashboard/ecommerce/products">
+                            <Link href="/my-admin/dashboard/ecommerce/products">
                                 <Button size="icon" variant="secondary">
                                     <ArrowLeft className="h-4 w-4" />
                                 </Button>
@@ -317,7 +317,7 @@ export default function Show({ product }: Props) {
                             </div>
                         </div>
                         <Link
-                            href={`/dashboard/ecommerce/products/${product.id}/edit`}
+                            href={`/my-admin/dashboard/ecommerce/products/${product.id}/edit`}
                             className="w-full sm:w-auto"
                         >
                             <Button variant="secondary" className="w-full sm:w-auto">
@@ -396,7 +396,7 @@ export default function Show({ product }: Props) {
                                     Product Specifications
                                 </CardTitle>
                                 <Link
-                                    href={`/dashboard/ecommerce/product-specifications?product_id=${product.id}`}
+                                    href={`/my-admin/dashboard/ecommerce/product-specifications?product_id=${product.id}`}
                                 >
                                     <Button size="sm" variant="secondary">
                                         Manage All
@@ -660,7 +660,7 @@ export default function Show({ product }: Props) {
                                     Product Images
                                 </CardTitle>
                                 <Link
-                                    href={`/dashboard/ecommerce/product-images?product_id=${product.id}`}
+                                    href={`/my-admin/dashboard/ecommerce/product-images?product_id=${product.id}`}
                                 >
                                     <Button size="sm" variant="secondary">
                                         Manage All
@@ -832,7 +832,7 @@ export default function Show({ product }: Props) {
                                             Product Variants
                                         </CardTitle>
                                         <Link
-                                            href={`/dashboard/ecommerce/product-variants/create?product_id=${product.id}`}
+                                            href={`/my-admin/dashboard/ecommerce/product-variants/create?product_id=${product.id}`}
                                         >
                                             <Button size="sm">
                                                 <Plus className="h-4 w-4" />
@@ -852,7 +852,7 @@ export default function Show({ product }: Props) {
                                                             {variant.name}
                                                         </p>
                                                         <Link
-                                                            href={`/dashboard/ecommerce/product-variants/${variant.id}/edit`}
+                                                            href={`/my-admin/dashboard/ecommerce/product-variants/${variant.id}/edit`}
                                                         >
                                                             <Button
                                                                 size="sm"
@@ -894,7 +894,7 @@ export default function Show({ product }: Props) {
                                             Variant Items
                                         </CardTitle>
                                         <Link
-                                            href={`/dashboard/ecommerce/variant-items/create?product_id=${product.id}`}
+                                            href={`/my-admin/dashboard/ecommerce/variant-items/create?product_id=${product.id}`}
                                         >
                                             <Button size="sm">
                                                 <Plus className="h-4 w-4" />
@@ -997,7 +997,7 @@ export default function Show({ product }: Props) {
                                                                 </TableCell>
                                                                 <TableCell>
                                                                     <Link
-                                                                        href={`/dashboard/ecommerce/variant-items/${item.id}/edit`}
+                                                                        href={`/my-admin/dashboard/ecommerce/variant-items/${item.id}/edit`}
                                                                     >
                                                                         <Button
                                                                             size="sm"
@@ -1046,7 +1046,7 @@ export default function Show({ product }: Props) {
                                         </p>
                                     </div>
                                     <Link
-                                        href={`/dashboard/ecommerce/product-stock-units/create?product_id=${product.id}`}
+                                        href={`/my-admin/dashboard/ecommerce/product-stock-units/create?product_id=${product.id}`}
                                     >
                                         <Button size="sm">
                                             <Plus className="h-4 w-4" />
@@ -1110,7 +1110,7 @@ export default function Show({ product }: Props) {
                                                         </TableCell>
                                                         <TableCell>
                                                             <Link
-                                                                href={`/dashboard/ecommerce/product-stock-units/${unit.id}/edit`}
+                                                                href={`/my-admin/dashboard/ecommerce/product-stock-units/${unit.id}/edit`}
                                                             >
                                                                 <Button
                                                                     size="sm"

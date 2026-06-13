@@ -48,7 +48,7 @@ Edit.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             {
                 title: 'Post Categories',
-                href: '/dashboard/post-categories',
+                href: '/my-admin/dashboard/post-categories',
             },
             {
                 title: 'Edit',

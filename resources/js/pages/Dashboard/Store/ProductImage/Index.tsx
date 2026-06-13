@@ -60,7 +60,7 @@ export default function Index({ images, products, filters }: Props) {
      */
     const applyFilter = () => {
         router.get(
-            '/dashboard/ecommerce/product-images',
+            '/my-admin/dashboard/ecommerce/product-images',
             {
                 product_id: productId,
             },
@@ -79,7 +79,7 @@ export default function Index({ images, products, filters }: Props) {
             return;
         }
 
-        router.delete(`/dashboard/ecommerce/product-images/${deletingId}`, {
+        router.delete(`/my-admin/dashboard/ecommerce/product-images/${deletingId}`, {
             onFinish: () => setDeletingId(null),
         });
     };
@@ -131,7 +131,7 @@ export default function Index({ images, products, filters }: Props) {
             render: (row: ProductImage) => (
                 <div className="flex gap-2">
                     <Link
-                        href={`/dashboard/ecommerce/product-images/${row.id}/edit`}
+                        href={`/my-admin/dashboard/ecommerce/product-images/${row.id}/edit`}
                     >
                         <Button size="sm" variant="secondary">
                             Edit
@@ -166,7 +166,7 @@ export default function Index({ images, products, filters }: Props) {
                     </div>
 
                     <Link
-                        href={`/dashboard/ecommerce/product-images/create${productId ? `?product_id=${productId}` : ''}`}
+                        href={`/my-admin/dashboard/ecommerce/product-images/create${productId ? `?product_id=${productId}` : ''}`}
                     >
                         <Button>Add Product Image</Button>
                     </Link>
