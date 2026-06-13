@@ -273,12 +273,12 @@ export const sidebarConfig: SidebarGroup[] = [
                 icon: Menu,
                 permission: 'menus.view',
             },
-            // {
-            //     title: 'FAQ',
-            //     href: '/my-admin/dashboard/ecommerce/faqs',
-            //     icon: CircleHelp,
-            //     permission: 'faqs.view',
-            // },
+            {
+                title: 'FAQ',
+                href: '/my-admin/dashboard/ecommerce/faqs',
+                icon: CircleHelp,
+                permission: 'faqs.view',
+            },
             {
                 title: 'Site Contents',
                 href: '/my-admin/dashboard/config/site-contents',

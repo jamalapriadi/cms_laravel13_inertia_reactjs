@@ -1396,6 +1396,239 @@
                 ]
             }
         },
+        "/api/v1/menus/{slug}": {
+            "get": {
+                "tags": [
+                    "General / Master Data"
+                ],
+                "summary": "Get nested menu tree by slug",
+                "description": "Endpoint publik untuk mengambil data menu navigasi berdasarkan slug dan kode bahasa aktif. Menghasilkan menu tree terstruktur (nested). Jika item bertipe `dynamic_products`, response akan memuat array `items` berisi daftar produk relevan dan objek `category` berisi kategori yang dipilih.",
+                "operationId": "3ee438bba523c29828ac245ff879d356",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug menu (misal: main-menu, footer-menu).",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "main-menu"
+                        }
+                    },
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Kode bahasa aktif (misal: id, en). Jika kosong, menggunakan bahasa default.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Menu tree retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Menu retrieved successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Main Menu"
+                                                },
+                                                "slug": {
+                                                    "type": "string",
+                                                    "example": "main-menu"
+                                                },
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 10
+                                                            },
+                                                            "title": {
+                                                                "type": "string",
+                                                                "example": "Produk iPhone"
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "example": "dynamic_products"
+                                                            },
+                                                            "url": {
+                                                                "type": "string",
+                                                                "example": null,
+                                                                "nullable": true
+                                                            },
+                                                            "target": {
+                                                                "type": "string",
+                                                                "example": "_self"
+                                                            },
+                                                            "icon": {
+                                                                "type": "string",
+                                                                "example": "phone",
+                                                                "nullable": true
+                                                            },
+                                                            "meta": {
+                                                                "properties": {
+                                                                    "source": {
+                                                                        "type": "string",
+                                                                        "example": "products"
+                                                                    },
+                                                                    "filter": {
+                                                                        "properties": {
+                                                                            "category_id": {
+                                                                                "type": "string",
+                                                                                "format": "uuid",
+                                                                                "example": "95cc02ea-5d12-42ed-a705-73e227b088ef"
+                                                                            }
+                                                                        },
+                                                                        "type": "object"
+                                                                    },
+                                                                    "limit": {
+                                                                        "type": "integer",
+                                                                        "example": 6
+                                                                    },
+                                                                    "sort": {
+                                                                        "type": "string",
+                                                                        "example": "latest"
+                                                                    },
+                                                                    "layout": {
+                                                                        "type": "string",
+                                                                        "example": "product_grid"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            },
+                                                            "category": {
+                                                                "description": "Informasi kategori produk yang dipilih. Hanya tersedia jika type = dynamic_products.",
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "string",
+                                                                        "format": "uuid",
+                                                                        "example": "95cc02ea-5d12-42ed-a705-73e227b088ef"
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "iPhone"
+                                                                    },
+                                                                    "slug": {
+                                                                        "type": "string",
+                                                                        "example": "iphone"
+                                                                    },
+                                                                    "parent": {
+                                                                        "properties": {
+                                                                            "id": {
+                                                                                "type": "string",
+                                                                                "format": "uuid",
+                                                                                "example": "85bb02ea-4d12-32ed-a705-63e227b088ef"
+                                                                            },
+                                                                            "name": {
+                                                                                "type": "string",
+                                                                                "example": "Phone"
+                                                                            },
+                                                                            "slug": {
+                                                                                "type": "string",
+                                                                                "example": "phone"
+                                                                            }
+                                                                        },
+                                                                        "type": "object",
+                                                                        "nullable": true
+                                                                    }
+                                                                },
+                                                                "type": "object",
+                                                                "nullable": true
+                                                            },
+                                                            "items": {
+                                                                "description": "Resolved dynamic products list.",
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "type": "string",
+                                                                            "example": "019ec173-001f-7323-a43c-e121523ad1de"
+                                                                        },
+                                                                        "name": {
+                                                                            "type": "string",
+                                                                            "example": "iPhone 16 Pro"
+                                                                        },
+                                                                        "slug": {
+                                                                            "type": "string",
+                                                                            "example": "iphone-16-pro"
+                                                                        },
+                                                                        "price": {
+                                                                            "type": "number",
+                                                                            "format": "float",
+                                                                            "example": 18000000
+                                                                        },
+                                                                        "image": {
+                                                                            "type": "string",
+                                                                            "example": "products/iphone-16.webp",
+                                                                            "nullable": true
+                                                                        },
+                                                                        "url": {
+                                                                            "type": "string",
+                                                                            "example": "/products/iphone-16-pro"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            },
+                                                            "children": {
+                                                                "description": "Sub-menu items.",
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Menu not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Menu not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/home": {
             "get": {
                 "tags": [

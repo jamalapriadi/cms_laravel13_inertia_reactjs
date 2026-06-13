@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, ChevronDown, ChevronRight, Trash } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,6 +14,7 @@ const menuTypes = [
     { value: 'category', label: 'Category' },
     { value: 'dropdown', label: 'Dropdown' },
     { value: 'dynamic', label: 'Dynamic' },
+    { value: 'dynamic_products', label: 'Dynamic Products' },
 ];
 
 const dynamicSources = [
@@ -51,12 +52,13 @@ function ensureMetaForType(type: string, currentMeta: Record<string, any> = {}) 
         };
     }
 
-    if (type === 'dynamic') {
+    if (type === 'dynamic' || type === 'dynamic_products') {
         return {
             source: currentMeta.source ?? 'products',
             filter: {
                 ...(currentMeta.filter ?? {}),
                 category_id: currentMeta.filter?.category_id ?? null,
+                category_ids: currentMeta.filter?.category_ids ?? [],
             },
             limit: currentMeta.limit ?? 6,
             sort: currentMeta.sort ?? 'latest',
@@ -70,6 +72,40 @@ function ensureMetaForType(type: string, currentMeta: Record<string, any> = {}) 
     }
 
     return {};
+}
+
+function formatCategories(categories: any[]) {
+    const map = new Map<string, any>();
+    const roots: any[] = [];
+
+    categories.forEach((cat) => {
+        map.set(cat.id, { ...cat, children: [] });
+    });
+
+    categories.forEach((cat) => {
+        const mapped = map.get(cat.id);
+        const parentId = cat.parent_id;
+        if (parentId && map.has(parentId)) {
+            map.get(parentId).children.push(mapped);
+        } else {
+            roots.push(mapped);
+        }
+    });
+
+    const result: Array<{ id: string; name: string; slug: string }> = [];
+
+    function traverse(node: any, depth: number) {
+        const prefix = '— '.repeat(depth);
+        result.push({
+            id: node.id,
+            name: `${prefix}${node.name}`,
+            slug: node.slug,
+        });
+        node.children.forEach((child: any) => traverse(child, depth + 1));
+    }
+
+    roots.forEach((root) => traverse(root, 0));
+    return result;
 }
 
 type ProductCategoryOption = {
@@ -97,6 +133,22 @@ export default function MenuItemNode({ item, locale, productCategories = [], onC
     const [collapsed, setCollapsed] = useState(true);
     const type = item.type || 'custom';
     const meta = ensureMetaForType(type, item.meta || {});
+
+    const [categorySearch, setCategorySearch] = useState('');
+
+    const formattedCategories = useMemo(() => {
+        return formatCategories(productCategories);
+    }, [productCategories]);
+
+    const filteredCategories = useMemo(() => {
+        const query = categorySearch.toLowerCase().trim();
+        if (!query) {
+            return formattedCategories;
+        }
+        return formattedCategories.filter((cat) =>
+            cat.name.toLowerCase().includes(query) || cat.slug.toLowerCase().includes(query)
+        );
+    }, [formattedCategories, categorySearch]);
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -133,6 +185,18 @@ export default function MenuItemNode({ item, locale, productCategories = [], onC
                 filter: {
                     ...(meta.filter || {}),
                     category_id: categoryId,
+                },
+            },
+        });
+    }
+
+    function updateDynamicFilterCategories(categoryIds: string[]) {
+        onChange(item.id, {
+            meta: {
+                ...meta,
+                filter: {
+                    ...(meta.filter || {}),
+                    category_ids: categoryIds,
                 },
             },
         });
@@ -220,7 +284,7 @@ export default function MenuItemNode({ item, locale, productCategories = [], onC
                         </div>
                     </div>
 
-                    {type !== 'dynamic' && type !== 'dropdown' && (
+                    {type !== 'dynamic' && type !== 'dynamic_products' && type !== 'dropdown' && (
                         <div>
                             <Label>URL</Label>
                             <Input
@@ -274,29 +338,31 @@ export default function MenuItemNode({ item, locale, productCategories = [], onC
                         </div>
                     )}
 
-                    {type === 'dynamic' && (
+                    {(type === 'dynamic' || type === 'dynamic_products') && (
                         <div className="space-y-4 rounded-md border bg-background/80 p-4">
                             <div className="grid gap-3 md:grid-cols-2">
-                                <div className="space-y-2">
-                                    <Label>Source</Label>
-                                    <select
-                                        value={meta.source || 'products'}
-                                        onChange={(e) =>
-                                            updateMeta({
-                                                source: e.target.value,
-                                            })
-                                        }
-                                        className="w-full rounded-md border bg-background p-2 text-sm"
-                                    >
-                                        {dynamicSources.map((option) => (
-                                            <option key={option.value} value={option.value}>
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                {type === 'dynamic' && (
+                                    <div className="space-y-2">
+                                        <Label>Source</Label>
+                                        <select
+                                            value={meta.source || 'products'}
+                                            onChange={(e) =>
+                                                updateMeta({
+                                                    source: e.target.value,
+                                                })
+                                            }
+                                            className="w-full rounded-md border bg-background p-2 text-sm"
+                                        >
+                                            {dynamicSources.map((option) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
 
-                                <div className="space-y-2">
+                                <div className={type === 'dynamic_products' ? "space-y-2 md:col-span-2" : "space-y-2"}>
                                     <Label>Layout</Label>
                                     <select
                                         value={meta.layout || 'product_grid'}
@@ -316,11 +382,11 @@ export default function MenuItemNode({ item, locale, productCategories = [], onC
                                 </div>
                             </div>
 
-                            {meta.source === 'products' && (
+                            {type === 'dynamic_products' && (
                                 <div className="space-y-2">
                                     <Label>Product Category</Label>
                                     <SearchableSelect
-                                        options={productCategories.map((category: any) => ({
+                                        options={formattedCategories.map((category: any) => ({
                                             value: category.id,
                                             label: category.name,
                                             description: category.slug,
@@ -330,6 +396,51 @@ export default function MenuItemNode({ item, locale, productCategories = [], onC
                                         placeholder="Select category"
                                         clearable
                                     />
+                                </div>
+                            )}
+
+                            {type === 'dynamic' && meta.source === 'categories' && (
+                                <div className="space-y-2">
+                                    <Label>Product Categories</Label>
+                                    <div className="rounded-md border bg-card p-3 space-y-2">
+                                        <Input
+                                            placeholder="Search categories..."
+                                            value={categorySearch}
+                                            onChange={(e) => setCategorySearch(e.target.value)}
+                                            className="h-8 text-xs bg-background"
+                                        />
+                                        <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
+                                            {filteredCategories.map((category: any) => {
+                                                const isChecked = (meta.filter?.category_ids || []).includes(category.id);
+                                                return (
+                                                    <div key={category.id} className="flex items-center space-x-2">
+                                                        <Checkbox
+                                                            id={`cat-${item.id}-${category.id}`}
+                                                            checked={isChecked}
+                                                            onCheckedChange={(checked) => {
+                                                                const currentIds = meta.filter?.category_ids || [];
+                                                                const nextIds = checked
+                                                                    ? [...currentIds, category.id]
+                                                                    : currentIds.filter((id: string) => id !== category.id);
+                                                                updateDynamicFilterCategories(nextIds);
+                                                            }}
+                                                        />
+                                                        <Label
+                                                            htmlFor={`cat-${item.id}-${category.id}`}
+                                                            className="text-sm font-normal cursor-pointer select-none"
+                                                        >
+                                                            {category.name}
+                                                        </Label>
+                                                    </div>
+                                                );
+                                            })}
+                                            {filteredCategories.length === 0 && (
+                                                <div className="text-xs text-muted-foreground text-center py-2">
+                                                    No categories found.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 

@@ -24,9 +24,21 @@ class MediaPath
 
     public static function url(?string $value): ?string
     {
+        if (! $value) {
+            return null;
+        }
+
         $path = self::normalize($value, requireExists: false);
 
-        return $path ? Storage::disk('public')->url($path) : null;
+        if ($path) {
+            return Storage::disk('public')->url($path);
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        return null;
     }
 
     private static function relativePath(?string $value): ?string
