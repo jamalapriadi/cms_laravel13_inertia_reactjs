@@ -272,3 +272,74 @@ test('empty leaf category can still be deleted', function () {
 
     $this->assertSoftDeleted('categories', ['id' => $category->id]);
 });
+
+test('user can create category with description', function () {
+    $user = grantPermissions(User::factory()->create(), ['categories.create']);
+
+    $response = $this
+        ->actingAs($user)
+        ->post(route('categories.store'), [
+            'name' => 'New Electronics',
+            'description' => '<p>Amazing description for electronics</p>',
+            'parent_id' => null,
+            'sort_order' => 10,
+            'show_home' => true,
+            'is_publish' => true,
+        ]);
+
+    $response->assertRedirect(route('categories.index'));
+
+    $category = Category::where('name', 'New Electronics')->first();
+    expect($category)->not->toBeNull();
+    expect($category->description)->toBe('<p>Amazing description for electronics</p>');
+});
+
+test('user can update category with description', function () {
+    $user = grantPermissions(User::factory()->create(), ['categories.edit']);
+
+    $category = Category::create([
+        'name' => 'Old Category',
+        'slug' => 'old-category',
+        'description' => 'Old description',
+        'sort_order' => 1,
+        'is_publish' => true,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->put(route('categories.update', $category), [
+            'name' => 'Updated Category',
+            'description' => '<p>Updated description text</p>',
+            'parent_id' => null,
+            'sort_order' => 2,
+            'show_home' => false,
+            'is_publish' => true,
+        ]);
+
+    $response->assertRedirect(route('categories.index'));
+
+    $category->refresh();
+    expect($category->name)->toBe('Updated Category');
+    expect($category->description)->toBe('<p>Updated description text</p>');
+});
+
+test('api returns category description', function () {
+    $category = Category::create([
+        'name' => 'API Category',
+        'slug' => 'api-category',
+        'description' => '<p>API Category Description</p>',
+        'sort_order' => 1,
+        'is_publish' => true,
+    ]);
+
+    // Test API index (retrieves all published parent categories)
+    $response = $this->get(route('api.v1.categories.index'));
+    $response->assertSuccessful();
+
+    // Test API show by slug
+    $showResponse = $this->get(route('api.v1.categories.show', ['slug' => 'api-category']));
+    $showResponse->assertSuccessful();
+
+    $data = $showResponse->json('data');
+    expect($data['description'])->toBe('<p>API Category Description</p>');
+});

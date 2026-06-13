@@ -25,6 +25,7 @@ class CategoryRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'parent_id' => ['nullable', 'uuid', 'exists:categories,id'],
+            'description' => ['nullable', 'string'],
             'image' => $this->hasFile('image')
                 ? ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048']
                 : ['nullable', 'string'],

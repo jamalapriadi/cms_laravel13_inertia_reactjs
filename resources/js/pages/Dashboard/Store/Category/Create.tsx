@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import TinyEditor from '@/components/ui/TinyEditor';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -26,6 +27,7 @@ interface Props {
 const categorySchema = z.object({
     name: z.string().min(3, 'Category name must be at least 3 characters'),
     parent_id: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
     image: z.any().optional(),
     sort_order: z.coerce.number().min(0).default(0),
     show_home: z.boolean().default(false),
@@ -51,6 +53,7 @@ export default function Create({ categories }: Props) {
         resolver: zodResolver(categorySchema),
         defaultValues: {
             parent_id: null,
+            description: '',
             sort_order: 0,
             show_home: false,
             is_publish: true,
@@ -120,6 +123,24 @@ export default function Create({ categories }: Props) {
                             {errors.name && (
                                 <p className="text-sm text-destructive">
                                     {errors.name.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* DESCRIPTION */}
+                        <div className="flex flex-col gap-1">
+                            <Label>Description</Label>
+                            <TinyEditor
+                                value={watch('description') || ''}
+                                onChange={(val) =>
+                                    setValue('description', val, {
+                                        shouldValidate: true,
+                                    })
+                                }
+                            />
+                            {errors.description && (
+                                <p className="text-sm text-destructive">
+                                    {errors.description.message}
                                 </p>
                             )}
                         </div>
@@ -210,7 +231,9 @@ export default function Create({ categories }: Props) {
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/my-admin/dashboard/ecommerce/categories')
+                                router.visit(
+                                    '/my-admin/dashboard/ecommerce/categories',
+                                )
                             }
                         >
                             Cancel

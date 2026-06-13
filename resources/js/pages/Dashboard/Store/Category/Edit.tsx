@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import TinyEditor from '@/components/ui/TinyEditor';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -23,6 +24,7 @@ interface Category {
     id: string;
     parent_id: string | null;
     name: string;
+    description?: string | null;
     image?: string | null;
     sort_order: number;
     show_home: boolean;
@@ -37,6 +39,7 @@ interface Props {
 const categorySchema = z.object({
     name: z.string().min(3, 'Category name must be at least 3 characters'),
     parent_id: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
     image: z.any().optional(),
     sort_order: z.coerce.number().min(0).default(0),
     show_home: z.boolean().default(false),
@@ -67,6 +70,7 @@ export default function Edit({ category: initialCategory, categories }: Props) {
         defaultValues: {
             name: initialCategory.name,
             parent_id: initialCategory.parent_id || null,
+            description: initialCategory.description ?? '',
             image: initialCategory.image ?? undefined,
             sort_order: initialCategory.sort_order,
             show_home: !!initialCategory.show_home,
@@ -157,6 +161,24 @@ export default function Edit({ category: initialCategory, categories }: Props) {
                             )}
                         </div>
 
+                        {/* DESCRIPTION */}
+                        <div className="flex flex-col gap-1">
+                            <Label>Description</Label>
+                            <TinyEditor
+                                value={watch('description') || ''}
+                                onChange={(val) =>
+                                    setValue('description', val, {
+                                        shouldValidate: true,
+                                    })
+                                }
+                            />
+                            {errors.description && (
+                                <p className="text-sm text-destructive">
+                                    {errors.description.message}
+                                </p>
+                            )}
+                        </div>
+
                         {/* PARENT CATEGORY */}
                         <div className="flex flex-col gap-1">
                             <Label>Parent Category</Label>
@@ -243,7 +265,9 @@ export default function Edit({ category: initialCategory, categories }: Props) {
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/my-admin/dashboard/ecommerce/categories')
+                                router.visit(
+                                    '/my-admin/dashboard/ecommerce/categories',
+                                )
                             }
                         >
                             Cancel

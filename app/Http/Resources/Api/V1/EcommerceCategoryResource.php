@@ -17,6 +17,7 @@ class EcommerceCategoryResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'description' => $this->description,
             'image' => $this->mediaUrl($this->image),
             'parent_id' => $this->parent_id,
             'show_home' => (bool) $this->show_home,
