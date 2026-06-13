@@ -68,7 +68,7 @@ class MediaController extends Controller
 
         $files = collect($files)
             ->filter(function (string $file) use ($date, $disk, $search) {
-                if ($this->isHiddenPath($file) || ! $this->isAllowedImageFile($file)) {
+                if ($this->isHiddenPath($file)) {
                     return false;
                 }
 
@@ -233,18 +233,6 @@ class MediaController extends Controller
     {
         return collect(explode('/', trim($path, '/')))
             ->contains(fn (string $segment) => str_starts_with($segment, '.'));
-    }
-
-    private function isAllowedImageFile(string $path): bool
-    {
-        return in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), [
-            'jpg',
-            'jpeg',
-            'png',
-            'webp',
-            'gif',
-            'svg',
-        ], true);
     }
 
     private function safeMimeType($disk, string $path): ?string

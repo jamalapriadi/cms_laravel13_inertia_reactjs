@@ -21,6 +21,7 @@ use OpenApi\Attributes as OA;
         new OA\Tag(name: 'Checkout', description: 'API checkout customer login dari active cart menjadi order.'),
         new OA\Tag(name: 'Orders', description: 'API order customer login untuk list, detail, dan cancel order.'),
         new OA\Tag(name: 'Site Contents', description: 'API publik untuk dynamic frontend copy multi-language dengan cache dan invalidation dari dashboard.'),
+        new OA\Tag(name: 'Dynamic Content', description: 'API publik untuk dynamic content builder seperti testimonials, sliders, partners, services, dan content section lain.'),
         new OA\Tag(name: 'Posts', description: 'Published posts and news content'),
         new OA\Tag(name: 'Pages', description: 'Published static and dynamic frontend pages'),
         new OA\Tag(name: 'General / Master Data', description: 'API publik untuk home data, banner, FAQ, dan data umum frontend.'),

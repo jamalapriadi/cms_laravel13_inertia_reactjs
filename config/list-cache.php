@@ -3,6 +3,10 @@
 use App\Models\Block;
 use App\Models\BlockTranslation;
 use App\Models\Brand;
+use App\Models\ContentEntry;
+use App\Models\ContentType;
+use App\Models\CustomField;
+use App\Models\CustomFieldGroup;
 use App\Models\Dashboard\Kabupaten;
 use App\Models\Dashboard\Kecamatan;
 use App\Models\Dashboard\Kelurahan;
@@ -80,6 +84,8 @@ return [
         'brands' => ['ttl' => 1800],
         'carts' => ['ttl' => 300],
         'categories' => ['ttl' => 1800],
+        'content-types' => ['ttl' => 600],
+        'custom-field-groups' => ['ttl' => 600],
         'customers' => ['ttl' => 300],
         'faqs' => ['ttl' => 1800],
         'incoming-goods' => ['ttl' => 300],
@@ -123,6 +129,10 @@ return [
         Cart::class => ['carts'],
         CartItem::class => ['carts'],
         Category::class => ['api.categories', 'api.product-collections', 'api.products', 'categories', 'products', 'product-collections', 'search-options'],
+        ContentEntry::class => ['content-types'],
+        ContentType::class => ['content-types'],
+        CustomField::class => ['custom-field-groups', 'content-types'],
+        CustomFieldGroup::class => ['custom-field-groups', 'content-types'],
         Customer::class => ['api.orders', 'carts', 'customers', 'orders'],
         Faq::class => ['faqs'],
         IncomingGoods::class => ['incoming-goods', 'product-stock-units', 'stock-movements'],

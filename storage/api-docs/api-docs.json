@@ -392,6 +392,150 @@
                 ]
             }
         },
+        "/api/v1/content-types": {
+            "get": {
+                "tags": [
+                    "Dynamic Content"
+                ],
+                "summary": "Get active dynamic content types",
+                "description": "Returns all active dynamic content types and their active field definitions.",
+                "operationId": "65b11245f465c021356acfa2b8b838e6",
+                "responses": {
+                    "200": {
+                        "description": "Dynamic content types retrieved successfully."
+                    }
+                }
+            }
+        },
+        "/api/v1/content/{content_type_slug}": {
+            "get": {
+                "tags": [
+                    "Dynamic Content"
+                ],
+                "summary": "Get dynamic content list by type",
+                "description": "Returns a paginated list of published dynamic content entries for the given content type slug.",
+                "operationId": "d41a5027cee154be403d29fd60766dc7",
+                "parameters": [
+                    {
+                        "name": "content_type_slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "name": "is_featured",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "title",
+                                "published_at",
+                                "sort_order",
+                                "created_at"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dynamic content entries retrieved successfully."
+                    },
+                    "404": {
+                        "description": "Content type not found."
+                    }
+                }
+            }
+        },
+        "/api/v1/content/{content_type_slug}/{entry_slug}": {
+            "get": {
+                "tags": [
+                    "Dynamic Content"
+                ],
+                "summary": "Get dynamic content detail by slug",
+                "description": "Returns one published dynamic content entry by content type slug and entry slug.",
+                "operationId": "be2afe3f75f2043b0f9c2c9d5fa42c38",
+                "parameters": [
+                    {
+                        "name": "content_type_slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "entry_slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dynamic content entry retrieved successfully."
+                    },
+                    "404": {
+                        "description": "Content type or entry not found."
+                    }
+                }
+            }
+        },
         "/api/v1": {
             "get": {
                 "tags": [
@@ -3038,6 +3182,11 @@
                         "type": "string",
                         "example": "news",
                         "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Category description content",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -4654,6 +4803,10 @@
         {
             "name": "Site Contents",
             "description": "API publik untuk dynamic frontend copy multi-language dengan cache dan invalidation dari dashboard."
+        },
+        {
+            "name": "Dynamic Content",
+            "description": "API publik untuk dynamic content builder seperti testimonials, sliders, partners, services, dan content section lain."
         },
         {
             "name": "Posts",

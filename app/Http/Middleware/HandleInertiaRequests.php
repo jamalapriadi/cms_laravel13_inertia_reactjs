@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ContentType;
 use App\Services\Customer\CustomerConfigService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -71,6 +73,21 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'mediaUrlBase' => rtrim((string) config('filesystems.disks.public.url'), '/'),
+            'dynamicContentTypes' => $user && Schema::hasTable('content_types')
+                ? ContentType::query()
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'slug', 'icon'])
+                    ->map(fn (ContentType $contentType) => [
+                        'id' => $contentType->id,
+                        'name' => $contentType->name,
+                        'slug' => $contentType->slug,
+                        'icon' => $contentType->icon,
+                    ])
+                    ->values()
+                    ->all()
+                : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

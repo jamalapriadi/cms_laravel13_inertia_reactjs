@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             MenuSeeder::class,
             FaqSeeder::class,
             SiteContentSeeder::class,
+            DynamicContentBuilderSeeder::class,
             PostSampleSeeder::class,
         ]);
     }
