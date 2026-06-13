@@ -1,4 +1,4 @@
-import { store } from '@/actions/App/Http/Controllers/Dashboard/DynamicContentEntryController';
+import { store } from '@/actions/Jamalapriadi/DynamicContentBuilder/Http/Controllers/Dashboard/DynamicContentEntryController';
 import type {
     DynamicContentFormData,
     DynamicContentType,

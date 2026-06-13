@@ -6,7 +6,7 @@ import {
     index,
     store,
     update,
-} from '@/actions/App/Http/Controllers/Dashboard/CustomFieldGroupController';
+} from '@/actions/Jamalapriadi/DynamicContentBuilder/Http/Controllers/Dashboard/CustomFieldGroupController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

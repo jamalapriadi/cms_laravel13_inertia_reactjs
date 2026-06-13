@@ -7,7 +7,7 @@ import {
     destroy,
     edit,
     index,
-} from '@/actions/App/Http/Controllers/Dashboard/ContentTypeController';
+} from '@/actions/Jamalapriadi/DynamicContentBuilder/Http/Controllers/Dashboard/ContentTypeController';
 import { DataTable } from '@/components/DataTable';
 import {
     AlertDialog,
@@ -59,7 +59,7 @@ export default function Index({ contentTypes, filters }: Props) {
             return;
         }
 
-        router.delete(destroy({ content_type: deletingId }).url, {
+        router.delete(destroy({ contentType: deletingId }).url, {
             preserveScroll: true,
             onFinish: () => setDeletingId(null),
         });
@@ -108,7 +108,7 @@ export default function Index({ contentTypes, filters }: Props) {
             render: (row: DynamicContentType) => (
                 <div className="flex gap-2">
                     {canEdit && (
-                        <Link href={edit({ content_type: row.id }).url}>
+                        <Link href={edit({ contentType: row.id }).url}>
                             <Button size="sm" variant="secondary">
                                 <Pencil className="h-3.5 w-3.5" />
                             </Button>

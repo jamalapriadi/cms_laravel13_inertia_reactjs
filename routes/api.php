@@ -6,7 +6,6 @@ use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CheckoutController;
 use App\Http\Controllers\Api\V1\Customer\CustomerAuthController;
-use App\Http\Controllers\Api\V1\DynamicContentController;
 use App\Http\Controllers\Api\V1\FaqController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\HomeController;
@@ -39,9 +38,6 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::get('brands', [BrandController::class, 'index'])->name('brands.index');
     Route::get('brand/{slug}', [BrandController::class, 'showBySlug'])->name('brand.show');
     Route::get('brands/{slug}', [BrandController::class, 'showBySlug'])->name('brands.show');
-    Route::get('content-types', [DynamicContentController::class, 'contentTypes'])->name('content-types.index');
-    Route::get('content/{contentTypeSlug}', [DynamicContentController::class, 'index'])->name('content.index');
-    Route::get('content/{contentTypeSlug}/{entrySlug}', [DynamicContentController::class, 'show'])->name('content.show');
     Route::get('banner-slides', [BannerSlideController::class, 'index'])->name('banner-slides.index');
     Route::get('product-collections', [ProductCollectionController::class, 'index'])->name('product-collections.index');
     Route::get('product-collection/{slug}', [ProductCollectionController::class, 'showBySlug'])->name('product-collection.show');
