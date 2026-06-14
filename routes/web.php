@@ -23,14 +23,14 @@ use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\ProvinceController;
 use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\SiteContentController;
-use App\Http\Controllers\Dashboard\ThemeController as DashboardThemeController;
 use App\Http\Controllers\Dashboard\TaxonomyController;
+use App\Http\Controllers\Dashboard\ThemeController as DashboardThemeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Frontend\CategoryController as FrontendCategoryController;
 use App\Http\Controllers\Frontend\HomeController as FrontendHomeController;
 use App\Http\Controllers\Frontend\PageController as FrontendPageController;
 use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
-use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Store\BannerSlideController;
 use App\Http\Controllers\Store\BarcodeScannerController;
 use App\Http\Controllers\Store\BrandController;
@@ -315,6 +315,25 @@ Route::get('/dashboard/{path?}', function (Request $request, ?string $path = nul
     return redirect()->to($queryString ? "{$target}?{$queryString}" : $target, 301);
 })->where('path', '.*');
 
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');
+Route::get('/sitemaps/{type}.xml', [SitemapController::class, 'show'])->name('sitemap.show');
+
+Route::get('/robots.txt', function () {
+    $content = '';
+    if (file_exists(public_path('robots.txt'))) {
+        $content = file_get_contents(public_path('robots.txt'));
+    }
+    if (empty($content)) {
+        $content = "User-agent: *\nDisallow:\n";
+    }
+    if (! str_contains($content, 'Sitemap:')) {
+        $sitemapUrl = rtrim(config('app.url') ?: 'http://localhost:8000', '/').'/sitemap.xml';
+        $content = rtrim($content)."\n\nSitemap: ".$sitemapUrl."\n";
+    }
+
+    return response($content, 200, ['Content-Type' => 'text/plain']);
+});
+
 Route::get('/{slug}', [FrontendPageController::class, 'show'])
-    ->where('slug', '^(?!my-admin|auth|customer|api|onboard|theme-preview|login|logout|register|forgot-password|reset-password|email|two-factor-challenge|dashboard|settings).+')
+    ->where('slug', '^(?!my-admin|auth|customer|api|onboard|theme-preview|login|logout|register|forgot-password|reset-password|email|two-factor-challenge|dashboard|settings|sitemap\.xml|sitemaps|robots\.txt).+')
     ->name('frontend.pages.show');

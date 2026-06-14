@@ -2,9 +2,21 @@
 
 namespace App\Providers;
 
+use App\Models\Brand;
+use App\Models\Page;
+use App\Models\Post;
+use App\Models\Shop\Category;
 use App\Models\Shop\CustomerAccessToken;
+use App\Models\Shop\Product;
+use App\Models\Shop\ProductCollection;
 use App\Models\Shop\ProductStockUnit;
+use App\Observers\BrandObserver;
+use App\Observers\CategoryObserver;
 use App\Observers\ListCacheObserver;
+use App\Observers\PageObserver;
+use App\Observers\PostObserver;
+use App\Observers\ProductCollectionObserver;
+use App\Observers\ProductObserver;
 use App\Observers\ProductStockUnitObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -32,8 +44,28 @@ class AppServiceProvider extends ServiceProvider
     {
         ProductStockUnit::observe(ProductStockUnitObserver::class);
         $this->registerListCacheObservers();
+        $this->registerSitemapObservers();
 
         $this->configureDefaults();
+    }
+
+    private function registerSitemapObservers(): void
+    {
+        $observers = [
+            Page::class => PageObserver::class,
+            Post::class => PostObserver::class,
+            Product::class => ProductObserver::class,
+            Category::class => CategoryObserver::class,
+            \App\Models\Shop\Brand::class => BrandObserver::class,
+            Brand::class => BrandObserver::class,
+            ProductCollection::class => ProductCollectionObserver::class,
+        ];
+
+        foreach ($observers as $modelClass => $observerClass) {
+            if (class_exists($modelClass) && class_exists($observerClass) && is_a($modelClass, Model::class, true)) {
+                $modelClass::observe($observerClass);
+            }
+        }
     }
 
     private function registerListCacheObservers(): void
