@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Eye, LoaderCircle, Palette, Trash2, Upload } from 'lucide-react';
+import { BookOpen, Eye, LoaderCircle, Palette, Trash2, Upload } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 
 import {
@@ -7,6 +7,7 @@ import {
     customize as customizeTheme,
     destroy as destroyTheme,
     store as storeTheme,
+    usageGuide as usageGuideTheme,
 } from '@/actions/App/Http/Controllers/Dashboard/ThemeController';
 import { preview } from '@/actions/App/Http/Controllers/Frontend/HomeController';
 import {
@@ -110,6 +111,14 @@ export default function Index({ themes }: Props) {
                             Kelola theme frontend terpisah dari dashboard core. ZIP theme hanya
                             membawa Blade view, asset final hasil build, dan manifest.
                         </p>
+                        <div className="mt-4">
+                            <Link href={usageGuideTheme().url}>
+                                <Button variant="outline" className="gap-2">
+                                    <BookOpen className="h-4 w-4" />
+                                    Cara Penggunaan
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
 
                     {canUpload && (
@@ -285,7 +294,7 @@ export default function Index({ themes }: Props) {
                     <Card className="border-dashed">
                         <CardContent className="py-14 text-center text-sm text-muted-foreground">
                             Belum ada theme terdaftar. Upload ZIP theme atau gunakan starter theme
-                            bawaan di folder <span className="font-mono">themes/starter-store</span>.
+                            bawaan di folder <span className="font-mono">themes/starter-creative</span>.
                         </CardContent>
                     </Card>
                 )}

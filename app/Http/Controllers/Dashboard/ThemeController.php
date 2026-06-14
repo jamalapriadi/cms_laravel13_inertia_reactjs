@@ -41,6 +41,13 @@ class ThemeController extends Controller
         ]);
     }
 
+    public function usageGuide(): Response
+    {
+        return Inertia::render('Dashboard/Themes/UsageGuide', [
+            'appUrl' => rtrim((string) config('app.url'), '/'),
+        ]);
+    }
+
     public function store(ThemeUploadRequest $request): RedirectResponse
     {
         $this->themeInstaller->installFromZip($request->file('archive'));

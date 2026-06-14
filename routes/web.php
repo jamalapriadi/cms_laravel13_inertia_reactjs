@@ -29,6 +29,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Frontend\CategoryController as FrontendCategoryController;
 use App\Http\Controllers\Frontend\HomeController as FrontendHomeController;
 use App\Http\Controllers\Frontend\PageController as FrontendPageController;
+use App\Http\Controllers\Frontend\PostController as FrontendPostController;
 use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Store\BannerSlideController;
@@ -165,6 +166,7 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
     Route::resource('posts', PostController::class);
     Route::resource('pages', PageController::class)->except(['show']);
     Route::get('themes', [DashboardThemeController::class, 'index'])->name('themes.index');
+    Route::get('themes/usage-guide', [DashboardThemeController::class, 'usageGuide'])->name('themes.usage-guide');
     Route::post('themes', [DashboardThemeController::class, 'store'])->name('themes.store');
     Route::get('themes/{theme}/customize', [DashboardThemeController::class, 'customize'])->name('themes.customize');
     Route::put('themes/{theme}/customize', [DashboardThemeController::class, 'updateSettings'])->name('themes.customize.update');
@@ -270,6 +272,8 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
 });
 
 Route::get('/theme-preview/{theme:slug}', [FrontendHomeController::class, 'preview'])->name('themes.preview');
+Route::get('/posts', [FrontendPostController::class, 'index'])->name('frontend.posts.index');
+Route::get('/posts/{slug}', [FrontendPostController::class, 'show'])->name('frontend.posts.show');
 Route::get('/products', [FrontendProductController::class, 'index'])->name('frontend.products.index');
 Route::get('/products/{slug}', [FrontendProductController::class, 'show'])->name('frontend.products.show');
 Route::get('/category/{slug}', [FrontendCategoryController::class, 'show'])->name('frontend.categories.show');

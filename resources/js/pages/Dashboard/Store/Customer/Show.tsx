@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/master-data-layout';
 
 interface Customer {
     id: string;
@@ -85,7 +84,7 @@ export default function Show({
     };
 
     return (
-        <AppLayout>
+        <>
             <Head title={`Customer ${customer.name}`} />
 
             <div className="container mx-auto space-y-8 px-6 py-8">
@@ -266,7 +265,7 @@ export default function Show({
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
 

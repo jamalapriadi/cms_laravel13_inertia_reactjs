@@ -19,6 +19,8 @@ return [
     'fallback_views' => [
         'home' => 'frontend.home',
         'page' => 'frontend.pages.show',
+        'post_index' => 'frontend.posts.index',
+        'post_show' => 'frontend.posts.show',
         'product_index' => 'frontend.products.index',
         'product_show' => 'frontend.products.show',
         'category_show' => 'frontend.categories.show',

@@ -6,6 +6,8 @@ use App\Http\Resources\Api\V1\BannerSlideResource;
 use App\Http\Resources\Api\V1\CategoryDetailResource;
 use App\Http\Resources\Api\V1\EcommerceCategoryResource;
 use App\Http\Resources\Api\V1\PageDetailResource;
+use App\Http\Resources\Api\V1\PostDetailResource;
+use App\Http\Resources\Api\V1\PostResource;
 use App\Http\Resources\Api\V1\ProductDetailResource;
 use App\Http\Resources\Api\V1\ProductResource;
 use App\Models\Dashboard\Menu;
@@ -14,17 +16,20 @@ use App\Models\Shop\BannerSlide;
 use App\Models\Shop\Category;
 use App\Services\ActiveLanguageService;
 use App\Services\Api\V1\PageService;
+use App\Services\Api\V1\PostService;
 use App\Services\Api\V1\ProductCatalogService;
 use App\Services\Dashboard\MenuService;
 use App\Services\SiteContentService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Throwable;
 
 class ThemePageDataFactory
 {
     public function __construct(
         private readonly ProductCatalogService $productCatalogService,
+        private readonly PostService $postService,
         private readonly ActiveLanguageService $activeLanguageService,
         private readonly SiteContentService $siteContentService,
         private readonly MenuService $menuService,
@@ -42,6 +47,7 @@ class ThemePageDataFactory
         return array_merge($this->shared($locale, $fallbackLocale), [
             'bannerSlides' => $this->bannerSlides($request),
             'categories' => $this->homepageCategories($request),
+            'latestPosts' => $this->latestPosts($request, $locale),
             'featuredProducts' => $this->products($request, 'best_selling', 8),
             'latestProducts' => $this->products($request, 'latest', 8),
             'contents' => $this->homepageContents($locale, $fallbackLocale),
@@ -97,6 +103,44 @@ class ThemePageDataFactory
                 ],
                 'filters' => $filters,
             ]);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function postIndex(Request $request, array $filters): array
+    {
+        [$locale, $fallbackLocale] = $this->resolveLocales($request);
+
+        return array_merge($this->shared($locale, $fallbackLocale), [
+            'posts' => $this->paginatePosts($request, $filters, $locale),
+            'filters' => $filters,
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function postShow(Request $request, string $slug): ?array
+    {
+        [$locale, $fallbackLocale] = $this->resolveLocales($request);
+
+        try {
+            $post = $this->postService->findPublishedBySlug(
+                $slug,
+                $this->requestedLanguage($request, $locale),
+            );
+
+            if (! $post) {
+                return null;
+            }
+
+            return array_merge($this->shared($locale, $fallbackLocale), [
+                'post' => PostDetailResource::make($post)->resolve($request),
+            ]);
+        } catch (Throwable) {
+            return null;
         }
     }
 
@@ -312,6 +356,25 @@ class ThemePageDataFactory
     /**
      * @return array<int, array<string, mixed>>
      */
+    private function latestPosts(Request $request, string $locale, int $limit = 6): array
+    {
+        try {
+            $posts = $this->postService->paginatePublished([
+                'language' => $this->requestedLanguage($request, $locale),
+                'page' => 1,
+                'per_page' => $limit,
+                'sort' => 'latest',
+            ]);
+
+            return PostResource::collection($posts->getCollection())->resolve($request);
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     private function relatedProducts(Request $request, ?string $categoryId, string $ignoreProductId): array
     {
         try {
@@ -348,6 +411,46 @@ class ThemePageDataFactory
         } catch (Throwable) {
             return [];
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    private function paginatePosts(Request $request, array $filters, string $locale): LengthAwarePaginator
+    {
+        $perPage = max((int) ($filters['per_page'] ?? 10), 1);
+        $page = max((int) ($filters['page'] ?? 1), 1);
+
+        try {
+            $posts = $this->postService->paginatePublished([
+                ...$filters,
+                'language' => $filters['language'] ?? $this->requestedLanguage($request, $locale),
+            ]);
+
+            $posts->setCollection(collect(
+                PostResource::collection($posts->getCollection())->resolve($request)
+            ));
+
+            return $posts;
+        } catch (Throwable) {
+            return new LengthAwarePaginator(
+                items: [],
+                total: 0,
+                perPage: $perPage,
+                currentPage: $page,
+                options: [
+                    'path' => $request->url(),
+                    'query' => $request->query(),
+                ],
+            );
+        }
+    }
+
+    private function requestedLanguage(Request $request, string $locale): ?string
+    {
+        $language = $request->query('language', $request->query('locale', $locale));
+
+        return is_string($language) && $language !== '' ? $language : $locale;
     }
 
     /**

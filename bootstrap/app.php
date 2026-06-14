@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\CmsThemesDiscoverCommand;
 use App\Console\Commands\NormalizeMediaPathsCommand;
 use App\Console\Commands\StorageHealthCheckCommand;
 use App\Http\Middleware\EnsureCustomerAuthenticated;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withCommands([
+        CmsThemesDiscoverCommand::class,
         NormalizeMediaPathsCommand::class,
         StorageHealthCheckCommand::class,
     ])

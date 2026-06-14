@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" fill="none">
+  <rect width="1200" height="900" rx="40" fill="#111827"/>
+  <rect x="72" y="72" width="1056" height="756" rx="32" fill="url(#paint0_linear)"/>
+  <path d="M256 648L426 470L534 578L704 392L944 648H256Z" fill="#93C5FD" fill-opacity="0.18"/>
+  <circle cx="404" cy="312" r="74" fill="#BFDBFE" fill-opacity="0.4"/>
+  <text x="96" y="146" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="48" font-weight="700">Starter Creative</text>
+  <text x="96" y="206" fill="#CBD5E1" font-family="Arial, sans-serif" font-size="26">Drop your own image here or keep using the built-in placeholder.</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="132" y1="112" x2="1030" y2="764" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1D4ED8"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+</svg>
