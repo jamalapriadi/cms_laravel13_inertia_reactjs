@@ -5,11 +5,14 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Permission;
 
 uses(RefreshDatabase::class);
 
 test('general settings stores uploaded asset urls under asset option keys', function () {
     $user = User::factory()->create();
+    Permission::findOrCreate('options.create', 'web');
+    $user->givePermissionTo('options.create');
 
     $this
         ->actingAs($user)
@@ -23,17 +26,19 @@ test('general settings stores uploaded asset urls under asset option keys', func
         ->assertRedirect();
 
     expect(Option::query()->where('key', 'favicon_ico')->value('value'))
-        ->toBe('/storage/media/2026/05/favicon.ico')
+        ->toBe('media/2026/05/favicon.ico')
         ->and(Option::query()->where('key', 'logo')->value('value'))
-        ->toBe('/storage/media/2026/05/logo.webp')
+        ->toBe('media/2026/05/logo.webp')
         ->and(Option::query()->where('key', 'logo_footer')->value('value'))
-        ->toBe('/storage/media/2026/05/logo-footer.webp')
+        ->toBe('media/2026/05/logo-footer.webp')
         ->and(Option::query()->where('key', 'logo_mobile')->value('value'))
-        ->toBe('/storage/media/2026/05/logo-mobile.webp');
+        ->toBe('media/2026/05/logo-mobile.webp');
 });
 
 test('general settings can clear asset urls', function () {
     $user = User::factory()->create();
+    Permission::findOrCreate('options.create', 'web');
+    $user->givePermissionTo('options.create');
 
     Option::query()->create([
         'key' => 'logo',
@@ -75,6 +80,8 @@ test('media json upload keeps ico files as ico assets', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    Permission::findOrCreate('media.upload', 'web');
+    $user->givePermissionTo('media.upload');
     $file = UploadedFile::fake()->create('favicon.ico', 1, 'image/x-icon');
 
     $response = $this

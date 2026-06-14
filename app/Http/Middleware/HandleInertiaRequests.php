@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\ContentType;
 use App\Services\Customer\CustomerConfigService;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Middleware;
@@ -45,6 +46,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'logo' => get_option('logo') ? MediaPath::url(get_option('logo')) : null,
             'customer_auth_config' => $customerConfig->getAllConfigs(),
             'auth' => [
                 'user' => $user ? [
