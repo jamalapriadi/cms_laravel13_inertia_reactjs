@@ -9,7 +9,7 @@
 @endphp
 
 <section class="blank-card">
-    <div class="blank-card__status">{{ $statusLabel }}</div>
+    {{-- <div class="blank-card__status">{{ $statusLabel }}</div> --}}
     <h1>{{ $statusTitle }}</h1>
     <p class="blank-card__title">{{ $title }}</p>
     <p class="blank-card__message">{{ $message }}</p>
@@ -17,9 +17,9 @@
     @if ($showHomeButton || $showAdminLoginButton)
         <div class="blank-card__actions">
             @if ($showAdminLoginButton)
-                <a href="{{ $adminLoginUrl }}" class="blank-button blank-button--primary">
+                {{-- <a href="{{ $adminLoginUrl }}" class="blank-button blank-button--primary">
                     Login Administrator
-                </a>
+                </a> --}}
             @endif
 
             @if ($showHomeButton)

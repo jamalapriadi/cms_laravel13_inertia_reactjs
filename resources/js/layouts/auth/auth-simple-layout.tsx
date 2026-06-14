@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import type { AuthLayoutProps } from '@/types';
 import { home } from '@/routes';
@@ -8,6 +8,8 @@ export default function AuthSimpleLayout({
     title,
     description,
 }: AuthLayoutProps) {
+    const { logo } = usePage().props;
+
     return (
         <div className="relative flex min-h-svh flex-col items-center justify-center gap-6 bg-linear-to-b from-[#d3e5ff] to-[#fbebea] p-6 md:p-10 dark:from-background dark:to-muted/40">
             <div className="relative w-full max-w-md rounded-2xl border bg-card p-5 px-6 py-5 shadow-2xl">
@@ -18,7 +20,7 @@ export default function AuthSimpleLayout({
                             className="flex flex-col items-center gap-2 font-medium"
                         >
                             <img
-                                src="https://gita-trading-web.vercel.app/logo.png"
+                                src={logo || "https://gita-trading-web.vercel.app/logo.png"}
                                 className="h-24 w-auto object-contain"
                                 alt="logo"
                             />

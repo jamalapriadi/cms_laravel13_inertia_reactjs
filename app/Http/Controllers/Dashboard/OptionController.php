@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OptionRequest;
+use App\Models\Dashboard\Option;
 use App\Services\Dashboard\OptionService;
 use App\Support\MediaPath;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class OptionController extends Controller
@@ -28,6 +30,13 @@ class OptionController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'logo' => 'nullable|image|max:2048',
+            'logo_footer' => 'nullable|image|max:2048',
+            'logo_mobile' => 'nullable|image|max:2048',
+            'favicon_ico' => 'nullable|file|mimes:ico,png,jpg,jpeg,svg,webp|max:2048',
+        ]);
+
         $data = $request->all();
 
         $logoFields = [
@@ -42,11 +51,22 @@ class OptionController extends Controller
 
             if ($request->has($urlField)) {
                 $path = MediaPath::normalize($request->input($urlField), requireExists: false);
+                $oldPath = Option::getByKey($field);
 
                 if ($path !== null) {
+                    if ($oldPath && $oldPath !== $path) {
+                        if (str_starts_with($oldPath, 'settings/') && Storage::disk('public')->exists($oldPath)) {
+                            Storage::disk('public')->delete($oldPath);
+                        }
+                    }
                     $data[$field] = $path;
                 } else {
-                    unset($data[$field]);
+                    if ($oldPath) {
+                        if (str_starts_with($oldPath, 'settings/') && Storage::disk('public')->exists($oldPath)) {
+                            Storage::disk('public')->delete($oldPath);
+                        }
+                    }
+                    $data[$field] = null;
                 }
 
                 unset($data[$urlField]);
@@ -55,8 +75,14 @@ class OptionController extends Controller
             }
 
             if ($request->hasFile($field)) {
-
                 $file = $request->file($field);
+                $oldPath = Option::getByKey($field);
+
+                if ($oldPath) {
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
+                }
 
                 // beri nama unik
                 $filename = time().'_'.$field.'.'.$file->getClientOriginalExtension();
@@ -66,9 +92,8 @@ class OptionController extends Controller
                 $data[$field] = $path;
             }
 
-            // Hapus file field jika kosong (frontend sudah upload via media endpoint)
             if (empty($data[$field])) {
-                unset($data[$field]);
+                $data[$field] = null;
             }
         }
 
