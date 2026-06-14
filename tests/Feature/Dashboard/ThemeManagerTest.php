@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Post;
 use App\Models\Theme;
 use App\Models\ThemeSetting;
 use App\Models\User;
@@ -236,6 +237,18 @@ test('admin can view theme list page', function () {
         );
 });
 
+test('admin can view theme usage guide page', function () {
+    $user = adminWithThemePermissions();
+
+    $this->actingAs($user)
+        ->get(route('themes.usage-guide'))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Dashboard/Themes/UsageGuide')
+            ->where('appUrl', rtrim((string) config('app.url'), '/'))
+        );
+});
+
 test('admin can upload valid theme zip', function () {
     $user = adminWithThemePermissions();
 
@@ -366,6 +379,70 @@ test('fallback default admin login theme can be discovered by theme manager', fu
 
     expect($theme)->not->toBeNull()
         ->and($theme?->slug)->toBe('default-admin-login');
+});
+
+test('cms themes discover command syncs starter creative theme and public assets', function () {
+    copyBuiltinTheme('starter-creative');
+
+    $this->artisan('cms:themes:discover')
+        ->assertSuccessful();
+
+    expect(Theme::query()->where('slug', 'starter-creative')->exists())->toBeTrue();
+    expect(File::exists(config('themes.paths.public').'/starter-creative/css/output.css'))->toBeTrue();
+    expect(File::exists(config('themes.paths.public').'/starter-creative/js/theme.js'))->toBeTrue();
+});
+
+test('starter creative theme can be discovered and previewed with safe empty states', function () {
+    copyBuiltinTheme('starter-creative');
+
+    $user = adminWithThemePermissions();
+
+    $this->actingAs($user)
+        ->get(route('themes.index'))
+        ->assertSuccessful();
+
+    $theme = Theme::query()->where('slug', 'starter-creative')->first();
+
+    expect($theme)->not->toBeNull()
+        ->and($theme?->is_installed)->toBeTrue();
+
+    $this->get(route('themes.preview', $theme))
+        ->assertSuccessful()
+        ->assertSee('Latest posts ready for editorial themes')
+        ->assertSee('No posts published yet')
+        ->assertSee('No products available yet')
+        ->assertSee('Categories are still empty');
+});
+
+test('starter creative theme renders frontend post archive and detail routes', function () {
+    copyBuiltinTheme('starter-creative');
+
+    $user = adminWithThemePermissions();
+
+    $this->actingAs($user)->get(route('themes.index'))->assertSuccessful();
+
+    $theme = Theme::query()->where('slug', 'starter-creative')->firstOrFail();
+
+    $this->actingAs($user)->post(route('themes.activate', $theme))->assertRedirect();
+
+    $post = Post::query()->create([
+        'user_id' => $user->id,
+        'title' => 'Starter Theme Post',
+        'slug' => 'starter-theme-post',
+        'content' => '<p>Starter theme body content.</p>',
+        'type' => 'post',
+        'status' => 'publish',
+        'published_at' => now()->subMinute(),
+    ]);
+
+    $this->get(route('frontend.posts.index'))
+        ->assertSuccessful()
+        ->assertSee('Starter Theme Post');
+
+    $this->get(route('frontend.posts.show', ['slug' => $post->slug]))
+        ->assertSuccessful()
+        ->assertSee('Starter Theme Post')
+        ->assertSee('Starter theme body content.');
 });
 
 test('active theme can render homepage', function () {

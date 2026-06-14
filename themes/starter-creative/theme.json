@@ -1,0 +1,78 @@
+{
+  "name": "Starter Creative",
+  "slug": "starter-creative",
+  "version": "1.0.0",
+  "author": "CMS System",
+  "description": "Starter theme for Laravel CMS with TailwindCSS v4, GSAP, GSAP TextPlugin, and SwiperJS.",
+  "type": "theme",
+  "css_framework": "tailwindcss",
+  "preview": "screenshot.png",
+  "frontend_stack": [
+    "blade",
+    "tailwindcss-v4",
+    "gsap",
+    "gsap-text-plugin",
+    "swiperjs"
+  ],
+  "supports": [
+    "pages",
+    "posts",
+    "products",
+    "categories",
+    "menus",
+    "theme-settings",
+    "swiper",
+    "animation"
+  ],
+  "templates": {
+    "home": "starter-creative::home",
+    "page": "starter-creative::pages.show",
+    "post_index": "starter-creative::posts.index",
+    "post_show": "starter-creative::posts.show",
+    "product_index": "starter-creative::products.index",
+    "product_show": "starter-creative::products.show",
+    "category_show": "starter-creative::categories.show",
+    "404": "starter-creative::errors.404",
+    "fallback": "starter-creative::errors.fallback"
+  },
+  "assets": {
+    "css": [
+      "css/output.css"
+    ],
+    "js": [
+      "js/theme.js"
+    ]
+  },
+  "settings": {
+    "site_title": {
+      "type": "text",
+      "label": "Site Title",
+      "default": "Starter Creative"
+    },
+    "primary_color": {
+      "type": "color",
+      "label": "Primary Color",
+      "default": "#2563eb"
+    },
+    "hero_title": {
+      "type": "text",
+      "label": "Hero Title",
+      "default": "Build Beautiful Laravel CMS Themes"
+    },
+    "hero_subtitle": {
+      "type": "textarea",
+      "label": "Hero Subtitle",
+      "default": "Starter theme with TailwindCSS v4, GSAP animations, and SwiperJS slider."
+    },
+    "show_animations": {
+      "type": "boolean",
+      "label": "Enable Animations",
+      "default": true
+    },
+    "show_slider": {
+      "type": "boolean",
+      "label": "Enable Hero Slider",
+      "default": true
+    }
+  }
+}
