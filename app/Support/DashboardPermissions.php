@@ -49,6 +49,7 @@ final class DashboardPermissions
             'supplier-returns' => ['view', 'create', 'edit', 'delete'],
             'orders' => ['view', 'detail', 'create', 'edit', 'delete', 'update-status', 'export'],
             'settings' => ['view', 'update'],
+            'themes' => ['view', 'create', 'edit', 'delete'],
             'site-contents' => ['view', 'create', 'edit', 'delete'],
             'options' => ['view', 'create', 'edit', 'delete'],
             'media' => ['view', 'upload', 'edit', 'delete'],
@@ -244,6 +245,9 @@ final class DashboardPermissions
             'config.socialite' => 'settings.view',
             'config.language' => 'settings.view',
             'config.language.update' => 'settings.update',
+            'themes.activate' => 'themes.edit',
+            'themes.customize' => 'themes.edit',
+            'themes.customize.update' => 'themes.edit',
             'config.site-contents.usage' => 'site-contents.view',
             'config.reading' => 'settings.view',
             'dashboard.media' => 'media.view',
@@ -298,6 +302,7 @@ final class DashboardPermissions
             'incoming-goods',
             'supplier-returns',
             'orders',
+            'themes',
             'options',
         ];
 

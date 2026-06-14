@@ -1,0 +1,55 @@
+{
+  "name": "Blank 404",
+  "slug": "blank-404",
+  "version": "1.0.0",
+  "author": "System",
+  "description": "Blank fallback theme for unavailable public website pages.",
+  "type": "theme",
+  "css_framework": "tailwindcss",
+  "preview": "screenshot.png",
+  "supports": [
+    "blank",
+    "404",
+    "fallback-theme",
+    "maintenance"
+  ],
+  "templates": {
+    "home": "blank-404::home",
+    "page": "blank-404::pages.show",
+    "product_index": "blank-404::products.index",
+    "product_show": "blank-404::products.show",
+    "category_show": "blank-404::categories.show",
+    "404": "blank-404::errors.404",
+    "fallback": "blank-404::errors.fallback"
+  },
+  "assets": {
+    "css": [
+      "css/theme.css"
+    ],
+    "js": [
+      "js/theme.js"
+    ]
+  },
+  "settings": {
+    "title": {
+      "type": "text",
+      "label": "Title",
+      "default": "Website belum tersedia"
+    },
+    "message": {
+      "type": "textarea",
+      "label": "Message",
+      "default": "Halaman ini belum tersedia. Silakan kembali lagi nanti."
+    },
+    "show_home_button": {
+      "type": "boolean",
+      "label": "Show Home Button",
+      "default": false
+    },
+    "show_admin_login_button": {
+      "type": "boolean",
+      "label": "Show Admin Login Button",
+      "default": true
+    }
+  }
+}

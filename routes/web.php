@@ -23,8 +23,13 @@ use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\ProvinceController;
 use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\SiteContentController;
+use App\Http\Controllers\Dashboard\ThemeController as DashboardThemeController;
 use App\Http\Controllers\Dashboard\TaxonomyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Frontend\CategoryController as FrontendCategoryController;
+use App\Http\Controllers\Frontend\HomeController as FrontendHomeController;
+use App\Http\Controllers\Frontend\PageController as FrontendPageController;
+use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\Store\BannerSlideController;
 use App\Http\Controllers\Store\BarcodeScannerController;
@@ -65,9 +70,7 @@ use Laravel\Fortify\Http\Controllers\VerifyEmailController;
 //     'canRegister' => Features::enabled(Features::registration()),
 // ])->name('home');
 
-Route::get('/', [\Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::class, 'create'])
-    ->middleware(['guest'])
-    ->name('home');
+Route::get('/', FrontendHomeController::class)->name('home');
 
 Route::prefix('auth')->name('customer.auth.')->group(function () {
     Route::middleware('customer.guest')->group(function () {
@@ -161,6 +164,12 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
     Route::get('posts/usage-guide', [PostController::class, 'usageGuide'])->name('posts.usage-guide');
     Route::resource('posts', PostController::class);
     Route::resource('pages', PageController::class)->except(['show']);
+    Route::get('themes', [DashboardThemeController::class, 'index'])->name('themes.index');
+    Route::post('themes', [DashboardThemeController::class, 'store'])->name('themes.store');
+    Route::get('themes/{theme}/customize', [DashboardThemeController::class, 'customize'])->name('themes.customize');
+    Route::put('themes/{theme}/customize', [DashboardThemeController::class, 'updateSettings'])->name('themes.customize.update');
+    Route::post('themes/{theme}/activate', [DashboardThemeController::class, 'activate'])->name('themes.activate');
+    Route::delete('themes/{theme}', [DashboardThemeController::class, 'destroy'])->name('themes.destroy');
     Route::prefix('cms/pages/{page}/translations')->name('dashboard.cms.pages.translations.')->group(function () {
         Route::get('/', [PageTranslationController::class, 'index'])->name('index');
         Route::get('/{language}', [PageTranslationController::class, 'edit'])->name('edit');
@@ -260,6 +269,11 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
     });
 });
 
+Route::get('/theme-preview/{theme:slug}', [FrontendHomeController::class, 'preview'])->name('themes.preview');
+Route::get('/products', [FrontendProductController::class, 'index'])->name('frontend.products.index');
+Route::get('/products/{slug}', [FrontendProductController::class, 'show'])->name('frontend.products.show');
+Route::get('/category/{slug}', [FrontendCategoryController::class, 'show'])->name('frontend.categories.show');
+
 require __DIR__.'/settings.php';
 
 Route::redirect('/login', '/my-admin/login', 301);
@@ -300,3 +314,7 @@ Route::get('/dashboard/{path?}', function (Request $request, ?string $path = nul
 
     return redirect()->to($queryString ? "{$target}?{$queryString}" : $target, 301);
 })->where('path', '.*');
+
+Route::get('/{slug}', [FrontendPageController::class, 'show'])
+    ->where('slug', '^(?!my-admin|auth|customer|api|onboard|theme-preview|login|logout|register|forgot-password|reset-password|email|two-factor-challenge|dashboard|settings).+')
+    ->name('frontend.pages.show');

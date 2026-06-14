@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             SiteContentSeeder::class,
             DynamicContentBuilderSeeder::class,
             PostSampleSeeder::class,
+            ThemeSeeder::class,
         ]);
     }
 }

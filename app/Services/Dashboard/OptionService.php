@@ -4,6 +4,8 @@ namespace App\Services\Dashboard;
 use App\Models\Dashboard\Option;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class OptionService
 {
@@ -59,9 +61,17 @@ class OptionService
 
     public function get(string $key, $default = null)
     {
-        return Cache::rememberForever("option_{$key}", function () use ($key, $default) {
-            return Option::where('key', $key)->value('value') ?? $default;
-        });
+        try {
+            if (! Schema::hasTable('options')) {
+                return $default;
+            }
+
+            return Cache::rememberForever("option_{$key}", function () use ($key, $default) {
+                return Option::where('key', $key)->value('value') ?? $default;
+            });
+        } catch (Throwable) {
+            return $default;
+        }
     }
 
     protected function clearCacheIfAutoload(Option $option): void
