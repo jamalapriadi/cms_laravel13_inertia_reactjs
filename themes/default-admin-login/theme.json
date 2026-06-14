@@ -1,0 +1,44 @@
+{
+  "name": "Default Admin Login",
+  "slug": "default-admin-login",
+  "version": "1.0.0",
+  "author": "System",
+  "description": "Default fallback theme that displays administrator login form.",
+  "type": "theme",
+  "css_framework": "tailwindcss",
+  "supports": [
+    "auth",
+    "admin-login",
+    "fallback-theme"
+  ],
+  "templates": {
+    "home": "default-admin-login::home",
+    "404": "default-admin-login::errors.404"
+  },
+  "assets": {
+    "css": [
+      "css/theme.css"
+    ],
+    "js": [
+      "js/theme.js"
+    ]
+  },
+  "preview": "screenshot.png",
+  "settings": {
+    "site_title": {
+      "type": "text",
+      "label": "Site Title",
+      "default": "CMS Login"
+    },
+    "login_title": {
+      "type": "text",
+      "label": "Login Title",
+      "default": "Administrator Login"
+    },
+    "login_subtitle": {
+      "type": "text",
+      "label": "Login Subtitle",
+      "default": "Masuk ke dashboard untuk mengelola website."
+    }
+  }
+}

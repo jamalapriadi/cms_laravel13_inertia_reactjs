@@ -317,6 +317,12 @@ export const sidebarConfig: SidebarGroup[] = [
                 icon: Settings,
                 permission: 'settings.view',
             },
+            {
+                title: 'Themes',
+                href: '/my-admin/dashboard/themes',
+                icon: Image,
+                permission: 'themes.view',
+            },
         ],
     },
 ];
