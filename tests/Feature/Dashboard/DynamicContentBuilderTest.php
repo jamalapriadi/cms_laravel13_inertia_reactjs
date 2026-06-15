@@ -2,7 +2,6 @@
 
 use App\Models\ContentEntry;
 use App\Models\ContentType;
-use App\Models\CustomField;
 use App\Models\CustomFieldGroup;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

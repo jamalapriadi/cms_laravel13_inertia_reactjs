@@ -6,7 +6,7 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class ProductsImportTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
+class ProductsImportTemplateExport implements FromArray, ShouldAutoSize, WithHeadings
 {
     public function array(): array
     {

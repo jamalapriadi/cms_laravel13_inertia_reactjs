@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Dashboard\Media;
+
 return [
     'dashboard' => [
         'enabled' => true,
@@ -38,7 +40,7 @@ return [
             'txt',
             'zip',
         ],
-        'metadata_model' => App\Models\Dashboard\Media::class,
+        'metadata_model' => Media::class,
         'metadata_columns' => [
             'path' => 'path',
             'disk' => 'disk',

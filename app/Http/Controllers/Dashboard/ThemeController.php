@@ -11,9 +11,9 @@ use App\Models\Theme;
 use App\Models\ThemeSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -79,7 +79,7 @@ class ThemeController extends Controller
         $this->themeManager->useTheme($theme);
 
         $settings = collect(Arr::get($theme->manifest, 'settings', []))
-            ->map(function (mixed $definition, string $key) use ($theme): array {
+            ->map(function (mixed $definition, string $key): array {
                 $configuration = is_array($definition) ? $definition : [];
 
                 return [

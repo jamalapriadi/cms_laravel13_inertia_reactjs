@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('key')->unique();
             $table->longText('value')->nullable();
-            $table->string('type')->default('string'); 
+            $table->string('type')->default('string');
             $table->boolean('autoload')->default(true);
             $table->timestamps();
 

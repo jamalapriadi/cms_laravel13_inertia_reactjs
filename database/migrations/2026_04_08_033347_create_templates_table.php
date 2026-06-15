@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('templates', function(Blueprint $table){
+        Schema::create('templates', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name',50)->nullable();
+            $table->string('name', 50)->nullable();
             $table->text('description')->nullable();
-            $table->string('template_preview',191)->nullable();
-            $table->string('path_template',191)->nullable();
-            $table->enum('default',['Y','N'])->default('N');
-            $table->enum('custom_template',['Y','N'])->default('Y');
+            $table->string('template_preview', 191)->nullable();
+            $table->string('path_template', 191)->nullable();
+            $table->enum('default', ['Y', 'N'])->default('N');
+            $table->enum('custom_template', ['Y', 'N'])->default('Y');
             $table->timestamps();
         });
     }

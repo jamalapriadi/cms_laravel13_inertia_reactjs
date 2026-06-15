@@ -2,10 +2,10 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Services;
 
-use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
 
 class ContentTypeService
 {

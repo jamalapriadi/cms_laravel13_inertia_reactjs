@@ -2,8 +2,8 @@
 
 namespace App\Models\Dashboard;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Kabupaten extends Model
 {
@@ -12,10 +12,11 @@ class Kabupaten extends Model
     protected $fillable = [
         'id',
         'province_id',
-        'name'
+        'name',
     ];
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     public function province()
@@ -27,5 +28,4 @@ class Kabupaten extends Model
     {
         return $this->hasMany(Kecamatan::class);
     }
-
 }

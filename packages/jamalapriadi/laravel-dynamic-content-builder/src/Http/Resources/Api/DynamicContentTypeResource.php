@@ -2,12 +2,13 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Http\Resources\Api;
 
-use Jamalapriadi\DynamicContentBuilder\Models\CustomField;
-use Jamalapriadi\DynamicContentBuilder\Models\CustomFieldGroup;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
+use Jamalapriadi\DynamicContentBuilder\Models\CustomField;
+use Jamalapriadi\DynamicContentBuilder\Models\CustomFieldGroup;
 
-/** @mixin \Jamalapriadi\DynamicContentBuilder\Models\ContentType */
+/** @mixin ContentType */
 class DynamicContentTypeResource extends JsonResource
 {
     public function toArray(Request $request): array

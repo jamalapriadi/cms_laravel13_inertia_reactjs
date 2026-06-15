@@ -12,6 +12,7 @@ use App\Services\DynamicContent\CustomFieldGroupService;
 use App\Services\DynamicContent\DynamicContentFieldService;
 use App\Support\DynamicContent;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -131,7 +132,7 @@ class CustomFieldGroupController extends Controller
     public function moveField(Request $request, CustomFieldGroup $customFieldGroup, CustomField $customField)
     {
         $validated = $request->validate([
-            'direction' => ['required', 'string', \Illuminate\Validation\Rule::in(['up', 'down'])],
+            'direction' => ['required', 'string', Rule::in(['up', 'down'])],
         ]);
 
         $this->customFieldGroupService->moveField($customFieldGroup, $customField, $validated['direction']);

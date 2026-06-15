@@ -2,12 +2,13 @@
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Models\ContentType;
 use App\Models\CustomField;
 use App\Models\CustomFieldGroup;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\ContentType */
+/** @mixin ContentType */
 class DynamicContentTypeResource extends JsonResource
 {
     public function toArray(Request $request): array

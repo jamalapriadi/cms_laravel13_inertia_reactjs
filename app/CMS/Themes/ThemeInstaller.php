@@ -38,7 +38,7 @@ class ThemeInstaller
             $copiedThemePath = $this->copyThemeFiles($rootPath, $slug);
             $copiedPublicPath = $this->copyPublicAssets($rootPath, $slug, $manifest);
 
-            $theme = DB::transaction(function () use ($manifest, $slug, $copiedThemePath, $copiedPublicPath): Theme {
+            $theme = DB::transaction(function () use ($manifest, $slug, $copiedPublicPath): Theme {
                 $existingTheme = Theme::query()->where('slug', $slug)->first();
                 $isActive = $existingTheme?->is_active ?? false;
 
@@ -364,7 +364,7 @@ class ThemeInstaller
 
     private function extractZipToTemporaryPath(UploadedFile $file, string $temporaryPath): void
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $opened = $zip->open($file->getRealPath());
 
         if ($opened !== true) {

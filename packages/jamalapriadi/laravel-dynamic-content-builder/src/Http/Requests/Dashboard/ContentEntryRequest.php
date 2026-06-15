@@ -2,13 +2,13 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Http\Requests\Dashboard;
 
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Arr;
+use Illuminate\Validation\Rule;
 use Jamalapriadi\DynamicContentBuilder\Models\ContentEntry;
 use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
 use Jamalapriadi\DynamicContentBuilder\Services\DynamicContentFieldService;
 use Jamalapriadi\DynamicContentBuilder\Support\DynamicContent;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Arr;
-use Illuminate\Validation\Rule;
 
 class ContentEntryRequest extends FormRequest
 {

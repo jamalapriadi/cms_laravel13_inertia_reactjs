@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Services\Dashboard;
 
@@ -11,7 +11,7 @@ class TranslationService
         return Translation::query()
             ->when($filters['search'] ?? null, function ($q, $search) {
                 $q->where('key', 'like', "%{$search}%")
-                  ->orWhere('value', 'like', "%{$search}%");
+                    ->orWhere('value', 'like', "%{$search}%");
             })
             ->when($filters['locale'] ?? null, function ($q, $locale) {
                 $q->where('locale', $locale);

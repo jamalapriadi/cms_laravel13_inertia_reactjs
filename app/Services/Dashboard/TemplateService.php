@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 // app/Services/TemplateService.php
 
 namespace App\Services\Dashboard;
@@ -10,9 +11,8 @@ class TemplateService
     public function paginateWithSearch(?string $search, int $perPage = 10)
     {
         return Template::query()
-            ->when($search, fn ($q) =>
-                $q->where('name', 'like', "%$search%")
-                  ->orWhere('description', 'like', "%$search%")
+            ->when($search, fn ($q) => $q->where('name', 'like', "%$search%")
+                ->orWhere('description', 'like', "%$search%")
             )
             ->latest()
             ->paginate($perPage)
@@ -27,6 +27,7 @@ class TemplateService
     public function update(Template $template, array $data): Template
     {
         $template->update($data);
+
         return $template;
     }
 

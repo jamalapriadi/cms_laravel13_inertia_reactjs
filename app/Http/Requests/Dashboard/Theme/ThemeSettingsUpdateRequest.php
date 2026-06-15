@@ -60,11 +60,13 @@ class ThemeSettingsUpdateRequest extends FormRequest
 
             if ($type === 'boolean') {
                 $settings[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
                 continue;
             }
 
             if ($type === 'number' && $value !== null && $value !== '') {
                 $settings[$key] = is_numeric($value) ? $value + 0 : $value;
+
                 continue;
             }
 

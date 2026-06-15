@@ -23,6 +23,7 @@ use App\Services\SiteContentService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Throwable;
 
 class ThemePageDataFactory
@@ -469,10 +470,10 @@ class ThemePageDataFactory
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, Category>  $categories
+     * @param  Collection<int, Category>  $categories
      * @return list<string>
      */
-    private function descendantCategoryIds(string $parentId, \Illuminate\Support\Collection $categories): array
+    private function descendantCategoryIds(string $parentId, Collection $categories): array
     {
         return $categories
             ->where('parent_id', $parentId)

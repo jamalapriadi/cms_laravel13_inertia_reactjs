@@ -51,4 +51,3 @@ class UpdatePostTranslationRequest extends FormRequest
         ];
     }
 }
-

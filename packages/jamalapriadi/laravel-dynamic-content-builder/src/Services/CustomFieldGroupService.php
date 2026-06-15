@@ -2,12 +2,12 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Services;
 
-use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
-use Jamalapriadi\DynamicContentBuilder\Models\CustomField;
-use Jamalapriadi\DynamicContentBuilder\Models\CustomFieldGroup;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
+use Jamalapriadi\DynamicContentBuilder\Models\CustomField;
+use Jamalapriadi\DynamicContentBuilder\Models\CustomFieldGroup;
 
 class CustomFieldGroupService
 {

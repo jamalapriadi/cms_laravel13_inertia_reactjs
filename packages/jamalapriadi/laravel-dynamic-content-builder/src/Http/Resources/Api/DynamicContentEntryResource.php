@@ -2,11 +2,11 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Http\Resources\Api;
 
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Jamalapriadi\DynamicContentBuilder\Models\ContentEntry;
 use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
 use Jamalapriadi\DynamicContentBuilder\Models\CustomField;
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin ContentEntry */
 class DynamicContentEntryResource extends JsonResource

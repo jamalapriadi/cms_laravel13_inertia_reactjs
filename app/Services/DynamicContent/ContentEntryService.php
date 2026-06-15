@@ -5,6 +5,7 @@ namespace App\Services\DynamicContent;
 use App\Models\ContentEntry;
 use App\Models\ContentType;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -142,7 +143,7 @@ class ContentEntryService
         return $normalized;
     }
 
-    private function resolvePublishedAt(array $data): ?\Carbon\CarbonInterface
+    private function resolvePublishedAt(array $data): ?CarbonInterface
     {
         if (! empty($data['published_at'])) {
             return Carbon::parse($data['published_at']);

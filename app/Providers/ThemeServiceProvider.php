@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use App\CMS\Themes\ThemeInstaller;
-use App\CMS\Themes\FallbackThemeResolver;
 use App\CMS\Themes\FallbackAdminLoginViewData;
+use App\CMS\Themes\FallbackThemeResolver;
+use App\CMS\Themes\ThemeInstaller;
 use App\CMS\Themes\ThemeManager;
 use Illuminate\Support\ServiceProvider;
 use Throwable;

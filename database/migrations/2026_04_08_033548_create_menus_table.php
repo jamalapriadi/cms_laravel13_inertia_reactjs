@@ -26,7 +26,7 @@ return new class extends Migration
 
             $table->string('url')->nullable(); // custom URL
 
-            $table->string('type')->default('custom'); 
+            $table->string('type')->default('custom');
             // custom | page | category
 
             $table->unsignedInteger('order')->default(0);

@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 class StockUnitActivityLogger
 {
     /**
-     * @param array<string, mixed> $metadata
+     * @param  array<string, mixed>  $metadata
      */
     public static function log(
         ProductStockUnit $stockUnit,

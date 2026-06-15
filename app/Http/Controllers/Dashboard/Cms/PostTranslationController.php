@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Dashboard\Cms;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\Cms\UpdatePostTranslationRequest;
-use App\Models\Dashboard\Language;
 use App\Models\BlockTranslation;
+use App\Models\Dashboard\Language;
 use App\Models\Post;
 use App\Models\PostTranslation;
 use App\Services\Cms\BlockTextExtractor;

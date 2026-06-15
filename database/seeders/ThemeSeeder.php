@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\CMS\Themes\ThemeInstaller;
 use App\CMS\Themes\FallbackThemeResolver;
+use App\CMS\Themes\ThemeInstaller;
 use App\Models\Theme;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 
 class ThemeSeeder extends Seeder
 {

@@ -15,7 +15,7 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class ProductsImport implements ToModel, WithHeadingRow, WithBatchInserts
+class ProductsImport implements ToModel, WithBatchInserts, WithHeadingRow
 {
     use Importable;
 
@@ -40,6 +40,7 @@ class ProductsImport implements ToModel, WithHeadingRow, WithBatchInserts
 
                     if (! $isVariant && empty($value)) {
                         $fail('SKU is required for products without variants.');
+
                         return;
                     }
 
@@ -65,7 +66,7 @@ class ProductsImport implements ToModel, WithHeadingRow, WithBatchInserts
         ]);
 
         if ($validator->fails()) {
-            throw new \Exception('Invalid product row: ' . implode('; ', $validator->errors()->all()));
+            throw new \Exception('Invalid product row: '.implode('; ', $validator->errors()->all()));
         }
 
         $categoryId = $this->resolveCategoryId($row);
@@ -73,7 +74,7 @@ class ProductsImport implements ToModel, WithHeadingRow, WithBatchInserts
         $unitId = $this->resolveUnitId($row);
 
         if (! $categoryId) {
-            throw new \Exception('Product "' . ($row['name'] ?? 'unknown') . '" requires a valid category_id, category_slug, or category_name.');
+            throw new \Exception('Product "'.($row['name'] ?? 'unknown').'" requires a valid category_id, category_slug, or category_name.');
         }
 
         $slug = $row['slug'] ?: UniqueSlug::make(Product::class, $row['name']);

@@ -9,12 +9,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MenuItem extends Model
 {
     protected $fillable = [
-        'menu_id','parent_id','url','type',
-        'order','target','icon','meta'
+        'menu_id', 'parent_id', 'url', 'type',
+        'order', 'target', 'icon', 'meta',
     ];
 
     protected $casts = [
-        'meta' => 'array'
+        'meta' => 'array',
     ];
 
     public function menu(): BelongsTo

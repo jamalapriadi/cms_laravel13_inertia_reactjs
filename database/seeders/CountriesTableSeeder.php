@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Dashboard\Country;
+use Illuminate\Database\Seeder;
 
 class CountriesTableSeeder extends Seeder
 {
@@ -11,7 +11,7 @@ class CountriesTableSeeder extends Seeder
 
     public function __construct()
     {
-        $this->countries = include __DIR__ . '/countries.php';
+        $this->countries = include __DIR__.'/countries.php';
     }
 
     public function run(): void

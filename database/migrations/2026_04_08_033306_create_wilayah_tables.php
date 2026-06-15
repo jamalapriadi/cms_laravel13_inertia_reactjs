@@ -22,7 +22,7 @@ return new class extends Migration
 
         // Kabupaten/Kota (ID 4 Digit, format: 32.73)
         Schema::create('kabupatens', function (Blueprint $table) {
-            $table->char('id', 5)->primary(); 
+            $table->char('id', 5)->primary();
             $table->char('province_id', 2);
             $table->string('name')->index();
             $table->string('lat')->nullable();

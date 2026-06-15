@@ -2,8 +2,8 @@
 
 namespace App\Models\Dashboard;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Province extends Model
 {
@@ -11,10 +11,11 @@ class Province extends Model
 
     protected $fillable = [
         'id',
-        'name'
+        'name',
     ];
 
     public $incrementing = false; // karena id char(2)
+
     protected $keyType = 'string';
 
     public function kabupatens()
