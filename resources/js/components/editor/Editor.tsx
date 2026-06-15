@@ -25,7 +25,10 @@ export default function Editor({
         const formData = new FormData();
         formData.append('image', file);
 
-        const res = await axios.post('/my-admin/dashboard/upload-image', formData);
+        const res = await axios.post(
+            '/my-admin/dashboard/upload-image',
+            formData,
+        );
 
         return res.data.url;
     };
@@ -51,7 +54,7 @@ export default function Editor({
             <div className="py-4">
                 <EditorContent
                     editor={editor}
-                    className="prose prose-sm max-w-none focus:outline-none"
+                    className="prose-sm prose max-w-none focus:outline-none"
                 />
             </div>
 

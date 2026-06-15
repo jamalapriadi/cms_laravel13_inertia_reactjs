@@ -30,19 +30,24 @@ export function useCategoryForm({
 
     const onSubmit = (values: CategoryFormValues) => {
         if (isEdit && categoryId) {
-            router.put(`/my-admin/dashboard/post-categories/${categoryId}`, values, {
-                preserveScroll: true,
+            router.put(
+                `/my-admin/dashboard/post-categories/${categoryId}`,
+                values,
+                {
+                    preserveScroll: true,
 
-                onStart: () => toast.loading('Updating...', { id: 'category' }),
-                onSuccess: () =>
-                    toast.success('Category updated successfully', {
-                        id: 'category',
-                    }),
-                onError: () =>
-                    toast.error('Failed to update category', {
-                        id: 'category',
-                    }),
-            });
+                    onStart: () =>
+                        toast.loading('Updating...', { id: 'category' }),
+                    onSuccess: () =>
+                        toast.success('Category updated successfully', {
+                            id: 'category',
+                        }),
+                    onError: () =>
+                        toast.error('Failed to update category', {
+                            id: 'category',
+                        }),
+                },
+            );
         } else {
             router.post('/my-admin/dashboard/post-categories', values, {
                 preserveScroll: true,

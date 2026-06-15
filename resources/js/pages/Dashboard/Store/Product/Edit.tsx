@@ -307,7 +307,7 @@ export default function Edit({
                             </div>
 
                             <div className="flex flex-col gap-1">
-                                <Label>Base Price ¥</Label>
+                                <Label>Base Price (Rp)</Label>
                                 <Input
                                     type="number"
                                     min="0"
@@ -381,7 +381,9 @@ export default function Edit({
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/my-admin/dashboard/ecommerce/products')
+                                router.visit(
+                                    '/my-admin/dashboard/ecommerce/products',
+                                )
                             }
                         >
                             Cancel

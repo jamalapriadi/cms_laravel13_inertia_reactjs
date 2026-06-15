@@ -7,17 +7,20 @@ import { home } from '@/routes';
 const highlights = [
     {
         title: 'Checkout lebih cepat',
-        description: 'Simpan profil customer dan lanjutkan belanja tanpa mengulang data dasar.',
+        description:
+            'Simpan profil customer dan lanjutkan belanja tanpa mengulang data dasar.',
         icon: ShoppingBag,
     },
     {
         title: 'Akun tetap aman',
-        description: 'Password reset, login customer, dan session customer dipisahkan dari admin.',
+        description:
+            'Password reset, login customer, dan session customer dipisahkan dari admin.',
         icon: ShieldCheck,
     },
     {
         title: 'Pantau pesanan',
-        description: 'Lihat ringkasan order, status pembayaran, dan shortcut akun dalam satu dashboard.',
+        description:
+            'Lihat ringkasan order, status pembayaran, dan shortcut akun dalam satu dashboard.',
         icon: Truck,
     },
 ];
@@ -47,10 +50,13 @@ export default function CustomerAuthLayout({
                                 Customer account
                             </p>
                             <h1 className="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-                                Belanja lebih rapi dengan akun customer yang terpisah.
+                                Belanja lebih rapi dengan akun customer yang
+                                terpisah.
                             </h1>
                             <p className="max-w-lg text-base leading-7 text-slate-600 sm:text-lg">
-                                Login, register, dan recovery password customer kini memakai alur publik sendiri tanpa mengganggu auth admin.
+                                Login, register, dan recovery password customer
+                                kini memakai alur publik sendiri tanpa
+                                mengganggu auth admin.
                             </p>
                         </div>
                     </div>

@@ -20,7 +20,10 @@ interface Props {
 export default function Edit({ province }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Provinces', href: '/my-admin/dashboard/provinces' },
-        { title: 'Edit', href: `/my-admin/dashboard/provinces/${province.id}/edit` },
+        {
+            title: 'Edit',
+            href: `/my-admin/dashboard/provinces/${province.id}/edit`,
+        },
     ];
 
     const { data, setData, put, processing, errors } = useForm({

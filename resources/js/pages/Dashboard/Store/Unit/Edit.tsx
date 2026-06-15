@@ -15,7 +15,10 @@ import AppLayout from '@/layouts/master-data-layout';
 
 const unitSchema = z.object({
     name: z.string().min(3, 'Unit name must be at least 3 characters'),
-    code: z.string().min(1, 'Unit code is required').max(50, 'Unit code must not exceed 50 characters'),
+    code: z
+        .string()
+        .min(1, 'Unit code is required')
+        .max(50, 'Unit code must not exceed 50 characters'),
     description: z.string().nullable().optional(),
     is_active: z.boolean().default(true),
 });
@@ -82,10 +85,9 @@ export default function Edit({ unit }: Props) {
             },
 
             onError: () => {
-                toast.error(
-                    'Failed to update unit. Please check the inputs.',
-                    { id: 'save' },
-                );
+                toast.error('Failed to update unit. Please check the inputs.', {
+                    id: 'save',
+                });
             },
         });
     };
@@ -98,7 +100,9 @@ export default function Edit({ unit }: Props) {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Edit Unit</h1>
-                    <p className="text-muted-foreground">Update {unit.name} information</p>
+                    <p className="text-muted-foreground">
+                        Update {unit.name} information
+                    </p>
                 </div>
 
                 <hr />
@@ -168,17 +172,16 @@ export default function Edit({ unit }: Props) {
 
                     {/* ACTIONS */}
                     <div className="flex gap-2">
-                        <Button
-                            type="submit"
-                            disabled={processing}
-                        >
+                        <Button type="submit" disabled={processing}>
                             {processing ? 'Updating...' : 'Update Unit'}
                         </Button>
 
                         <Button
                             type="button"
                             variant="secondary"
-                            onClick={() => router.visit('/my-admin/dashboard/units')}
+                            onClick={() =>
+                                router.visit('/my-admin/dashboard/units')
+                            }
                         >
                             Cancel
                         </Button>

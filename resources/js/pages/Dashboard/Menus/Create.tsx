@@ -49,7 +49,9 @@ export default function Create() {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">Create Menu</h1>
-                    <p className="text-muted-foreground">Add a new navigation menu</p>
+                    <p className="text-muted-foreground">
+                        Add a new navigation menu
+                    </p>
                 </div>
 
                 <hr />
@@ -99,7 +101,9 @@ export default function Create() {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/my-admin/dashboard/menus')}
+                            onClick={() =>
+                                router.visit('/my-admin/dashboard/menus')
+                            }
                         >
                             Cancel
                         </Button>

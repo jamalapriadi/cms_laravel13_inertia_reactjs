@@ -82,9 +82,12 @@ export default function Index({ collections, typeOptions, filters }: Props) {
             return;
         }
 
-        router.delete(`/my-admin/dashboard/ecommerce/product-collections/${deletingId}`, {
-            onFinish: () => setDeletingId(null),
-        });
+        router.delete(
+            `/my-admin/dashboard/ecommerce/product-collections/${deletingId}`,
+            {
+                onFinish: () => setDeletingId(null),
+            },
+        );
     };
 
     const columns = [
@@ -155,7 +158,9 @@ export default function Index({ collections, typeOptions, filters }: Props) {
             label: 'Actions',
             render: (row: ProductCollection) => (
                 <div className="flex gap-2">
-                    <Link href={`/my-admin/dashboard/ecommerce/product-collections/${row.id}`}>
+                    <Link
+                        href={`/my-admin/dashboard/ecommerce/product-collections/${row.id}`}
+                    >
                         <Button size="sm" variant="secondary" title="View">
                             <Eye className="h-3.5 w-3.5" />
                         </Button>

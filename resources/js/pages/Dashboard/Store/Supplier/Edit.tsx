@@ -66,25 +66,31 @@ export default function Edit({ supplier }: Props) {
     });
 
     const onSubmit = (data: SupplierFormData) => {
-        router.put(`/my-admin/dashboard/ecommerce/suppliers/${supplier.id}`, data, {
-            preserveScroll: true,
-            onStart: () => {
-                setProcessing(true);
-                toast.loading('Saving supplier...', { id: 'save' });
+        router.put(
+            `/my-admin/dashboard/ecommerce/suppliers/${supplier.id}`,
+            data,
+            {
+                preserveScroll: true,
+                onStart: () => {
+                    setProcessing(true);
+                    toast.loading('Saving supplier...', { id: 'save' });
+                },
+                onSuccess: () => {
+                    toast.success('Supplier updated successfully!', {
+                        id: 'save',
+                    });
+                },
+                onFinish: () => {
+                    setProcessing(false);
+                },
+                onError: () => {
+                    toast.error(
+                        'Failed to update supplier. Please check the inputs.',
+                        { id: 'save' },
+                    );
+                },
             },
-            onSuccess: () => {
-                toast.success('Supplier updated successfully!', { id: 'save' });
-            },
-            onFinish: () => {
-                setProcessing(false);
-            },
-            onError: () => {
-                toast.error(
-                    'Failed to update supplier. Please check the inputs.',
-                    { id: 'save' },
-                );
-            },
-        });
+        );
     };
 
     return (
@@ -99,7 +105,9 @@ export default function Edit({ supplier }: Props) {
                         variant="outline"
                         size="icon"
                         onClick={() =>
-                            router.visit('/my-admin/dashboard/ecommerce/suppliers')
+                            router.visit(
+                                '/my-admin/dashboard/ecommerce/suppliers',
+                            )
                         }
                     >
                         <ArrowLeft className="h-4 w-4" />
@@ -223,7 +231,9 @@ export default function Edit({ supplier }: Props) {
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/my-admin/dashboard/ecommerce/suppliers')
+                                router.visit(
+                                    '/my-admin/dashboard/ecommerce/suppliers',
+                                )
                             }
                         >
                             Cancel

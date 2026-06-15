@@ -191,7 +191,9 @@ export default function Index({
                                 </AlertDialogHeader>
 
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>
+                                        Cancel
+                                    </AlertDialogCancel>
                                     <AlertDialogAction onClick={handleDelete}>
                                         Delete
                                     </AlertDialogAction>
@@ -338,7 +340,9 @@ export default function Index({
 }
 
 Index.layout = (page: React.ReactNode) => (
-    <AppLayout breadcrumbs={[{ title: 'Pages', href: '/my-admin/dashboard/pages' }]}>
+    <AppLayout
+        breadcrumbs={[{ title: 'Pages', href: '/my-admin/dashboard/pages' }]}
+    >
         {page}
     </AppLayout>
 );

@@ -142,9 +142,12 @@ export default function Index({ customFieldGroups, filters }: Props) {
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Custom Fields</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            Custom Fields
+                        </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Manage field groups and their reusable schemas for each dynamic content type.
+                            Manage field groups and their reusable schemas for
+                            each dynamic content type.
                         </p>
                     </div>
 
@@ -202,7 +205,8 @@ export default function Index({ customFieldGroups, filters }: Props) {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete field group?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action will soft-delete the field group and its custom fields.
+                            This action will soft-delete the field group and its
+                            custom fields.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

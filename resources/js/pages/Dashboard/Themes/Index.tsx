@@ -1,5 +1,12 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { BookOpen, Eye, LoaderCircle, Palette, Trash2, Upload } from 'lucide-react';
+import {
+    BookOpen,
+    Eye,
+    LoaderCircle,
+    Palette,
+    Trash2,
+    Upload,
+} from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 
 import {
@@ -59,17 +66,10 @@ export default function Index({ themes }: Props) {
     const canDelete = hasPermission('themes.delete');
     const [deletingTheme, setDeletingTheme] = useState<ThemeItem | null>(null);
 
-    const {
-        data,
-        setData,
-        post,
-        processing,
-        progress,
-        errors,
-        reset,
-    } = useForm<{ archive: File | null }>({
-        archive: null,
-    });
+    const { data, setData, post, processing, progress, errors, reset } =
+        useForm<{ archive: File | null }>({
+            archive: null,
+        });
 
     const submitUpload = (event: FormEvent) => {
         event.preventDefault();
@@ -87,7 +87,7 @@ export default function Index({ themes }: Props) {
     };
 
     const handleDelete = () => {
-        if (! deletingTheme) {
+        if (!deletingTheme) {
             return;
         }
 
@@ -108,8 +108,9 @@ export default function Index({ themes }: Props) {
                             Theme Manager
                         </h1>
                         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                            Kelola theme frontend terpisah dari dashboard core. ZIP theme hanya
-                            membawa Blade view, asset final hasil build, dan manifest.
+                            Kelola theme frontend terpisah dari dashboard core.
+                            ZIP theme hanya membawa Blade view, asset final
+                            hasil build, dan manifest.
                         </p>
                         <div className="mt-4">
                             <Link href={usageGuideTheme().url}>
@@ -128,13 +129,18 @@ export default function Index({ themes }: Props) {
                         >
                             <div className="flex items-center justify-between gap-3">
                                 <div>
-                                    <p className="text-sm font-medium">Upload Theme ZIP</p>
+                                    <p className="text-sm font-medium">
+                                        Upload Theme ZIP
+                                    </p>
                                     <p className="text-xs text-muted-foreground">
-                                        CMS tidak akan menjalankan npm, composer, atau provider theme.
+                                        CMS tidak akan menjalankan npm,
+                                        composer, atau provider theme.
                                     </p>
                                 </div>
                                 {progress && (
-                                    <Badge variant="secondary">{progress.percentage}%</Badge>
+                                    <Badge variant="secondary">
+                                        {progress.percentage}%
+                                    </Badge>
                                 )}
                             </div>
 
@@ -143,12 +149,15 @@ export default function Index({ themes }: Props) {
                                     type="file"
                                     accept=".zip,application/zip"
                                     onChange={(event) =>
-                                        setData('archive', event.target.files?.[0] ?? null)
+                                        setData(
+                                            'archive',
+                                            event.target.files?.[0] ?? null,
+                                        )
                                     }
                                 />
                                 <Button
                                     type="submit"
-                                    disabled={processing || ! data.archive}
+                                    disabled={processing || !data.archive}
                                     className="gap-2"
                                 >
                                     {processing ? (
@@ -161,10 +170,14 @@ export default function Index({ themes }: Props) {
                             </div>
 
                             {errors.archive && (
-                                <p className="text-sm text-destructive">{errors.archive}</p>
+                                <p className="text-sm text-destructive">
+                                    {errors.archive}
+                                </p>
                             )}
-                            {errors.theme && (
-                                <p className="text-sm text-destructive">{errors.theme}</p>
+                            {(errors as any).theme && (
+                                <p className="text-sm text-destructive">
+                                    {(errors as any).theme}
+                                </p>
                             )}
                         </form>
                     )}
@@ -194,48 +207,70 @@ export default function Index({ themes }: Props) {
                                     <CardHeader className="space-y-3">
                                         <div className="flex flex-wrap items-start justify-between gap-3">
                                             <div>
-                                                <CardTitle className="text-xl">{theme.name}</CardTitle>
+                                                <CardTitle className="text-xl">
+                                                    {theme.name}
+                                                </CardTitle>
                                                 <CardDescription className="mt-1">
-                                                    <span className="font-mono text-xs">{theme.slug}</span>
+                                                    <span className="font-mono text-xs">
+                                                        {theme.slug}
+                                                    </span>
                                                     {' • '}
-                                                    {theme.version || 'no version'}
+                                                    {theme.version ||
+                                                        'no version'}
                                                     {' • '}
-                                                    {theme.author || 'Unknown author'}
+                                                    {theme.author ||
+                                                        'Unknown author'}
                                                 </CardDescription>
                                             </div>
 
                                             <div className="flex flex-wrap gap-2">
-                                                <Badge variant={theme.is_active ? 'default' : 'secondary'}>
-                                                    {theme.is_active ? 'Active' : 'Inactive'}
+                                                <Badge
+                                                    variant={
+                                                        theme.is_active
+                                                            ? 'default'
+                                                            : 'secondary'
+                                                    }
+                                                >
+                                                    {theme.is_active
+                                                        ? 'Active'
+                                                        : 'Inactive'}
                                                 </Badge>
                                                 {theme.has_settings && (
                                                     <Badge variant="outline">
-                                                        {theme.settings_count} saved settings
+                                                        {theme.settings_count}{' '}
+                                                        saved settings
                                                     </Badge>
                                                 )}
                                             </div>
                                         </div>
 
                                         <p className="text-sm text-muted-foreground">
-                                            {theme.description || 'Theme ini belum punya deskripsi.'}
+                                            {theme.description ||
+                                                'Theme ini belum punya deskripsi.'}
                                         </p>
                                     </CardHeader>
 
                                     <CardContent className="flex flex-1 flex-col justify-between gap-5">
                                         <div className="space-y-3">
-                                            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                                            <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
                                                 Supports
                                             </p>
                                             <div className="flex flex-wrap gap-2">
                                                 {theme.supports.length > 0 ? (
-                                                    theme.supports.map((item) => (
-                                                        <Badge key={item} variant="outline">
-                                                            {item}
-                                                        </Badge>
-                                                    ))
+                                                    theme.supports.map(
+                                                        (item) => (
+                                                            <Badge
+                                                                key={item}
+                                                                variant="outline"
+                                                            >
+                                                                {item}
+                                                            </Badge>
+                                                        ),
+                                                    )
                                                 ) : (
                                                     <span className="text-sm text-muted-foreground">
-                                                        Tidak ada deklarasi support di manifest.
+                                                        Tidak ada deklarasi
+                                                        support di manifest.
                                                     </span>
                                                 )}
                                             </div>
@@ -247,7 +282,10 @@ export default function Index({ themes }: Props) {
                                                 target="_blank"
                                                 rel="noreferrer"
                                             >
-                                                <Button variant="outline" className="gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    className="gap-2"
+                                                >
                                                     <Eye className="h-4 w-4" />
                                                     Preview
                                                 </Button>
@@ -256,14 +294,31 @@ export default function Index({ themes }: Props) {
                                             {canEdit && (
                                                 <>
                                                     <Button
-                                                        onClick={() => handleActivate(theme)}
-                                                        disabled={theme.is_active}
+                                                        onClick={() =>
+                                                            handleActivate(
+                                                                theme,
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            theme.is_active
+                                                        }
                                                     >
-                                                        {theme.is_active ? 'Theme Active' : 'Activate'}
+                                                        {theme.is_active
+                                                            ? 'Theme Active'
+                                                            : 'Activate'}
                                                     </Button>
 
-                                                    <Link href={customizeTheme(theme.slug).url}>
-                                                        <Button variant="secondary" className="gap-2">
+                                                    <Link
+                                                        href={
+                                                            customizeTheme(
+                                                                theme.slug,
+                                                            ).url
+                                                        }
+                                                    >
+                                                        <Button
+                                                            variant="secondary"
+                                                            className="gap-2"
+                                                        >
                                                             <Palette className="h-4 w-4" />
                                                             Customize
                                                         </Button>
@@ -276,7 +331,9 @@ export default function Index({ themes }: Props) {
                                                     variant="destructive"
                                                     className="gap-2"
                                                     disabled={theme.is_active}
-                                                    onClick={() => setDeletingTheme(theme)}
+                                                    onClick={() =>
+                                                        setDeletingTheme(theme)
+                                                    }
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                     Delete
@@ -293,25 +350,35 @@ export default function Index({ themes }: Props) {
                 {themes.length === 0 && (
                     <Card className="border-dashed">
                         <CardContent className="py-14 text-center text-sm text-muted-foreground">
-                            Belum ada theme terdaftar. Upload ZIP theme atau gunakan starter theme
-                            bawaan di folder <span className="font-mono">themes/starter-creative</span>.
+                            Belum ada theme terdaftar. Upload ZIP theme atau
+                            gunakan starter theme bawaan di folder{' '}
+                            <span className="font-mono">
+                                themes/starter-creative
+                            </span>
+                            .
                         </CardContent>
                     </Card>
                 )}
             </div>
 
-            <AlertDialog open={!!deletingTheme} onOpenChange={(open) => ! open && setDeletingTheme(null)}>
+            <AlertDialog
+                open={!!deletingTheme}
+                onOpenChange={(open) => !open && setDeletingTheme(null)}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Hapus theme?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Theme <strong>{deletingTheme?.name}</strong> akan dihapus dari database,
-                            folder theme, dan asset publiknya.
+                            Theme <strong>{deletingTheme?.name}</strong> akan
+                            dihapus dari database, folder theme, dan asset
+                            publiknya.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete}>Hapus Theme</AlertDialogAction>
+                        <AlertDialogAction onClick={handleDelete}>
+                            Hapus Theme
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -320,7 +387,9 @@ export default function Index({ themes }: Props) {
 }
 
 Index.layout = (page: ReactNode) => (
-    <AppLayout breadcrumbs={[{ title: 'Themes', href: '/my-admin/dashboard/themes' }]}>
+    <AppLayout
+        breadcrumbs={[{ title: 'Themes', href: '/my-admin/dashboard/themes' }]}
+    >
         {page}
     </AppLayout>
 );

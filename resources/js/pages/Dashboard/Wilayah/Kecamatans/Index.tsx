@@ -99,7 +99,9 @@ export default function Index({
             label: 'Action',
             render: (row) => (
                 <div className="flex gap-2">
-                    <Link href={`/my-admin/dashboard/kecamatans/${row.id}/edit`}>
+                    <Link
+                        href={`/my-admin/dashboard/kecamatans/${row.id}/edit`}
+                    >
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>

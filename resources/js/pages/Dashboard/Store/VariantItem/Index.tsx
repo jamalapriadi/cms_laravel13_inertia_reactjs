@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/master-data-layout';
 import { mediaUrl } from '@/lib/media';
+import { formatRupiah } from '@/lib/utils';
 import type { LaravelPagination } from '@/types/LaravelPagination';
 
 interface Product {
@@ -60,10 +61,11 @@ interface Props {
 }
 
 const money = (value: string | number | null | undefined) =>
-    `¥${Number(value ?? 0).toLocaleString('ja-JP')}`;
+    formatRupiah(value);
 
 export default function Index({ variantItems, products, filters }: Props) {
-    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;
+    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string })
+        .mediaUrlBase;
     const [search, setSearch] = useState(filters.search || '');
     const [productId, setProductId] = useState(filters.product_id || '');
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -118,7 +120,9 @@ export default function Index({ variantItems, products, filters }: Props) {
                                 )}
 
                                 {option.variant?.name && (
-                                    <span className="text-muted-foreground">:</span>
+                                    <span className="text-muted-foreground">
+                                        :
+                                    </span>
                                 )}
 
                                 <span className="max-w-30 truncate font-medium">

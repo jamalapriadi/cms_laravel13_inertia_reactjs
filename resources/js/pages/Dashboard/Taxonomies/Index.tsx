@@ -172,7 +172,9 @@ export default function Index({ taxonomy, taxonomies, filters }: Props) {
                         </p>
                     </div>
 
-                    <Link href={`/my-admin/dashboard/taxonomies/${taxonomy}/create`}>
+                    <Link
+                        href={`/my-admin/dashboard/taxonomies/${taxonomy}/create`}
+                    >
                         <Button>Add New</Button>
                     </Link>
                 </div>

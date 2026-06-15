@@ -13,7 +13,8 @@ export default function VerifyEmail({ status }: { status?: string }) {
 
             {status === 'verification-link-sent' && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    Tautan verifikasi baru telah dikirim ke alamat email yang Anda berikan saat mendaftar.
+                    Tautan verifikasi baru telah dikirim ke alamat email yang
+                    Anda berikan saat mendaftar.
                 </div>
             )}
 

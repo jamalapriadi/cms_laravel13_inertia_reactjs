@@ -29,7 +29,12 @@ function getDefaultMeta(type: string) {
     return {};
 }
 
-export default function MenuBuilder({ tree, setTree, locale, productCategories }: any) {
+export default function MenuBuilder({
+    tree,
+    setTree,
+    locale,
+    productCategories,
+}: any) {
     function handleAdd(item: any) {
         const type = item.type || 'custom';
 

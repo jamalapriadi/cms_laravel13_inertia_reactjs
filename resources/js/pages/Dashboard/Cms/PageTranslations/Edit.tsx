@@ -227,7 +227,9 @@ export default function Edit({
                             Target: {language.code.toUpperCase()}
                         </Badge>
                         <Badge
-                            variant={translationExists ? 'default' : 'secondary'}
+                            variant={
+                                translationExists ? 'default' : 'secondary'
+                            }
                         >
                             {translationExists ? 'Translated' : 'Draft'}
                         </Badge>
@@ -278,9 +280,7 @@ export default function Edit({
                                 <Badge
                                     key={item.id}
                                     variant={
-                                        item.translated
-                                            ? 'default'
-                                            : 'outline'
+                                        item.translated ? 'default' : 'outline'
                                     }
                                 >
                                     {item.code.toUpperCase()}:{' '}
@@ -426,10 +426,7 @@ export default function Edit({
                                 <Input
                                     value={data.seo_title}
                                     onChange={(event) =>
-                                        setData(
-                                            'seo_title',
-                                            event.target.value,
-                                        )
+                                        setData('seo_title', event.target.value)
                                     }
                                 />
                             </Field>
@@ -507,8 +504,9 @@ export default function Edit({
                                                         (entry) =>
                                                             entry.block_id ===
                                                             block.id,
-                                                    )?.translations[item.path] ??
-                                                    '';
+                                                    )?.translations[
+                                                        item.path
+                                                    ] ?? '';
                                                 const useRichEditor =
                                                     block.type ===
                                                         'rich-editor' ||
@@ -522,7 +520,9 @@ export default function Edit({
                                                         key={`${block.id}-${item.path}`}
                                                         className="grid gap-4 md:grid-cols-2"
                                                     >
-                                                        <Field label={item.path}>
+                                                        <Field
+                                                            label={item.path}
+                                                        >
                                                             {useRichEditor ? (
                                                                 <div className="min-h-24 rounded-md border border-input bg-muted/20 p-3 text-sm [&_p]:mb-2 [&_p:last-child]:mb-0">
                                                                     <div

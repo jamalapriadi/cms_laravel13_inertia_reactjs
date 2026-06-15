@@ -23,15 +23,26 @@ interface ProductCategoryOption {
     slug: string;
 }
 
-function normalizeLanguages(languages: Array<string | Record<string, string>>): LanguageOption[] {
+function normalizeLanguages(
+    languages: Array<string | Record<string, string>>,
+): LanguageOption[] {
     return languages
         .map((language) => {
             if (typeof language === 'string') {
-                return { label: language.toUpperCase(), value: language.toLowerCase() };
+                return {
+                    label: language.toUpperCase(),
+                    value: language.toLowerCase(),
+                };
             }
 
-            const value = language.code || language.locale || language.value || language.name || '';
-            const label = language.name || language.label || value.toUpperCase();
+            const value =
+                language.code ||
+                language.locale ||
+                language.value ||
+                language.name ||
+                '';
+            const label =
+                language.name || language.label || value.toUpperCase();
 
             return { label, value: value.toLowerCase() };
         })
@@ -60,7 +71,9 @@ export default function Builder({
     }, [languages]);
 
     const [tree, setTree] = useState(items || []);
-    const [locale, setLocale] = useState(default_language || languageOptions[0].value);
+    const [locale, setLocale] = useState(
+        default_language || languageOptions[0].value,
+    );
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -118,7 +131,10 @@ export default function Builder({
                             className="h-9 rounded-md border bg-background px-3 text-sm"
                         >
                             {languageOptions.map((language) => (
-                                <option key={language.value} value={language.value}>
+                                <option
+                                    key={language.value}
+                                    value={language.value}
+                                >
                                     {language.label}
                                 </option>
                             ))}

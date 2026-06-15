@@ -160,7 +160,9 @@ export default function Create() {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/my-admin/dashboard/brands')}
+                            onClick={() =>
+                                router.visit('/my-admin/dashboard/brands')
+                            }
                         >
                             Cancel
                         </Button>

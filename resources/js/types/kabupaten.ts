@@ -1,7 +1,7 @@
-import type { Provinsi } from "./provinsi";
+import type { Provinsi } from './provinsi';
 
 export interface Kabupaten {
-    id: number
-    name: string
-    province: Provinsi
+    id: number;
+    name: string;
+    province: Provinsi;
 }

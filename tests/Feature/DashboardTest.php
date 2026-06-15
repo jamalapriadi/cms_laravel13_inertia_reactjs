@@ -1,6 +1,11 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
+
+uses(RefreshDatabase::class);
 
 test('guests are redirected to the login page', function () {
     $response = $this->get(route('dashboard'));
@@ -9,7 +14,11 @@ test('guests are redirected to the login page', function () {
 });
 
 test('authenticated users can visit the dashboard', function () {
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    Permission::findOrCreate('dashboard.view', 'web');
+
     $user = User::factory()->create();
+    $user->givePermissionTo('dashboard.view');
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard'));

@@ -70,7 +70,11 @@ function renderInput(
                     id={`field-${field.name}`}
                     type="number"
                     placeholder={field.placeholder ?? undefined}
-                    value={value === null || value === undefined ? '' : String(value)}
+                    value={
+                        value === null || value === undefined
+                            ? ''
+                            : String(value)
+                    }
                     onChange={(event) => onChange(event.target.value)}
                 />
             );
@@ -81,7 +85,9 @@ function renderInput(
                     onValueChange={(nextValue) => onChange(nextValue)}
                 >
                     <SelectTrigger className="w-full">
-                        <SelectValue placeholder={field.placeholder ?? 'Select option'} />
+                        <SelectValue
+                            placeholder={field.placeholder ?? 'Select option'}
+                        />
                     </SelectTrigger>
                     <SelectContent>
                         {field.options.map((option) => (
@@ -129,7 +135,10 @@ function renderInput(
                                     checked={checked}
                                     onCheckedChange={(nextChecked) => {
                                         if (nextChecked) {
-                                            onChange([...selectedValues, option.value]);
+                                            onChange([
+                                                ...selectedValues,
+                                                option.value,
+                                            ]);
 
                                             return;
                                         }

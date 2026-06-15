@@ -40,6 +40,7 @@ import {
 import Textarea from '@/components/ui/textarea';
 import AppLayout from '@/layouts/master-data-layout';
 import { mediaUrl } from '@/lib/media';
+import { formatRupiah } from '@/lib/utils';
 
 interface ProductImage {
     id: string;
@@ -122,7 +123,7 @@ interface Props {
 }
 
 const money = (value: string | number | null | undefined) =>
-    `¥${Number(value ?? 0).toLocaleString('ja-JP')}`;
+    formatRupiah(value);
 
 export default function Show({ product }: Props) {
     const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;

@@ -62,19 +62,23 @@ export default function GroupForm({
             mode === 'create'
                 ? store().url
                 : update({
-                    customFieldGroup: customFieldGroup?.id ?? '',
-                }).url;
+                      customFieldGroup: customFieldGroup?.id ?? '',
+                  }).url;
 
         callback(url, {
             preserveScroll: true,
             onStart: () =>
                 toast.loading(
-                    mode === 'create' ? 'Creating field group...' : 'Updating field group...',
+                    mode === 'create'
+                        ? 'Creating field group...'
+                        : 'Updating field group...',
                     { id: 'custom-field-group' },
                 ),
             onSuccess: () =>
                 toast.success(
-                    mode === 'create' ? 'Field group created.' : 'Field group updated.',
+                    mode === 'create'
+                        ? 'Field group created.'
+                        : 'Field group updated.',
                     { id: 'custom-field-group' },
                 ),
             onError: () =>
@@ -97,7 +101,10 @@ export default function GroupForm({
                             const nextName = event.target.value;
                             setData('name', nextName);
 
-                            if (!data.slug || data.slug === slugify(data.name)) {
+                            if (
+                                !data.slug ||
+                                data.slug === slugify(data.name)
+                            ) {
                                 setData('slug', slugify(nextName));
                             }
                         }}
@@ -140,7 +147,10 @@ export default function GroupForm({
                         min={0}
                         value={data.sort_order}
                         onChange={(event) =>
-                            setData('sort_order', Number(event.target.value || 0))
+                            setData(
+                                'sort_order',
+                                Number(event.target.value || 0),
+                            )
                         }
                     />
                     <Error message={errors.sort_order} />
@@ -163,7 +173,8 @@ export default function GroupForm({
                 <div>
                     <Label htmlFor="custom-field-group-active">Active</Label>
                     <p className="text-xs text-muted-foreground">
-                        Active groups are used in dynamic entry forms and public API output.
+                        Active groups are used in dynamic entry forms and public
+                        API output.
                     </p>
                 </div>
                 <Switch

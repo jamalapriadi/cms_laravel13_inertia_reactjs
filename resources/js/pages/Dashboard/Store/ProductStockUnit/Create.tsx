@@ -78,7 +78,8 @@ export default function Create({ products }: Props) {
                 : null,
             barcode: formData.barcode || null,
             battery_health:
-                formData.battery_health === '' || formData.battery_health === null
+                formData.battery_health === '' ||
+                formData.battery_health === null
                     ? null
                     : Number(formData.battery_health),
             grade: formData.grade || null,
@@ -219,7 +220,9 @@ export default function Create({ products }: Props) {
                             <Label>Grade</Label>
                             <Input
                                 value={data.grade}
-                                onChange={(e) => setData('grade', e.target.value)}
+                                onChange={(e) =>
+                                    setData('grade', e.target.value)
+                                }
                                 placeholder="Optional, e.g., A / B+ / C"
                                 maxLength={50}
                             />

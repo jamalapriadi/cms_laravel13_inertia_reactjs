@@ -15,7 +15,8 @@ interface Props {
 }
 
 export default function ImageDropzone({ value, onUploaded }: Props) {
-    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;
+    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string })
+        .mediaUrlBase;
     const initialPreview = useMediaUrl(value);
     const [preview, setPreview] = useState<string | null>(initialPreview);
     const [loading, setLoading] = useState(false);
@@ -29,7 +30,10 @@ export default function ImageDropzone({ value, onUploaded }: Props) {
         setLoading(true);
 
         try {
-            const res = await axios.post('/my-admin/dashboard/media/upload', formData);
+            const res = await axios.post(
+                '/my-admin/dashboard/media/upload',
+                formData,
+            );
 
             const media = res.data.media;
 
@@ -58,7 +62,9 @@ export default function ImageDropzone({ value, onUploaded }: Props) {
         >
             <input {...getInputProps()} />
 
-            {loading && <p className="text-sm text-muted-foreground">Uploading...</p>}
+            {loading && (
+                <p className="text-sm text-muted-foreground">Uploading...</p>
+            )}
 
             {!loading && preview && (
                 <img

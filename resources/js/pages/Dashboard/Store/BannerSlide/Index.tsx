@@ -82,9 +82,12 @@ export default function Index({
             return;
         }
 
-        router.delete(`/my-admin/dashboard/ecommerce/banner-slides/${deletingId}`, {
-            onFinish: () => setDeletingId(null),
-        });
+        router.delete(
+            `/my-admin/dashboard/ecommerce/banner-slides/${deletingId}`,
+            {
+                onFinish: () => setDeletingId(null),
+            },
+        );
     };
 
     const columns = [
@@ -272,7 +275,9 @@ export default function Index({
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete banner slide?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Delete banner slide?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
                             This action cannot be undone.
                         </AlertDialogDescription>

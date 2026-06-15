@@ -8,6 +8,8 @@ declare module '@inertiajs/core' {
             auth: Auth;
             mediaUrlBase: string;
             sidebarOpen: boolean;
+            website_mode: string;
+            enabled_ecommerce_menus: string[];
             [key: string]: unknown;
         };
     }

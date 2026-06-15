@@ -65,12 +65,16 @@ export default function Form({
             preserveScroll: true,
             onStart: () =>
                 toast.loading(
-                    mode === 'create' ? 'Creating content entry...' : 'Updating content entry...',
+                    mode === 'create'
+                        ? 'Creating content entry...'
+                        : 'Updating content entry...',
                     { id: 'dynamic-content-entry' },
                 ),
             onSuccess: () =>
                 toast.success(
-                    mode === 'create' ? 'Content entry created.' : 'Content entry updated.',
+                    mode === 'create'
+                        ? 'Content entry created.'
+                        : 'Content entry updated.',
                     { id: 'dynamic-content-entry' },
                 ),
             onError: () =>
@@ -80,7 +84,10 @@ export default function Form({
         });
     };
 
-    const setFieldValue = (name: string, value: DynamicContentFieldFormValue) => {
+    const setFieldValue = (
+        name: string,
+        value: DynamicContentFieldFormValue,
+    ) => {
         setData('fields', {
             ...data.fields,
             [name]: value,
@@ -106,10 +113,13 @@ export default function Form({
                                 : `Edit ${contentType.name}`}
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Fill the core entry fields and the dynamic field groups configured for {contentType.name}.
+                            Fill the core entry fields and the dynamic field
+                            groups configured for {contentType.name}.
                         </p>
                     </div>
-                    <Link href={`/my-admin/dashboard/content/${contentType.slug}`}>
+                    <Link
+                        href={`/my-admin/dashboard/content/${contentType.slug}`}
+                    >
                         <Button type="button" variant="outline">
                             Back to List
                         </Button>
@@ -120,15 +130,23 @@ export default function Form({
                     <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
                         <section className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm">
                             <div className="grid gap-4 md:grid-cols-2">
-                                <Field label="Title" required className="md:col-span-2">
+                                <Field
+                                    label="Title"
+                                    required
+                                    className="md:col-span-2"
+                                >
                                     <Input
                                         value={data.title}
                                         onChange={(event) => {
-                                            const nextTitle = event.target.value;
+                                            const nextTitle =
+                                                event.target.value;
                                             setData('title', nextTitle);
 
                                             if (!slugTouched) {
-                                                setData('slug', slugify(nextTitle));
+                                                setData(
+                                                    'slug',
+                                                    slugify(nextTitle),
+                                                );
                                             }
                                         }}
                                         placeholder={`Title for ${contentType.name}`}
@@ -141,7 +159,10 @@ export default function Form({
                                         value={data.slug}
                                         onChange={(event) => {
                                             setSlugTouched(true);
-                                            setData('slug', slugify(event.target.value));
+                                            setData(
+                                                'slug',
+                                                slugify(event.target.value),
+                                            );
                                         }}
                                         placeholder={contentType.slug}
                                     />
@@ -154,18 +175,27 @@ export default function Form({
                                         min={0}
                                         value={data.sort_order}
                                         onChange={(event) =>
-                                            setData('sort_order', Number(event.target.value || 0))
+                                            setData(
+                                                'sort_order',
+                                                Number(event.target.value || 0),
+                                            )
                                         }
                                     />
                                     <Error message={errors.sort_order} />
                                 </Field>
 
-                                <Field label="Excerpt" className="md:col-span-2">
+                                <Field
+                                    label="Excerpt"
+                                    className="md:col-span-2"
+                                >
                                     <Textarea
                                         rows={4}
                                         value={data.excerpt}
                                         onChange={(event) =>
-                                            setData('excerpt', event.target.value)
+                                            setData(
+                                                'excerpt',
+                                                event.target.value,
+                                            )
                                         }
                                         placeholder="Optional short summary"
                                     />
@@ -212,7 +242,9 @@ export default function Form({
 
                         <aside className="space-y-6">
                             <section className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm">
-                                <h2 className="text-base font-semibold">Publishing</h2>
+                                <h2 className="text-base font-semibold">
+                                    Publishing
+                                </h2>
 
                                 <Field label="Status" required>
                                     <Select
@@ -225,7 +257,9 @@ export default function Form({
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="draft">Draft</SelectItem>
+                                            <SelectItem value="draft">
+                                                Draft
+                                            </SelectItem>
                                             <SelectItem value="published">
                                                 Published
                                             </SelectItem>
@@ -242,7 +276,10 @@ export default function Form({
                                         type="datetime-local"
                                         value={data.published_at}
                                         onChange={(event) =>
-                                            setData('published_at', event.target.value)
+                                            setData(
+                                                'published_at',
+                                                event.target.value,
+                                            )
                                         }
                                     />
                                     <Error message={errors.published_at} />
@@ -250,7 +287,9 @@ export default function Form({
                             </section>
 
                             <section className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm">
-                                <h2 className="text-base font-semibold">Actions</h2>
+                                <h2 className="text-base font-semibold">
+                                    Actions
+                                </h2>
 
                                 <div className="flex flex-col gap-3">
                                     <Button type="submit" disabled={processing}>
@@ -263,7 +302,11 @@ export default function Form({
                                     <Link
                                         href={`/my-admin/dashboard/content/${contentType.slug}`}
                                     >
-                                        <Button type="button" variant="outline" className="w-full">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full"
+                                        >
                                             Cancel
                                         </Button>
                                     </Link>

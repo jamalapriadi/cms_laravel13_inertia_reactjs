@@ -101,8 +101,9 @@ export default function Show({ collection, items, filters }: Props) {
 
     const selectedProduct = useMemo(
         () =>
-            productOptions.find((product) => product.product_id === data.product_id) ??
-            null,
+            productOptions.find(
+                (product) => product.product_id === data.product_id,
+            ) ?? null,
         [productOptions, data.product_id],
     );
 
@@ -197,11 +198,14 @@ export default function Show({ collection, items, filters }: Props) {
     const handleAddItem = (event: React.FormEvent) => {
         event.preventDefault();
 
-        post(`/my-admin/dashboard/ecommerce/product-collections/${collection.id}/items`, {
-            onSuccess: () => {
-                reset('product_id', 'variant_item_id', 'sort_order');
+        post(
+            `/my-admin/dashboard/ecommerce/product-collections/${collection.id}/items`,
+            {
+                onSuccess: () => {
+                    reset('product_id', 'variant_item_id', 'sort_order');
+                },
             },
-        });
+        );
     };
 
     const updateSort = (row: ProductCollectionItem) => {
@@ -371,7 +375,9 @@ export default function Show({ collection, items, filters }: Props) {
                     />
                 </div>
 
-                {collection.title || collection.description || collection.banner_image_url ? (
+                {collection.title ||
+                collection.description ||
+                collection.banner_image_url ? (
                     <div className="space-y-3 rounded-xl border border-border bg-card p-6 shadow-sm">
                         {collection.banner_image_url && (
                             <img
@@ -381,7 +387,9 @@ export default function Show({ collection, items, filters }: Props) {
                             />
                         )}
                         {collection.title && (
-                            <h2 className="text-lg font-semibold">{collection.title}</h2>
+                            <h2 className="text-lg font-semibold">
+                                {collection.title}
+                            </h2>
                         )}
                         {collection.description && (
                             <p className="text-sm text-muted-foreground">
@@ -494,7 +502,9 @@ export default function Show({ collection, items, filters }: Props) {
                                 key={`${link.label}-${index}`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                 disabled={!link.url}
-                                onClick={() => link.url && router.visit(link.url)}
+                                onClick={() =>
+                                    link.url && router.visit(link.url)
+                                }
                                 className={`rounded px-3 py-1 text-sm ${
                                     link.active
                                         ? 'bg-primary font-semibold text-primary-foreground'

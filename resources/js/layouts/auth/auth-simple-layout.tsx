@@ -20,7 +20,10 @@ export default function AuthSimpleLayout({
                             className="flex flex-col items-center gap-2 font-medium"
                         >
                             <img
-                                src={logo || "https://gita-trading-web.vercel.app/logo.png"}
+                                src={
+                                    logo ||
+                                    'https://gita-trading-web.vercel.app/logo.png'
+                                }
                                 className="h-24 w-auto object-contain"
                                 alt="logo"
                             />

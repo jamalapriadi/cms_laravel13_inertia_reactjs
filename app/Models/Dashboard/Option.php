@@ -32,6 +32,15 @@ class Option extends Model
         return $value;
     }
 
+    public function setValueAttribute($value)
+    {
+        if (is_array($value)) {
+            $this->attributes['value'] = json_encode($value);
+        } else {
+            $this->attributes['value'] = $value;
+        }
+    }
+
     public static function getByKey(string $key, mixed $default = null): mixed
     {
         return static::query()->where('key', $key)->first()?->value ?? $default;

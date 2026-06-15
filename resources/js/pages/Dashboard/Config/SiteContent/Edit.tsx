@@ -57,26 +57,32 @@ export default function Edit({
     groupOptions,
     typeOptions,
 }: Props) {
-    const normalizedTranslations = normalizeTranslations(siteContent.translations);
+    const normalizedTranslations = normalizeTranslations(
+        siteContent.translations,
+    );
 
-    const defaultTranslations = activeLanguages.reduce<Record<string, string>>((carry, language) => {
-        const existing = normalizedTranslations.find(
-            (translation) => translation.locale === language.code,
-        );
+    const defaultTranslations = activeLanguages.reduce<Record<string, string>>(
+        (carry, language) => {
+            const existing = normalizedTranslations.find(
+                (translation) => translation.locale === language.code,
+            );
 
-        carry[language.code] = existing?.value ?? '';
+            carry[language.code] = existing?.value ?? '';
 
-        return carry;
-    }, {});
+            return carry;
+        },
+        {},
+    );
 
-    const { data, setData, post, processing, errors, transform } = useForm<FormData>({
-        key: siteContent.key,
-        group: siteContent.group ?? 'homepage',
-        type: siteContent.type,
-        is_active: siteContent.is_active,
-        sort_order: siteContent.sort_order,
-        translations: defaultTranslations,
-    });
+    const { data, setData, post, processing, errors, transform } =
+        useForm<FormData>({
+            key: siteContent.key,
+            group: siteContent.group ?? 'homepage',
+            type: siteContent.type,
+            is_active: siteContent.is_active,
+            sort_order: siteContent.sort_order,
+            translations: defaultTranslations,
+        });
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -106,7 +112,9 @@ export default function Edit({
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Edit Site Content</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            Edit Site Content
+                        </h1>
                         <p className="text-sm text-muted-foreground">
                             Update dynamic content key and translations.
                         </p>
@@ -122,7 +130,9 @@ export default function Edit({
                             <Input
                                 placeholder="homepage.hero.title"
                                 value={data.key}
-                                onChange={(event) => setData('key', event.target.value)}
+                                onChange={(event) =>
+                                    setData('key', event.target.value)
+                                }
                             />
                             <Error message={errors.key} />
                         </Field>
@@ -130,11 +140,16 @@ export default function Edit({
                         <Field label="Group">
                             <select
                                 value={data.group}
-                                onChange={(event) => setData('group', event.target.value)}
+                                onChange={(event) =>
+                                    setData('group', event.target.value)
+                                }
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
                                 {groupOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
                                         {option.label}
                                     </option>
                                 ))}
@@ -145,11 +160,16 @@ export default function Edit({
                         <Field label="Type" required>
                             <select
                                 value={data.type}
-                                onChange={(event) => setData('type', event.target.value)}
+                                onChange={(event) =>
+                                    setData('type', event.target.value)
+                                }
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
                                 {typeOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
                                         {option.label}
                                     </option>
                                 ))}
@@ -163,7 +183,10 @@ export default function Edit({
                                 min={0}
                                 value={data.sort_order}
                                 onChange={(event) =>
-                                    setData('sort_order', Number(event.target.value || 0))
+                                    setData(
+                                        'sort_order',
+                                        Number(event.target.value || 0),
+                                    )
                                 }
                             />
                             <Error message={errors.sort_order} />
@@ -175,16 +198,19 @@ export default function Edit({
                         <Switch
                             id="is_active"
                             checked={data.is_active}
-                            onCheckedChange={(checked) => setData('is_active', checked)}
+                            onCheckedChange={(checked) =>
+                                setData('is_active', checked)
+                            }
                         />
                     </div>
 
                     <div className="space-y-4">
-                        <h2 className="text-base font-semibold">Translations (Active Languages)</h2>
+                        <h2 className="text-base font-semibold">
+                            Translations (Active Languages)
+                        </h2>
                         {activeLanguages.length === 0 ? (
                             <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-                                Tidak ada bahasa aktif. Aktifkan dulu di
-                                {' '}
+                                Tidak ada bahasa aktif. Aktifkan dulu di{' '}
                                 /my-admin/dashboard/config/language.
                             </div>
                         ) : (
@@ -194,9 +220,14 @@ export default function Edit({
                                         key={language.code}
                                         language={language}
                                         type={data.type}
-                                        value={data.translations[language.code] || ''}
+                                        value={
+                                            data.translations[language.code] ||
+                                            ''
+                                        }
                                         error={
-                                            errors[`translations.${index}.value` as keyof typeof errors] as string | undefined
+                                            errors[
+                                                `translations.${index}.value` as keyof typeof errors
+                                            ] as string | undefined
                                         }
                                         onChange={(value) =>
                                             setData('translations', {
@@ -273,7 +304,12 @@ function renderValueInput(
     }
 
     if (type === 'image') {
-        return <MediaImagePicker value={value || null} onChange={(path) => onChange(path || '')} />;
+        return (
+            <MediaImagePicker
+                value={value || null}
+                onChange={(path) => onChange(path || '')}
+            />
+        );
     }
 
     if (type === 'url') {
@@ -286,7 +322,12 @@ function renderValueInput(
         );
     }
 
-    return <Input value={value} onChange={(event) => onChange(event.target.value)} />;
+    return (
+        <Input
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+        />
+    );
 }
 
 function Field({
@@ -320,7 +361,11 @@ function Error({ message }: { message?: string }) {
 }
 
 function normalizeTranslations(
-    translations: SiteContentItem['translations'] | { data?: TranslationItem[] } | null | undefined,
+    translations:
+        | SiteContentItem['translations']
+        | { data?: TranslationItem[] }
+        | null
+        | undefined,
 ): TranslationItem[] {
     if (Array.isArray(translations)) {
         return translations;

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 
 export interface SidebarItem {
+    key?: string;
     title: string;
     href: string;
     icon?: React.ElementType;
@@ -160,67 +161,77 @@ export const sidebarConfig: SidebarGroup[] = [
         label: 'Ecommerce',
         items: [
             {
+                key: 'products',
                 title: 'Products',
                 href: '/my-admin/dashboard/ecommerce/products',
                 icon: Package,
                 permission: 'products.view',
             },
             {
+                key: 'product-stock-units',
                 title: 'Stok Unit',
                 href: '/my-admin/dashboard/ecommerce/product-stock-units',
                 icon: ScanBarcode,
                 permission: 'product-stock-units.view',
             },
-
             {
+                key: 'orders',
                 title: 'Orders',
                 href: '/my-admin/dashboard/orders',
                 icon: ClipboardList,
                 permission: 'orders.view',
             },
             {
+                key: 'customers',
                 title: 'Customers',
                 href: '/my-admin/dashboard/ecommerce/customers',
                 icon: Users,
                 permission: 'customers.view',
             },
             {
+                key: 'carts',
                 title: 'Carts',
                 href: '/my-admin/dashboard/ecommerce/carts',
                 icon: ShoppingCart,
                 permission: 'carts.view',
             },
             {
+                key: 'payments',
                 title: 'Payments',
                 href: '/my-admin/dashboard/ecommerce/payments',
                 icon: ShoppingBag,
                 permission: 'payments.view',
             },
             {
+                key: 'stock-movements',
                 title: 'Stock Movements',
                 href: '/my-admin/dashboard/ecommerce/stock-movements',
                 icon: Warehouse,
                 permission: 'stock-movements.view',
             },
             {
+                key: 'shipping',
                 title: 'Shipping',
                 href: '/my-admin/dashboard/ecommerce/shipping',
                 icon: Truck,
                 permission: 'shippings.view',
             },
             {
+                key: 'suppliers',
                 title: 'Suppliers',
                 href: '/my-admin/dashboard/ecommerce/suppliers',
                 icon: Users,
                 permission: 'suppliers.view',
             },
             {
+                key: 'incoming-goods',
                 title: 'Barang Masuk',
                 href: '/my-admin/dashboard/ecommerce/incoming-goods',
                 icon: ArrowDownLeft,
                 permission: 'incoming-goods.view',
             },
             {
+                key: 'supplier-returns',
                 title: 'Retur Barang',
                 href: '/my-admin/dashboard/ecommerce/supplier-returns',
                 icon: ArrowUpRight,

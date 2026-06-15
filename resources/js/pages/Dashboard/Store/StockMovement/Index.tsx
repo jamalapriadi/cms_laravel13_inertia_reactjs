@@ -137,9 +137,12 @@ export default function Index({
 
     const handleDelete = () => {
         if (!deletingId) return;
-        router.delete(`/my-admin/dashboard/ecommerce/stock-movements/${deletingId}`, {
-            onFinish: () => setDeletingId(null),
-        });
+        router.delete(
+            `/my-admin/dashboard/ecommerce/stock-movements/${deletingId}`,
+            {
+                onFinish: () => setDeletingId(null),
+            },
+        );
     };
 
     const getTypeColor = (movementType: string) => {

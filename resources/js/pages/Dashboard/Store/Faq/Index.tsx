@@ -154,7 +154,9 @@ export default function Index({
             label: 'Actions',
             render: (row: FaqItem) => (
                 <div className="flex gap-2">
-                    <Link href={`/my-admin/dashboard/ecommerce/faqs/${row.id}/edit`}>
+                    <Link
+                        href={`/my-admin/dashboard/ecommerce/faqs/${row.id}/edit`}
+                    >
                         <Button size="sm" variant="secondary">
                             <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -178,7 +180,9 @@ export default function Index({
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">FAQ</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            FAQ
+                        </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
                             Manage flexible FAQ by type and position.
                         </p>

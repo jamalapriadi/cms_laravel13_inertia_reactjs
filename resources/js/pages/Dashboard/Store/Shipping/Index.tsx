@@ -123,7 +123,11 @@ export default function Index({
         setSearch('');
         setStatus('');
         setCourier('');
-        router.get('/my-admin/dashboard/ecommerce/shipping', {}, { replace: true });
+        router.get(
+            '/my-admin/dashboard/ecommerce/shipping',
+            {},
+            { replace: true },
+        );
     };
 
     const handleDelete = () => {
@@ -227,7 +231,9 @@ export default function Index({
             label: 'Actions',
             render: (row: Shipping) => (
                 <div className="flex items-center gap-2">
-                    <Link href={`/my-admin/dashboard/ecommerce/shipping/${row.id}`}>
+                    <Link
+                        href={`/my-admin/dashboard/ecommerce/shipping/${row.id}`}
+                    >
                         <Button
                             size="sm"
                             variant="secondary"
@@ -237,7 +243,9 @@ export default function Index({
                             <Eye className="h-3.5 w-3.5" />
                         </Button>
                     </Link>
-                    <Link href={`/my-admin/dashboard/ecommerce/shipping/${row.id}/edit`}>
+                    <Link
+                        href={`/my-admin/dashboard/ecommerce/shipping/${row.id}/edit`}
+                    >
                         <Button
                             size="sm"
                             variant="secondary"
@@ -295,7 +303,7 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Total Shipments
                             </span>
-                            <div className="rounded-lg bg-indigo-100 dark:bg-indigo-950/40 p-2 text-indigo-700 dark:text-indigo-300">
+                            <div className="rounded-lg bg-indigo-100 p-2 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
                                 <Truck className="h-4 w-4" />
                             </div>
                         </div>
@@ -314,7 +322,7 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Pending/Processing
                             </span>
-                            <div className="rounded-lg bg-amber-100 dark:bg-amber-950/40 p-2 text-amber-700 dark:text-amber-300">
+                            <div className="rounded-lg bg-amber-100 p-2 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
                                 <Clock className="h-4 w-4" />
                             </div>
                         </div>
@@ -333,7 +341,7 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 In Transit
                             </span>
-                            <div className="rounded-lg bg-indigo-100 dark:bg-indigo-950/40 p-2 text-indigo-700 dark:text-indigo-300">
+                            <div className="rounded-lg bg-indigo-100 p-2 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
                                 <Compass className="h-4 w-4" />
                             </div>
                         </div>
@@ -352,7 +360,7 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Delivered
                             </span>
-                            <div className="rounded-lg bg-emerald-100 dark:bg-emerald-950/40 p-2 text-emerald-700 dark:text-emerald-300">
+                            <div className="rounded-lg bg-emerald-100 p-2 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
                                 <CheckCircle2 className="h-4 w-4" />
                             </div>
                         </div>
@@ -371,7 +379,7 @@ export default function Index({
                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Total Costs
                             </span>
-                            <div className="rounded-lg bg-rose-100 dark:bg-rose-950/40 p-2 text-rose-700 dark:text-rose-300">
+                            <div className="rounded-lg bg-rose-100 p-2 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
                                 <DollarSign className="h-4 w-4" />
                             </div>
                         </div>
@@ -483,7 +491,7 @@ export default function Index({
                                                 total
                                             </span>
                                         </div>
-                                        <span className="inline-flex items-center gap-1 rounded bg-indigo-100 dark:bg-indigo-950/40 px-2.5 py-1 text-xs font-bold text-indigo-800 dark:text-indigo-300">
+                                        <span className="inline-flex items-center gap-1 rounded bg-indigo-100 px-2.5 py-1 text-xs font-bold text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
                                             <Layers className="h-3 w-3" />
                                             {c.count} packages
                                         </span>

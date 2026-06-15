@@ -140,8 +140,8 @@ export default function Create({ products, product, combinations }: Props) {
                                     <th className="p-3">Product Variant</th>
                                     <th className="p-3">Image</th>
                                     <th className="p-3">SKU</th>
-                                    <th className="p-3">Buying Price</th>
-                                    <th className="p-3">Selling Price</th>
+                                    <th className="p-3">Buying Price (Rp)</th>
+                                    <th className="p-3">Selling Price (Rp)</th>
                                     <th className="p-3">Stock</th>
                                     <th className="p-3">Weight</th>
                                     <th className="p-3">Active</th>

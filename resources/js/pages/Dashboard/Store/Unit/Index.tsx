@@ -171,16 +171,14 @@ export default function Index({ units, filters }: Props) {
 
                 {/* TABLE */}
                 <div className="rounded-xl bg-card shadow">
-                    <DataTable
-                        columns={columns}
-                        data={units.data}
-                    />
+                    <DataTable columns={columns} data={units.data} />
                 </div>
 
                 {/* PAGINATION */}
                 <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
-                        Showing {units.from} to {units.to} of {units.total} results
+                        Showing {units.from} to {units.to} of {units.total}{' '}
+                        results
                     </span>
 
                     <div className="flex gap-2">
@@ -188,11 +186,11 @@ export default function Index({ units, filters }: Props) {
                             <Link
                                 key={index}
                                 href={link.url || '#'}
-                                className={`px-3 py-1 rounded border text-sm ${
+                                className={`rounded border px-3 py-1 text-sm ${
                                     link.active
-                                        ? 'bg-blue-500 text-white border-blue-500'
-                                        : 'bg-card text-foreground border-border'
-                                } ${!link.url ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        ? 'border-blue-500 bg-blue-500 text-white'
+                                        : 'border-border bg-card text-foreground'
+                                } ${!link.url ? 'cursor-not-allowed opacity-50' : ''}`}
                             >
                                 {link.label}
                             </Link>
@@ -207,8 +205,8 @@ export default function Index({ units, filters }: Props) {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Unit</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this unit? This action
-                            cannot be undone.
+                            Are you sure you want to delete this unit? This
+                            action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

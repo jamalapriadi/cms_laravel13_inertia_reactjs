@@ -153,8 +153,8 @@ export default function Index({
                         type="button"
                         onClick={() => setIsMediaModalOpen(true)}
                     >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Upload Media
+                        <Plus className="mr-2 h-4 w-4" />
+                        Upload Media
                     </Button>
                 </div>
 
@@ -165,17 +165,28 @@ export default function Index({
                     <button
                         type="button"
                         onClick={() => openFolder('')}
-                        className={!currentPath ? 'font-semibold text-primary' : 'text-muted-foreground hover:text-foreground'}
+                        className={
+                            !currentPath
+                                ? 'font-semibold text-primary'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }
                     >
                         storage/app/public
                     </button>
                     {breadcrumbs.map((item) => (
-                        <div key={item.path} className="flex items-center gap-2">
+                        <div
+                            key={item.path}
+                            className="flex items-center gap-2"
+                        >
                             <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             <button
                                 type="button"
                                 onClick={() => openFolder(item.path)}
-                                className={item.path === currentPath ? 'font-semibold text-primary' : 'text-muted-foreground hover:text-foreground'}
+                                className={
+                                    item.path === currentPath
+                                        ? 'font-semibold text-primary'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }
                             >
                                 {item.name}
                             </button>
@@ -239,7 +250,9 @@ export default function Index({
                         {storageItems.map((item) => (
                             <div
                                 key={`${item.type}:${item.path}`}
-                                role={item.type === 'file' ? 'button' : undefined}
+                                role={
+                                    item.type === 'file' ? 'button' : undefined
+                                }
                                 tabIndex={item.type === 'file' ? 0 : undefined}
                                 onClick={() => {
                                     if (item.type === 'file') {
@@ -309,7 +322,10 @@ export default function Index({
                                                 event.stopPropagation()
                                             }
                                         >
-                                            <Button size="icon" variant="outline">
+                                            <Button
+                                                size="icon"
+                                                variant="outline"
+                                            >
                                                 <Download className="h-4 w-4" />
                                             </Button>
                                         </a>
@@ -368,7 +384,9 @@ export default function Index({
                                             {item.type === 'folder' ? (
                                                 <button
                                                     type="button"
-                                                    onClick={() => openFolder(item.path)}
+                                                    onClick={() =>
+                                                        openFolder(item.path)
+                                                    }
                                                     className="font-medium text-primary hover:underline"
                                                 >
                                                     {item.name}
@@ -398,16 +416,20 @@ export default function Index({
 
                                         <td className="p-3 text-right">
                                             <div className="flex justify-end gap-2">
-                                                {item.type === 'file' && item.url && (
-                                                    <a href={item.url} download>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
+                                                {item.type === 'file' &&
+                                                    item.url && (
+                                                        <a
+                                                            href={item.url}
+                                                            download
                                                         >
-                                                            <Download className="h-4 w-4" />
-                                                        </Button>
-                                                    </a>
-                                                )}
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                            >
+                                                                <Download className="h-4 w-4" />
+                                                            </Button>
+                                                        </a>
+                                                    )}
                                             </div>
                                         </td>
                                     </tr>
@@ -583,7 +605,9 @@ export default function Index({
             <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Hapus file permanen?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Hapus file permanen?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
                             File ini akan dihapus langsung dari storage dan
                             tidak bisa dikembalikan.

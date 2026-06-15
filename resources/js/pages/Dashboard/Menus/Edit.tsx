@@ -33,8 +33,10 @@ export default function Edit({ menu }: Props) {
         put(`/my-admin/dashboard/menus/${menu.id}`, {
             preserveScroll: true,
             onStart: () => toast.loading('Saving...', { id: 'save-menu' }),
-            onSuccess: () => toast.success('Menu berhasil diperbarui', { id: 'save-menu' }),
-            onError: () => toast.error('Gagal memperbarui menu', { id: 'save-menu' }),
+            onSuccess: () =>
+                toast.success('Menu berhasil diperbarui', { id: 'save-menu' }),
+            onError: () =>
+                toast.error('Gagal memperbarui menu', { id: 'save-menu' }),
         });
     };
 
@@ -45,7 +47,9 @@ export default function Edit({ menu }: Props) {
             <div className="container mx-auto space-y-10 px-6 py-10">
                 <div>
                     <h1 className="text-2xl font-bold">Edit Menu</h1>
-                    <p className="text-muted-foreground">Update menu name and slug</p>
+                    <p className="text-muted-foreground">
+                        Update menu name and slug
+                    </p>
                 </div>
 
                 <hr />
@@ -64,7 +68,9 @@ export default function Edit({ menu }: Props) {
                                 placeholder="Menu Name"
                             />
                             {errors.name && (
-                                <p className="text-sm text-destructive">{errors.name}</p>
+                                <p className="text-sm text-destructive">
+                                    {errors.name}
+                                </p>
                             )}
                         </div>
 
@@ -72,11 +78,15 @@ export default function Edit({ menu }: Props) {
                             <Label>Slug</Label>
                             <Input
                                 value={data.slug}
-                                onChange={(e) => setData('slug', e.target.value)}
+                                onChange={(e) =>
+                                    setData('slug', e.target.value)
+                                }
                                 placeholder="menu-slug"
                             />
                             {errors.slug && (
-                                <p className="text-sm text-destructive">{errors.slug}</p>
+                                <p className="text-sm text-destructive">
+                                    {errors.slug}
+                                </p>
                             )}
                         </div>
                     </div>
@@ -85,7 +95,9 @@ export default function Edit({ menu }: Props) {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/my-admin/dashboard/menus')}
+                            onClick={() =>
+                                router.visit('/my-admin/dashboard/menus')
+                            }
                         >
                             Cancel
                         </Button>

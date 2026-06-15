@@ -135,9 +135,12 @@ export default function Index({ contentTypes, filters }: Props) {
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Content Types</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            Content Types
+                        </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Manage dynamic content collections such as testimonials, sliders, partners, and services.
+                            Manage dynamic content collections such as
+                            testimonials, sliders, partners, and services.
                         </p>
                     </div>
 
@@ -193,9 +196,12 @@ export default function Index({ contentTypes, filters }: Props) {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete content type?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Delete content type?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will soft-delete the content type and hide its dynamic content entries from the dashboard sidebar.
+                            This will soft-delete the content type and hide its
+                            dynamic content entries from the dashboard sidebar.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
