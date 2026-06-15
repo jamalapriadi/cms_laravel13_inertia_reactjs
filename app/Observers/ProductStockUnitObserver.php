@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\Shop\VariantItem;
 use App\Models\Shop\ProductStockUnit;
+use App\Models\Shop\VariantItem;
 use App\Services\Inventory\BarcodeGeneratorService;
 
 class ProductStockUnitObserver

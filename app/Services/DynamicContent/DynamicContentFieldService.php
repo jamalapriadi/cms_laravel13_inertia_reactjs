@@ -4,9 +4,11 @@ namespace App\Services\DynamicContent;
 
 use App\Models\ContentType;
 use App\Models\CustomField;
+use App\Models\CustomFieldGroup;
 use App\Support\DynamicContent;
 use App\Support\MediaPath;
 use App\Support\RichTextSanitizer;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
@@ -18,7 +20,7 @@ class DynamicContentFieldService
     ) {}
 
     /**
-     * @return Collection<int, \App\Models\CustomFieldGroup>
+     * @return Collection<int, CustomFieldGroup>
      */
     public function activeGroupsForContentType(ContentType $contentType): Collection
     {
@@ -159,7 +161,7 @@ class DynamicContentFieldService
     }
 
     /**
-     * @return array<int, string|\Illuminate\Contracts\Validation\ValidationRule>
+     * @return array<int, string|ValidationRule>
      */
     public function valueRules(CustomField $field): array
     {
@@ -198,7 +200,7 @@ class DynamicContentFieldService
     }
 
     /**
-     * @return array<int, string|\Illuminate\Contracts\Validation\ValidationRule>
+     * @return array<int, string|ValidationRule>
      */
     public function elementRules(CustomField $field): array
     {

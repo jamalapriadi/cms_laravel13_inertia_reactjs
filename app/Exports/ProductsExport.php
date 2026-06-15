@@ -9,11 +9,9 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ProductsExport implements FromQuery, WithMapping, WithHeadings, ShouldAutoSize
+class ProductsExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping
 {
-    public function __construct(protected array $filters = [])
-    {
-    }
+    public function __construct(protected array $filters = []) {}
 
     public function query(): Builder
     {

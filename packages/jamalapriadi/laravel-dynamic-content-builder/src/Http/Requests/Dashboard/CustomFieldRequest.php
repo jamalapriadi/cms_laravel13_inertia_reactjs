@@ -2,11 +2,11 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Http\Requests\Dashboard;
 
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Jamalapriadi\DynamicContentBuilder\Models\CustomField;
 use Jamalapriadi\DynamicContentBuilder\Models\CustomFieldGroup;
 use Jamalapriadi\DynamicContentBuilder\Support\DynamicContent;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class CustomFieldRequest extends FormRequest
 {

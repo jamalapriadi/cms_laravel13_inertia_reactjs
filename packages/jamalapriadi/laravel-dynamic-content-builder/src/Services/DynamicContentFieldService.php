@@ -2,14 +2,16 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Services;
 
-use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
-use Jamalapriadi\DynamicContentBuilder\Models\CustomField;
-use Jamalapriadi\DynamicContentBuilder\Support\DynamicContent;
-use Jamalapriadi\DynamicContentBuilder\Support\MediaPath;
-use Jamalapriadi\DynamicContentBuilder\Support\RichTextSanitizer;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
+use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
+use Jamalapriadi\DynamicContentBuilder\Models\CustomField;
+use Jamalapriadi\DynamicContentBuilder\Models\CustomFieldGroup;
+use Jamalapriadi\DynamicContentBuilder\Support\DynamicContent;
+use Jamalapriadi\DynamicContentBuilder\Support\MediaPath;
+use Jamalapriadi\DynamicContentBuilder\Support\RichTextSanitizer;
 
 class DynamicContentFieldService
 {
@@ -18,7 +20,7 @@ class DynamicContentFieldService
     ) {}
 
     /**
-     * @return Collection<int, \Jamalapriadi\DynamicContentBuilder\Models\CustomFieldGroup>
+     * @return Collection<int, CustomFieldGroup>
      */
     public function activeGroupsForContentType(ContentType $contentType): Collection
     {
@@ -159,7 +161,7 @@ class DynamicContentFieldService
     }
 
     /**
-     * @return array<int, string|\Illuminate\Contracts\Validation\ValidationRule>
+     * @return array<int, string|ValidationRule>
      */
     public function valueRules(CustomField $field): array
     {
@@ -198,7 +200,7 @@ class DynamicContentFieldService
     }
 
     /**
-     * @return array<int, string|\Illuminate\Contracts\Validation\ValidationRule>
+     * @return array<int, string|ValidationRule>
      */
     public function elementRules(CustomField $field): array
     {

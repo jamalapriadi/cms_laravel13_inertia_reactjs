@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Dashboard\Option;
-use App\Services\Cache\ListCacheService;
 use App\CMS\Themes\FallbackAdminLoginViewData;
 use App\CMS\Themes\ThemeManager;
+use App\Models\Dashboard\Option;
+use App\Services\Cache\ListCacheService;
 use Illuminate\Support\Facades\Schema;
 
 function get_option($key, $default = null)
@@ -18,7 +18,7 @@ function get_option($key, $default = null)
 
             return $option?->value ?? $default;
         });
-    } catch (\Throwable) {
+    } catch (Throwable) {
         return $default;
     }
 }

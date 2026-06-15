@@ -2,13 +2,14 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Services;
 
-use Jamalapriadi\DynamicContentBuilder\Models\ContentEntry;
-use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Jamalapriadi\DynamicContentBuilder\Models\ContentEntry;
+use Jamalapriadi\DynamicContentBuilder\Models\ContentType;
 
 class ContentEntryService
 {
@@ -133,7 +134,7 @@ class ContentEntryService
         return $normalized;
     }
 
-    private function resolvePublishedAt(array $data): ?\Carbon\CarbonInterface
+    private function resolvePublishedAt(array $data): ?CarbonInterface
     {
         if (! empty($data['published_at'])) {
             return Carbon::parse($data['published_at']);
@@ -164,5 +165,4 @@ class ContentEntryService
             ->when($ignore, fn (Builder $query) => $query->whereKeyNot($ignore->id))
             ->exists();
     }
-
 }

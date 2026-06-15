@@ -128,7 +128,7 @@ class ProductSeeder extends Seeder
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function upsertProduct(array $data): string
     {
@@ -279,7 +279,7 @@ class ProductSeeder extends Seeder
     }
 
     /**
-     * @param array<string, array<int, string>> $variants
+     * @param  array<string, array<int, string>>  $variants
      * @return array<string, string>
      */
     private function upsertVariantDimensions(string $productId, array $variants): array
@@ -323,8 +323,8 @@ class ProductSeeder extends Seeder
     }
 
     /**
-     * @param array<string, string> $variantIds
-     * @param array<string, array<int, string>> $variants
+     * @param  array<string, string>  $variantIds
+     * @param  array<string, array<int, string>>  $variants
      * @return array<string, array<string, string>>
      */
     private function upsertVariantOptions(array $variantIds, array $variants): array
@@ -348,6 +348,7 @@ class ProductSeeder extends Seeder
                     ]);
 
                     $result[$variantName][$value] = (string) $existing->id;
+
                     continue;
                 }
 
@@ -369,7 +370,7 @@ class ProductSeeder extends Seeder
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function upsertVariantItem(array $data): string
     {
@@ -438,7 +439,7 @@ class ProductSeeder extends Seeder
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function upsertStockUnit(array $data): void
     {

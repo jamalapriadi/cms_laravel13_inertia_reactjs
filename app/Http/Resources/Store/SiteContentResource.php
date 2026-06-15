@@ -2,10 +2,11 @@
 
 namespace App\Http\Resources\Store;
 
+use App\Models\Shop\SiteContent;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\Shop\SiteContent */
+/** @mixin SiteContent */
 class SiteContentResource extends JsonResource
 {
     /**

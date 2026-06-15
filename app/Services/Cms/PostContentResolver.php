@@ -44,4 +44,3 @@ class PostContentResolver
         return $post->resolveForLanguage($targetLanguage, $defaultLanguage);
     }
 }
-

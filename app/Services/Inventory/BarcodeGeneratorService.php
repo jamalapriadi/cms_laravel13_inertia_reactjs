@@ -57,7 +57,7 @@ class BarcodeGeneratorService
     }
 
     /**
-     * @param iterable<ProductStockUnit> $stockUnits
+     * @param  iterable<ProductStockUnit>  $stockUnits
      * @return array<int, string>
      */
     public function generateBulkStockUnitBarcodes(iterable $stockUnits, bool $forceRegenerate = false): array
@@ -77,7 +77,7 @@ class BarcodeGeneratorService
 
     public function generateSvg(string $barcode): string
     {
-        $generator = new BarcodeGeneratorSVG();
+        $generator = new BarcodeGeneratorSVG;
 
         return $generator->getBarcode(
             $barcode,

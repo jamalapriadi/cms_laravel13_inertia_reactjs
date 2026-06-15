@@ -1,9 +1,13 @@
 <?php
+
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
+
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
-$kernel = $app->make(\Illuminate\Contracts\Http\Kernel::class);
+$kernel = $app->make(Kernel::class);
 
-$request = Illuminate\Http\Request::create('/my-admin/login', 'GET');
+$request = Request::create('/my-admin/login', 'GET');
 $response = $kernel->handle($request);
 $cookies = $response->headers->getCookies();
 $sessionCookie = null;
@@ -18,7 +22,7 @@ foreach ($cookies as $cookie) {
 }
 
 // Submit POST
-$postRequest = Illuminate\Http\Request::create('/my-admin/login', 'POST', [
+$postRequest = Request::create('/my-admin/login', 'POST', [
     'email' => 'jamal.apriadi@gmail.com',
     'password' => 'Laravel13',
 ]);
@@ -28,10 +32,9 @@ $postRequest->cookies->set('gitatrading_session', $sessionCookie);
 $postResponse = $kernel->handle($postRequest);
 
 // Follow redirect to dashboard
-$dashboardRequest = Illuminate\Http\Request::create('/my-admin/dashboard', 'GET');
+$dashboardRequest = Request::create('/my-admin/dashboard', 'GET');
 $dashboardRequest->cookies->set('gitatrading_session', $sessionCookie);
 $dashboardResponse = $kernel->handle($dashboardRequest);
 
-echo "Dashboard Status: " . $dashboardResponse->getStatusCode() . "\n";
-echo "Dashboard Redirect: " . $dashboardResponse->headers->get('Location') . "\n";
-
+echo 'Dashboard Status: '.$dashboardResponse->getStatusCode()."\n";
+echo 'Dashboard Redirect: '.$dashboardResponse->headers->get('Location')."\n";

@@ -1,9 +1,12 @@
 <?php
 
+use App\CMS\Themes\ThemeInstaller;
+use App\CMS\Themes\ThemeManager;
 use App\Models\Post;
 use App\Models\Theme;
 use App\Models\ThemeSetting;
 use App\Models\User;
+use Database\Seeders\ThemeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -187,7 +190,7 @@ BLADE);
         File::put($themeRoot.'/'.$relativePath, $contents);
     }
 
-    $zip = new ZipArchive();
+    $zip = new ZipArchive;
     $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
     $iterator = new RecursiveIteratorIterator(
@@ -359,9 +362,9 @@ test('blank 404 theme can be discovered and previewed', function () {
 test('blank 404 theme can become the configured fallback theme', function () {
     copyBuiltinTheme('blank-404');
     config()->set('themes.fallback_theme_slug', 'blank-404');
-    app(\App\CMS\Themes\ThemeManager::class)->clearCache();
+    app(ThemeManager::class)->clearCache();
 
-    $theme = app(\App\CMS\Themes\ThemeManager::class)->active();
+    $theme = app(ThemeManager::class)->active();
 
     expect($theme)->not->toBeNull()
         ->and($theme?->slug)->toBe('blank-404');
@@ -375,7 +378,7 @@ test('blank 404 theme can become the configured fallback theme', function () {
 test('fallback default admin login theme can be discovered by theme manager', function () {
     copyBuiltinTheme('default-admin-login');
 
-    $theme = app(\App\CMS\Themes\ThemeManager::class)->active();
+    $theme = app(ThemeManager::class)->active();
 
     expect($theme)->not->toBeNull()
         ->and($theme?->slug)->toBe('default-admin-login');
@@ -484,7 +487,7 @@ test('blank 404 fallback theme is used when active theme template is missing', f
     copyBuiltinTheme('blank-404');
     config()->set('themes.fallback_theme_slug', 'blank-404');
 
-    app(\App\CMS\Themes\ThemeInstaller::class)->syncInstalledThemes();
+    app(ThemeInstaller::class)->syncInstalledThemes();
 
     $user = adminWithThemePermissions();
 
@@ -496,7 +499,7 @@ test('blank 404 fallback theme is used when active theme template is missing', f
 
     File::delete(config('themes.paths.themes').'/broken-render-theme/resources/views/products/index.blade.php');
 
-    app(\App\CMS\Themes\ThemeManager::class)->clearCache();
+    app(ThemeManager::class)->clearCache();
 
     $this->get(route('frontend.products.index'))
         ->assertSuccessful()
@@ -567,7 +570,7 @@ test('theme seeder does not override an existing active theme', function () {
 
     $this->actingAs($user)->post(route('themes.activate', $activeTheme));
 
-    $this->seed(\Database\Seeders\ThemeSeeder::class);
+    $this->seed(ThemeSeeder::class);
 
     expect($activeTheme->fresh()->is_active)->toBeTrue();
     expect(Theme::query()->where('slug', 'default-admin-login')->first()?->is_active)->toBeFalse();
@@ -585,7 +588,7 @@ test('blank 404 theme seeder does not override an existing active theme', functi
 
     $this->actingAs($user)->post(route('themes.activate', $activeTheme));
 
-    $this->seed(\Database\Seeders\ThemeSeeder::class);
+    $this->seed(ThemeSeeder::class);
 
     expect($activeTheme->fresh()->is_active)->toBeTrue();
     expect(Theme::query()->where('slug', 'blank-404')->first()?->is_active)->toBeFalse();
@@ -594,7 +597,7 @@ test('blank 404 theme seeder does not override an existing active theme', functi
 test('theme seeder marks default admin login as active when themes table is empty', function () {
     copyBuiltinTheme('default-admin-login');
 
-    $this->seed(\Database\Seeders\ThemeSeeder::class);
+    $this->seed(ThemeSeeder::class);
 
     $fallbackTheme = Theme::query()->where('slug', 'default-admin-login')->first();
 
@@ -607,7 +610,7 @@ test('theme seeder can mark blank 404 as active when configured as fallback', fu
     copyBuiltinTheme('blank-404');
     config()->set('themes.fallback_theme_slug', 'blank-404');
 
-    $this->seed(\Database\Seeders\ThemeSeeder::class);
+    $this->seed(ThemeSeeder::class);
 
     $fallbackTheme = Theme::query()->where('slug', 'blank-404')->first();
 
@@ -619,7 +622,7 @@ test('theme seeder can mark blank 404 as active when configured as fallback', fu
 test('sync installed themes does not rewrite unchanged public assets', function () {
     copyBuiltinTheme('starter-store');
 
-    $installer = app(\App\CMS\Themes\ThemeInstaller::class);
+    $installer = app(ThemeInstaller::class);
 
     $installer->syncInstalledThemes();
 

@@ -8,8 +8,8 @@
 
 namespace App\Models\Shop;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 class ProductVariantAttribute extends Model
 {
