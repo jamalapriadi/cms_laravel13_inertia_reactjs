@@ -65,7 +65,11 @@ export default function Index({ incomingGoods, filters }: Props) {
     const clearFilter = () => {
         setSearch('');
         setStatus('');
-        router.get('/my-admin/dashboard/ecommerce/incoming-goods', {}, { replace: true });
+        router.get(
+            '/my-admin/dashboard/ecommerce/incoming-goods',
+            {},
+            { replace: true },
+        );
     };
 
     const handleDelete = () => {
@@ -73,9 +77,12 @@ export default function Index({ incomingGoods, filters }: Props) {
             return;
         }
 
-        router.delete(`/my-admin/dashboard/ecommerce/incoming-goods/${deletingId}`, {
-            onFinish: () => setDeletingId(null),
-        });
+        router.delete(
+            `/my-admin/dashboard/ecommerce/incoming-goods/${deletingId}`,
+            {
+                onFinish: () => setDeletingId(null),
+            },
+        );
     };
 
     const formatCurrency = (value: number) => {
@@ -88,9 +95,12 @@ export default function Index({ incomingGoods, filters }: Props) {
 
     const statusBadgeClass = (status: IncomingGoods['status']) => {
         return {
-            pending: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-900/60',
-            completed: 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300 border-green-200 dark:border-green-900/60',
-            cancelled: 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300 border-red-200 dark:border-red-900/60',
+            pending:
+                'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-900/60',
+            completed:
+                'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300 border-green-200 dark:border-green-900/60',
+            cancelled:
+                'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300 border-red-200 dark:border-red-900/60',
         }[status];
     };
 
@@ -98,7 +108,7 @@ export default function Index({ incomingGoods, filters }: Props) {
         {
             label: 'Invoice Number',
             render: (row: IncomingGoods) => (
-                <span className="font-mono font-semibold text-sm text-primary">
+                <span className="font-mono text-sm font-semibold text-primary">
                     {row.invoice_number}
                 </span>
             ),
@@ -106,25 +116,32 @@ export default function Index({ incomingGoods, filters }: Props) {
         {
             label: 'Supplier',
             render: (row: IncomingGoods) => (
-                <span className="font-medium text-foreground">{row.supplier?.name}</span>
+                <span className="font-medium text-foreground">
+                    {row.supplier?.name}
+                </span>
             ),
         },
         {
             label: 'Date',
             render: (row: IncomingGoods) => (
                 <span className="text-sm">
-                    {new Date(row.transaction_date).toLocaleDateString('id-ID', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                    })}
+                    {new Date(row.transaction_date).toLocaleDateString(
+                        'id-ID',
+                        {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                        },
+                    )}
                 </span>
             ),
         },
         {
             label: 'Total Amount',
             render: (row: IncomingGoods) => (
-                <span className="font-semibold text-sm">{formatCurrency(row.total_amount)}</span>
+                <span className="text-sm font-semibold">
+                    {formatCurrency(row.total_amount)}
+                </span>
             ),
         },
         {
@@ -141,16 +158,28 @@ export default function Index({ incomingGoods, filters }: Props) {
             label: 'Action',
             render: (row: IncomingGoods) => (
                 <div className="flex gap-2">
-                    <Link href={`/my-admin/dashboard/ecommerce/incoming-goods/${row.id}`}>
-                        <Button size="sm" variant="secondary" title="View Detail">
+                    <Link
+                        href={`/my-admin/dashboard/ecommerce/incoming-goods/${row.id}`}
+                    >
+                        <Button
+                            size="sm"
+                            variant="secondary"
+                            title="View Detail"
+                        >
                             <Eye className="h-3.5 w-3.5" />
                         </Button>
                     </Link>
 
                     {row.status === 'pending' && (
                         <>
-                            <Link href={`/my-admin/dashboard/ecommerce/incoming-goods/${row.id}/edit`}>
-                                <Button size="sm" variant="secondary" title="Edit">
+                            <Link
+                                href={`/my-admin/dashboard/ecommerce/incoming-goods/${row.id}/edit`}
+                            >
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    title="Edit"
+                                >
                                     <Edit className="h-3.5 w-3.5" />
                                 </Button>
                             </Link>
@@ -178,11 +207,11 @@ export default function Index({ incomingGoods, filters }: Props) {
                 {/* HEADER */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
                             <ArrowDownLeft className="h-6 w-6 text-primary" />
                             Barang Masuk (Purchases)
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="mt-1 text-sm text-muted-foreground">
                             Record and track inventory purchased from suppliers
                         </p>
                     </div>
@@ -225,7 +254,10 @@ export default function Index({ incomingGoods, filters }: Props) {
                 </div>
 
                 {/* TABLE */}
-                <DataTable<IncomingGoods> data={incomingGoods.data} columns={columns} />
+                <DataTable<IncomingGoods>
+                    data={incomingGoods.data}
+                    columns={columns}
+                />
 
                 {/* PAGINATION */}
                 <div className="flex flex-wrap gap-2">
@@ -239,9 +271,9 @@ export default function Index({ incomingGoods, filters }: Props) {
                             onClick={() => link.url && router.visit(link.url)}
                             className={`rounded px-3 py-1 text-sm ${
                                 link.active
-                                    ? 'bg-primary text-primary-foreground font-semibold'
-                                    : 'hover:bg-muted text-muted-foreground'
-                            } ${!link.url && 'opacity-50 pointer-events-none'}`}
+                                    ? 'bg-primary font-semibold text-primary-foreground'
+                                    : 'text-muted-foreground hover:bg-muted'
+                            } ${!link.url && 'pointer-events-none opacity-50'}`}
                         />
                     ))}
                 </div>
@@ -254,9 +286,13 @@ export default function Index({ incomingGoods, filters }: Props) {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Purchase Record?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Delete Purchase Record?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this pending purchase record? This action will permanently remove it along with all draft serial numbers.
+                            Are you sure you want to delete this pending
+                            purchase record? This action will permanently remove
+                            it along with all draft serial numbers.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

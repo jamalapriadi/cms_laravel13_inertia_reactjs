@@ -47,6 +47,8 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'logo' => get_option('logo') ? MediaPath::url(get_option('logo')) : null,
+            'website_mode' => get_option('website_mode', 'commerce'),
+            'enabled_ecommerce_menus' => get_option('enabled_ecommerce_menus', []),
             'customer_auth_config' => $customerConfig->getAllConfigs(),
             'auth' => [
                 'user' => $user ? [

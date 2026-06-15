@@ -110,7 +110,9 @@ export default function Index({ suppliers, filters }: Props) {
             label: 'Action',
             render: (row: Supplier) => (
                 <div className="flex gap-2">
-                    <Link href={`/my-admin/dashboard/ecommerce/suppliers/${row.id}`}>
+                    <Link
+                        href={`/my-admin/dashboard/ecommerce/suppliers/${row.id}`}
+                    >
                         <Button size="sm" variant="secondary" title="Detail">
                             <Eye className="h-3.5 w-3.5" />
                         </Button>

@@ -18,6 +18,10 @@ import { filterSidebar } from '@/utils/sidebar';
 
 export function AppSidebar() {
     const { url, props } = usePage();
+    const websiteMode = (props.website_mode as string) || 'commerce';
+    const enabledEcommerceMenus = Array.isArray(props.enabled_ecommerce_menus)
+        ? (props.enabled_ecommerce_menus as string[])
+        : [];
     const dynamicContentTypes = Array.isArray(props.dynamicContentTypes)
         ? props.dynamicContentTypes
         : [];
@@ -42,7 +46,12 @@ export function AppSidebar() {
         }),
     }));
 
-    const menus = filterSidebar(resolvedSidebarConfig, props.auth.user);
+    const menus = filterSidebar(
+        resolvedSidebarConfig,
+        props.auth.user,
+        websiteMode,
+        enabledEcommerceMenus,
+    );
 
     return (
         <Sidebar

@@ -123,7 +123,9 @@ export default function Index({ kelurahans, provinsis, filters }: Props) {
             label: 'Action',
             render: (row) => (
                 <div className="flex gap-2">
-                    <Link href={`/my-admin/dashboard/kelurahans/${row.id}/edit`}>
+                    <Link
+                        href={`/my-admin/dashboard/kelurahans/${row.id}/edit`}
+                    >
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>

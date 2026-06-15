@@ -48,14 +48,17 @@ export default function Index({ contentType, entries, filters }: Props) {
 
     const applyFilter = () => {
         router.visit(
-            index({
-                contentType: contentType.slug,
-            }, {
-                query: {
-                    search: search || undefined,
-                    status: status !== 'all' ? status : undefined,
+            index(
+                {
+                    contentType: contentType.slug,
                 },
-            }).url,
+                {
+                    query: {
+                        search: search || undefined,
+                        status: status !== 'all' ? status : undefined,
+                    },
+                },
+            ).url,
             {
                 preserveState: true,
                 replace: true,
@@ -128,10 +131,12 @@ export default function Index({ contentType, entries, filters }: Props) {
                 <div className="flex gap-2">
                     {canEdit && (
                         <Link
-                            href={edit({
-                                contentType: contentType.slug,
-                                contentEntry: row.id,
-                            }).url}
+                            href={
+                                edit({
+                                    contentType: contentType.slug,
+                                    contentEntry: row.id,
+                                }).url
+                            }
                         >
                             <Button size="sm" variant="secondary">
                                 <Pencil className="h-3.5 w-3.5" />
@@ -163,12 +168,15 @@ export default function Index({ contentType, entries, filters }: Props) {
                             {contentType.name}
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Manage dynamic entries for the {contentType.name} content type.
+                            Manage dynamic entries for the {contentType.name}{' '}
+                            content type.
                         </p>
                     </div>
 
                     {canCreate && (
-                        <Link href={create({ contentType: contentType.slug }).url}>
+                        <Link
+                            href={create({ contentType: contentType.slug }).url}
+                        >
                             <Button className="gap-2">
                                 <Plus className="h-4 w-4" />
                                 Add Entry
@@ -229,7 +237,9 @@ export default function Index({ contentType, entries, filters }: Props) {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete content entry?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Delete content entry?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
                             This action will soft-delete the selected entry.
                         </AlertDialogDescription>

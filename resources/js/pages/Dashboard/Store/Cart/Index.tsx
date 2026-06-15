@@ -201,7 +201,9 @@ export default function Index({
             label: 'Actions',
             render: (row: Cart) => (
                 <div className="flex gap-2">
-                    <Link href={`/my-admin/dashboard/ecommerce/carts/${row.id}`}>
+                    <Link
+                        href={`/my-admin/dashboard/ecommerce/carts/${row.id}`}
+                    >
                         <Button
                             size="sm"
                             variant="outline"

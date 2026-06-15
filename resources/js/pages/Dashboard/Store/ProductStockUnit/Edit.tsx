@@ -90,15 +90,20 @@ export default function Edit({ stockUnit, products }: Props) {
             network_compatibility: hasNetwork
                 ? formData.network_compatibility || 'sim_free'
                 : null,
-            product_variant_id: showVariantSelect ? formData.product_variant_id || null : null,
+            product_variant_id: showVariantSelect
+                ? formData.product_variant_id || null
+                : null,
             barcode: formData.barcode || null,
             battery_health:
-                formData.battery_health === '' || formData.battery_health === null
+                formData.battery_health === '' ||
+                formData.battery_health === null
                     ? null
                     : Number(formData.battery_health),
             grade: formData.grade || null,
         }));
-        put(`/my-admin/dashboard/ecommerce/product-stock-units/${stockUnit.id}`);
+        put(
+            `/my-admin/dashboard/ecommerce/product-stock-units/${stockUnit.id}`,
+        );
     };
 
     return (
@@ -145,14 +150,19 @@ export default function Edit({ stockUnit, products }: Props) {
                             <div className="space-y-2">
                                 <Label>Product Variant Item</Label>
                                 <SearchableSelect
-                                    options={(selectedProduct?.variant_items ?? []).map((variant) => ({
+                                    options={(
+                                        selectedProduct?.variant_items ?? []
+                                    ).map((variant) => ({
                                         value: variant.id,
                                         label: variant.name,
                                         description: variant.sku,
                                     }))}
                                     value={data.product_variant_id}
                                     onChange={(value) =>
-                                        setData('product_variant_id', value ?? '')
+                                        setData(
+                                            'product_variant_id',
+                                            value ?? '',
+                                        )
                                     }
                                     placeholder="-- Select Variant Item --"
                                     error={errors.product_variant_id}
@@ -221,7 +231,9 @@ export default function Edit({ stockUnit, products }: Props) {
                             <Label>Grade</Label>
                             <Input
                                 value={data.grade}
-                                onChange={(e) => setData('grade', e.target.value)}
+                                onChange={(e) =>
+                                    setData('grade', e.target.value)
+                                }
                                 placeholder="Optional, e.g., A / B+ / C"
                                 maxLength={50}
                             />
@@ -239,7 +251,8 @@ export default function Edit({ stockUnit, products }: Props) {
                                 onChange={(e) =>
                                     setData(
                                         'status',
-                                        e.target.value as ProductStockUnit['status'],
+                                        e.target
+                                            .value as ProductStockUnit['status'],
                                     )
                                 }
                             >

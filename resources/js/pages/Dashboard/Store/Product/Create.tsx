@@ -275,7 +275,7 @@ export default function Create({ categories, brands, units }: Props) {
                             </div>
 
                             <div className="flex flex-col gap-1">
-                                <Label>Base Price ¥</Label>
+                                <Label>Base Price (Rp)</Label>
                                 <Input
                                     type="number"
                                     min="0"
@@ -341,7 +341,9 @@ export default function Create({ categories, brands, units }: Props) {
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/my-admin/dashboard/ecommerce/products')
+                                router.visit(
+                                    '/my-admin/dashboard/ecommerce/products',
+                                )
                             }
                         >
                             Cancel

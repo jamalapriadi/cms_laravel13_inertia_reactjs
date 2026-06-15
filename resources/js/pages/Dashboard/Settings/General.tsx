@@ -85,7 +85,9 @@ export default function General({ options }: Props) {
                 return;
             }
 
-            if (assetFields.includes(item.key as (typeof assetFields)[number])) {
+            if (
+                assetFields.includes(item.key as (typeof assetFields)[number])
+            ) {
                 mapped[`${item.key}_url`] = item.value ?? '';
 
                 return;

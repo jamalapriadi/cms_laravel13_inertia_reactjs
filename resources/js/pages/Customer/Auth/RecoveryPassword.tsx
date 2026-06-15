@@ -49,7 +49,9 @@ export default function RecoveryPassword({ email = '', token }: Props) {
                         id="email"
                         type="email"
                         value={form.data.email}
-                        onChange={(event) => form.setData('email', event.target.value)}
+                        onChange={(event) =>
+                            form.setData('email', event.target.value)
+                        }
                         autoComplete="email"
                         autoFocus
                         placeholder="customer@example.com"
@@ -63,7 +65,9 @@ export default function RecoveryPassword({ email = '', token }: Props) {
                     <PasswordInput
                         id="password"
                         value={form.data.password}
-                        onChange={(event) => form.setData('password', event.target.value)}
+                        onChange={(event) =>
+                            form.setData('password', event.target.value)
+                        }
                         autoComplete="new-password"
                         placeholder="Masukkan password baru"
                         aria-invalid={!!form.errors.password}
@@ -72,11 +76,18 @@ export default function RecoveryPassword({ email = '', token }: Props) {
                 </div>
 
                 <div className="grid gap-2">
-                    <Label htmlFor="password_confirmation">Konfirmasi password</Label>
+                    <Label htmlFor="password_confirmation">
+                        Konfirmasi password
+                    </Label>
                     <PasswordInput
                         id="password_confirmation"
                         value={form.data.password_confirmation}
-                        onChange={(event) => form.setData('password_confirmation', event.target.value)}
+                        onChange={(event) =>
+                            form.setData(
+                                'password_confirmation',
+                                event.target.value,
+                            )
+                        }
                         autoComplete="new-password"
                         placeholder="Ulangi password baru"
                         aria-invalid={!!form.errors.password_confirmation}
@@ -84,12 +95,19 @@ export default function RecoveryPassword({ email = '', token }: Props) {
                     <InputError message={form.errors.password_confirmation} />
                 </div>
 
-                <Button type="submit" className="h-11 w-full" disabled={form.processing}>
+                <Button
+                    type="submit"
+                    className="h-11 w-full"
+                    disabled={form.processing}
+                >
                     {form.processing && <Spinner />}
                     Simpan password baru
                 </Button>
 
-                <Link href={login()} className="block text-center text-sm font-medium text-slate-700 underline-offset-4 transition hover:underline">
+                <Link
+                    href={login()}
+                    className="block text-center text-sm font-medium text-slate-700 underline-offset-4 transition hover:underline"
+                >
                     Kembali ke login customer
                 </Link>
             </form>
@@ -99,5 +117,6 @@ export default function RecoveryPassword({ email = '', token }: Props) {
 
 RecoveryPassword.layout = {
     title: 'Atur ulang password customer',
-    description: 'Gunakan password baru yang aman untuk melanjutkan akses ke dashboard customer Anda.',
+    description:
+        'Gunakan password baru yang aman untuk melanjutkan akses ke dashboard customer Anda.',
 };

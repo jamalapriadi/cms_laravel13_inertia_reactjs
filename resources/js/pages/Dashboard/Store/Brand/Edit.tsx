@@ -72,9 +72,7 @@ export default function Edit({ brand: initialBrand }: Props) {
      */
     const onSubmit = (data: BrandFormData) => {
         const { logo, ...brandData } = data;
-        const payload = logo !== undefined
-            ? { ...brandData, logo }
-            : brandData;
+        const payload = logo !== undefined ? { ...brandData, logo } : brandData;
 
         router.post(
             `/my-admin/dashboard/brands/${initialBrand.id}`,
@@ -196,7 +194,9 @@ export default function Edit({ brand: initialBrand }: Props) {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit('/my-admin/dashboard/brands')}
+                            onClick={() =>
+                                router.visit('/my-admin/dashboard/brands')
+                            }
                         >
                             Cancel
                         </Button>

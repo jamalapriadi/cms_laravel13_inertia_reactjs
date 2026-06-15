@@ -36,7 +36,11 @@ export default function Index({ provinces, filters }: Props) {
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
     function applyFilter() {
-        router.get('/my-admin/dashboard/provinces', { search }, { preserveState: true });
+        router.get(
+            '/my-admin/dashboard/provinces',
+            { search },
+            { preserveState: true },
+        );
     }
 
     const handleDelete = () => {

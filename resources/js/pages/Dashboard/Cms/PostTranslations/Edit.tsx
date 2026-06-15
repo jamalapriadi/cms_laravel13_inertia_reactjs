@@ -1,7 +1,10 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 
-import { edit, update } from '@/actions/App/Http/Controllers/Dashboard/Cms/PostTranslationController';
+import {
+    edit,
+    update,
+} from '@/actions/App/Http/Controllers/Dashboard/Cms/PostTranslationController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -172,7 +175,9 @@ export default function Edit({
             {
                 preserveScroll: true,
                 onStart: () =>
-                    toast.loading('Saving translation...', { id: 'save-translation' }),
+                    toast.loading('Saving translation...', {
+                        id: 'save-translation',
+                    }),
                 onSuccess: () =>
                     toast.success('Translation saved successfully.', {
                         id: 'save-translation',
@@ -196,7 +201,8 @@ export default function Edit({
                             Post Translation
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Translate post content and block texts without changing original blocks.
+                            Translate post content and block texts without
+                            changing original blocks.
                         </p>
                     </div>
 
@@ -205,7 +211,9 @@ export default function Edit({
                             Target: {language.code.toUpperCase()}
                         </Badge>
                         <Badge
-                            variant={translationExists ? 'default' : 'secondary'}
+                            variant={
+                                translationExists ? 'default' : 'secondary'
+                            }
                         >
                             {translationExists ? 'Translated' : 'Draft'}
                         </Badge>
@@ -256,9 +264,7 @@ export default function Edit({
                                 <Badge
                                     key={item.id}
                                     variant={
-                                        item.translated
-                                            ? 'default'
-                                            : 'outline'
+                                        item.translated ? 'default' : 'outline'
                                     }
                                 >
                                     {item.code.toUpperCase()}:{' '}
@@ -274,7 +280,8 @@ export default function Edit({
                         <CardHeader>
                             <CardTitle>Post Fields</CardTitle>
                             <CardDescription>
-                                Left side shows original fields, right side is translation input.
+                                Left side shows original fields, right side is
+                                translation input.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -314,7 +321,10 @@ export default function Edit({
                                     <Textarea
                                         value={data.content}
                                         onChange={(event) =>
-                                            setData('content', event.target.value)
+                                            setData(
+                                                'content',
+                                                event.target.value,
+                                            )
                                         }
                                         rows={8}
                                     />
@@ -379,7 +389,10 @@ export default function Edit({
                             )}
 
                             {blocks.map((block, blockIndex) => (
-                                <div key={block.id} className="space-y-4 rounded-xl border p-4">
+                                <div
+                                    key={block.id}
+                                    className="space-y-4 rounded-xl border p-4"
+                                >
                                     <div className="flex flex-wrap items-center gap-2">
                                         <Badge variant="outline">
                                             Block #{block.id}
@@ -401,17 +414,16 @@ export default function Edit({
                                                         (entry) =>
                                                             entry.block_id ===
                                                             block.id,
-                                                    )?.translations[item.path] ??
-                                                    '';
+                                                    )?.translations[
+                                                        item.path
+                                                    ] ?? '';
                                                 const useRichEditor =
                                                     block.type ===
                                                         'rich-editor' ||
                                                     looksLikeHtml(
                                                         item.original,
                                                     ) ||
-                                                    looksLikeHtml(
-                                                        currentValue,
-                                                    );
+                                                    looksLikeHtml(currentValue);
 
                                                 return (
                                                     <div
@@ -442,7 +454,8 @@ export default function Edit({
                                                         </div>
                                                         <div className="space-y-2">
                                                             <Label className="text-xs text-muted-foreground">
-                                                                Translation ({item.path})
+                                                                Translation (
+                                                                {item.path})
                                                             </Label>
                                                             {useRichEditor ? (
                                                                 <TinyEditor
@@ -458,9 +471,7 @@ export default function Edit({
                                                                             value,
                                                                         )
                                                                     }
-                                                                    height={
-                                                                        220
-                                                                    }
+                                                                    height={220}
                                                                 />
                                                             ) : (
                                                                 <Textarea

@@ -68,10 +68,16 @@ export default function Login({ status, canResetPassword }: Props) {
             },
             onError: (errors) => {
                 if (errors.email) {
-                    setError('email', { type: 'server', message: errors.email });
+                    setError('email', {
+                        type: 'server',
+                        message: errors.email,
+                    });
                 }
                 if (errors.password) {
-                    setError('password', { type: 'server', message: errors.password });
+                    setError('password', {
+                        type: 'server',
+                        message: errors.password,
+                    });
                 }
             },
         });

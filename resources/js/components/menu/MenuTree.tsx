@@ -22,9 +22,18 @@ import { buildTree, flattenTree, getProjection } from '@/utils/tree';
 import type { TreeMenuItem } from '@/utils/tree';
 import MenuItemNode from './MenuItemNode';
 
-export default function MenuTree({ data = [], setData, locale, productCategories = [] }: {
+export default function MenuTree({
+    data = [],
+    setData,
+    locale,
+    productCategories = [],
+}: {
     data?: TreeMenuItem[];
-    setData: (updater: TreeMenuItem[] | ((previous: TreeMenuItem[]) => TreeMenuItem[])) => void;
+    setData: (
+        updater:
+            | TreeMenuItem[]
+            | ((previous: TreeMenuItem[]) => TreeMenuItem[]),
+    ) => void;
     locale: string;
     productCategories?: Array<{ id: string; name: string; slug: string }>;
 }) {
@@ -58,7 +67,11 @@ export default function MenuTree({ data = [], setData, locale, productCategories
         setOverId(event.over?.id || null);
     }
 
-    function updateItem(tree: TreeMenuItem[], id: string | number, payload: Record<string, any>): TreeMenuItem[] {
+    function updateItem(
+        tree: TreeMenuItem[],
+        id: string | number,
+        payload: Record<string, any>,
+    ): TreeMenuItem[] {
         return tree.map((item) => {
             if (String(item.id) === String(id)) {
                 return {
@@ -82,7 +95,10 @@ export default function MenuTree({ data = [], setData, locale, productCategories
         });
     }
 
-    function deleteItem(tree: TreeMenuItem[], id: string | number): TreeMenuItem[] {
+    function deleteItem(
+        tree: TreeMenuItem[],
+        id: string | number,
+    ): TreeMenuItem[] {
         return tree
             .filter((item) => String(item.id) !== String(id))
             .map((item) => ({
@@ -172,12 +188,22 @@ export default function MenuTree({ data = [], setData, locale, productCategories
                                             <MenuItemNode
                                                 item={item}
                                                 locale={locale}
-                                                productCategories={productCategories}
+                                                productCategories={
+                                                    productCategories
+                                                }
                                                 onChange={(id, payload) => {
-                                                    setData((prev) => updateItem(prev, id, payload));
+                                                    setData((prev) =>
+                                                        updateItem(
+                                                            prev,
+                                                            id,
+                                                            payload,
+                                                        ),
+                                                    );
                                                 }}
                                                 onDelete={(id) => {
-                                                    setData((prev) => deleteItem(prev, id));
+                                                    setData((prev) =>
+                                                        deleteItem(prev, id),
+                                                    );
                                                 }}
                                             />
                                         </div>

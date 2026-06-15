@@ -2,15 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ContentEntry;
+use App\Models\ContentType;
+use App\Models\Dashboard\Media;
+use App\Models\Dashboard\Menu;
+use App\Models\Page;
+use App\Models\Post;
+use App\Models\PostCategory;
+use App\Models\Shop\BannerSlide;
+use App\Models\Shop\Brand;
+use App\Models\Shop\Faq;
 use App\Models\Shop\Order;
 use App\Models\Shop\OrderItem;
 use App\Models\Shop\Payment;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductStockUnit;
+use App\Models\Shop\Supplier;
 use App\Models\Shop\VariantItem;
+use App\Models\Theme;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,8 +35,24 @@ class DashboardController extends Controller
         $range = $this->resolveDateRange($request);
         $previousRange = $this->resolvePreviousDateRange($range['start'], $range['end']);
 
-        $currentMetrics = $this->collectPeriodMetrics($range['start'], $range['end']);
-        $previousMetrics = $this->collectPeriodMetrics($previousRange['start'], $previousRange['end']);
+        $websiteMode = get_option('website_mode', 'commerce');
+        $enabledEcommerceMenus = get_option('enabled_ecommerce_menus', []);
+
+        $showCommerce = $websiteMode !== 'blog';
+        $showOrders = $showCommerce && ($websiteMode === 'commerce' || in_array('orders', $enabledEcommerceMenus));
+        $showPayments = $showCommerce && ($websiteMode === 'commerce' || in_array('payments', $enabledEcommerceMenus));
+        $showProducts = $showCommerce && ($websiteMode === 'commerce' || in_array('products', $enabledEcommerceMenus));
+        $showStockUnits = $showCommerce && ($websiteMode === 'commerce' || in_array('product-stock-units', $enabledEcommerceMenus));
+        $showBrands = $showCommerce && ($websiteMode === 'commerce' || in_array('brands', $enabledEcommerceMenus));
+        $showSuppliers = $showCommerce && ($websiteMode === 'commerce' || in_array('suppliers', $enabledEcommerceMenus));
+
+        $currentMetrics = $this->collectPeriodMetrics($range['start'], $range['end'], $showOrders, $showPayments);
+        $previousMetrics = $this->collectPeriodMetrics($previousRange['start'], $previousRange['end'], $showOrders, $showPayments);
+
+        $activeTheme = null;
+        if (Schema::hasTable('themes')) {
+            $activeTheme = Theme::where('is_active', true)->first(['name', 'slug', 'version', 'author']);
+        }
 
         return Inertia::render('Dashboard/Index', [
             'filters' => [
@@ -31,32 +61,74 @@ class DashboardController extends Controller
                 'end_date' => $range['end']->toDateString(),
                 'label' => $this->formatRangeLabel($range['start'], $range['end']),
             ],
+            'cms_metrics' => [
+                'total_pages' => Schema::hasTable('pages') ? Page::count() : 0,
+                'pages_published' => Schema::hasTable('pages') ? Page::where('status', 'publish')->count() : 0,
+                'pages_draft' => Schema::hasTable('pages') ? Page::where('status', 'draft')->count() : 0,
+
+                'total_posts' => Schema::hasTable('posts') ? Post::count() : 0,
+                'posts_published' => Schema::hasTable('posts') ? Post::where('status', 'publish')->count() : 0,
+                'posts_draft' => Schema::hasTable('posts') ? Post::where('status', 'draft')->count() : 0,
+
+                'total_categories' => Schema::hasTable('post_categories') ? PostCategory::count() : 0,
+
+                'total_media' => Schema::hasTable('media') ? Media::count() : 0,
+                'media_size' => Schema::hasTable('media') ? $this->formatBytes(Media::sum('size')) : '0 B',
+
+                'total_menus' => Schema::hasTable('menus') ? Menu::count() : 0,
+                'total_faqs' => Schema::hasTable('faqs') ? Faq::count() : 0,
+                'total_banner_slides' => Schema::hasTable('banner_slides') ? BannerSlide::count() : 0,
+                'total_users' => Schema::hasTable('users') ? User::count() : 0,
+
+                'active_theme' => $activeTheme,
+                'dynamic_content_types' => $this->getDynamicContentTypes(),
+            ],
+            'recent_activity' => $this->getRecentActivity(),
+            'recent_posts' => Schema::hasTable('posts') ? Post::with('author')->latest()->limit(5)->get()->map(fn ($post) => [
+                'id' => $post->id,
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'status' => $post->status,
+                'published_at' => $post->published_at?->toISOString() ?? $post->created_at?->toISOString(),
+                'author' => $post->author?->name ?? 'System',
+            ])->all() : [],
+            'recent_pages' => Schema::hasTable('pages') ? Page::with('creator')->latest()->limit(5)->get()->map(fn ($page) => [
+                'id' => $page->id,
+                'title' => $page->title,
+                'slug' => $page->slug,
+                'status' => $page->status,
+                'published_at' => $page->published_at?->toISOString() ?? $page->created_at?->toISOString(),
+                'creator' => $page->creator?->name ?? 'System',
+            ])->all() : [],
             'metrics' => [
-                'total_revenue' => $currentMetrics['total_revenue'],
-                'total_orders' => $currentMetrics['total_orders'],
-                'available_stock_units' => ProductStockUnit::where('status', 'available')->count(),
-                'pending_payments' => $currentMetrics['pending_payments'],
+                'total_revenue' => $showOrders ? $currentMetrics['total_revenue'] : 0.0,
+                'total_orders' => $showOrders ? $currentMetrics['total_orders'] : 0,
+                'available_stock_units' => ($showStockUnits && Schema::hasTable('product_stock_units')) ? ProductStockUnit::where('status', 'available')->count() : 0,
+                'pending_payments' => $showPayments ? $currentMetrics['pending_payments'] : 0,
+                'total_products' => ($showProducts && Schema::hasTable('products')) ? Product::count() : 0,
+                'total_brands' => ($showBrands && Schema::hasTable('brands')) ? Brand::count() : 0,
+                'total_suppliers' => ($showSuppliers && Schema::hasTable('suppliers')) ? Supplier::count() : 0,
                 'growth' => [
-                    'total_revenue' => $this->calculateGrowth($currentMetrics['total_revenue'], $previousMetrics['total_revenue']),
-                    'total_orders' => $this->calculateGrowth($currentMetrics['total_orders'], $previousMetrics['total_orders']),
+                    'total_revenue' => $showOrders ? $this->calculateGrowth($currentMetrics['total_revenue'], $previousMetrics['total_revenue']) : 0.0,
+                    'total_orders' => $showOrders ? $this->calculateGrowth($currentMetrics['total_orders'], $previousMetrics['total_orders']) : 0.0,
                     'available_stock_units' => null,
-                    'pending_payments' => $this->calculateGrowth($currentMetrics['pending_payments'], $previousMetrics['pending_payments']),
+                    'pending_payments' => $showPayments ? $this->calculateGrowth($currentMetrics['pending_payments'], $previousMetrics['pending_payments']) : 0.0,
                 ],
             ],
             'charts' => [
-                'revenue_growth' => $this->revenueGrowthSeries($range['start'], $range['end']),
-                'order_status' => $this->orderStatusSeries($range['start'], $range['end']),
-                'payment_status' => $this->paymentStatusSeries($range['start'], $range['end']),
-                'sales_by_category' => $this->salesByCategorySeries($range['start'], $range['end']),
-                'sales_by_brand' => $this->salesByBrandSeries($range['start'], $range['end']),
-                'stock_unit_summary' => $this->stockUnitSummarySeries(),
+                'revenue_growth' => $showOrders ? $this->revenueGrowthSeries($range['start'], $range['end']) : [],
+                'order_status' => $showOrders ? $this->orderStatusSeries($range['start'], $range['end']) : [],
+                'payment_status' => $showPayments ? $this->paymentStatusSeries($range['start'], $range['end']) : [],
+                'sales_by_category' => ($showProducts && $showOrders) ? $this->salesByCategorySeries($range['start'], $range['end']) : [],
+                'sales_by_brand' => ($showBrands && $showOrders) ? $this->salesByBrandSeries($range['start'], $range['end']) : [],
+                'stock_unit_summary' => $showStockUnits ? $this->stockUnitSummarySeries() : [],
             ],
             'tables' => [
-                'top_selling_products' => $this->topSellingProducts($range['start'], $range['end']),
-                'low_stock_products' => $this->lowStockProducts(),
-                'recent_orders' => $this->recentOrders($range['start'], $range['end']),
-                'pending_payments' => $this->pendingPayments($range['start'], $range['end']),
-                'damaged_stock_units' => $this->damagedStockUnits(),
+                'top_selling_products' => ($showProducts && $showOrders) ? $this->topSellingProducts($range['start'], $range['end']) : [],
+                'low_stock_products' => $showProducts ? $this->lowStockProducts() : [],
+                'recent_orders' => $showOrders ? $this->recentOrders($range['start'], $range['end']) : [],
+                'pending_payments' => $showPayments ? $this->pendingPayments($range['start'], $range['end']) : [],
+                'damaged_stock_units' => $showStockUnits ? $this->damagedStockUnits() : [],
             ],
         ]);
     }
@@ -135,17 +207,37 @@ class DashboardController extends Controller
         ];
     }
 
-    private function collectPeriodMetrics(CarbonImmutable $start, CarbonImmutable $end): array
+    private function collectPeriodMetrics(CarbonImmutable $start, CarbonImmutable $end, bool $showOrders, bool $showPayments): array
     {
-        $orderQuery = Order::query()->whereBetween('created_at', [$start, $end]);
+        if ((! $showOrders && ! $showPayments) || ! Schema::hasTable('orders') || ! Schema::hasTable('payments')) {
+            return [
+                'total_revenue' => 0.0,
+                'total_orders' => 0,
+                'pending_payments' => 0,
+            ];
+        }
 
-        return [
-            'total_revenue' => (float) (clone $orderQuery)->where('payment_status', 'paid')->sum('grand_total'),
-            'total_orders' => (int) (clone $orderQuery)->count(),
-            'pending_payments' => (int) Payment::query()
+        $totalRevenue = 0.0;
+        $totalOrders = 0;
+        $pendingPayments = 0;
+
+        if ($showOrders && Schema::hasTable('orders')) {
+            $orderQuery = Order::query()->whereBetween('created_at', [$start, $end]);
+            $totalRevenue = (float) (clone $orderQuery)->where('payment_status', 'paid')->sum('grand_total');
+            $totalOrders = (int) (clone $orderQuery)->count();
+        }
+
+        if ($showPayments && Schema::hasTable('payments')) {
+            $pendingPayments = (int) Payment::query()
                 ->where('status', 'pending')
                 ->whereBetween('created_at', [$start, $end])
-                ->count(),
+                ->count();
+        }
+
+        return [
+            'total_revenue' => $totalRevenue,
+            'total_orders' => $totalOrders,
+            'pending_payments' => $pendingPayments,
         ];
     }
 
@@ -163,8 +255,130 @@ class DashboardController extends Controller
         return $start->format('d M Y').' - '.$end->format('d M Y');
     }
 
+    private function formatBytes(float|int $bytes, int $precision = 2): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+
+        $bytes /= pow(1024, $pow);
+
+        return round($bytes, $precision).' '.$units[$pow];
+    }
+
+    private function getDynamicContentTypes(): array
+    {
+        if (! Schema::hasTable('content_types') || ! Schema::hasTable('content_entries')) {
+            return [];
+        }
+
+        return ContentType::active()
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn ($type) => [
+                'id' => $type->id,
+                'name' => $type->name,
+                'slug' => $type->slug,
+                'icon' => $type->icon ?? 'Boxes',
+                'entries_count' => $type->entries()->count(),
+                'published_count' => $type->entries()->where('status', 'published')->count(),
+                'draft_count' => $type->entries()->where('status', 'draft')->count(),
+            ])
+            ->all();
+    }
+
+    private function getRecentActivity(): array
+    {
+        $activities = collect();
+
+        // 1. Pages
+        if (Schema::hasTable('pages')) {
+            Page::query()
+                ->latest('updated_at')
+                ->limit(5)
+                ->get()
+                ->each(function (Page $page) use ($activities) {
+                    $activities->push([
+                        'type' => 'page',
+                        'title' => $page->title,
+                        'description' => 'Halaman diupdate',
+                        'status' => $page->status,
+                        'time' => $page->updated_at?->toISOString() ?? $page->created_at?->toISOString(),
+                        'url' => route('pages.edit', $page->id),
+                    ]);
+                });
+        }
+
+        // 2. Posts
+        if (Schema::hasTable('posts')) {
+            Post::query()
+                ->latest('updated_at')
+                ->limit(5)
+                ->get()
+                ->each(function (Post $post) use ($activities) {
+                    $activities->push([
+                        'type' => 'post',
+                        'title' => $post->title,
+                        'description' => 'Artikel diupdate',
+                        'status' => $post->status,
+                        'time' => $post->updated_at?->toISOString() ?? $post->created_at?->toISOString(),
+                        'url' => route('posts.edit', $post->id),
+                    ]);
+                });
+        }
+
+        // 3. Media
+        if (Schema::hasTable('media')) {
+            Media::query()
+                ->latest('created_at')
+                ->limit(5)
+                ->get()
+                ->each(function (Media $media) use ($activities) {
+                    $activities->push([
+                        'type' => 'media',
+                        'title' => $media->name ?: $media->file_name,
+                        'description' => 'Media diupload: '.$media->mime_type,
+                        'status' => 'success',
+                        'time' => $media->created_at?->toISOString(),
+                        'url' => route('dashboard.media').'?path='.urlencode(dirname($media->path ?? '')),
+                    ]);
+                });
+        }
+
+        // 4. Content Entries
+        if (Schema::hasTable('content_entries') && Schema::hasTable('content_types')) {
+            ContentEntry::query()
+                ->with('contentType')
+                ->latest('updated_at')
+                ->limit(5)
+                ->get()
+                ->each(function (ContentEntry $entry) use ($activities) {
+                    $activities->push([
+                        'type' => 'content_entry',
+                        'title' => $entry->title,
+                        'description' => 'Konten dinamis diupdate: '.($entry->contentType?->name ?? 'Custom'),
+                        'status' => $entry->status,
+                        'time' => $entry->updated_at?->toISOString() ?? $entry->created_at?->toISOString(),
+                        'url' => route('dynamic-content.edit', [$entry->contentType?->slug ?? 'default', $entry->id]),
+                    ]);
+                });
+        }
+
+        return $activities
+            ->sortByDesc('time')
+            ->take(5)
+            ->values()
+            ->all();
+    }
+
     private function revenueGrowthSeries(CarbonImmutable $start, CarbonImmutable $end): array
     {
+        if (! Schema::hasTable('orders')) {
+            return [];
+        }
+
         $groupByMonth = $start->diffInDays($end) > 90;
         $driver = DB::connection()->getDriverName();
         $bucketExpression = $this->timeBucketExpression($groupByMonth, $driver);
@@ -216,6 +430,10 @@ class DashboardController extends Controller
 
     private function orderStatusSeries(CarbonImmutable $start, CarbonImmutable $end): array
     {
+        if (! Schema::hasTable('orders')) {
+            return [];
+        }
+
         return Order::query()
             ->select('status', DB::raw('COUNT(*) as total'))
             ->whereBetween('created_at', [$start, $end])
@@ -232,6 +450,10 @@ class DashboardController extends Controller
 
     private function paymentStatusSeries(CarbonImmutable $start, CarbonImmutable $end): array
     {
+        if (! Schema::hasTable('payments')) {
+            return [];
+        }
+
         return Payment::query()
             ->select('status', DB::raw('COUNT(*) as total'))
             ->whereBetween('created_at', [$start, $end])
@@ -248,20 +470,24 @@ class DashboardController extends Controller
 
     private function salesByCategorySeries(CarbonImmutable $start, CarbonImmutable $end): array
     {
+        if (! Schema::hasTable('order_items') || ! Schema::hasTable('orders') || ! Schema::hasTable('products') || ! Schema::hasTable('categories')) {
+            return [];
+        }
+
         return OrderItem::query()
-            ->selectRaw("COALESCE(categories.name, 'Uncategorized') as name")
+            ->selectRaw("COALESCE(categories.name, 'Uncategorized') as category_name")
             ->selectRaw('SUM(order_items.subtotal) as total')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->leftJoin('products', 'products.id', '=', 'order_items.product_id')
             ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
             ->where('orders.payment_status', 'paid')
             ->whereBetween('orders.created_at', [$start, $end])
-            ->groupBy('name')
+            ->groupBy('categories.name', 'categories.id')
             ->orderByDesc('total')
             ->limit(8)
             ->get()
             ->map(fn ($item) => [
-                'name' => $item->name,
+                'name' => $item->category_name,
                 'value' => (float) $item->total,
             ])
             ->values()
@@ -270,20 +496,24 @@ class DashboardController extends Controller
 
     private function salesByBrandSeries(CarbonImmutable $start, CarbonImmutable $end): array
     {
+        if (! Schema::hasTable('order_items') || ! Schema::hasTable('orders') || ! Schema::hasTable('products') || ! Schema::hasTable('brands')) {
+            return [];
+        }
+
         return OrderItem::query()
-            ->selectRaw("COALESCE(brands.name, 'No Brand') as name")
+            ->selectRaw("COALESCE(brands.name, 'No Brand') as brand_name")
             ->selectRaw('SUM(order_items.subtotal) as total')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->leftJoin('products', 'products.id', '=', 'order_items.product_id')
             ->leftJoin('brands', 'brands.id', '=', 'products.brand_id')
             ->where('orders.payment_status', 'paid')
             ->whereBetween('orders.created_at', [$start, $end])
-            ->groupBy('name')
+            ->groupBy('brands.name', 'brands.id')
             ->orderByDesc('total')
             ->limit(8)
             ->get()
             ->map(fn ($item) => [
-                'name' => $item->name,
+                'name' => $item->brand_name,
                 'value' => (float) $item->total,
             ])
             ->values()
@@ -292,6 +522,10 @@ class DashboardController extends Controller
 
     private function stockUnitSummarySeries(): array
     {
+        if (! Schema::hasTable('product_stock_units')) {
+            return [];
+        }
+
         return ProductStockUnit::query()
             ->select('status', DB::raw('COUNT(*) as total'))
             ->groupBy('status')
@@ -307,6 +541,10 @@ class DashboardController extends Controller
 
     private function topSellingProducts(CarbonImmutable $start, CarbonImmutable $end): array
     {
+        if (! Schema::hasTable('order_items') || ! Schema::hasTable('orders') || ! Schema::hasTable('products')) {
+            return [];
+        }
+
         return OrderItem::query()
             ->selectRaw('order_items.product_id')
             ->selectRaw("MAX(COALESCE(order_items.product_name, products.name, '-')) as product_name")
@@ -333,6 +571,10 @@ class DashboardController extends Controller
 
     private function lowStockProducts(): array
     {
+        if (! Schema::hasTable('variant_items') || ! Schema::hasTable('products')) {
+            return [];
+        }
+
         $variantItems = VariantItem::query()
             ->with('product:id,name,sku')
             ->where('track_stock', true)
@@ -387,6 +629,10 @@ class DashboardController extends Controller
 
     private function recentOrders(CarbonImmutable $start, CarbonImmutable $end): array
     {
+        if (! Schema::hasTable('orders')) {
+            return [];
+        }
+
         return Order::query()
             ->select([
                 'id',
@@ -416,6 +662,10 @@ class DashboardController extends Controller
 
     private function pendingPayments(CarbonImmutable $start, CarbonImmutable $end): array
     {
+        if (! Schema::hasTable('payments') || ! Schema::hasTable('orders')) {
+            return [];
+        }
+
         return Payment::query()
             ->with('order:id,invoice_number,customer_name')
             ->select([
@@ -444,6 +694,10 @@ class DashboardController extends Controller
 
     private function damagedStockUnits(): array
     {
+        if (! Schema::hasTable('product_stock_units')) {
+            return [];
+        }
+
         return ProductStockUnit::query()
             ->with([
                 'product:id,name,sku',

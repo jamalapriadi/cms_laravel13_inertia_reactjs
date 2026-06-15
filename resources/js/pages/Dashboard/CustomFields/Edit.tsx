@@ -62,8 +62,9 @@ const fieldToFormData = (field?: DynamicFieldDefinition): FieldFormData => ({
     placeholder: field?.placeholder ?? '',
     instructions: field?.instructions ?? '',
     options:
-        field?.options?.map((option) => `${option.label}:${option.value}`).join('\n') ??
-        '',
+        field?.options
+            ?.map((option) => `${option.label}:${option.value}`)
+            .join('\n') ?? '',
     default_value:
         field?.type === 'json'
             ? String(field.default_value ?? '')
@@ -116,9 +117,9 @@ export default function Edit({
         const callback = editingFieldId ? put : post;
         const url = editingFieldId
             ? updateField({
-                customFieldGroup: customFieldGroup.id,
-                customField: editingFieldId,
-            }).url
+                  customFieldGroup: customFieldGroup.id,
+                  customField: editingFieldId,
+              }).url
             : storeField({ customFieldGroup: customFieldGroup.id }).url;
 
         callback(url, {
@@ -130,7 +131,9 @@ export default function Edit({
                 ),
             onSuccess: () => {
                 toast.success(
-                    editingFieldId ? 'Custom field updated.' : 'Custom field created.',
+                    editingFieldId
+                        ? 'Custom field updated.'
+                        : 'Custom field created.',
                     { id: 'custom-field-item' },
                 );
                 closeFieldForm();
@@ -173,9 +176,12 @@ export default function Edit({
 
             <div className="container mx-auto max-w-6xl space-y-8 px-6 py-8">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Edit Field Group</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        Edit Field Group
+                    </h1>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        Update the group settings and manage the custom fields used by this content type.
+                        Update the group settings and manage the custom fields
+                        used by this content type.
                     </p>
                 </div>
 
@@ -188,9 +194,14 @@ export default function Edit({
                 <section className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h2 className="text-lg font-semibold">Custom Fields</h2>
+                            <h2 className="text-lg font-semibold">
+                                Custom Fields
+                            </h2>
                             <p className="text-sm text-muted-foreground">
-                                Add and maintain the field schema for {customFieldGroup.content_type?.name ?? 'this content type'}.
+                                Add and maintain the field schema for{' '}
+                                {customFieldGroup.content_type?.name ??
+                                    'this content type'}
+                                .
                             </p>
                         </div>
 
@@ -203,90 +214,106 @@ export default function Edit({
                     </div>
 
                     <div className="space-y-3">
-                        {(customFieldGroup.fields ?? []).map((field, indexField) => (
-                            <div
-                                key={field.id}
-                                className="flex flex-col gap-4 rounded-lg border bg-muted/20 p-4 md:flex-row md:items-start md:justify-between"
-                            >
-                                <div className="space-y-2">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <p className="font-medium">{field.label}</p>
-                                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
-                                            {field.type}
-                                        </span>
-                                        {field.is_required && (
-                                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-                                                Required
+                        {(customFieldGroup.fields ?? []).map(
+                            (field, indexField) => (
+                                <div
+                                    key={field.id}
+                                    className="flex flex-col gap-4 rounded-lg border bg-muted/20 p-4 md:flex-row md:items-start md:justify-between"
+                                >
+                                    <div className="space-y-2">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <p className="font-medium">
+                                                {field.label}
+                                            </p>
+                                            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
+                                                {field.type}
                                             </span>
-                                        )}
-                                        {!field.is_active && (
-                                            <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-800 dark:bg-red-950/40 dark:text-red-300">
-                                                Inactive
-                                            </span>
+                                            {field.is_required && (
+                                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                                                    Required
+                                                </span>
+                                            )}
+                                            {!field.is_active && (
+                                                <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-800 dark:bg-red-950/40 dark:text-red-300">
+                                                    Inactive
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="font-mono text-xs text-muted-foreground">
+                                            {field.name}
+                                        </p>
+                                        {field.instructions && (
+                                            <p className="text-sm text-muted-foreground">
+                                                {field.instructions}
+                                            </p>
                                         )}
                                     </div>
-                                    <p className="font-mono text-xs text-muted-foreground">
-                                        {field.name}
-                                    </p>
-                                    {field.instructions && (
-                                        <p className="text-sm text-muted-foreground">
-                                            {field.instructions}
-                                        </p>
-                                    )}
-                                </div>
 
-                                <div className="flex flex-wrap items-center gap-2">
-                                    {canEdit && (
-                                        <>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        {canEdit && (
+                                            <>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        reorderField(
+                                                            field.id,
+                                                            'up',
+                                                        )
+                                                    }
+                                                    disabled={indexField === 0}
+                                                >
+                                                    <ArrowUp className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        reorderField(
+                                                            field.id,
+                                                            'down',
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        indexField ===
+                                                        (customFieldGroup.fields
+                                                            ?.length ?? 1) -
+                                                            1
+                                                    }
+                                                >
+                                                    <ArrowDown className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    onClick={() =>
+                                                        openEditForm(field)
+                                                    }
+                                                >
+                                                    <Pencil className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </>
+                                        )}
+                                        {canDelete && (
                                             <Button
                                                 size="sm"
-                                                variant="outline"
+                                                variant="destructive"
                                                 onClick={() =>
-                                                    reorderField(field.id, 'up')
-                                                }
-                                                disabled={indexField === 0}
-                                            >
-                                                <ArrowUp className="h-3.5 w-3.5" />
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() =>
-                                                    reorderField(field.id, 'down')
-                                                }
-                                                disabled={
-                                                    indexField ===
-                                                    (customFieldGroup.fields?.length ?? 1) -
-                                                        1
+                                                    removeField(field.id)
                                                 }
                                             >
-                                                <ArrowDown className="h-3.5 w-3.5" />
+                                                <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="secondary"
-                                                onClick={() => openEditForm(field)}
-                                            >
-                                                <Pencil className="h-3.5 w-3.5" />
-                                            </Button>
-                                        </>
-                                    )}
-                                    {canDelete && (
-                                        <Button
-                                            size="sm"
-                                            variant="destructive"
-                                            onClick={() => removeField(field.id)}
-                                        >
-                                            <Trash2 className="h-3.5 w-3.5" />
-                                        </Button>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ),
+                        )}
 
                         {(customFieldGroup.fields ?? []).length === 0 && (
                             <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-                                No custom fields yet. Add the first one to start building the schema.
+                                No custom fields yet. Add the first one to start
+                                building the schema.
                             </div>
                         )}
                     </div>
@@ -299,10 +326,13 @@ export default function Edit({
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h3 className="text-base font-semibold">
-                                        {editingFieldId ? 'Edit Custom Field' : 'Add Custom Field'}
+                                        {editingFieldId
+                                            ? 'Edit Custom Field'
+                                            : 'Add Custom Field'}
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
-                                        Configure one field definition for the selected content type.
+                                        Configure one field definition for the
+                                        selected content type.
                                     </p>
                                 </div>
                                 <Button
@@ -319,11 +349,19 @@ export default function Edit({
                                     <Input
                                         value={data.label}
                                         onChange={(event) => {
-                                            const nextLabel = event.target.value;
+                                            const nextLabel =
+                                                event.target.value;
                                             setData('label', nextLabel);
 
-                                            if (!data.name || data.name === slugifyName(data.label)) {
-                                                setData('name', slugifyName(nextLabel));
+                                            if (
+                                                !data.name ||
+                                                data.name ===
+                                                    slugifyName(data.label)
+                                            ) {
+                                                setData(
+                                                    'name',
+                                                    slugifyName(nextLabel),
+                                                );
                                             }
                                         }}
                                         placeholder="Customer Name"
@@ -335,7 +373,10 @@ export default function Edit({
                                     <Input
                                         value={data.name}
                                         onChange={(event) =>
-                                            setData('name', slugifyName(event.target.value))
+                                            setData(
+                                                'name',
+                                                slugifyName(event.target.value),
+                                            )
                                         }
                                         placeholder="customer_name"
                                     />
@@ -351,7 +392,10 @@ export default function Edit({
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                     >
                                         {fieldTypeOptions.map((option) => (
-                                            <option key={option.value} value={option.value}>
+                                            <option
+                                                key={option.value}
+                                                value={option.value}
+                                            >
                                                 {option.label}
                                             </option>
                                         ))}
@@ -365,7 +409,10 @@ export default function Edit({
                                         min={0}
                                         value={data.sort_order}
                                         onChange={(event) =>
-                                            setData('sort_order', Number(event.target.value || 0))
+                                            setData(
+                                                'sort_order',
+                                                Number(event.target.value || 0),
+                                            )
                                         }
                                     />
                                     <Error message={errors.sort_order} />
@@ -375,7 +422,10 @@ export default function Edit({
                                     <Input
                                         value={data.placeholder}
                                         onChange={(event) =>
-                                            setData('placeholder', event.target.value)
+                                            setData(
+                                                'placeholder',
+                                                event.target.value,
+                                            )
                                         }
                                         placeholder="Optional placeholder"
                                     />
@@ -389,11 +439,16 @@ export default function Edit({
                                                 Set default switch state
                                             </span>
                                             <Switch
-                                                checked={data.default_value === 'true'}
+                                                checked={
+                                                    data.default_value ===
+                                                    'true'
+                                                }
                                                 onCheckedChange={(checked) =>
                                                     setData(
                                                         'default_value',
-                                                        checked ? 'true' : 'false',
+                                                        checked
+                                                            ? 'true'
+                                                            : 'false',
                                                     )
                                                 }
                                             />
@@ -434,7 +489,10 @@ export default function Edit({
                                         rows={3}
                                         value={data.instructions}
                                         onChange={(event) =>
-                                            setData('instructions', event.target.value)
+                                            setData(
+                                                'instructions',
+                                                event.target.value,
+                                            )
                                         }
                                         placeholder="Help text shown in the entry form"
                                     />
@@ -450,12 +508,18 @@ export default function Edit({
                                             rows={5}
                                             value={data.options}
                                             onChange={(event) =>
-                                                setData('options', event.target.value)
+                                                setData(
+                                                    'options',
+                                                    event.target.value,
+                                                )
                                             }
-                                            placeholder={'One option per line\nLabel:value'}
+                                            placeholder={
+                                                'One option per line\nLabel:value'
+                                            }
                                         />
                                         <p className="text-xs text-muted-foreground">
-                                            Use one option per line. Format can be `Label:value` or just `Label`.
+                                            Use one option per line. Format can
+                                            be `Label:value` or just `Label`.
                                         </p>
                                         <Error message={errors.options} />
                                     </Field>
@@ -486,9 +550,12 @@ export default function Edit({
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="flex items-center justify-between rounded-lg border px-4 py-3">
                                     <div>
-                                        <Label htmlFor="field-required">Required</Label>
+                                        <Label htmlFor="field-required">
+                                            Required
+                                        </Label>
                                         <p className="text-xs text-muted-foreground">
-                                            Require a value when creating or updating entries.
+                                            Require a value when creating or
+                                            updating entries.
                                         </p>
                                     </div>
                                     <Switch
@@ -502,9 +569,12 @@ export default function Edit({
 
                                 <div className="flex items-center justify-between rounded-lg border px-4 py-3">
                                     <div>
-                                        <Label htmlFor="field-active">Active</Label>
+                                        <Label htmlFor="field-active">
+                                            Active
+                                        </Label>
                                         <p className="text-xs text-muted-foreground">
-                                            Inactive fields are hidden from entry forms and public output.
+                                            Inactive fields are hidden from
+                                            entry forms and public output.
                                         </p>
                                     </div>
                                     <Switch

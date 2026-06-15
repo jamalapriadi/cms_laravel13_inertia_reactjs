@@ -148,7 +148,9 @@ export default function Index({ brands, summary, filters }: Props) {
         {
             label: 'Total Product',
             render: (row: Brand) => (
-                <span className="font-medium">{formatCount(row.products_count)}</span>
+                <span className="font-medium">
+                    {formatCount(row.products_count)}
+                </span>
             ),
         },
 

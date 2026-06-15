@@ -190,11 +190,16 @@ export default function Edit({ slide, typeOptions, positionOptions }: Props) {
                         <Field label="Type" required>
                             <select
                                 value={data.type}
-                                onChange={(event) => setData('type', event.target.value)}
+                                onChange={(event) =>
+                                    setData('type', event.target.value)
+                                }
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
                                 {typeOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
                                         {option.label}
                                     </option>
                                 ))}
@@ -211,7 +216,10 @@ export default function Edit({ slide, typeOptions, positionOptions }: Props) {
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
                                 {positionOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
                                         {option.label}
                                     </option>
                                 ))}
@@ -225,7 +233,10 @@ export default function Edit({ slide, typeOptions, positionOptions }: Props) {
                                 min={0}
                                 value={data.sort_order}
                                 onChange={(event) =>
-                                    setData('sort_order', Number(event.target.value || 0))
+                                    setData(
+                                        'sort_order',
+                                        Number(event.target.value || 0),
+                                    )
                                 }
                             />
                             <Error message={errors.sort_order} />
@@ -246,7 +257,9 @@ export default function Edit({ slide, typeOptions, positionOptions }: Props) {
                             <Input
                                 type="datetime-local"
                                 value={data.end_at}
-                                onChange={(event) => setData('end_at', event.target.value)}
+                                onChange={(event) =>
+                                    setData('end_at', event.target.value)
+                                }
                             />
                             <Error message={errors.end_at} />
                         </Field>

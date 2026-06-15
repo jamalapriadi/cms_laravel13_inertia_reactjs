@@ -1,7 +1,7 @@
-import type { Kabupaten } from "./kabupaten";
+import type { Kabupaten } from './kabupaten';
 
 export interface Kecamatan {
-    id: number
-    name: string
-    kabupaten: Kabupaten
+    id: number;
+    name: string;
+    kabupaten: Kabupaten;
 }

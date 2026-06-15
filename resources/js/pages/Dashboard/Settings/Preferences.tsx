@@ -29,7 +29,8 @@ const preferenceFields = [
 ] as const;
 
 export default function Preferences({ options }: Props) {
-    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;
+    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string })
+        .mediaUrlBase;
     const [initialized, setInitialized] = useState(false);
     const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
     const [mediaItems, setMediaItems] = useState<MediaLibraryItem[]>([]);
@@ -66,7 +67,6 @@ export default function Preferences({ options }: Props) {
             ) {
                 mapped[item.key] = item.value ?? '';
             }
-
         }
 
         setData((prev) => ({ ...prev, ...mapped }));

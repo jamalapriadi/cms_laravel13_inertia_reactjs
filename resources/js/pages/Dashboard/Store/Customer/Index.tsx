@@ -81,7 +81,11 @@ export default function Index({ customers, summary, filters }: Props) {
     const clearFilter = () => {
         setSearch('');
         setStatus('');
-        router.get('/my-admin/dashboard/ecommerce/customers', {}, { replace: true });
+        router.get(
+            '/my-admin/dashboard/ecommerce/customers',
+            {},
+            { replace: true },
+        );
     };
 
     const toggleLogin = (customer: Customer) => {
@@ -184,7 +188,9 @@ export default function Index({ customers, summary, filters }: Props) {
             label: 'Actions',
             render: (row: Customer) => (
                 <div className="flex flex-wrap gap-2">
-                    <Link href={`/my-admin/dashboard/ecommerce/customers/${row.id}`}>
+                    <Link
+                        href={`/my-admin/dashboard/ecommerce/customers/${row.id}`}
+                    >
                         <Button size="sm" variant="secondary" title="Detail">
                             <Eye className="h-3.5 w-3.5" />
                         </Button>

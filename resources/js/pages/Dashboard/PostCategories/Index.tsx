@@ -109,7 +109,9 @@ export default function Index({ categories, parents, filters }: Props) {
             label: 'Action',
             render: (row: Category) => (
                 <div className="flex gap-2">
-                    <Link href={`/my-admin/dashboard/post-categories/${row.id}/edit`}>
+                    <Link
+                        href={`/my-admin/dashboard/post-categories/${row.id}/edit`}
+                    >
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>

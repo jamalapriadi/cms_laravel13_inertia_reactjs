@@ -40,14 +40,13 @@ interface Props {
 }
 
 export default function Customize({ theme, settings }: Props) {
-    const defaults = settings.reduce<Record<string, string | number | boolean | null>>(
-        (carry, field) => {
-            carry[field.key] = field.value ?? field.default ?? null;
+    const defaults = settings.reduce<
+        Record<string, string | number | boolean | null>
+    >((carry, field) => {
+        carry[field.key] = field.value ?? field.default ?? null;
 
-            return carry;
-        },
-        {},
-    );
+        return carry;
+    }, {});
 
     const { data, setData, put, processing, errors } = useForm<{
         settings: Record<string, string | number | boolean | null>;
@@ -80,7 +79,8 @@ export default function Customize({ theme, settings }: Props) {
                             Customize {theme.name}
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Ubah setting theme dari manifest tanpa rebuild asset frontend.
+                            Ubah setting theme dari manifest tanpa rebuild asset
+                            frontend.
                         </p>
                     </div>
                 </div>
@@ -105,12 +105,17 @@ export default function Customize({ theme, settings }: Props) {
 
                         <div className="space-y-2">
                             <p className="text-lg font-medium">{theme.name}</p>
-                            <p className="font-mono text-xs text-muted-foreground">{theme.slug}</p>
-                            <p className="text-sm text-muted-foreground">
-                                {theme.description || 'Theme ini belum punya deskripsi.'}
+                            <p className="font-mono text-xs text-muted-foreground">
+                                {theme.slug}
                             </p>
-                            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                                {theme.is_active ? 'Active theme' : 'Inactive theme'}
+                            <p className="text-sm text-muted-foreground">
+                                {theme.description ||
+                                    'Theme ini belum punya deskripsi.'}
+                            </p>
+                            <p className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
+                                {theme.is_active
+                                    ? 'Active theme'
+                                    : 'Inactive theme'}
                             </p>
                         </div>
                     </div>
@@ -122,21 +127,29 @@ export default function Customize({ theme, settings }: Props) {
                 >
                     {settings.length === 0 ? (
                         <div className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
-                            Theme ini belum mendefinisikan field setting di <span className="font-mono">theme.json</span>.
+                            Theme ini belum mendefinisikan field setting di{' '}
+                            <span className="font-mono">theme.json</span>.
                         </div>
                     ) : (
                         <div className="grid gap-6 md:grid-cols-2">
                             {settings.map((field) => (
                                 <div
                                     key={field.key}
-                                    className={field.type === 'textarea' || field.type === 'media'
-                                        ? 'md:col-span-2'
-                                        : ''}
+                                    className={
+                                        field.type === 'textarea' ||
+                                        field.type === 'media'
+                                            ? 'md:col-span-2'
+                                            : ''
+                                    }
                                 >
                                     <Field
                                         field={field}
                                         value={data.settings[field.key] ?? null}
-                                        error={errors[`settings.${field.key}` as keyof typeof errors] as string | undefined}
+                                        error={
+                                            errors[
+                                                `settings.${field.key}` as keyof typeof errors
+                                            ] as string | undefined
+                                        }
                                         onChange={(value) =>
                                             setData('settings', {
                                                 ...data.settings,
@@ -155,8 +168,14 @@ export default function Customize({ theme, settings }: Props) {
                                 Back
                             </Button>
                         </Link>
-                        <Button type="submit" disabled={processing} className="gap-2">
-                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                        <Button
+                            type="submit"
+                            disabled={processing}
+                            className="gap-2"
+                        >
+                            {processing && (
+                                <LoaderCircle className="h-4 w-4 animate-spin" />
+                            )}
                             Save Theme Settings
                         </Button>
                     </div>
@@ -167,7 +186,9 @@ export default function Customize({ theme, settings }: Props) {
 }
 
 Customize.layout = (page: ReactNode) => (
-    <AppLayout breadcrumbs={[{ title: 'Themes', href: '/my-admin/dashboard/themes' }]}>
+    <AppLayout
+        breadcrumbs={[{ title: 'Themes', href: '/my-admin/dashboard/themes' }]}
+    >
         {page}
     </AppLayout>
 );
@@ -215,7 +236,9 @@ function Field({
             <div className="flex items-center justify-between rounded-xl border px-4 py-3">
                 <div>
                     <Label>{field.label}</Label>
-                    <p className="text-xs text-muted-foreground">True / false toggle.</p>
+                    <p className="text-xs text-muted-foreground">
+                        True / false toggle.
+                    </p>
                 </div>
                 <Switch checked={Boolean(value)} onCheckedChange={onChange} />
             </div>
@@ -227,7 +250,9 @@ function Field({
             <div className="space-y-2">
                 <Label>{field.label}</Label>
                 <select
-                    value={typeof value === 'string' ? value : String(value ?? '')}
+                    value={
+                        typeof value === 'string' ? value : String(value ?? '')
+                    }
                     onChange={(event) => onChange(event.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
@@ -246,7 +271,13 @@ function Field({
         <div className="space-y-2">
             <Label>{field.label}</Label>
             <Input
-                type={field.type === 'color' ? 'color' : field.type === 'number' ? 'number' : 'text'}
+                type={
+                    field.type === 'color'
+                        ? 'color'
+                        : field.type === 'number'
+                          ? 'number'
+                          : 'text'
+                }
                 value={
                     typeof value === 'string' || typeof value === 'number'
                         ? value

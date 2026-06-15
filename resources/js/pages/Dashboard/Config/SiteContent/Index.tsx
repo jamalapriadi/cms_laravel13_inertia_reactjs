@@ -93,9 +93,12 @@ export default function Index({
             return;
         }
 
-        router.delete(`/my-admin/dashboard/config/site-contents/${deletingId}`, {
-            onFinish: () => setDeletingId(null),
-        });
+        router.delete(
+            `/my-admin/dashboard/config/site-contents/${deletingId}`,
+            {
+                onFinish: () => setDeletingId(null),
+            },
+        );
     };
 
     const columns = [
@@ -148,9 +151,9 @@ export default function Index({
             render: (row: SiteContentItem) => (
                 <div className="flex flex-wrap gap-1">
                     {activeLanguages.map((language) => {
-                        const translation = normalizeTranslations(row.translations).find(
-                            (item) => item.locale === language.code,
-                        );
+                        const translation = normalizeTranslations(
+                            row.translations,
+                        ).find((item) => item.locale === language.code);
                         const filled = !!translation?.value?.trim();
 
                         return (
@@ -162,7 +165,8 @@ export default function Index({
                                         : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'
                                 }`}
                             >
-                                {language.code.toUpperCase()}: {filled ? 'filled' : 'empty'}
+                                {language.code.toUpperCase()}:{' '}
+                                {filled ? 'filled' : 'empty'}
                             </span>
                         );
                     })}
@@ -173,7 +177,9 @@ export default function Index({
             label: 'Actions',
             render: (row: SiteContentItem) => (
                 <div className="flex gap-2">
-                    <Link href={`/my-admin/dashboard/config/site-contents/${row.id}/edit`}>
+                    <Link
+                        href={`/my-admin/dashboard/config/site-contents/${row.id}/edit`}
+                    >
                         <Button size="sm" variant="secondary">
                             <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -197,14 +203,20 @@ export default function Index({
             <div className="container mx-auto space-y-8 px-6 py-8">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Site Contents</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            Site Contents
+                        </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Manage dynamic website texts by key, group, type, and locale.
+                            Manage dynamic website texts by key, group, type,
+                            and locale.
                         </p>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Link href="/my-admin/dashboard/config/site-contents/usage" target="_blank">
+                        <Link
+                            href="/my-admin/dashboard/config/site-contents/usage"
+                            target="_blank"
+                        >
                             <Button variant="outline" className="gap-2">
                                 <BookOpen className="h-4 w-4" />
                                 Cara Penggunaan
@@ -270,7 +282,10 @@ export default function Index({
                     <Button onClick={applyFilter}>Apply Filter</Button>
                 </div>
 
-                <DataTable<SiteContentItem> data={siteContents.data} columns={columns} />
+                <DataTable<SiteContentItem>
+                    data={siteContents.data}
+                    columns={columns}
+                />
 
                 <div className="flex flex-wrap gap-2">
                     {siteContents.links.map((link, index) => (
@@ -295,9 +310,12 @@ export default function Index({
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete site content?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Delete site content?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action will soft-delete the selected content key.
+                            This action will soft-delete the selected content
+                            key.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -316,7 +334,11 @@ export default function Index({
 }
 
 function normalizeTranslations(
-    translations: SiteContentItem['translations'] | { data?: TranslationItem[] } | null | undefined,
+    translations:
+        | SiteContentItem['translations']
+        | { data?: TranslationItem[] }
+        | null
+        | undefined,
 ): TranslationItem[] {
     if (Array.isArray(translations)) {
         return translations;

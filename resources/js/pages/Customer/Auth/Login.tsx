@@ -57,7 +57,9 @@ export default function Login({ status }: Props) {
                             id="email"
                             type="email"
                             value={form.data.email}
-                            onChange={(event) => form.setData('email', event.target.value)}
+                            onChange={(event) =>
+                                form.setData('email', event.target.value)
+                            }
                             autoComplete="email"
                             autoFocus
                             placeholder="customer@example.com"
@@ -82,7 +84,9 @@ export default function Login({ status }: Props) {
                         <PasswordInput
                             id="password"
                             value={form.data.password}
-                            onChange={(event) => form.setData('password', event.target.value)}
+                            onChange={(event) =>
+                                form.setData('password', event.target.value)
+                            }
                             autoComplete="current-password"
                             placeholder="Masukkan password"
                             aria-invalid={!!form.errors.password}
@@ -94,14 +98,20 @@ export default function Login({ status }: Props) {
                         <Checkbox
                             id="remember"
                             checked={form.data.remember}
-                            onCheckedChange={(checked) => form.setData('remember', checked === true)}
+                            onCheckedChange={(checked) =>
+                                form.setData('remember', checked === true)
+                            }
                         />
                         <Label htmlFor="remember" className="cursor-pointer">
                             Ingat saya di perangkat ini
                         </Label>
                     </div>
 
-                    <Button type="submit" className="h-11 w-full" disabled={form.processing}>
+                    <Button
+                        type="submit"
+                        className="h-11 w-full"
+                        disabled={form.processing}
+                    >
                         {form.processing && <Spinner />}
                         Masuk ke dashboard customer
                     </Button>
@@ -125,5 +135,6 @@ export default function Login({ status }: Props) {
 
 Login.layout = {
     title: 'Masuk ke akun customer',
-    description: 'Gunakan email customer untuk mengakses dashboard belanja dan riwayat order Anda.',
+    description:
+        'Gunakan email customer untuk mengakses dashboard belanja dan riwayat order Anda.',
 };

@@ -26,10 +26,12 @@ export default function Edit({
             contentType={contentType}
             fieldGroups={fieldGroups}
             form={form}
-            submitUrl={update({
-                contentType: contentType.slug,
-                contentEntry: contentEntry.id,
-            }).url}
+            submitUrl={
+                update({
+                    contentType: contentType.slug,
+                    contentEntry: contentEntry.id,
+                }).url
+            }
         />
     );
 }

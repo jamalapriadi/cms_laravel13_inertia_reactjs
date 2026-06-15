@@ -71,7 +71,9 @@ export default function Edit({ taxonomy, item }: Props) {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-2xl font-bold">{title}</h1>
-                    <p className="text-muted-foreground">Edit data {taxonomy}</p>
+                    <p className="text-muted-foreground">
+                        Edit data {taxonomy}
+                    </p>
                 </div>
 
                 {/* FORM */}

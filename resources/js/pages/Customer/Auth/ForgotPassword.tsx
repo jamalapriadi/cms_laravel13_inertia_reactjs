@@ -48,7 +48,9 @@ export default function ForgotPassword({ status }: Props) {
                         id="email"
                         type="email"
                         value={form.data.email}
-                        onChange={(event) => form.setData('email', event.target.value)}
+                        onChange={(event) =>
+                            form.setData('email', event.target.value)
+                        }
                         autoComplete="email"
                         autoFocus
                         placeholder="customer@example.com"
@@ -57,13 +59,20 @@ export default function ForgotPassword({ status }: Props) {
                     <InputError message={form.errors.email} />
                 </div>
 
-                <Button type="submit" className="h-11 w-full" disabled={form.processing}>
+                <Button
+                    type="submit"
+                    className="h-11 w-full"
+                    disabled={form.processing}
+                >
                     {form.processing && <Spinner />}
                     Kirim link recovery
                 </Button>
 
                 {customer_auth_config?.allow_customer_login && (
-                    <Link href={login()} className="block text-center text-sm font-medium text-slate-700 underline-offset-4 transition hover:underline">
+                    <Link
+                        href={login()}
+                        className="block text-center text-sm font-medium text-slate-700 underline-offset-4 transition hover:underline"
+                    >
                         Kembali ke halaman login
                     </Link>
                 )}
@@ -74,5 +83,6 @@ export default function ForgotPassword({ status }: Props) {
 
 ForgotPassword.layout = {
     title: 'Butuh recovery password?',
-    description: 'Masukkan email customer yang terdaftar dan kami akan kirim tautan reset ke inbox Anda.',
+    description:
+        'Masukkan email customer yang terdaftar dan kami akan kirim tautan reset ke inbox Anda.',
 };

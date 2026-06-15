@@ -62,8 +62,12 @@ export default function Show({ stockUnit }: Props) {
                             </Button>
                         </Link>
                         <div>
-                            <h1 className="text-2xl font-bold">Detail Stok Unit</h1>
-                            <p className="font-mono text-sm text-muted-foreground">{stockUnit.imei_serial_number}</p>
+                            <h1 className="text-2xl font-bold">
+                                Detail Stok Unit
+                            </h1>
+                            <p className="font-mono text-sm text-muted-foreground">
+                                {stockUnit.imei_serial_number}
+                            </p>
                         </div>
                     </div>
 
@@ -84,12 +88,16 @@ export default function Show({ stockUnit }: Props) {
                         )}
 
                         {hasBarcode && (
-                            <Link href={`/my-admin/dashboard/ecommerce/product-stock-units/barcodes/print?ids=${stockUnit.id}`}>
+                            <Link
+                                href={`/my-admin/dashboard/ecommerce/product-stock-units/barcodes/print?ids=${stockUnit.id}`}
+                            >
                                 <Button variant="outline">Print Barcode</Button>
                             </Link>
                         )}
 
-                        <Link href={`/my-admin/dashboard/ecommerce/product-stock-units/${stockUnit.id}/edit`}>
+                        <Link
+                            href={`/my-admin/dashboard/ecommerce/product-stock-units/${stockUnit.id}/edit`}
+                        >
                             <Button className="gap-2">
                                 <Edit className="h-4 w-4" />
                                 Edit
@@ -99,23 +107,52 @@ export default function Show({ stockUnit }: Props) {
                 </div>
 
                 <div className="grid gap-4 rounded-xl border bg-card p-6 shadow-sm md:grid-cols-2">
-                    <Info label="Product" value={stockUnit.product?.name || stockUnit.variant?.product?.name} />
-                    <Info label="Product Variant" value={stockUnit.variant?.name || '-'} />
-                    <Info label="SKU" value={stockUnit.variant?.sku || stockUnit.product?.sku || '-'} />
-                    <Info label="IMEI / Serial" value={stockUnit.imei_serial_number} />
-                    <Info label="Barcode" value={stockUnit.barcode || '-'} mono />
-                    <Info label="Network" value={networkLabel(stockUnit.network_compatibility)} />
+                    <Info
+                        label="Product"
+                        value={
+                            stockUnit.product?.name ||
+                            stockUnit.variant?.product?.name
+                        }
+                    />
+                    <Info
+                        label="Product Variant"
+                        value={stockUnit.variant?.name || '-'}
+                    />
+                    <Info
+                        label="SKU"
+                        value={
+                            stockUnit.variant?.sku ||
+                            stockUnit.product?.sku ||
+                            '-'
+                        }
+                    />
+                    <Info
+                        label="IMEI / Serial"
+                        value={stockUnit.imei_serial_number}
+                    />
+                    <Info
+                        label="Barcode"
+                        value={stockUnit.barcode || '-'}
+                        mono
+                    />
+                    <Info
+                        label="Network"
+                        value={networkLabel(stockUnit.network_compatibility)}
+                    />
                     <Info label="Grade" value={stockUnit.grade || '-'} />
                     <Info
                         label="Battery Health"
                         value={
-                            stockUnit.battery_health === null || stockUnit.battery_health === undefined
+                            stockUnit.battery_health === null ||
+                            stockUnit.battery_health === undefined
                                 ? '-'
                                 : `${stockUnit.battery_health}%`
                         }
                     />
                     <div>
-                        <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Status</span>
+                        <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                            Status
+                        </span>
                         <p className="mt-1">
                             <Badge variant="secondary" className="uppercase">
                                 {stockUnit.status}
@@ -142,8 +179,14 @@ function Info({
 }) {
     return (
         <div>
-            <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">{label}</span>
-            <p className={`mt-1 text-sm font-medium text-foreground ${mono ? 'font-mono' : ''}`}>{value || '-'}</p>
+            <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                {label}
+            </span>
+            <p
+                className={`mt-1 text-sm font-medium text-foreground ${mono ? 'font-mono' : ''}`}
+            >
+                {value || '-'}
+            </p>
         </div>
     );
 }

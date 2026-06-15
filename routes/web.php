@@ -185,33 +185,34 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
 
     Route::resource('packages', PackageController::class);
     Route::get('ecommerce/search-options', SearchOptionController::class)->name('ecommerce.search-options');
-    Route::resource('brands', BrandController::class);
-    Route::resource('units', UnitController::class);
-    Route::resource('ecommerce/categories', CategoryController::class)->names('categories');
-    Route::post('ecommerce/products/import', [ProductController::class, 'import'])->name('products.import');
-    Route::get('ecommerce/products/template', [ProductController::class, 'template'])->name('products.template');
-    Route::get('ecommerce/products/export', [ProductController::class, 'export'])->name('products.export');
-    Route::resource('ecommerce/products', ProductController::class)->names('products');
-    Route::resource('ecommerce/product-variants', ProductVariantController::class)->names('product-variants');
-    Route::resource('ecommerce/variant-items', VariantItemController::class)->names('variant-items');
-    Route::resource('ecommerce/product-stock-units', ProductStockUnitController::class)->names('product-stock-units');
-    Route::post('ecommerce/product-stock-units/{productStockUnit}/generate-barcode', [StockUnitBarcodeController::class, 'generate'])->name('product-stock-units.barcode.generate');
-    Route::post('ecommerce/product-stock-units/{productStockUnit}/regenerate-barcode', [StockUnitBarcodeController::class, 'regenerate'])->name('product-stock-units.barcode.regenerate');
-    Route::post('ecommerce/product-stock-units/bulk-generate-barcode', [StockUnitBarcodeController::class, 'bulkGenerate'])->name('product-stock-units.bulk-generate-barcode');
-    Route::get('ecommerce/product-stock-units/barcodes/print', [StockUnitBarcodeController::class, 'print'])->name('product-stock-units.barcodes.print');
-    Route::post('ecommerce/product-stock-units/barcodes/print-selected', [StockUnitBarcodeController::class, 'printSelected'])->name('product-stock-units.barcodes.print-selected');
-    Route::get('ecommerce/incoming-goods/{incomingGood}/barcodes/print', [StockUnitBarcodeController::class, 'printByIncomingGood'])->name('incoming-goods.barcodes.print');
-    Route::get('ecommerce/barcode-scanner', [BarcodeScannerController::class, 'scanner'])->name('barcode-scanner.index');
-    Route::post('ecommerce/barcode-scanner/search', [BarcodeScannerController::class, 'scanSearch'])->name('barcode-scanner.search');
-    Route::resource('ecommerce/product-images', ProductImageController::class)->names('product-images');
-    Route::get('ecommerce/product-collections/options/products', [ProductCollectionController::class, 'optionsProducts'])->name('product-collections.options.products');
-    Route::post('ecommerce/product-collections/{productCollection}/items', [ProductCollectionItemController::class, 'store'])->name('product-collections.items.store');
-    Route::put('ecommerce/product-collections/{productCollection}/items/{item}', [ProductCollectionItemController::class, 'update'])->name('product-collections.items.update');
-    Route::delete('ecommerce/product-collections/{productCollection}/items/{item}', [ProductCollectionItemController::class, 'destroy'])->name('product-collections.items.destroy');
+    Route::resource('brands', BrandController::class)->middleware('website_mode:brands');
+    Route::resource('units', UnitController::class)->middleware('website_mode:units');
+    Route::resource('ecommerce/categories', CategoryController::class)->names('categories')->middleware('website_mode:categories');
+    Route::post('ecommerce/products/import', [ProductController::class, 'import'])->name('products.import')->middleware('website_mode:products');
+    Route::get('ecommerce/products/template', [ProductController::class, 'template'])->name('products.template')->middleware('website_mode:products');
+    Route::get('ecommerce/products/export', [ProductController::class, 'export'])->name('products.export')->middleware('website_mode:products');
+    Route::resource('ecommerce/products', ProductController::class)->names('products')->middleware('website_mode:products');
+    Route::resource('ecommerce/product-variants', ProductVariantController::class)->names('product-variants')->middleware('website_mode:product-variants');
+    Route::resource('ecommerce/variant-items', VariantItemController::class)->names('variant-items')->middleware('website_mode:variant-items');
+    Route::resource('ecommerce/product-stock-units', ProductStockUnitController::class)->names('product-stock-units')->middleware('website_mode:product-stock-units');
+    Route::post('ecommerce/product-stock-units/{productStockUnit}/generate-barcode', [StockUnitBarcodeController::class, 'generate'])->name('product-stock-units.barcode.generate')->middleware('website_mode:product-stock-units');
+    Route::post('ecommerce/product-stock-units/{productStockUnit}/regenerate-barcode', [StockUnitBarcodeController::class, 'regenerate'])->name('product-stock-units.barcode.regenerate')->middleware('website_mode:product-stock-units');
+    Route::post('ecommerce/product-stock-units/bulk-generate-barcode', [StockUnitBarcodeController::class, 'bulkGenerate'])->name('product-stock-units.bulk-generate-barcode')->middleware('website_mode:product-stock-units');
+    Route::get('ecommerce/product-stock-units/barcodes/print', [StockUnitBarcodeController::class, 'print'])->name('product-stock-units.barcodes.print')->middleware('website_mode:product-stock-units');
+    Route::post('ecommerce/product-stock-units/barcodes/print-selected', [StockUnitBarcodeController::class, 'printSelected'])->name('product-stock-units.barcodes.print-selected')->middleware('website_mode:product-stock-units');
+    Route::get('ecommerce/incoming-goods/{incomingGood}/barcodes/print', [StockUnitBarcodeController::class, 'printByIncomingGood'])->name('incoming-goods.barcodes.print')->middleware('website_mode:incoming-goods');
+    Route::get('ecommerce/barcode-scanner', [BarcodeScannerController::class, 'scanner'])->name('barcode-scanner.index')->middleware('website_mode:product-stock-units');
+    Route::post('ecommerce/barcode-scanner/search', [BarcodeScannerController::class, 'scanSearch'])->name('barcode-scanner.search')->middleware('website_mode:product-stock-units');
+    Route::resource('ecommerce/product-images', ProductImageController::class)->names('product-images')->middleware('website_mode:products');
+    Route::get('ecommerce/product-collections/options/products', [ProductCollectionController::class, 'optionsProducts'])->name('product-collections.options.products')->middleware('website_mode:products');
+    Route::post('ecommerce/product-collections/{productCollection}/items', [ProductCollectionItemController::class, 'store'])->name('product-collections.items.store')->middleware('website_mode:products');
+    Route::put('ecommerce/product-collections/{productCollection}/items/{item}', [ProductCollectionItemController::class, 'update'])->name('product-collections.items.update')->middleware('website_mode:products');
+    Route::delete('ecommerce/product-collections/{productCollection}/items/{item}', [ProductCollectionItemController::class, 'destroy'])->name('product-collections.items.destroy')->middleware('website_mode:products');
     Route::resource('ecommerce/product-collections', ProductCollectionController::class)
         ->parameters(['product-collections' => 'productCollection'])
-        ->names('product-collections');
-    Route::resource('ecommerce/product-specifications', ProductSpecificationController::class)->names('product-specifications');
+        ->names('product-collections')
+        ->middleware('website_mode:products');
+    Route::resource('ecommerce/product-specifications', ProductSpecificationController::class)->names('product-specifications')->middleware('website_mode:products');
     Route::resource('ecommerce/faqs', FaqController::class)
         ->parameters(['faqs' => 'faq'])
         ->except(['show'])
@@ -220,20 +221,19 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
         ->parameters(['banner-slides' => 'bannerSlide'])
         ->except(['show'])
         ->names('banner-slides');
-    Route::patch('ecommerce/customers/{customer}/toggle-login', [CustomerController::class, 'toggleLogin'])->name('customers.toggle-login');
-    Route::post('ecommerce/customers/{customer}/reset-password', [CustomerController::class, 'resetPassword'])->name('customers.reset-password');
-    Route::resource('ecommerce/customers', CustomerController::class)->only(['index', 'show', 'destroy'])->names('customers');
-    Route::delete('ecommerce/carts/{cart}/items/{item}', [CartController::class, 'destroyItem'])->name('carts.destroy-item');
-    Route::resource('ecommerce/carts', CartController::class)->names('carts');
-    Route::resource('ecommerce/payments', PaymentController::class)->only(['index', 'show'])->names('payments');
-    Route::resource('ecommerce/stock-movements', StockMovementController::class)->names('stock-movements');
-    Route::resource('ecommerce/shipping', ShippingController::class)->names('shippings');
-    Route::resource('ecommerce/suppliers', SupplierController::class)->names('suppliers');
-    Route::resource('ecommerce/incoming-goods', IncomingGoodsController::class)->names('incoming-goods');
-    Route::resource('ecommerce/supplier-returns', SupplierReturnController::class)->names('supplier-returns');
-
-    Route::get('orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
-    Route::resource('orders', OrderController::class)->names('orders');
+    Route::patch('ecommerce/customers/{customer}/toggle-login', [CustomerController::class, 'toggleLogin'])->name('customers.toggle-login')->middleware('website_mode:customers');
+    Route::post('ecommerce/customers/{customer}/reset-password', [CustomerController::class, 'resetPassword'])->name('customers.reset-password')->middleware('website_mode:customers');
+    Route::resource('ecommerce/customers', CustomerController::class)->only(['index', 'show', 'destroy'])->names('customers')->middleware('website_mode:customers');
+    Route::delete('ecommerce/carts/{cart}/items/{item}', [CartController::class, 'destroyItem'])->name('carts.destroy-item')->middleware('website_mode:carts');
+    Route::resource('ecommerce/carts', CartController::class)->names('carts')->middleware('website_mode:carts');
+    Route::resource('ecommerce/payments', PaymentController::class)->only(['index', 'show'])->names('payments')->middleware('website_mode:payments');
+    Route::resource('ecommerce/stock-movements', StockMovementController::class)->names('stock-movements')->middleware('website_mode:stock-movements');
+    Route::resource('ecommerce/shipping', ShippingController::class)->names('shippings')->middleware('website_mode:shipping');
+    Route::resource('ecommerce/suppliers', SupplierController::class)->names('suppliers')->middleware('website_mode:suppliers');
+    Route::resource('ecommerce/incoming-goods', IncomingGoodsController::class)->names('incoming-goods')->middleware('website_mode:incoming-goods');
+    Route::resource('ecommerce/supplier-returns', SupplierReturnController::class)->names('supplier-returns')->middleware('website_mode:supplier-returns');
+    Route::get('orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt')->middleware('website_mode:orders');
+    Route::resource('orders', OrderController::class)->names('orders')->middleware('website_mode:orders');
 
     Route::group(['prefix' => 'config'], function () {
         Route::controller(SettingController::class)->group(function () {

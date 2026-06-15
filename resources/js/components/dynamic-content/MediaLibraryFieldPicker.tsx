@@ -91,7 +91,7 @@ export default function MediaLibraryFieldPicker({
                                 )}
 
                                 <div className="space-y-2">
-                                    <p className="break-all text-xs text-muted-foreground">
+                                    <p className="text-xs break-all text-muted-foreground">
                                         {value}
                                     </p>
 
@@ -126,9 +126,17 @@ export default function MediaLibraryFieldPicker({
                 </button>
             )}
 
-            <Button type="button" variant="outline" onClick={() => setIsOpen(true)}>
+            <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(true)}
+            >
                 <Plus className="mr-2 h-4 w-4" />
-                {multiple ? 'Add Media' : values.length > 0 ? 'Replace Media' : 'Select Media'}
+                {multiple
+                    ? 'Add Media'
+                    : values.length > 0
+                      ? 'Replace Media'
+                      : 'Select Media'}
             </Button>
 
             <MediaLibraryUploadModal

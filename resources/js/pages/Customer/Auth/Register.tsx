@@ -48,7 +48,9 @@ export default function Register() {
                         <Input
                             id="name"
                             value={form.data.name}
-                            onChange={(event) => form.setData('name', event.target.value)}
+                            onChange={(event) =>
+                                form.setData('name', event.target.value)
+                            }
                             autoComplete="name"
                             autoFocus
                             placeholder="Nama customer"
@@ -63,7 +65,9 @@ export default function Register() {
                             id="email"
                             type="email"
                             value={form.data.email}
-                            onChange={(event) => form.setData('email', event.target.value)}
+                            onChange={(event) =>
+                                form.setData('email', event.target.value)
+                            }
                             autoComplete="email"
                             placeholder="customer@example.com"
                             aria-invalid={!!form.errors.email}
@@ -76,7 +80,9 @@ export default function Register() {
                         <Input
                             id="phone"
                             value={form.data.phone}
-                            onChange={(event) => form.setData('phone', event.target.value)}
+                            onChange={(event) =>
+                                form.setData('phone', event.target.value)
+                            }
                             autoComplete="tel"
                             placeholder="081234567890"
                             aria-invalid={!!form.errors.phone}
@@ -89,7 +95,9 @@ export default function Register() {
                         <PasswordInput
                             id="password"
                             value={form.data.password}
-                            onChange={(event) => form.setData('password', event.target.value)}
+                            onChange={(event) =>
+                                form.setData('password', event.target.value)
+                            }
                             autoComplete="new-password"
                             placeholder="Minimal 8 karakter"
                             aria-invalid={!!form.errors.password}
@@ -98,19 +106,32 @@ export default function Register() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Konfirmasi password</Label>
+                        <Label htmlFor="password_confirmation">
+                            Konfirmasi password
+                        </Label>
                         <PasswordInput
                             id="password_confirmation"
                             value={form.data.password_confirmation}
-                            onChange={(event) => form.setData('password_confirmation', event.target.value)}
+                            onChange={(event) =>
+                                form.setData(
+                                    'password_confirmation',
+                                    event.target.value,
+                                )
+                            }
                             autoComplete="new-password"
                             placeholder="Ulangi password"
                             aria-invalid={!!form.errors.password_confirmation}
                         />
-                        <InputError message={form.errors.password_confirmation} />
+                        <InputError
+                            message={form.errors.password_confirmation}
+                        />
                     </div>
 
-                    <Button type="submit" className="h-11 w-full" disabled={form.processing}>
+                    <Button
+                        type="submit"
+                        className="h-11 w-full"
+                        disabled={form.processing}
+                    >
                         {form.processing && <Spinner />}
                         Buat akun customer
                     </Button>
@@ -119,7 +140,10 @@ export default function Register() {
                 {customer_auth_config?.allow_customer_login && (
                     <p className="text-center text-sm text-slate-600">
                         Sudah punya akun?{' '}
-                        <Link href={login()} className="font-semibold text-slate-950 underline-offset-4 transition hover:underline">
+                        <Link
+                            href={login()}
+                            className="font-semibold text-slate-950 underline-offset-4 transition hover:underline"
+                        >
                             Masuk di sini
                         </Link>
                     </p>
@@ -131,5 +155,6 @@ export default function Register() {
 
 Register.layout = {
     title: 'Daftar akun customer',
-    description: 'Simpan data customer Anda sekarang agar checkout, pesanan, dan recovery password lebih mudah.',
+    description:
+        'Simpan data customer Anda sekarang agar checkout, pesanan, dan recovery password lebih mudah.',
 };

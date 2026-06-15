@@ -50,7 +50,10 @@ interface Props {
 
 export default function Show({ shipping }: Props) {
     const handlePrintReceipt = () => {
-        window.open(`/my-admin/dashboard/orders/${shipping.order_id}/receipt`, '_blank');
+        window.open(
+            `/my-admin/dashboard/orders/${shipping.order_id}/receipt`,
+            '_blank',
+        );
     };
 
     const getStatusStep = () => {
@@ -142,7 +145,7 @@ export default function Show({ shipping }: Props) {
 
                 {/* DANGER BANNERS FOR ERROR STATES */}
                 {shipping.status === 'failed' && (
-                    <div className="flex items-start gap-3 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-100 dark:bg-rose-950/40 p-4 text-rose-800 dark:text-rose-300">
+                    <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-100 p-4 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
                         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700 dark:text-rose-300" />
                         <div>
                             <h4 className="font-bold">
@@ -158,7 +161,7 @@ export default function Show({ shipping }: Props) {
                 )}
 
                 {shipping.status === 'returned' && (
-                    <div className="flex items-start gap-3 rounded-xl border border-orange-200 dark:border-orange-900/60 bg-orange-100 dark:bg-orange-950/40 p-4 text-orange-800">
+                    <div className="flex items-start gap-3 rounded-xl border border-orange-200 bg-orange-100 p-4 text-orange-800 dark:border-orange-900/60 dark:bg-orange-950/40">
                         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-orange-600" />
                         <div>
                             <h4 className="font-bold">
@@ -262,7 +265,7 @@ export default function Show({ shipping }: Props) {
                                     <span className="block text-xs text-muted-foreground">
                                         Current Status
                                     </span>
-                                    <span className="inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-900/60 bg-indigo-100 dark:bg-indigo-950/40 px-2 py-0.5 text-xs font-semibold text-indigo-800 dark:text-indigo-300 uppercase">
+                                    <span className="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-800 uppercase dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-300">
                                         {shipping.status}
                                     </span>
                                 </div>

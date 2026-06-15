@@ -21,7 +21,9 @@ export default function MediaGallery({ selected, onSelect }: Props) {
                     }`}
                 >
                     <img
-                        src={item.url ?? mediaUrl(item.path, mediaUrlBase) ?? ''}
+                        src={
+                            item.url ?? mediaUrl(item.path, mediaUrlBase) ?? ''
+                        }
                         className="h-28 w-full object-cover"
                     />
                 </div>

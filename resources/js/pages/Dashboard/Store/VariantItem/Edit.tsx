@@ -175,7 +175,7 @@ export default function Edit({ variantItem, units, productOptions }: Props) {
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <Label>Buying Price</Label>
+                            <Label>Buying Price (Rp)</Label>
                             <Input
                                 type="number"
                                 min="0"
@@ -191,7 +191,7 @@ export default function Edit({ variantItem, units, productOptions }: Props) {
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <Label>Selling Price</Label>
+                            <Label>Selling Price (Rp)</Label>
                             <Input
                                 type="number"
                                 min="0"

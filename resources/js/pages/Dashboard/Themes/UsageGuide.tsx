@@ -1,5 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, BadgeInfo, BookOpen, Box, Hammer, Upload } from 'lucide-react';
+import {
+    ArrowLeft,
+    BadgeInfo,
+    BookOpen,
+    Box,
+    Hammer,
+    Upload,
+} from 'lucide-react';
 
 import {
     Card,
@@ -35,7 +42,9 @@ export default function UsageGuide({ appUrl }: Props) {
                         </h1>
                         <p className="max-w-3xl text-sm text-muted-foreground">
                             Panduan ini menjelaskan alur membuat theme baru dari
-                            <span className="mx-1 font-mono">starter-creative</span>
+                            <span className="mx-1 font-mono">
+                                starter-creative
+                            </span>
                             sampai build asset final untuk upload ke CMS.
                         </p>
                     </div>
@@ -50,9 +59,12 @@ export default function UsageGuide({ appUrl }: Props) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>1. Copy Starter Theme Jadi Theme Baru</CardTitle>
+                        <CardTitle>
+                            1. Copy Starter Theme Jadi Theme Baru
+                        </CardTitle>
                         <CardDescription>
-                            Gunakan starter bawaan sebagai base agar struktur runtime dan source development sudah siap.
+                            Gunakan starter bawaan sebagai base agar struktur
+                            runtime dan source development sudah siap.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -61,7 +73,10 @@ export default function UsageGuide({ appUrl }: Props) {
                         </pre>
                         <p className="text-sm text-muted-foreground">
                             Setelah itu, theme baru kamu akan berada di folder
-                            <span className="mx-1 font-mono">themes/modern-store</span>.
+                            <span className="mx-1 font-mono">
+                                themes/modern-store
+                            </span>
+                            .
                         </p>
                     </CardContent>
                 </Card>
@@ -70,18 +85,34 @@ export default function UsageGuide({ appUrl }: Props) {
                     <CardHeader>
                         <CardTitle>2. Ubah Manifest Theme</CardTitle>
                         <CardDescription>
-                            File <span className="font-mono">theme.json</span> harus diubah supaya theme baru punya identitas dan namespace sendiri.
+                            File <span className="font-mono">theme.json</span>{' '}
+                            harus diubah supaya theme baru punya identitas dan
+                            namespace sendiri.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm text-muted-foreground">
-                        <p>1. Ubah nilai <span className="font-mono">name</span>.</p>
-                        <p>2. Ubah nilai <span className="font-mono">slug</span>.</p>
-                        <p>3. Ubah <span className="font-mono">description</span>.</p>
+                        <p>
+                            1. Ubah nilai{' '}
+                            <span className="font-mono">name</span>.
+                        </p>
+                        <p>
+                            2. Ubah nilai{' '}
+                            <span className="font-mono">slug</span>.
+                        </p>
+                        <p>
+                            3. Ubah{' '}
+                            <span className="font-mono">description</span>.
+                        </p>
                         <p>
                             4. Ubah semua mapping template dari
-                            <span className="mx-1 font-mono">starter-creative::...</span>
+                            <span className="mx-1 font-mono">
+                                starter-creative::...
+                            </span>
                             menjadi
-                            <span className="mx-1 font-mono">modern-store::...</span>.
+                            <span className="mx-1 font-mono">
+                                modern-store::...
+                            </span>
+                            .
                         </p>
                     </CardContent>
                 </Card>
@@ -90,7 +121,8 @@ export default function UsageGuide({ appUrl }: Props) {
                     <CardHeader>
                         <CardTitle>3. Discover Theme di CMS</CardTitle>
                         <CardDescription>
-                            Setelah folder dan manifest siap, jalankan discover supaya theme baru muncul di Theme Manager.
+                            Setelah folder dan manifest siap, jalankan discover
+                            supaya theme baru muncul di Theme Manager.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -110,7 +142,8 @@ export default function UsageGuide({ appUrl }: Props) {
                     <CardHeader>
                         <CardTitle>4. Preview Theme Baru</CardTitle>
                         <CardDescription>
-                            Gunakan preview sebelum aktivasi supaya bisa cek tampilan frontend tanpa mengubah theme aktif.
+                            Gunakan preview sebelum aktivasi supaya bisa cek
+                            tampilan frontend tanpa mengubah theme aktif.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -118,7 +151,9 @@ export default function UsageGuide({ appUrl }: Props) {
                             <code>{previewExample}</code>
                         </pre>
                         <p className="text-sm text-muted-foreground">
-                            Ganti <span className="font-mono">modern-store</span> dengan slug theme yang kamu buat.
+                            Ganti{' '}
+                            <span className="font-mono">modern-store</span>{' '}
+                            dengan slug theme yang kamu buat.
                         </p>
                     </CardContent>
                 </Card>
@@ -131,7 +166,8 @@ export default function UsageGuide({ appUrl }: Props) {
                                 <CardTitle>5. Development Mode Theme</CardTitle>
                             </div>
                             <CardDescription>
-                                Semua workflow frontend theme dilakukan dari folder
+                                Semua workflow frontend theme dilakukan dari
+                                folder
                                 <span className="mx-1 font-mono">source</span>.
                             </CardDescription>
                         </CardHeader>
@@ -142,7 +178,8 @@ npm install
 npm run dev`}</code>
                             </pre>
                             <p className="text-sm text-muted-foreground">
-                                Mode ini akan menjalankan TailwindCSS v4 watcher dan Vite JS bundler secara paralel.
+                                Mode ini akan menjalankan TailwindCSS v4 watcher
+                                dan Vite JS bundler secara paralel.
                             </p>
                         </CardContent>
                     </Card>
@@ -151,25 +188,49 @@ npm run dev`}</code>
                         <CardHeader>
                             <div className="flex items-center gap-2">
                                 <Box className="h-5 w-5 text-primary" />
-                                <CardTitle>6. File yang Biasanya Diedit</CardTitle>
+                                <CardTitle>
+                                    6. File yang Biasanya Diedit
+                                </CardTitle>
                             </div>
                             <CardDescription>
-                                Edit area berikut sesuai kebutuhan layout, styling, dan interaksi theme.
+                                Edit area berikut sesuai kebutuhan layout,
+                                styling, dan interaksi theme.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm text-muted-foreground">
-                            <p>1. <span className="font-mono">resources/views</span> untuk Blade runtime CMS.</p>
-                            <p>2. <span className="font-mono">source/css/input.css</span> untuk TailwindCSS v4.</p>
-                            <p>3. <span className="font-mono">source/js/theme.js</span> untuk GSAP, TextPlugin, dan SwiperJS.</p>
+                            <p>
+                                1.{' '}
+                                <span className="font-mono">
+                                    resources/views
+                                </span>{' '}
+                                untuk Blade runtime CMS.
+                            </p>
+                            <p>
+                                2.{' '}
+                                <span className="font-mono">
+                                    source/css/input.css
+                                </span>{' '}
+                                untuk TailwindCSS v4.
+                            </p>
+                            <p>
+                                3.{' '}
+                                <span className="font-mono">
+                                    source/js/theme.js
+                                </span>{' '}
+                                untuk GSAP, TextPlugin, dan SwiperJS.
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>7. Build Asset Final Sebelum Upload</CardTitle>
+                        <CardTitle>
+                            7. Build Asset Final Sebelum Upload
+                        </CardTitle>
                         <CardDescription>
-                            CMS hanya menggunakan asset final di folder public theme. Jangan upload theme yang belum dibuild.
+                            CMS hanya menggunakan asset final di folder public
+                            theme. Jangan upload theme yang belum dibuild.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -191,10 +252,13 @@ themes/modern-store/public/js/theme.js`}</code>
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <Upload className="h-5 w-5 text-primary" />
-                            <CardTitle>8. ZIP dan Upload ke Theme Manager</CardTitle>
+                            <CardTitle>
+                                8. ZIP dan Upload ke Theme Manager
+                            </CardTitle>
                         </div>
                         <CardDescription>
-                            Untuk upload production, sertakan manifest, Blade views, dan asset final saja.
+                            Untuk upload production, sertakan manifest, Blade
+                            views, dan asset final saja.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -206,7 +270,8 @@ zip -r modern-store.zip modern-store \\
   -x "modern-store/.DS_Store"`}</code>
                         </pre>
                         <p className="text-sm text-muted-foreground">
-                            Build dilakukan di lokal developer machine atau CI, bukan di server production CMS.
+                            Build dilakukan di lokal developer machine atau CI,
+                            bukan di server production CMS.
                         </p>
                     </CardContent>
                 </Card>
@@ -219,11 +284,33 @@ zip -r modern-store.zip modern-store \\
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm text-muted-foreground">
-                        <p>1. Runtime theme tidak memakai <span className="font-mono">@vite()</span>.</p>
-                        <p>2. Asset dipanggil lewat helper <span className="font-mono">theme_asset()</span> dan <span className="font-mono">theme_assets()</span>.</p>
-                        <p>3. Runtime CMS hanya butuh <span className="font-mono">theme.json</span>, <span className="font-mono">resources/views</span>, dan <span className="font-mono">public</span>.</p>
-                        <p>4. Jangan sertakan <span className="font-mono">source/node_modules</span> di theme yang akan didiscover atau di-upload.</p>
-                        <p>5. Jika data posts, products, atau categories kosong, starter theme tetap aman dan menampilkan empty state.</p>
+                        <p>
+                            1. Runtime theme tidak memakai{' '}
+                            <span className="font-mono">@vite()</span>.
+                        </p>
+                        <p>
+                            2. Asset dipanggil lewat helper{' '}
+                            <span className="font-mono">theme_asset()</span> dan{' '}
+                            <span className="font-mono">theme_assets()</span>.
+                        </p>
+                        <p>
+                            3. Runtime CMS hanya butuh{' '}
+                            <span className="font-mono">theme.json</span>,{' '}
+                            <span className="font-mono">resources/views</span>,
+                            dan <span className="font-mono">public</span>.
+                        </p>
+                        <p>
+                            4. Jangan sertakan{' '}
+                            <span className="font-mono">
+                                source/node_modules
+                            </span>{' '}
+                            di theme yang akan didiscover atau di-upload.
+                        </p>
+                        <p>
+                            5. Jika data posts, products, atau categories
+                            kosong, starter theme tetap aman dan menampilkan
+                            empty state.
+                        </p>
                     </CardContent>
                 </Card>
             </div>

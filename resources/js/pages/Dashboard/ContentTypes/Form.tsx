@@ -2,7 +2,11 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import type React from 'react';
 import { toast } from 'sonner';
 
-import { index, store, update } from '@/actions/App/Http/Controllers/Dashboard/ContentTypeController';
+import {
+    index,
+    store,
+    update,
+} from '@/actions/App/Http/Controllers/Dashboard/ContentTypeController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -54,12 +58,16 @@ export default function Form({ mode, contentType }: Props) {
             preserveScroll: true,
             onStart: () =>
                 toast.loading(
-                    mode === 'create' ? 'Creating content type...' : 'Updating content type...',
+                    mode === 'create'
+                        ? 'Creating content type...'
+                        : 'Updating content type...',
                     { id: 'content-type' },
                 ),
             onSuccess: () =>
                 toast.success(
-                    mode === 'create' ? 'Content type created.' : 'Content type updated.',
+                    mode === 'create'
+                        ? 'Content type created.'
+                        : 'Content type updated.',
                     { id: 'content-type' },
                 ),
             onError: () =>
@@ -71,15 +79,24 @@ export default function Form({ mode, contentType }: Props) {
 
     return (
         <>
-            <Head title={mode === 'create' ? 'Create Content Type' : 'Edit Content Type'} />
+            <Head
+                title={
+                    mode === 'create'
+                        ? 'Create Content Type'
+                        : 'Edit Content Type'
+                }
+            />
 
             <div className="container mx-auto max-w-4xl space-y-8 px-6 py-8">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">
-                        {mode === 'create' ? 'Create Content Type' : 'Edit Content Type'}
+                        {mode === 'create'
+                            ? 'Create Content Type'
+                            : 'Edit Content Type'}
                     </h1>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        Define reusable dynamic content collections for the storefront and dashboard.
+                        Define reusable dynamic content collections for the
+                        storefront and dashboard.
                     </p>
                 </div>
 
@@ -95,7 +112,10 @@ export default function Form({ mode, contentType }: Props) {
                                     const nextName = event.target.value;
                                     setData('name', nextName);
 
-                                    if (!data.slug || data.slug === slugify(data.name)) {
+                                    if (
+                                        !data.slug ||
+                                        data.slug === slugify(data.name)
+                                    ) {
                                         setData('slug', slugify(nextName));
                                     }
                                 }}
@@ -118,7 +138,9 @@ export default function Form({ mode, contentType }: Props) {
                         <Field label="Icon">
                             <Input
                                 value={data.icon}
-                                onChange={(event) => setData('icon', event.target.value)}
+                                onChange={(event) =>
+                                    setData('icon', event.target.value)
+                                }
                                 placeholder="message-square-quote"
                             />
                             <Error message={errors.icon} />
@@ -130,7 +152,10 @@ export default function Form({ mode, contentType }: Props) {
                                 min={0}
                                 value={data.sort_order}
                                 onChange={(event) =>
-                                    setData('sort_order', Number(event.target.value || 0))
+                                    setData(
+                                        'sort_order',
+                                        Number(event.target.value || 0),
+                                    )
                                 }
                             />
                             <Error message={errors.sort_order} />
@@ -153,13 +178,16 @@ export default function Form({ mode, contentType }: Props) {
                         <div>
                             <Label htmlFor="content-type-active">Active</Label>
                             <p className="text-xs text-muted-foreground">
-                                Active content types appear in the dynamic content sidebar.
+                                Active content types appear in the dynamic
+                                content sidebar.
                             </p>
                         </div>
                         <Switch
                             id="content-type-active"
                             checked={data.is_active}
-                            onCheckedChange={(checked) => setData('is_active', checked)}
+                            onCheckedChange={(checked) =>
+                                setData('is_active', checked)
+                            }
                         />
                     </div>
 

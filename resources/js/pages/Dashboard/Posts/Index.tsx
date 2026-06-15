@@ -166,7 +166,9 @@ export default function Index({
                         {enabledLanguages.length > 0 && (
                             <>
                                 <Select
-                                    value={String(languageByPostId[row.id] ?? '')}
+                                    value={String(
+                                        languageByPostId[row.id] ?? '',
+                                    )}
                                     onValueChange={(value) =>
                                         setLanguageByPostId((prev) => ({
                                             ...prev,
@@ -235,7 +237,9 @@ export default function Index({
                                 </AlertDialogHeader>
 
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>
+                                        Cancel
+                                    </AlertDialogCancel>
                                     <AlertDialogAction onClick={handleDelete}>
                                         Delete
                                     </AlertDialogAction>
@@ -282,7 +286,9 @@ export default function Index({
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold">Posts</h1>
-                        <p className="text-muted-foreground">Manage your posts data</p>
+                        <p className="text-muted-foreground">
+                            Manage your posts data
+                        </p>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -362,7 +368,9 @@ export default function Index({
  * LAYOUT
  */
 Index.layout = (page: React.ReactNode) => (
-    <AppLayout breadcrumbs={[{ title: 'Posts', href: '/my-admin/dashboard/posts' }]}>
+    <AppLayout
+        breadcrumbs={[{ title: 'Posts', href: '/my-admin/dashboard/posts' }]}
+    >
         {page}
     </AppLayout>
 );

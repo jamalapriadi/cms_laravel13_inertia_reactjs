@@ -51,7 +51,11 @@ export default function Index({ roles, filters }: Props) {
     ];
 
     function applyFilter() {
-        router.get('/my-admin/dashboard/roles', { search }, { preserveState: true });
+        router.get(
+            '/my-admin/dashboard/roles',
+            { search },
+            { preserveState: true },
+        );
     }
 
     const handleDelete = () => {

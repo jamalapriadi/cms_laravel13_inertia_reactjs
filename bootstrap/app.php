@@ -3,6 +3,7 @@
 use App\Console\Commands\CmsThemesDiscoverCommand;
 use App\Console\Commands\NormalizeMediaPathsCommand;
 use App\Console\Commands\StorageHealthCheckCommand;
+use App\Http\Middleware\CheckWebsiteMode;
 use App\Http\Middleware\EnsureCustomerAuthenticated;
 use App\Http\Middleware\EnsureDashboardPermission;
 use App\Http\Middleware\HandleAppearance;
@@ -42,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'dashboard.permission' => EnsureDashboardPermission::class,
             'customer.auth' => EnsureCustomerAuthenticated::class,
             'customer.guest' => RedirectIfCustomerAuthenticated::class,
+            'website_mode' => CheckWebsiteMode::class,
         ]);
 
         $middleware->web(append: [

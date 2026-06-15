@@ -207,49 +207,49 @@ export default function MediaLibraryUploadModal({
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
-                                {items.map((item) => (
-                                    <button
-                                        key={`${item.type}:${item.path}`}
-                                        type="button"
-                                        onClick={() => {
-                                            if (item.type === 'folder') {
-                                                onOpenFolder(item.path);
+                                    {items.map((item) => (
+                                        <button
+                                            key={`${item.type}:${item.path}`}
+                                            type="button"
+                                            onClick={() => {
+                                                if (item.type === 'folder') {
+                                                    onOpenFolder(item.path);
 
-                                                return;
-                                            }
+                                                    return;
+                                                }
 
-                                            setSelectedItem(item);
-                                        }}
-                                        className={`group aspect-square overflow-hidden rounded-lg border bg-card text-left transition hover:border-primary ${
-                                            selectedItem?.path === item.path
-                                                ? 'ring-2 ring-primary'
-                                                : ''
-                                        }`}
-                                    >
-                                        {item.type === 'folder' ? (
-                                            <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4 text-center">
-                                                <Folder className="h-12 w-12 text-amber-500" />
-                                                <span className="line-clamp-2 text-sm font-medium">
-                                                    {item.name}
-                                                </span>
-                                            </div>
-                                        ) : isImage(item) && item.url ? (
-                                            <img
-                                                src={item.url}
-                                                alt={item.name}
-                                                className="h-full w-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4 text-center">
-                                                <File className="h-12 w-12 text-muted-foreground" />
-                                                <span className="line-clamp-2 text-sm font-medium">
-                                                    {item.name}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
+                                                setSelectedItem(item);
+                                            }}
+                                            className={`group aspect-square overflow-hidden rounded-lg border bg-card text-left transition hover:border-primary ${
+                                                selectedItem?.path === item.path
+                                                    ? 'ring-2 ring-primary'
+                                                    : ''
+                                            }`}
+                                        >
+                                            {item.type === 'folder' ? (
+                                                <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4 text-center">
+                                                    <Folder className="h-12 w-12 text-amber-500" />
+                                                    <span className="line-clamp-2 text-sm font-medium">
+                                                        {item.name}
+                                                    </span>
+                                                </div>
+                                            ) : isImage(item) && item.url ? (
+                                                <img
+                                                    src={item.url}
+                                                    alt={item.name}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4 text-center">
+                                                    <File className="h-12 w-12 text-muted-foreground" />
+                                                    <span className="line-clamp-2 text-sm font-medium">
+                                                        {item.name}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
                             )}
 
                             {!loading && items.length === 0 && (
@@ -281,7 +281,7 @@ export default function MediaLibraryUploadModal({
                                         <p className="text-xs font-semibold text-muted-foreground">
                                             FILE NAME
                                         </p>
-                                        <p className="break-all text-sm font-medium">
+                                        <p className="text-sm font-medium break-all">
                                             {selectedItem.name}
                                         </p>
                                     </div>
@@ -299,7 +299,7 @@ export default function MediaLibraryUploadModal({
                                         <p className="text-xs font-semibold text-muted-foreground">
                                             PATH
                                         </p>
-                                        <p className="break-all font-mono text-xs">
+                                        <p className="font-mono text-xs break-all">
                                             {selectedItem.path}
                                         </p>
                                     </div>

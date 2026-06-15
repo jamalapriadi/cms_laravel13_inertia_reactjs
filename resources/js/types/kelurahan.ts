@@ -1,13 +1,13 @@
 export interface Kelurahan {
-    id: string
-    name: string
+    id: string;
+    name: string;
     kecamatan: {
-        name: string
+        name: string;
         kabupaten: {
-            name: string
+            name: string;
             province: {
-                name: string
-            }
-        }
-    }
+                name: string;
+            };
+        };
+    };
 }

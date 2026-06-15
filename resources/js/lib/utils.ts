@@ -10,3 +10,13 @@ export function cn(...inputs: ClassValue[]) {
 export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
     return typeof url === 'string' ? url : url.url;
 }
+
+export function formatRupiah(
+    value: number | string | null | undefined,
+): string {
+    const numberValue = Number(value ?? 0);
+    return `Rp ${new Intl.NumberFormat('id-ID', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(numberValue)}`;
+}

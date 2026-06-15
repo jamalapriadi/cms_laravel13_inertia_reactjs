@@ -82,7 +82,9 @@ export default function Create() {
                         variant="outline"
                         size="icon"
                         onClick={() =>
-                            router.visit('/my-admin/dashboard/ecommerce/suppliers')
+                            router.visit(
+                                '/my-admin/dashboard/ecommerce/suppliers',
+                            )
                         }
                     >
                         <ArrowLeft className="h-4 w-4" />
@@ -206,7 +208,9 @@ export default function Create() {
                             type="button"
                             variant="outline"
                             onClick={() =>
-                                router.visit('/my-admin/dashboard/ecommerce/suppliers')
+                                router.visit(
+                                    '/my-admin/dashboard/ecommerce/suppliers',
+                                )
                             }
                         >
                             Cancel

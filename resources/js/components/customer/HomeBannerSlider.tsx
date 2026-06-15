@@ -44,7 +44,11 @@ export default function HomeBannerSlider({ slides }: Props) {
                                     />
                                 )}
                                 <img
-                                    src={slide.image_url ?? slide.mobile_image_url ?? ''}
+                                    src={
+                                        slide.image_url ??
+                                        slide.mobile_image_url ??
+                                        ''
+                                    }
                                     alt={slide.title || 'Banner'}
                                     className="h-full w-full object-cover"
                                 />
@@ -55,13 +59,13 @@ export default function HomeBannerSlider({ slides }: Props) {
                             <div className="absolute inset-0 flex items-center">
                                 <div className="max-w-xl px-6 py-8 text-white sm:px-10">
                                     {slide.subtitle && (
-                                        <p className="mb-2 text-xs font-semibold tracking-[0.2em] uppercase text-white/90">
+                                        <p className="mb-2 text-xs font-semibold tracking-[0.2em] text-white/90 uppercase">
                                             {slide.subtitle}
                                         </p>
                                     )}
 
                                     {slide.title && (
-                                        <h2 className="text-2xl font-bold leading-tight sm:text-3xl lg:text-4xl">
+                                        <h2 className="text-2xl leading-tight font-bold sm:text-3xl lg:text-4xl">
                                             {slide.title}
                                         </h2>
                                     )}

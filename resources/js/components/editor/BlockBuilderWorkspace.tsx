@@ -337,7 +337,9 @@ export default function BlockBuilderWorkspace({
                                     <BlockRenderer
                                         key={block.id}
                                         block={block}
-                                        isActive={selectedBlock?.id === block.id}
+                                        isActive={
+                                            selectedBlock?.id === block.id
+                                        }
                                         onClick={() => setSelectedBlock(block)}
                                     />
                                 ))}

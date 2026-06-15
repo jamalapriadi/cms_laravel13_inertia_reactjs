@@ -30,14 +30,26 @@ class OptionController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validationRules = [
             'logo' => 'nullable|image|max:2048',
             'logo_footer' => 'nullable|image|max:2048',
             'logo_mobile' => 'nullable|image|max:2048',
             'favicon_ico' => 'nullable|file|mimes:ico,png,jpg,jpeg,svg,webp|max:2048',
-        ]);
+        ];
+
+        if ($request->has('website_mode')) {
+            $validationRules['website_mode'] = 'required|in:blog,commerce,simple_blog_commerce';
+            $validationRules['enabled_ecommerce_menus'] = 'nullable|array';
+            $validationRules['enabled_ecommerce_menus.*'] = 'string|in:products,product-variants,variant-items,brands,categories,units,product-stock-units,orders,customers,carts,payments,stock-movements,shipping,suppliers,incoming-goods,supplier-returns';
+        }
+
+        $request->validate($validationRules);
 
         $data = $request->all();
+
+        if ($request->has('website_mode') && ! $request->has('enabled_ecommerce_menus')) {
+            $data['enabled_ecommerce_menus'] = [];
+        }
 
         $logoFields = [
             'favicon_ico',

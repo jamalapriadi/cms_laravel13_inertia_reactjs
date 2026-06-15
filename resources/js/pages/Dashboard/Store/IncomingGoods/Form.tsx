@@ -262,7 +262,9 @@ export default function IncomingGoodsForm({
                         variant="outline"
                         size="icon"
                         onClick={() =>
-                            router.visit('/my-admin/dashboard/ecommerce/incoming-goods')
+                            router.visit(
+                                '/my-admin/dashboard/ecommerce/incoming-goods',
+                            )
                         }
                     >
                         <ArrowLeft className="h-4 w-4" />
@@ -511,7 +513,9 @@ export default function IncomingGoodsForm({
                         type="button"
                         variant="outline"
                         onClick={() =>
-                            router.visit('/my-admin/dashboard/ecommerce/incoming-goods')
+                            router.visit(
+                                '/my-admin/dashboard/ecommerce/incoming-goods',
+                            )
                         }
                     >
                         Batal

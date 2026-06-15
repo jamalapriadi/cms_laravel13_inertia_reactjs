@@ -63,27 +63,31 @@ export default function Create({ products }: Props) {
      * SUBMIT
      */
     const onSubmit = (data: SpecFormData) => {
-        router.post('/my-admin/dashboard/ecommerce/product-specifications', data, {
-            preserveScroll: true,
-            onStart: () => {
-                setProcessing(true);
-                toast.loading('Saving specification...', { id: 'save' });
+        router.post(
+            '/my-admin/dashboard/ecommerce/product-specifications',
+            data,
+            {
+                preserveScroll: true,
+                onStart: () => {
+                    setProcessing(true);
+                    toast.loading('Saving specification...', { id: 'save' });
+                },
+                onSuccess: () => {
+                    toast.success('Specification saved successfully!', {
+                        id: 'save',
+                    });
+                },
+                onFinish: () => {
+                    setProcessing(false);
+                },
+                onError: () => {
+                    toast.error(
+                        'Failed to save specification. Please check the inputs.',
+                        { id: 'save' },
+                    );
+                },
             },
-            onSuccess: () => {
-                toast.success('Specification saved successfully!', {
-                    id: 'save',
-                });
-            },
-            onFinish: () => {
-                setProcessing(false);
-            },
-            onError: () => {
-                toast.error(
-                    'Failed to save specification. Please check the inputs.',
-                    { id: 'save' },
-                );
-            },
-        });
+        );
     };
 
     return (

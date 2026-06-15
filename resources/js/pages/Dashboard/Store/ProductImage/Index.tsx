@@ -50,7 +50,8 @@ interface Props {
 }
 
 export default function Index({ images, products, filters }: Props) {
-    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;
+    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string })
+        .mediaUrlBase;
     const [productId, setProductId] = useState(filters.product_id || '');
 
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -79,9 +80,12 @@ export default function Index({ images, products, filters }: Props) {
             return;
         }
 
-        router.delete(`/my-admin/dashboard/ecommerce/product-images/${deletingId}`, {
-            onFinish: () => setDeletingId(null),
-        });
+        router.delete(
+            `/my-admin/dashboard/ecommerce/product-images/${deletingId}`,
+            {
+                onFinish: () => setDeletingId(null),
+            },
+        );
     };
 
     /**

@@ -72,9 +72,7 @@ export default function UsageGuide({ apiBaseUrl }: Props) {
                             4. Klik Save Translation, sistem akan menyimpan ke
                             post_translations dan block_translations.
                         </p>
-                        <p>
-                            5. Ulangi untuk bahasa lain sesuai kebutuhan.
-                        </p>
+                        <p>5. Ulangi untuk bahasa lain sesuai kebutuhan.</p>
                     </CardContent>
                 </Card>
 
@@ -155,7 +153,10 @@ export default function PostDetail() {
                         <CardTitle>6. Best Practice</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm text-muted-foreground">
-                        <p>1. Simpan post original lebih dulu sebelum translate.</p>
+                        <p>
+                            1. Simpan post original lebih dulu sebelum
+                            translate.
+                        </p>
                         <p>
                             2. Gunakan fallback ke original content jika
                             translation belum tersedia.

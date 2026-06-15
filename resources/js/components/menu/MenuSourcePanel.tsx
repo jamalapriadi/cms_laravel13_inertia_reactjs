@@ -2,7 +2,16 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export default function MenuSourcePanel({ onAdd }: { onAdd: (item: { title: string; url?: string; type?: string; meta?: Record<string, any> }) => void }) {
+export default function MenuSourcePanel({
+    onAdd,
+}: {
+    onAdd: (item: {
+        title: string;
+        url?: string;
+        type?: string;
+        meta?: Record<string, any>;
+    }) => void;
+}) {
     const [title, setTitle] = useState('');
     const [url, setUrl] = useState('');
 
@@ -41,7 +50,8 @@ export default function MenuSourcePanel({ onAdd }: { onAdd: (item: { title: stri
             <div className="border-t pt-4">
                 <h3 className="font-semibold">Quick Add</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                    Tambahkan container dropdown atau blok dynamic, lalu sesuaikan detailnya di editor item.
+                    Tambahkan container dropdown atau blok dynamic, lalu
+                    sesuaikan detailnya di editor item.
                 </p>
 
                 <div className="mt-3 grid gap-3">

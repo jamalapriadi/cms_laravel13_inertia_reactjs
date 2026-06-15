@@ -62,7 +62,9 @@ export default function Create({ typeOptions, positionOptions }: Props) {
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Create FAQ</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            Create FAQ
+                        </h1>
                         <p className="text-sm text-muted-foreground">
                             Add reusable FAQ item for ecommerce sections.
                         </p>
@@ -74,7 +76,11 @@ export default function Create({ typeOptions, positionOptions }: Props) {
                     className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm"
                 >
                     <div className="grid gap-4 md:grid-cols-2">
-                        <Field label="Question" required className="md:col-span-2">
+                        <Field
+                            label="Question"
+                            required
+                            className="md:col-span-2"
+                        >
                             <Input
                                 value={data.question}
                                 onChange={(event) =>
@@ -84,7 +90,11 @@ export default function Create({ typeOptions, positionOptions }: Props) {
                             <Error message={errors.question} />
                         </Field>
 
-                        <Field label="Answer" required className="md:col-span-2">
+                        <Field
+                            label="Answer"
+                            required
+                            className="md:col-span-2"
+                        >
                             <Textarea
                                 rows={6}
                                 value={data.answer}
@@ -98,11 +108,16 @@ export default function Create({ typeOptions, positionOptions }: Props) {
                         <Field label="Type" required>
                             <select
                                 value={data.type}
-                                onChange={(event) => setData('type', event.target.value)}
+                                onChange={(event) =>
+                                    setData('type', event.target.value)
+                                }
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
                                 {typeOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
                                         {option.label}
                                     </option>
                                 ))}
@@ -120,7 +135,10 @@ export default function Create({ typeOptions, positionOptions }: Props) {
                             >
                                 <option value="">No specific position</option>
                                 {positionOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
                                         {option.label}
                                     </option>
                                 ))}
@@ -134,7 +152,10 @@ export default function Create({ typeOptions, positionOptions }: Props) {
                                 min={0}
                                 value={data.sort_order}
                                 onChange={(event) =>
-                                    setData('sort_order', Number(event.target.value || 0))
+                                    setData(
+                                        'sort_order',
+                                        Number(event.target.value || 0),
+                                    )
                                 }
                             />
                             <Error message={errors.sort_order} />

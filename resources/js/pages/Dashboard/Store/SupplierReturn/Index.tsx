@@ -73,10 +73,13 @@ export default function Index({ returns, filters }: Props) {
             return;
         }
 
-        router.delete(`/my-admin/dashboard/ecommerce/supplier-returns/${deletingId}`, {
-            preserveScroll: true,
-            onFinish: () => setDeletingId(null),
-        });
+        router.delete(
+            `/my-admin/dashboard/ecommerce/supplier-returns/${deletingId}`,
+            {
+                preserveScroll: true,
+                onFinish: () => setDeletingId(null),
+            },
+        );
     };
 
     const columns = [

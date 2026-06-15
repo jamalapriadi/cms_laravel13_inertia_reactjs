@@ -5,6 +5,7 @@ import type { ChangeEvent, ElementType } from 'react';
 
 import { DataTable } from '@/components/DataTable';
 import SearchableSelect from '@/components/SearchableSelect';
+import { formatRupiah } from '@/lib/utils';
 
 import {
     AlertDialog,
@@ -115,7 +116,8 @@ export default function Index({
     };
 
     const downloadImportTemplate = () => {
-        window.location.href = '/my-admin/dashboard/ecommerce/products/template';
+        window.location.href =
+            '/my-admin/dashboard/ecommerce/products/template';
     };
 
     const triggerImport = () => {
@@ -215,7 +217,7 @@ export default function Index({
             label: 'Base Price',
             render: (row: Product) => (
                 <span className="text-sm font-medium">
-                    ¥{Number(row.base_price).toLocaleString('ja-JP')}
+                    {formatRupiah(row.base_price)}
                 </span>
             ),
         },
@@ -245,7 +247,9 @@ export default function Index({
             label: 'Action',
             render: (row: Product) => (
                 <div className="flex flex-wrap gap-2">
-                    <Link href={`/my-admin/dashboard/ecommerce/products/${row.id}`}>
+                    <Link
+                        href={`/my-admin/dashboard/ecommerce/products/${row.id}`}
+                    >
                         <Button
                             size="sm"
                             variant="outline"
@@ -255,7 +259,9 @@ export default function Index({
                         </Button>
                     </Link>
 
-                    <Link href={`/my-admin/dashboard/ecommerce/products/${row.id}/edit`}>
+                    <Link
+                        href={`/my-admin/dashboard/ecommerce/products/${row.id}/edit`}
+                    >
                         <Button size="sm" variant="secondary">
                             Edit
                         </Button>

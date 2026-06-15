@@ -77,9 +77,12 @@ export default function Edit({ collection, typeOptions }: Props) {
             description: current.description || null,
         }));
 
-        post(`/my-admin/dashboard/ecommerce/product-collections/${collection.id}`, {
-            forceFormData: true,
-        });
+        post(
+            `/my-admin/dashboard/ecommerce/product-collections/${collection.id}`,
+            {
+                forceFormData: true,
+            },
+        );
     };
 
     return (
@@ -137,7 +140,10 @@ export default function Edit({ collection, typeOptions }: Props) {
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
                                 {typeOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
                                         {option.label}
                                     </option>
                                 ))}

@@ -68,7 +68,9 @@ const statusClassNames: Record<string, string> = {
 };
 
 const statusLabel = (value: string) =>
-    value.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase());
+    value
+        .replaceAll('_', ' ')
+        .replace(/\b\w/g, (character) => character.toUpperCase());
 
 const formatCurrency = (value: number | string) =>
     currencyFormatter.format(Number(value || 0));
@@ -76,7 +78,11 @@ const formatCurrency = (value: number | string) =>
 const formatDate = (value?: string | null) =>
     value ? dateFormatter.format(new Date(value)) : '-';
 
-export default function CustomerDashboard({ customer, orders, summary }: DashboardProps) {
+export default function CustomerDashboard({
+    customer,
+    orders,
+    summary,
+}: DashboardProps) {
     const shortcuts = [
         {
             title: 'Katalog',
@@ -120,7 +126,10 @@ export default function CustomerDashboard({ customer, orders, summary }: Dashboa
                                 Halo, {customer.name}
                             </h1>
                             <p className="max-w-2xl text-sm leading-7 text-white/75 sm:text-base">
-                                Semua akses akun customer Anda sekarang terkelola dari area ini, mulai dari ringkasan order, profil, sampai recovery session yang aman.
+                                Semua akses akun customer Anda sekarang
+                                terkelola dari area ini, mulai dari ringkasan
+                                order, profil, sampai recovery session yang
+                                aman.
                             </p>
                         </div>
 
@@ -189,7 +198,9 @@ export default function CustomerDashboard({ customer, orders, summary }: Dashboa
                     </article>
 
                     <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p className="text-sm text-slate-500">Keranjang aktif</p>
+                        <p className="text-sm text-slate-500">
+                            Keranjang aktif
+                        </p>
                         <div className="mt-3 flex items-center justify-between">
                             <p className="text-3xl font-semibold text-slate-950">
                                 {summary.active_carts}
@@ -200,7 +211,10 @@ export default function CustomerDashboard({ customer, orders, summary }: Dashboa
                 </section>
 
                 <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-                    <div id="recent-orders" className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <div
+                        id="recent-orders"
+                        className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm"
+                    >
                         <div className="flex flex-col gap-2 border-b border-slate-100 pb-4 sm:flex-row sm:items-end sm:justify-between">
                             <div>
                                 <p className="text-sm font-semibold tracking-[0.2em] text-slate-500 uppercase">
@@ -228,10 +242,15 @@ export default function CustomerDashboard({ customer, orders, summary }: Dashboa
                                                     {order.invoice_number}
                                                 </p>
                                                 <p className="text-lg font-semibold text-slate-950">
-                                                    {formatCurrency(order.grand_total)}
+                                                    {formatCurrency(
+                                                        order.grand_total,
+                                                    )}
                                                 </p>
                                                 <p className="text-sm text-slate-500">
-                                                    Dibuat pada {formatDate(order.created_at)}
+                                                    Dibuat pada{' '}
+                                                    {formatDate(
+                                                        order.created_at,
+                                                    )}
                                                 </p>
                                             </div>
 
@@ -244,7 +263,10 @@ export default function CustomerDashboard({ customer, orders, summary }: Dashboa
                                                 <span
                                                     className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusClassNames[order.payment_status] ?? 'bg-slate-200 text-slate-700'}`}
                                                 >
-                                                    Pembayaran {statusLabel(order.payment_status)}
+                                                    Pembayaran{' '}
+                                                    {statusLabel(
+                                                        order.payment_status,
+                                                    )}
                                                 </span>
                                             </div>
                                         </div>
@@ -252,7 +274,9 @@ export default function CustomerDashboard({ customer, orders, summary }: Dashboa
                                 ))
                             ) : (
                                 <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-sm leading-7 text-slate-500">
-                                    Belum ada order customer yang tercatat. Setelah checkout pertama berhasil, riwayat pesanan akan muncul di sini.
+                                    Belum ada order customer yang tercatat.
+                                    Setelah checkout pertama berhasil, riwayat
+                                    pesanan akan muncul di sini.
                                 </div>
                             )}
                         </div>
@@ -327,14 +351,18 @@ export default function CustomerDashboard({ customer, orders, summary }: Dashboa
                                             Logout
                                         </span>
                                         <span className="block text-sm leading-6 text-rose-700/80">
-                                            Akhiri session customer Anda dengan aman.
+                                            Akhiri session customer Anda dengan
+                                            aman.
                                         </span>
                                     </span>
                                 </button>
                             </div>
                         </section>
 
-                        <section id="profile-card" className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+                        <section
+                            id="profile-card"
+                            className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm"
+                        >
                             <p className="text-sm font-semibold tracking-[0.2em] text-slate-500 uppercase">
                                 Profil customer
                             </p>
@@ -369,7 +397,8 @@ export default function CustomerDashboard({ customer, orders, summary }: Dashboa
                                         Alamat
                                     </div>
                                     <p className="mt-2 text-sm leading-7 text-slate-700">
-                                        {customer.address || 'Alamat customer belum disimpan. Anda masih bisa belanja dan melengkapinya nanti saat checkout.'}
+                                        {customer.address ||
+                                            'Alamat customer belum disimpan. Anda masih bisa belanja dan melengkapinya nanti saat checkout.'}
                                     </p>
                                 </div>
                             </div>

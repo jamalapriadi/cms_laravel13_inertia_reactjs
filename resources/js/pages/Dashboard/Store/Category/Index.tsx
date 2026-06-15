@@ -92,11 +92,7 @@ interface Props {
     };
 }
 
-export default function Index({
-    categories,
-    parentOptions,
-    filters,
-}: Props) {
+export default function Index({ categories, parentOptions, filters }: Props) {
     const { hasPermission } = usePermission();
     const canCreate = hasPermission('categories.create');
     const canEdit = hasPermission('categories.edit');
@@ -436,8 +432,9 @@ export default function Index({
                         <CardHeader>
                             <CardTitle>Category List</CardTitle>
                             <CardDescription>
-                                Showing {categories.from ?? 0}-{categories.to ?? 0}{' '}
-                                of {categories.total.toLocaleString('id-ID')}{' '}
+                                Showing {categories.from ?? 0}-
+                                {categories.to ?? 0} of{' '}
+                                {categories.total.toLocaleString('id-ID')}{' '}
                                 categories.
                             </CardDescription>
                         </CardHeader>

@@ -2,7 +2,10 @@ import { usePage } from '@inertiajs/react';
 
 const IMAGE_EXTENSION_PATTERN = /\.(jpe?g|png|gif|webp|svg)(?:[?#].*)?$/i;
 
-export function mediaUrl(path?: string | null, base?: string | null): string | null {
+export function mediaUrl(
+    path?: string | null,
+    base?: string | null,
+): string | null {
     if (!path) {
         return null;
     }
@@ -65,7 +68,8 @@ export function isImageMedia(item: {
 }
 
 export function useMediaUrl(path?: string | null): string | null {
-    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string }).mediaUrlBase;
+    const mediaUrlBase = (usePage().props as { mediaUrlBase?: string })
+        .mediaUrlBase;
 
     return mediaUrl(path, mediaUrlBase);
 }
