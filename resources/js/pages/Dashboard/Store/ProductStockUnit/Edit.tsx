@@ -44,31 +44,12 @@ interface Props {
     products: Product[];
 }
 
-const networkOptions = [
-    ['sim_free', 'All Operator'],
-    ['docomo', 'Docomo'],
-    ['au', 'AU'],
-    ['softbank', 'SoftBank'],
-    ['rakuten', 'Rakuten'],
-    ['mineo', 'Mineo'],
-];
-
 export default function Edit({ stockUnit, products }: Props) {
-    const [hasNetwork, setHasNetwork] = useState(
-        !!stockUnit.network_compatibility,
-    );
     const { data, setData, transform, put, processing, errors } = useForm({
         product_id: stockUnit.product_id || stockUnit.variant?.product_id || '',
         product_variant_id: stockUnit.product_variant_id || '',
-        imei_serial_number: stockUnit.imei_serial_number,
+        imei_serial_number: stockUnit.imei_serial_number || '',
         barcode: stockUnit.barcode || '',
-        battery_health:
-            stockUnit.battery_health === null ||
-            stockUnit.battery_health === undefined
-                ? ''
-                : String(stockUnit.battery_health),
-        grade: stockUnit.grade || '',
-        network_compatibility: stockUnit.network_compatibility,
         status: stockUnit.status,
         note: stockUnit.note || '',
     });
@@ -87,19 +68,11 @@ export default function Edit({ stockUnit, products }: Props) {
         event.preventDefault();
         transform((formData) => ({
             ...formData,
-            network_compatibility: hasNetwork
-                ? formData.network_compatibility || 'sim_free'
-                : null,
             product_variant_id: showVariantSelect
                 ? formData.product_variant_id || null
                 : null,
             barcode: formData.barcode || null,
-            battery_health:
-                formData.battery_health === '' ||
-                formData.battery_health === null
-                    ? null
-                    : Number(formData.battery_health),
-            grade: formData.grade || null,
+            imei_serial_number: formData.imei_serial_number || null,
         }));
         put(
             `/my-admin/dashboard/ecommerce/product-stock-units/${stockUnit.id}`,
@@ -120,7 +93,7 @@ export default function Edit({ stockUnit, products }: Props) {
                     <div>
                         <h1 className="text-2xl font-bold">Edit Stok Unit</h1>
                         <p className="text-sm text-muted-foreground">
-                            Update IMEI/serial unit dan status stok.
+                            Update serial unit dan status stok.
                         </p>
                     </div>
                 </div>
@@ -171,9 +144,9 @@ export default function Edit({ stockUnit, products }: Props) {
                         )}
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-3">
                         <div className="space-y-2">
-                            <Label>IMEI / Serial Number</Label>
+                            <Label>Serial Number</Label>
                             <Input
                                 value={data.imei_serial_number}
                                 onChange={(e) =>
@@ -182,7 +155,6 @@ export default function Edit({ stockUnit, products }: Props) {
                                         e.target.value,
                                     )
                                 }
-                                required
                             />
                             {errors.imei_serial_number && (
                                 <p className="text-xs text-destructive">
@@ -202,44 +174,6 @@ export default function Edit({ stockUnit, products }: Props) {
                             {errors.barcode && (
                                 <p className="text-xs text-destructive">
                                     {errors.barcode}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
-                            <Label>Battery Health (%)</Label>
-                            <Input
-                                type="number"
-                                min={0}
-                                max={100}
-                                value={data.battery_health}
-                                onChange={(e) =>
-                                    setData('battery_health', e.target.value)
-                                }
-                                placeholder="Optional, 0-100"
-                            />
-                            {errors.battery_health && (
-                                <p className="text-xs text-destructive">
-                                    {errors.battery_health}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label>Grade</Label>
-                            <Input
-                                value={data.grade}
-                                onChange={(e) =>
-                                    setData('grade', e.target.value)
-                                }
-                                placeholder="Optional, e.g., A / B+ / C"
-                                maxLength={50}
-                            />
-                            {errors.grade && (
-                                <p className="text-xs text-destructive">
-                                    {errors.grade}
                                 </p>
                             )}
                         </div>
@@ -264,66 +198,6 @@ export default function Edit({ stockUnit, products }: Props) {
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <label className="flex items-center gap-2 text-sm font-medium">
-                            <Checkbox
-                                checked={hasNetwork}
-                                onCheckedChange={(checked) => {
-                                    const enabled = checked === true;
-
-                                    setHasNetwork(enabled);
-                                    setData(
-                                        'network_compatibility',
-                                        enabled
-                                            ? data.network_compatibility ||
-                                                  'sim_free'
-                                            : null,
-                                    );
-                                }}
-                            />
-                            Ada network
-                        </label>
-
-                        {hasNetwork && (
-                            <div className="space-y-2">
-                                <Label>Network</Label>
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                    {networkOptions.map(([value, label]) => {
-                                        const selected =
-                                            data.network_compatibility ===
-                                            value;
-
-                                        return (
-                                            <button
-                                                key={value}
-                                                type="button"
-                                                onClick={() =>
-                                                    setData(
-                                                        'network_compatibility',
-                                                        value,
-                                                    )
-                                                }
-                                                className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
-                                                    selected
-                                                        ? value === 'sim_free'
-                                                            ? 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                                            : 'border-red-500 bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'
-                                                        : 'border-border bg-card text-muted-foreground hover:border-border'
-                                                }`}
-                                            >
-                                                {label}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-                        {errors.network_compatibility && (
-                            <p className="text-xs text-destructive">
-                                {errors.network_compatibility}
-                            </p>
-                        )}
-                    </div>
 
                     <div className="space-y-2">
                         <Label>Note</Label>

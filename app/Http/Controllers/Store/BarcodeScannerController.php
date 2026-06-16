@@ -83,8 +83,6 @@ class BarcodeScannerController extends Controller
             'product_name' => $stockUnit->product?->name ?? $stockUnit->variant?->product?->name ?? '-',
             'sku' => $stockUnit->variant?->sku ?? $stockUnit->product?->sku ?? '-',
             'imei_serial_number' => $stockUnit->imei_serial_number,
-            'grade' => $stockUnit->grade,
-            'battery_health' => $stockUnit->battery_health,
             'status' => $stockUnit->status,
             'location' => null,
             'last_activity' => $stockUnit->updated_at?->toISOString(),

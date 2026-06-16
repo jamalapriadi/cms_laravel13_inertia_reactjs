@@ -69,7 +69,6 @@ class SupplierReturnController extends Controller
             ->map(fn ($unit) => [
                 'id' => $unit->id,
                 'imei_serial_number' => $unit->imei_serial_number,
-                'network_compatibility' => $unit->network_compatibility,
                 'product_name' => $unit->variant?->product?->name ?? 'N/A',
                 'variant_name' => $unit->variant?->name ?? 'N/A',
                 'sku' => $unit->variant?->sku ?? 'N/A',
@@ -179,7 +178,6 @@ class SupplierReturnController extends Controller
             ->map(fn ($unit) => [
                 'id' => $unit->id,
                 'imei_serial_number' => $unit->imei_serial_number,
-                'network_compatibility' => $unit->network_compatibility,
                 'product_name' => $unit->variant?->product?->name ?? 'N/A',
                 'variant_name' => $unit->variant?->name ?? 'N/A',
                 'sku' => $unit->variant?->sku ?? 'N/A',

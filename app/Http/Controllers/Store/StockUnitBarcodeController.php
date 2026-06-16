@@ -144,7 +144,6 @@ class StockUnitBarcodeController extends Controller
                     $builder->where(function ($subQuery) use ($value) {
                         $subQuery->where('imei_serial_number', 'like', "%{$value}%")
                             ->orWhere('barcode', 'like', "%{$value}%")
-                            ->orWhere('grade', 'like', "%{$value}%")
                             ->orWhereHas('product', function ($productQuery) use ($value) {
                                 $productQuery->where('name', 'like', "%{$value}%")
                                     ->orWhere('sku', 'like', "%{$value}%");
@@ -189,8 +188,6 @@ class StockUnitBarcodeController extends Controller
                 'barcode' => (string) $stockUnit->barcode,
                 'barcode_svg' => $this->barcodeGenerator->generateSvg((string) $stockUnit->barcode),
                 'imei_serial_number' => $stockUnit->imei_serial_number,
-                'grade' => $stockUnit->grade,
-                'battery_health' => $stockUnit->battery_health,
                 'status' => $stockUnit->status,
             ];
         })->values()->all();

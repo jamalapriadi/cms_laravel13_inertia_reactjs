@@ -33,8 +33,20 @@ class ProductRequest extends FormRequest
                 ? ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048']
                 : ['nullable', 'string'],
             'description' => ['nullable', 'string'],
-            'condition' => ['required', 'in:new,like_new,second'],
+            'short_description' => ['nullable', 'string'],
+            'condition' => ['nullable', 'string', 'in:new,like_new,second'],
             'base_price' => ['required', 'numeric', 'min:0'],
+            'compare_at_price' => ['nullable', 'numeric', 'min:0'],
+            'cost_price' => ['nullable', 'numeric', 'min:0'],
+            'weight' => ['nullable', 'numeric', 'min:0'],
+            'length' => ['nullable', 'numeric', 'min:0'],
+            'width' => ['nullable', 'numeric', 'min:0'],
+            'height' => ['nullable', 'numeric', 'min:0'],
+            'product_type' => ['required', 'string', 'in:simple,variable'],
+            'status' => ['required', 'string', 'in:draft,active,inactive,archived'],
+            'visibility' => ['required', 'string', 'in:visible,hidden'],
+            'is_featured' => ['nullable', 'boolean'],
+            'sort_order' => ['nullable', 'integer'],
             'sku' => array_filter([
                 $this->boolean('has_variant') ? 'nullable' : 'required',
                 'string',
@@ -62,6 +74,11 @@ class ProductRequest extends FormRequest
             'has_variant' => filter_var($this->has_variant, FILTER_VALIDATE_BOOLEAN),
             'is_publish' => filter_var($this->is_publish, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
             'sku' => $this->input('sku') !== '' ? $this->input('sku') : null,
+            'product_type' => $this->input('product_type') ?: 'simple',
+            'status' => $this->input('status') ?: 'active',
+            'visibility' => $this->input('visibility') ?: 'visible',
+            'is_featured' => filter_var($this->is_featured, FILTER_VALIDATE_BOOLEAN),
+            'sort_order' => $this->filled('sort_order') ? (int) $this->sort_order : 0,
         ]);
     }
 }

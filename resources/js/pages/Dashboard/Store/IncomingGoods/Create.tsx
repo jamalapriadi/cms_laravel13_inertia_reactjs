@@ -7,17 +7,15 @@ import IncomingGoodsForm, { SupplierOption, VariantOption } from './Form';
 interface Props {
     suppliers: SupplierOption[];
     variants: VariantOption[];
-    networks: string[];
 }
 
-export default function Create({ suppliers, variants, networks }: Props) {
+export default function Create({ suppliers, variants }: Props) {
     return (
         <>
             <Head title="Tambah Barang Masuk" />
             <IncomingGoodsForm
                 suppliers={suppliers}
                 variants={variants}
-                networks={networks}
                 submitUrl="/my-admin/dashboard/ecommerce/incoming-goods"
                 method="post"
                 title="Tambah Barang Masuk"

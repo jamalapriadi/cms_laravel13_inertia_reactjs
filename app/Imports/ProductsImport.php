@@ -9,6 +9,7 @@ use App\Models\Shop\VariantItem;
 use App\Models\Unit;
 use App\Support\UniqueSlug;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -22,7 +23,12 @@ class ProductsImport implements ToModel, WithBatchInserts, WithHeadingRow
     public function model(array $row)
     {
         $row = array_map(fn ($value) => $value === null ? null : trim((string) $value), $row);
-        $row['sku'] = $row['sku'] !== '' ? $row['sku'] : null;
+        $row['sku'] = isset($row['sku']) && $row['sku'] !== '' ? $row['sku'] : null;
+        $row['slug'] = $row['slug'] ?? null;
+        $row['thumbnail'] = $row['thumbnail'] ?? null;
+        $row['description'] = $row['description'] ?? null;
+        $row['meta_title'] = $row['meta_title'] ?? null;
+        $row['meta_description'] = $row['meta_description'] ?? null;
 
         $validator = Validator::make($row, [
             'name' => ['required', 'string'],
@@ -79,7 +85,7 @@ class ProductsImport implements ToModel, WithBatchInserts, WithHeadingRow
 
         $slug = $row['slug'] ?: UniqueSlug::make(Product::class, $row['name']);
 
-        return new Product([
+        $product = new Product([
             'category_id' => $categoryId,
             'brand_id' => $brandId,
             'unit_id' => $unitId,
@@ -95,6 +101,10 @@ class ProductsImport implements ToModel, WithBatchInserts, WithHeadingRow
             'meta_description' => $row['meta_description'] ?: null,
             'is_publish' => $this->normalizeBoolean($row['is_publish'] ?? true),
         ]);
+
+        $product->id = (string) Str::uuid();
+
+        return $product;
     }
 
     public function headingRow(): int

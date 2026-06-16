@@ -25,7 +25,6 @@ export interface VariantOption {
 
 export interface StockUnitInput {
     imei_serial_number: string;
-    network_compatibility: string;
 }
 
 export interface IncomingGoodsItemInput {
@@ -48,7 +47,6 @@ export interface IncomingGoodsFormData {
 interface Props {
     suppliers: SupplierOption[];
     variants: VariantOption[];
-    networks: string[];
     initialData?: IncomingGoodsFormData;
     submitUrl: string;
     method: 'post' | 'put';
@@ -62,26 +60,17 @@ const emptyItem = (): IncomingGoodsItemInput => ({
     qty: 1,
     cost_price: 0,
     stock_units: [
-        { imei_serial_number: '', network_compatibility: 'sim_free' },
+        { imei_serial_number: '' },
     ],
 });
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-const networkLabel = (network: string) =>
-    ({
-        sim_free: 'All Operator',
-        docomo: 'Docomo',
-        au: 'AU',
-        softbank: 'SoftBank',
-        rakuten: 'Rakuten',
-        mineo: 'Mineo',
-    })[network] ?? network;
+
 
 export default function IncomingGoodsForm({
     suppliers,
     variants,
-    networks,
     initialData,
     submitUrl,
     method,
@@ -156,7 +145,6 @@ export default function IncomingGoodsForm({
                 while (stockUnits.length < nextQty) {
                     stockUnits.push({
                         imei_serial_number: '',
-                        network_compatibility: 'sim_free',
                     });
                 }
 
@@ -456,13 +444,13 @@ export default function IncomingGoodsForm({
 
                             <div className="space-y-3">
                                 <p className="text-sm font-medium">
-                                    IMEI / Serial Number
+                                    Serial Number
                                 </p>
                                 <div className="grid gap-3 md:grid-cols-2">
                                     {item.stock_units.map((unit, unitIndex) => (
                                         <div
                                             key={unitIndex}
-                                            className="grid gap-3 rounded-lg border bg-muted/30 p-3 md:grid-cols-[1fr_160px]"
+                                            className="rounded-lg border bg-muted/30 p-3"
                                         >
                                             <Input
                                                 value={unit.imei_serial_number}
@@ -474,32 +462,8 @@ export default function IncomingGoodsForm({
                                                         event.target.value,
                                                     )
                                                 }
-                                                placeholder={`Serial ${unitIndex + 1}`}
-                                                required
+                                                placeholder={`Serial ${unitIndex + 1} (Opsional)`}
                                             />
-                                            <select
-                                                className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                                value={
-                                                    unit.network_compatibility
-                                                }
-                                                onChange={(event) =>
-                                                    updateStockUnit(
-                                                        itemIndex,
-                                                        unitIndex,
-                                                        'network_compatibility',
-                                                        event.target.value,
-                                                    )
-                                                }
-                                            >
-                                                {networks.map((network) => (
-                                                    <option
-                                                        key={network}
-                                                        value={network}
-                                                    >
-                                                        {networkLabel(network)}
-                                                    </option>
-                                                ))}
-                                            </select>
                                         </div>
                                     ))}
                                 </div>

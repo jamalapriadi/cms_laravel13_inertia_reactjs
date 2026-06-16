@@ -8,9 +8,6 @@ interface ProductStockUnit {
     id: string;
     imei_serial_number: string;
     barcode?: string | null;
-    battery_health?: number | null;
-    grade?: string | null;
-    network_compatibility: string | null;
     status: string;
     note?: string | null;
     created_at: string;
@@ -34,17 +31,7 @@ interface Props {
     stockUnit: ProductStockUnit;
 }
 
-const networkLabel = (network?: string | null) =>
-    network
-        ? ({
-              sim_free: 'All Operator',
-              docomo: 'Docomo',
-              au: 'AU',
-              softbank: 'SoftBank',
-              rakuten: 'Rakuten',
-              mineo: 'Mineo',
-          }[network] ?? network)
-        : '-';
+
 
 export default function Show({ stockUnit }: Props) {
     const hasBarcode = !!stockUnit.barcode;
@@ -127,27 +114,13 @@ export default function Show({ stockUnit }: Props) {
                         }
                     />
                     <Info
-                        label="IMEI / Serial"
+                        label="Serial Number"
                         value={stockUnit.imei_serial_number}
                     />
                     <Info
                         label="Barcode"
                         value={stockUnit.barcode || '-'}
                         mono
-                    />
-                    <Info
-                        label="Network"
-                        value={networkLabel(stockUnit.network_compatibility)}
-                    />
-                    <Info label="Grade" value={stockUnit.grade || '-'} />
-                    <Info
-                        label="Battery Health"
-                        value={
-                            stockUnit.battery_health === null ||
-                            stockUnit.battery_health === undefined
-                                ? '-'
-                                : `${stockUnit.battery_health}%`
-                        }
                     />
                     <div>
                         <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">

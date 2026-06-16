@@ -133,7 +133,6 @@ class StockMovementController extends Controller
                     'stock_units' => $v->stockUnits->map(fn ($unit) => [
                         'id' => $unit->id,
                         'imei_serial_number' => $unit->imei_serial_number,
-                        'network_compatibility' => $unit->network_compatibility,
                         'status' => $unit->status,
                     ])->values(),
                 ];

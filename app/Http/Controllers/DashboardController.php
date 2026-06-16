@@ -722,8 +722,6 @@ class DashboardController extends Controller
                     'product' => $productName,
                     'sku' => $sku,
                     'unit' => $unit->imei_serial_number ?: ($unit->barcode ?: '-'),
-                    'grade' => $unit->grade ?: '-',
-                    'battery' => $unit->battery_health,
                 ];
             })
             ->values()

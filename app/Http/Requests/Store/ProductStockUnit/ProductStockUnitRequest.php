@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Store\ProductStockUnit;
 
 use App\Models\Shop\Product;
-use App\Models\Shop\ProductStockUnit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,11 +17,8 @@ class ProductStockUnitRequest extends FormRequest
     {
         $rules = [
             'product_id' => ['required', 'uuid', 'exists:products,id'],
-            'imei_serial_number' => ['required', 'string', 'max:255', 'unique:product_stock_units,imei_serial_number'],
+            'imei_serial_number' => ['nullable', 'string', 'max:255', 'unique:product_stock_units,imei_serial_number'],
             'barcode' => ['nullable', 'string', 'max:255', 'unique:product_stock_units,barcode'],
-            'battery_health' => ['nullable', 'integer', 'min:0', 'max:100'],
-            'grade' => ['nullable', 'string', 'max:50'],
-            'network_compatibility' => ['nullable', 'string', Rule::in(ProductStockUnit::NETWORKS)],
             'status' => ['nullable', 'string', Rule::in(['available', 'reserved', 'sold', 'damaged'])],
             'note' => ['nullable', 'string'],
         ];
@@ -63,9 +59,7 @@ class ProductStockUnitRequest extends FormRequest
         $this->merge([
             'product_variant_id' => $this->product_variant_id ?: null,
             'barcode' => $this->barcode ?: null,
-            'network_compatibility' => $this->network_compatibility ?: null,
             'status' => $this->status ?: 'available',
-            'grade' => $this->grade ?: null,
         ]);
     }
 }

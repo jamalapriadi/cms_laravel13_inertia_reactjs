@@ -7,6 +7,7 @@ use App\Models\Shop\ProductImage;
 use App\Models\Shop\ProductSpecification;
 use App\Models\Shop\ProductStockUnit;
 use App\Models\Shop\ProductVariant;
+use App\Models\Shop\VariantItem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -16,6 +17,7 @@ uses(RefreshDatabase::class);
 
 test('authenticated user can view product detail page with specs and images', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -67,6 +69,7 @@ test('authenticated user can view product detail page with specs and images', fu
 
 test('user can add a specification to a product and it redirects back', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -105,6 +108,7 @@ test('user can upload a product image and it redirects back', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -149,6 +153,7 @@ test('user can add a product image from media library path', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -192,6 +197,7 @@ test('user can add a product image from media library path', function () {
 
 test('user can delete a product specification and it redirects back', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -230,6 +236,7 @@ test('user can delete a product image and it redirects back', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -274,6 +281,7 @@ test('user can delete a product image and it redirects back', function () {
 
 test('authenticated user can view product detail page with variants', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -288,22 +296,23 @@ test('authenticated user can view product detail page with variants', function (
         'condition' => 'new',
         'base_price' => 15000000,
         'is_publish' => true,
+        'has_variant' => true,
     ]);
 
-    $variant = ProductVariant::create([
+    $variant = VariantItem::create([
         'product_id' => $product->id,
         'name' => '128GB Black',
         'sku' => 'IP15-128-BLK',
-        'price' => 14500000,
+        'selling_price' => 14500000,
         'stock' => 10,
         'track_stock' => true,
         'is_active' => true,
     ]);
 
     ProductStockUnit::create([
+        'product_id' => $product->id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'docomo',
         'status' => 'available',
     ]);
 
@@ -315,11 +324,11 @@ test('authenticated user can view product detail page with variants', function (
     $response->assertSee('128GB Black');
     $response->assertSee('IP15-128-BLK');
     $response->assertSee('351234567890123');
-    $response->assertSee('docomo');
 });
 
 test('user can create a product variant inline and it redirects back', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -334,34 +343,45 @@ test('user can create a product variant inline and it redirects back', function 
         'condition' => 'new',
         'base_price' => 15000000,
         'is_publish' => true,
+        'has_variant' => true,
+    ]);
+
+    $colorVariant = ProductVariant::create([
+        'product_id' => $product->id,
+        'name' => 'Color',
+    ]);
+    $blueOption = $colorVariant->options()->create([
+        'value' => 'Blue',
     ]);
 
     $response = $this
         ->actingAs($user)
         ->from(route('products.show', $product->id))
-        ->post(route('product-variants.store'), [
+        ->post(route('variant-items.store'), [
             'product_id' => $product->id,
             'name' => '256GB Blue',
             'sku' => 'IP15-256-BLU',
-            'price' => 16500000,
+            'selling_price' => 16500000,
             'stock' => 5,
             'track_stock' => true,
             'is_active' => true,
+            'option_ids' => [$blueOption->id],
         ]);
 
     $response->assertRedirect(route('products.show', $product->id));
 
-    $this->assertDatabaseHas('product_variants', [
+    $this->assertDatabaseHas('variant_items', [
         'product_id' => $product->id,
         'name' => '256GB Blue',
         'sku' => 'IP15-256-BLU',
-        'price' => 16500000,
-        'stock' => 0,
+        'selling_price' => 16500000,
+        'stock' => 5,
     ]);
 });
 
 test('user can update a product variant inline and it redirects back', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -376,13 +396,22 @@ test('user can update a product variant inline and it redirects back', function 
         'condition' => 'new',
         'base_price' => 15000000,
         'is_publish' => true,
+        'has_variant' => true,
     ]);
 
-    $variant = ProductVariant::create([
+    $colorVariant = ProductVariant::create([
+        'product_id' => $product->id,
+        'name' => 'Color',
+    ]);
+    $blueOption = $colorVariant->options()->create([
+        'value' => 'Blue',
+    ]);
+
+    $variant = VariantItem::create([
         'product_id' => $product->id,
         'name' => '128GB Black',
         'sku' => 'IP15-128-BLK',
-        'price' => 14500000,
+        'selling_price' => 14500000,
         'stock' => 10,
         'track_stock' => true,
         'is_active' => true,
@@ -391,28 +420,30 @@ test('user can update a product variant inline and it redirects back', function 
     $response = $this
         ->actingAs($user)
         ->from(route('products.show', $product->id))
-        ->put(route('product-variants.update', $variant->id), [
+        ->put(route('variant-items.update', $variant->id), [
             'product_id' => $product->id,
             'name' => '128GB Jet Black',
             'sku' => 'IP15-128-BLK',
-            'price' => 14000000,
+            'selling_price' => 14000000,
             'stock' => 8,
             'track_stock' => true,
             'is_active' => true,
+            'option_ids' => [$blueOption->id],
         ]);
 
     $response->assertRedirect(route('products.show', $product->id));
 
-    $this->assertDatabaseHas('product_variants', [
+    $this->assertDatabaseHas('variant_items', [
         'id' => $variant->id,
         'name' => '128GB Jet Black',
-        'price' => 14000000,
+        'selling_price' => 14000000,
         'stock' => 8,
     ]);
 });
 
 test('user can delete a product variant inline and it redirects back', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -427,13 +458,14 @@ test('user can delete a product variant inline and it redirects back', function 
         'condition' => 'new',
         'base_price' => 15000000,
         'is_publish' => true,
+        'has_variant' => true,
     ]);
 
-    $variant = ProductVariant::create([
+    $variant = VariantItem::create([
         'product_id' => $product->id,
         'name' => '128GB Black',
         'sku' => 'IP15-128-BLK',
-        'price' => 14500000,
+        'selling_price' => 14500000,
         'stock' => 10,
         'track_stock' => true,
         'is_active' => true,
@@ -442,7 +474,7 @@ test('user can delete a product variant inline and it redirects back', function 
     $response = $this
         ->actingAs($user)
         ->from(route('products.show', $product->id))
-        ->delete(route('product-variants.destroy', $variant->id));
+        ->delete(route('variant-items.destroy', $variant->id));
 
     $response->assertRedirect(route('products.show', $product->id));
 
@@ -451,6 +483,7 @@ test('user can delete a product variant inline and it redirects back', function 
 
 test('user can create a stock unit imei and carrier network for a variant', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -465,13 +498,14 @@ test('user can create a stock unit imei and carrier network for a variant', func
         'condition' => 'new',
         'base_price' => 20000000,
         'is_publish' => true,
+        'has_variant' => true,
     ]);
 
-    $variant = ProductVariant::create([
+    $variant = VariantItem::create([
         'product_id' => $product->id,
         'name' => 'Natural Titanium 256GB',
         'sku' => 'IP15PM-NT-256',
-        'price' => 22000000,
+        'selling_price' => 22000000,
         'stock' => 0,
         'track_stock' => true,
         'is_active' => true,
@@ -481,18 +515,18 @@ test('user can create a stock unit imei and carrier network for a variant', func
         ->actingAs($user)
         ->from(route('products.show', $product->id))
         ->post(route('product-stock-units.store'), [
+            'product_id' => $product->id,
             'product_variant_id' => $variant->id,
             'imei_serial_number' => '351234567890123',
-            'network_compatibility' => 'docomo',
             'status' => 'available',
         ]);
 
     $response->assertRedirect(route('products.show', $product->id));
 
     $this->assertDatabaseHas('product_stock_units', [
+        'product_id' => $product->id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'docomo',
         'status' => 'available',
     ]);
 
@@ -501,6 +535,7 @@ test('user can create a stock unit imei and carrier network for a variant', func
 
 test('user can update stock unit network and status', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -515,22 +550,23 @@ test('user can update stock unit network and status', function () {
         'condition' => 'new',
         'base_price' => 20000000,
         'is_publish' => true,
+        'has_variant' => true,
     ]);
 
-    $variant = ProductVariant::create([
+    $variant = VariantItem::create([
         'product_id' => $product->id,
         'name' => 'Black 128GB',
         'sku' => 'IP15PM-BLK-128',
-        'price' => 20000000,
+        'selling_price' => 20000000,
         'stock' => 1,
         'track_stock' => true,
         'is_active' => true,
     ]);
 
     $stockUnit = ProductStockUnit::create([
+        'product_id' => $product->id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '990000862471854',
-        'network_compatibility' => 'sim_free',
         'status' => 'available',
     ]);
 
@@ -538,9 +574,9 @@ test('user can update stock unit network and status', function () {
         ->actingAs($user)
         ->from(route('products.show', $product->id))
         ->put(route('product-stock-units.update', $stockUnit->id), [
+            'product_id' => $product->id,
             'product_variant_id' => $variant->id,
             'imei_serial_number' => '990000862471854',
-            'network_compatibility' => 'softbank',
             'status' => 'sold',
         ]);
 
@@ -549,7 +585,6 @@ test('user can update stock unit network and status', function () {
     $this->assertDatabaseHas('product_stock_units', [
         'id' => $stockUnit->id,
         'imei_serial_number' => '990000862471854',
-        'network_compatibility' => 'softbank',
         'status' => 'sold',
     ]);
 

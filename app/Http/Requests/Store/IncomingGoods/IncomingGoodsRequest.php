@@ -53,7 +53,6 @@ class IncomingGoodsRequest extends FormRequest
                     }
                 },
             ],
-            'items.*.stock_units.*.network_compatibility' => ['nullable', 'string', Rule::in(ProductStockUnit::NETWORKS)],
         ];
     }
 

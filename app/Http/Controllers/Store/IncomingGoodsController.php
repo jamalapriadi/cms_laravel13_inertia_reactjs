@@ -76,7 +76,6 @@ class IncomingGoodsController extends Controller
         return Inertia::render('Dashboard/Store/IncomingGoods/Create', [
             'suppliers' => $suppliers,
             'variants' => $variants,
-            'networks' => ProductStockUnit::NETWORKS,
         ]);
     }
 
@@ -128,7 +127,6 @@ class IncomingGoodsController extends Controller
                         'product_variant_id' => $itemData['product_variant_id'],
                         'incoming_goods_item_id' => $incomingItem->id,
                         'imei_serial_number' => $unitData['imei_serial_number'],
-                        'network_compatibility' => $unitData['network_compatibility'] ?? 'sim_free',
                         'status' => $unitStatus,
                         'note' => "Pembelian dari supplier: {$supplier->name}, Invoice: {$incoming->invoice_number}",
                     ]);
@@ -203,7 +201,6 @@ class IncomingGoodsController extends Controller
             'incomingGoods' => $incomingGood,
             'suppliers' => $suppliers,
             'variants' => $variants,
-            'networks' => ProductStockUnit::NETWORKS,
         ]);
     }
 
@@ -265,7 +262,6 @@ class IncomingGoodsController extends Controller
                         'product_variant_id' => $itemData['product_variant_id'],
                         'incoming_goods_item_id' => $incomingItem->id,
                         'imei_serial_number' => $unitData['imei_serial_number'],
-                        'network_compatibility' => $unitData['network_compatibility'] ?? 'sim_free',
                         'status' => $unitStatus,
                         'note' => "Pembelian dari supplier: {$supplier->name}, Invoice: {$incomingGood->invoice_number}",
                     ]);

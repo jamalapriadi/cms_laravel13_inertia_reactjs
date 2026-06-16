@@ -4,14 +4,14 @@ use App\Models\Brand;
 use App\Models\Shop\Category;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductStockUnit;
-use App\Models\Shop\ProductVariant;
 use App\Models\Shop\StockMovement;
+use App\Models\Shop\VariantItem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-function createBaseProductAndVariant(): ProductVariant
+function createBaseProductAndVariant(): VariantItem
 {
     $category = Category::create([
         'name' => 'Electronics',
@@ -33,13 +33,14 @@ function createBaseProductAndVariant(): ProductVariant
         'condition' => 'new',
         'base_price' => 15000000,
         'is_publish' => true,
+        'has_variant' => true,
     ]);
 
-    return ProductVariant::create([
+    return VariantItem::create([
         'product_id' => $product->id,
         'name' => 'iPhone 15 Pro Max 256GB Black',
         'sku' => 'IPH15PM-256-BLK',
-        'price' => 20000000,
+        'selling_price' => 20000000,
         'track_stock' => true,
         'stock' => 10,
     ]);
@@ -47,6 +48,7 @@ function createBaseProductAndVariant(): ProductVariant
 
 test('authenticated user can view stock movements list with summary metrics', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createBaseProductAndVariant();
 
     StockMovement::create([
@@ -83,6 +85,7 @@ test('authenticated user can view stock movements list with summary metrics', fu
 
 test('user can filter stock movements', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createBaseProductAndVariant();
 
     StockMovement::create([
@@ -128,14 +131,15 @@ test('user can filter stock movements', function () {
 
 test('user can create a stock movement', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createBaseProductAndVariant();
 
     $variant->update(['stock' => 0]);
 
     $stockUnit = ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'sim_free',
         'status' => 'reserved',
     ]);
 
@@ -181,12 +185,13 @@ test('user can create a stock movement', function () {
 
 test('user can update stock movement and recalculate variant stock levels', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createBaseProductAndVariant();
 
     $stockUnit = ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'sim_free',
         'status' => 'sold',
     ]);
 
@@ -232,12 +237,13 @@ test('user can update stock movement and recalculate variant stock levels', func
 
 test('user can delete stock movement and reverse variant stock levels', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createBaseProductAndVariant();
 
     $stockUnit = ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'sim_free',
         'status' => 'sold',
     ]);
 

@@ -10,8 +10,6 @@ interface StockUnitPrintItem {
     barcode: string;
     barcode_svg: string;
     imei_serial_number: string;
-    grade?: string | null;
-    battery_health?: number | null;
     status: string;
 }
 
@@ -84,19 +82,8 @@ export default function BarcodePrint({ stockUnits, context }: Props) {
                                 {item.barcode}
                             </p>
                             <p className="line-clamp-1 text-[9px] leading-tight">
-                                IMEI: {item.imei_serial_number}
+                                SN: {item.imei_serial_number}
                             </p>
-
-                            <div className="mt-0.5 flex items-center justify-between text-[9px] leading-tight">
-                                <span>Grade: {item.grade || '-'}</span>
-                                <span>
-                                    Battery:{' '}
-                                    {item.battery_health !== null &&
-                                    item.battery_health !== undefined
-                                        ? `${item.battery_health}%`
-                                        : '-'}
-                                </span>
-                            </div>
                         </div>
                     ))}
                 </div>

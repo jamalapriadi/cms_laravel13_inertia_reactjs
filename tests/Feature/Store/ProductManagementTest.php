@@ -14,6 +14,7 @@ uses(RefreshDatabase::class);
 
 test('authenticated user can view product list with summary metrics', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Phones',
@@ -44,6 +45,7 @@ test('authenticated user can view product list with summary metrics', function (
         'brand_id' => $brand->id,
         'name' => 'iPhone 15',
         'slug' => 'iphone-15',
+        'sku' => 'IPHONE-15',
         'condition' => 'new',
         'base_price' => 15000000,
         'is_publish' => true,
@@ -54,6 +56,7 @@ test('authenticated user can view product list with summary metrics', function (
         'brand_id' => $brand->id,
         'name' => 'iPhone 14',
         'slug' => 'iphone-14',
+        'sku' => 'IPHONE-14',
         'condition' => 'used',
         'base_price' => 11000000,
         'is_publish' => true,
@@ -97,6 +100,7 @@ test('user can update product without replacing existing thumbnail', function ()
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Phones',
@@ -117,6 +121,7 @@ test('user can update product without replacing existing thumbnail', function ()
         'brand_id' => $brand->id,
         'name' => 'iPhone 15',
         'slug' => 'iphone-15',
+        'sku' => 'IPHONE-15',
         'thumbnail' => 'products/existing.jpg',
         'condition' => 'new',
         'base_price' => 15000000,
@@ -129,6 +134,7 @@ test('user can update product without replacing existing thumbnail', function ()
             'name' => 'iPhone 15 Pro',
             'category_id' => $category->id,
             'brand_id' => $brand->id,
+            'sku' => 'IPHONE-15-PRO',
             'thumbnail' => null,
             'condition' => 'new',
             'base_price' => 16000000,
@@ -147,6 +153,7 @@ test('user can update product without replacing existing thumbnail', function ()
 
 test('product slugs stay unique when creating products with the same name', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Phones',
@@ -154,25 +161,41 @@ test('product slugs stay unique when creating products with the same name', func
         'is_publish' => true,
     ]);
 
-    $payload = [
+    $payload1 = [
         'name' => 'iPhone X',
         'category_id' => $category->id,
         'brand_id' => null,
+        'sku' => 'IPHONE-X-1',
         'condition' => 'new',
         'base_price' => 8000000,
         'has_variant' => false,
         'is_publish' => true,
     ];
 
-    $this
-        ->actingAs($user)
-        ->post(route('products.store'), $payload)
-        ->assertRedirect(route('products.index'));
+    $payload2 = [
+        'name' => 'iPhone X',
+        'category_id' => $category->id,
+        'brand_id' => null,
+        'sku' => 'IPHONE-X-2',
+        'condition' => 'new',
+        'base_price' => 8000000,
+        'has_variant' => false,
+        'is_publish' => true,
+    ];
 
-    $this
+    $response1 = $this
         ->actingAs($user)
-        ->post(route('products.store'), $payload)
-        ->assertRedirect(route('products.index'));
+        ->post(route('products.store'), $payload1);
+
+    $product1 = Product::query()->where('sku', 'IPHONE-X-1')->firstOrFail();
+    $response1->assertRedirect(route('products.show', $product1));
+
+    $response2 = $this
+        ->actingAs($user)
+        ->post(route('products.store'), $payload2);
+
+    $product2 = Product::query()->where('sku', 'IPHONE-X-2')->firstOrFail();
+    $response2->assertRedirect(route('products.show', $product2));
 
     expect(Product::query()->where('name', 'iPhone X')->pluck('slug')->all())
         ->toBe(['iphone-x', 'iphone-x-2']);
@@ -180,6 +203,7 @@ test('product slugs stay unique when creating products with the same name', func
 
 test('authenticated user can export products to excel', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     Category::create([
         'name' => 'Phones',
@@ -198,6 +222,7 @@ test('authenticated user can export products to excel', function () {
         'brand_id' => Brand::first()->id,
         'name' => 'iPhone 15',
         'slug' => 'iphone-15',
+        'sku' => 'IPHONE-15',
         'condition' => 'new',
         'base_price' => 15000000,
         'is_publish' => true,
@@ -208,11 +233,13 @@ test('authenticated user can export products to excel', function () {
         ->get(route('products.export'));
 
     $response->assertOk();
-    $response->assertHeader('content-disposition', fn ($value) => str_contains($value, 'attachment'));
+    $response->assertHeader('content-disposition');
+    expect($response->headers->get('content-disposition'))->toContain('attachment');
 });
 
 test('authenticated user can import products from excel', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     Category::create([
         'name' => 'Phones',
@@ -253,6 +280,7 @@ test('authenticated user can import products from excel', function () {
 
 test('product slug stays unique when renaming a product to an existing name', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Phones',
@@ -264,6 +292,7 @@ test('product slug stays unique when renaming a product to an existing name', fu
         'category_id' => $category->id,
         'name' => 'iPhone X',
         'slug' => 'iphone-x',
+        'sku' => 'IPHONE-X',
         'condition' => 'new',
         'base_price' => 8000000,
         'is_publish' => true,
@@ -273,6 +302,7 @@ test('product slug stays unique when renaming a product to an existing name', fu
         'category_id' => $category->id,
         'name' => 'iPhone XR',
         'slug' => 'iphone-xr',
+        'sku' => 'IPHONE-XR',
         'condition' => 'new',
         'base_price' => 9000000,
         'is_publish' => true,
@@ -284,6 +314,7 @@ test('product slug stays unique when renaming a product to an existing name', fu
             'name' => 'iPhone X',
             'category_id' => $category->id,
             'brand_id' => null,
+            'sku' => 'IPHONE-XR-UPDATED',
             'condition' => 'new',
             'base_price' => 9000000,
             'has_variant' => false,
@@ -300,6 +331,7 @@ test('store entities can use existing media library paths for images', function 
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     Storage::disk('public')->put('media/2026/05/catalog.webp', 'image');
     Storage::disk('public')->put('media/2026/05/logo.webp', 'image');
@@ -311,19 +343,22 @@ test('store entities can use existing media library paths for images', function 
         'is_publish' => true,
     ]);
 
-    $this
+    $response = $this
         ->actingAs($user)
         ->post(route('products.store'), [
             'name' => 'iPhone 16',
             'category_id' => $category->id,
             'brand_id' => null,
+            'sku' => 'IPHONE-16',
             'thumbnail' => 'media/2026/05/catalog.webp',
             'condition' => 'new',
             'base_price' => 18000000,
             'has_variant' => false,
             'is_publish' => true,
-        ])
-        ->assertRedirect(route('products.index'));
+        ]);
+
+    $product = Product::query()->where('name', 'iPhone 16')->firstOrFail();
+    $response->assertRedirect(route('products.show', $product));
 
     $this
         ->actingAs($user)
@@ -359,6 +394,7 @@ test('user can update brand without replacing existing logo', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     Storage::disk('public')->put('brands/existing.svg', 'existing logo');
 
@@ -391,6 +427,7 @@ test('user can update category without replacing existing image', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     Storage::disk('public')->put('categories/existing.jpg', 'existing image');
 

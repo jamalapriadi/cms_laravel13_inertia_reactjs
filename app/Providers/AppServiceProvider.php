@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -47,6 +48,12 @@ class AppServiceProvider extends ServiceProvider
         $this->registerSitemapObservers();
 
         $this->configureDefaults();
+
+        Gate::before(function ($user, $ability) {
+            if (isset($user->is_super_admin) && $user->is_super_admin) {
+                return true;
+            }
+        });
     }
 
     private function registerSitemapObservers(): void

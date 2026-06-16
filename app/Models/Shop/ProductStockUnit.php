@@ -11,15 +11,6 @@ class ProductStockUnit extends Model
 {
     use HasUuids, SoftDeletes;
 
-    public const NETWORKS = [
-        'sim_free',
-        'docomo',
-        'au',
-        'softbank',
-        'rakuten',
-        'mineo',
-    ];
-
     protected $fillable = [
         'product_id',
         'product_variant_id',
@@ -28,15 +19,11 @@ class ProductStockUnit extends Model
         'incoming_goods_item_id',
         'imei_serial_number',
         'barcode',
-        'battery_health',
-        'grade',
-        'network_compatibility',
         'status',
         'note',
     ];
 
     protected $casts = [
-        'battery_health' => 'integer',
         'reserved_at' => 'datetime',
     ];
 
