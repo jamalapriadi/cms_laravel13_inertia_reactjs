@@ -11,6 +11,7 @@ test('media page lists folders and files from public storage', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     Storage::disk('public')->put('media/2026/05/logo.webp', 'image');
     Storage::disk('public')->put('documents/manual.pdf', 'document');
@@ -35,6 +36,7 @@ test('media page can open a storage folder', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     Storage::disk('public')->put('media/2026/05/logo.webp', 'image');
 
@@ -58,6 +60,7 @@ test('media library treats webp files as previewable images', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     Storage::disk('public')->put('media/2026/06/banner.webp', 'webp image');
 
@@ -78,6 +81,7 @@ test('media storage file can be permanently deleted', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     Storage::disk('public')->put('media/2026/05/logo.webp', 'image');
 
@@ -95,6 +99,7 @@ test('media upload converts supported images to webp', function () {
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $response = $this
         ->actingAs($user)
@@ -116,6 +121,7 @@ test('media json upload returns preview data for uploaded webp images', function
     Storage::fake('public');
 
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $response = $this
         ->actingAs($user)

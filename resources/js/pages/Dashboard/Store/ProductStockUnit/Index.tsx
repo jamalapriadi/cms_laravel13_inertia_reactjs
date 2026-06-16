@@ -51,9 +51,6 @@ interface ProductStockUnit {
     product_variant_id: string | null;
     imei_serial_number: string;
     barcode?: string | null;
-    battery_health?: number | null;
-    grade?: string | null;
-    network_compatibility: string | null;
     status: 'available' | 'reserved' | 'sold' | 'damaged';
     note?: string | null;
     created_at: string;
@@ -84,17 +81,7 @@ interface Props {
     };
 }
 
-const networkLabel = (network?: string | null) =>
-    network
-        ? ({
-              sim_free: 'All Operator',
-              docomo: 'Docomo',
-              au: 'AU',
-              softbank: 'SoftBank',
-              rakuten: 'Rakuten',
-              mineo: 'Mineo',
-          }[network] ?? network)
-        : '-';
+
 
 const statusClass = (status: ProductStockUnit['status']) =>
     ({
@@ -266,16 +253,11 @@ export default function Index({
             ),
         },
         {
-            label: 'IMEI / Serial',
+            label: 'Serial Number',
             render: (row: ProductStockUnit) => (
-                <div className="flex flex-col">
-                    <span className="font-mono text-sm font-semibold">
-                        {row.imei_serial_number}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                        Network: {networkLabel(row.network_compatibility)}
-                    </span>
-                </div>
+                <span className="font-mono text-sm font-semibold">
+                    {row.imei_serial_number || '-'}
+                </span>
             ),
         },
         // {
@@ -484,7 +466,7 @@ export default function Index({
                     <div>
                         <Input
                             className="max-w-xs"
-                            placeholder="Search IMEI, barcode, product, grade..."
+                            placeholder="Search Serial, barcode, product..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             onKeyDown={(e) =>

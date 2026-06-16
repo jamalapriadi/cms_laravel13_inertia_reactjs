@@ -31,7 +31,6 @@ interface Props {
     incomingGoods: IncomingGoodsRecord;
     suppliers: SupplierOption[];
     variants: VariantOption[];
-    networks: string[];
 }
 
 const toDateInput = (value: string) => value.slice(0, 10);
@@ -40,7 +39,6 @@ export default function Edit({
     incomingGoods,
     suppliers,
     variants,
-    networks,
 }: Props) {
     const initialData: IncomingGoodsFormData = {
         supplier_id: incomingGoods.supplier_id,
@@ -55,7 +53,6 @@ export default function Edit({
             cost_price: Number(item.cost_price),
             stock_units: item.stock_units.map((unit) => ({
                 imei_serial_number: unit.imei_serial_number,
-                network_compatibility: unit.network_compatibility ?? 'sim_free',
             })),
         })),
     };
@@ -66,7 +63,6 @@ export default function Edit({
             <IncomingGoodsForm
                 suppliers={suppliers}
                 variants={variants}
-                networks={networks}
                 initialData={initialData}
                 submitUrl={`/my-admin/dashboard/ecommerce/incoming-goods/${incomingGoods.id}`}
                 method="put"

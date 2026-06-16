@@ -12,6 +12,7 @@ uses(RefreshDatabase::class);
 
 test('authenticated user can view payment list with summary metrics', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -106,6 +107,7 @@ test('authenticated user can view payment list with summary metrics', function (
 
 test('user can filter payments by status, method, and query terms', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $order1 = Order::create([
         'invoice_number' => 'INV-2026-0001',
@@ -178,6 +180,7 @@ test('user can filter payments by status, method, and query terms', function () 
 
 test('user can view payment details', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $order = Order::create([
         'invoice_number' => 'INV-2026-0001',

@@ -6,7 +6,7 @@ use App\Models\Shop\CartItem;
 use App\Models\Shop\Category;
 use App\Models\Shop\Customer;
 use App\Models\Shop\Product;
-use App\Models\Shop\ProductVariant;
+use App\Models\Shop\VariantItem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -23,6 +23,7 @@ function createCartCustomer(array $attributes = []): Customer
 
 test('authenticated user can view cart list with summary metrics and insights', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -46,11 +47,11 @@ test('authenticated user can view cart list with summary metrics and insights', 
         'is_publish' => true,
     ]);
 
-    $variant = ProductVariant::create([
+    $variant = VariantItem::create([
         'product_id' => $product->id,
         'name' => '128GB Black',
         'sku' => 'IPH15-128-BLK',
-        'price' => 15500000,
+        'selling_price' => 15500000,
         'stock' => 10,
         'is_active' => true,
     ]);
@@ -101,6 +102,7 @@ test('authenticated user can view cart list with summary metrics and insights', 
 
 test('user can filter carts by customer type and search query', function () {
     $loggedInUser = User::factory()->create(['name' => 'LoggedInUser']);
+    $loggedInUser->is_super_admin = true;
     $customer1 = createCartCustomer(['name' => 'John Doe', 'email' => 'john@example.com']);
     $customer2 = createCartCustomer(['name' => 'Alice Smith', 'email' => 'alice@example.com']);
 
@@ -162,6 +164,7 @@ test('user can filter carts by customer type and search query', function () {
 
 test('user can view cart details', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $customer = createCartCustomer(['name' => 'Detail Customer']);
 
     $category = Category::create([
@@ -212,6 +215,7 @@ test('user can view cart details', function () {
 
 test('user can delete a specific cart item', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $customer = createCartCustomer();
 
     $category = Category::create([
@@ -265,6 +269,7 @@ test('user can delete a specific cart item', function () {
 
 test('deleting the last cart item deletes the entire cart', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $customer = createCartCustomer();
 
     $category = Category::create([
@@ -311,6 +316,7 @@ test('deleting the last cart item deletes the entire cart', function () {
 
 test('user can delete the entire cart', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $customer = createCartCustomer();
 
     $cart = Cart::create([

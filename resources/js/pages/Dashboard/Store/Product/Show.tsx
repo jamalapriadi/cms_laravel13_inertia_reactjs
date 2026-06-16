@@ -427,7 +427,7 @@ export default function Show({ product }: Props) {
                                                         event.target.value,
                                                     )
                                                 }
-                                                placeholder="e.g., RAM"
+                                                placeholder="e.g., Color"
                                             />
                                             {specificationErrors.spec_name && (
                                                 <p className="text-xs text-destructive">
@@ -452,7 +452,7 @@ export default function Show({ product }: Props) {
                                                         event.target.value,
                                                     )
                                                 }
-                                                placeholder="e.g., 16 GB DDR5"
+                                                placeholder="e.g., Red Blue"
                                             />
                                             {specificationErrors.spec_value && (
                                                 <p className="text-xs text-destructive">
@@ -1061,7 +1061,7 @@ export default function Show({ product }: Props) {
                                             <TableHeader>
                                                 <TableRow>
                                                     <TableHead>
-                                                        IMEI / Serial Number
+                                                        Serial Number
                                                     </TableHead>
                                                     <TableHead>
                                                         Network

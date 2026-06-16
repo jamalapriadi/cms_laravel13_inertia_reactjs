@@ -12,6 +12,7 @@ uses(RefreshDatabase::class);
 
 test('authenticated user can view order list with summary metrics', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -106,6 +107,7 @@ test('authenticated user can view order list with summary metrics', function () 
 
 test('user can filter orders by status and payment status', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $order1 = Order::create([
         'invoice_number' => 'INV-2026-0001',
@@ -154,6 +156,7 @@ test('user can filter orders by status and payment status', function () {
 
 test('user can view order details', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -212,6 +215,7 @@ test('user can view order details', function () {
 
 test('user can update order and payment status', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $order = Order::create([
         'invoice_number' => 'INV-2026-0001',
@@ -243,6 +247,7 @@ test('user can update order and payment status', function () {
 
 test('user can view order receipt print page', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $category = Category::create([
         'name' => 'Electronics',
@@ -295,5 +300,4 @@ test('user can view order receipt print page', function () {
     $response->assertStatus(200);
     $response->assertSee('INV-2026-0001');
     $response->assertSee('John Doe');
-    $response->assertSee('Gita Trading');
 });

@@ -3,13 +3,13 @@
 use App\Models\Shop\Category;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductStockUnit;
-use App\Models\Shop\ProductVariant;
+use App\Models\Shop\VariantItem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-function createStockUnitVariant(): ProductVariant
+function createStockUnitVariant(): VariantItem
 {
     $category = Category::create([
         'name' => 'Electronics',
@@ -24,13 +24,14 @@ function createStockUnitVariant(): ProductVariant
         'condition' => 'new',
         'base_price' => 15000000,
         'is_publish' => true,
+        'has_variant' => true,
     ]);
 
-    return ProductVariant::create([
+    return VariantItem::create([
         'product_id' => $product->id,
         'name' => '128GB Black',
         'sku' => 'IP15-128-BLK',
-        'price' => 14500000,
+        'selling_price' => 14500000,
         'stock' => 0,
         'track_stock' => true,
         'is_active' => true,
@@ -39,20 +40,21 @@ function createStockUnitVariant(): ProductVariant
 
 test('authenticated user can view stock unit list with product and variant names plus summary', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $variant = createStockUnitVariant();
 
     ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'sim_free',
         'status' => 'available',
     ]);
 
     ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '990000862471854',
-        'network_compatibility' => 'docomo',
         'status' => 'sold',
     ]);
 
@@ -78,20 +80,21 @@ test('authenticated user can view stock unit list with product and variant names
 
 test('user can filter stock units by status and search imei', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
 
     $variant = createStockUnitVariant();
 
     ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'sim_free',
         'status' => 'available',
     ]);
 
     ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '990000862471854',
-        'network_compatibility' => 'docomo',
         'status' => 'sold',
     ]);
 
@@ -112,6 +115,7 @@ test('user can filter stock units by status and search imei', function () {
 
 test('authenticated user can open create stock unit page', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createStockUnitVariant();
 
     $response = $this
@@ -121,23 +125,25 @@ test('authenticated user can open create stock unit page', function () {
     $response->assertSuccessful();
     $response->assertInertia(fn ($page) => $page
         ->component('Dashboard/Store/ProductStockUnit/Create')
-        ->has('variants', 1)
-        ->where('variants.0.id', $variant->id)
-        ->where('variants.0.name', 'iPhone 15 - 128GB Black')
+        ->has('products', 1)
+        ->where('products.0.id', $variant->product_id)
+        ->where('products.0.variant_items.0.id', $variant->id)
+        ->where('products.0.variant_items.0.name', '128GB Black')
     );
 });
 
 test('authenticated user can create stock unit and variant stock is synced', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createStockUnitVariant();
 
     $response = $this
         ->actingAs($user)
         ->from(route('product-stock-units.create'))
         ->post(route('product-stock-units.store'), [
+            'product_id' => $variant->product_id,
             'product_variant_id' => $variant->id,
             'imei_serial_number' => '351234567890123',
-            'network_compatibility' => 'sim_free',
             'status' => 'available',
             'note' => 'Box sealed',
         ]);
@@ -145,47 +151,49 @@ test('authenticated user can create stock unit and variant stock is synced', fun
     $response->assertRedirect(route('product-stock-units.index'));
 
     $this->assertDatabaseHas('product_stock_units', [
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'sim_free',
         'status' => 'available',
     ]);
 
     expect($variant->refresh()->stock)->toBe(1);
 });
 
-test('authenticated user can create stock unit without network', function () {
+test('authenticated user can create stock unit with null serial number', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createStockUnitVariant();
 
     $response = $this
         ->actingAs($user)
         ->from(route('product-stock-units.create'))
         ->post(route('product-stock-units.store'), [
+            'product_id' => $variant->product_id,
             'product_variant_id' => $variant->id,
-            'imei_serial_number' => '351234567890124',
-            'network_compatibility' => null,
+            'imei_serial_number' => null,
             'status' => 'available',
         ]);
 
     $response->assertRedirect(route('product-stock-units.index'));
 
     $this->assertDatabaseHas('product_stock_units', [
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
-        'imei_serial_number' => '351234567890124',
-        'network_compatibility' => null,
+        'imei_serial_number' => null,
         'status' => 'available',
     ]);
 });
 
 test('authenticated user can view stock unit detail page', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createStockUnitVariant();
 
     $stockUnit = ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'docomo',
         'status' => 'available',
     ]);
 
@@ -204,12 +212,13 @@ test('authenticated user can view stock unit detail page', function () {
 
 test('authenticated user can open edit stock unit page', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createStockUnitVariant();
 
     $stockUnit = ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'docomo',
         'status' => 'available',
     ]);
 
@@ -222,18 +231,19 @@ test('authenticated user can open edit stock unit page', function () {
         ->component('Dashboard/Store/ProductStockUnit/Edit')
         ->where('stockUnit.id', $stockUnit->id)
         ->where('stockUnit.imei_serial_number', '351234567890123')
-        ->has('variants', 1)
+        ->has('products', 1)
     );
 });
 
 test('authenticated user can update stock unit and variant stock is synced', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createStockUnitVariant();
 
     $stockUnit = ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'docomo',
         'status' => 'available',
     ]);
 
@@ -245,9 +255,9 @@ test('authenticated user can update stock unit and variant stock is synced', fun
         ->actingAs($user)
         ->from(route('product-stock-units.edit', $stockUnit))
         ->put(route('product-stock-units.update', $stockUnit), [
+            'product_id' => $variant->product_id,
             'product_variant_id' => $variant->id,
-            'imei_serial_number' => '351234567890123',
-            'network_compatibility' => 'mineo',
+            'imei_serial_number' => '351234567890123-updated',
             'status' => 'sold',
             'note' => 'Sold from dashboard',
         ]);
@@ -256,7 +266,7 @@ test('authenticated user can update stock unit and variant stock is synced', fun
 
     $this->assertDatabaseHas('product_stock_units', [
         'id' => $stockUnit->id,
-        'network_compatibility' => 'mineo',
+        'imei_serial_number' => '351234567890123-updated',
         'status' => 'sold',
     ]);
 
@@ -265,12 +275,13 @@ test('authenticated user can update stock unit and variant stock is synced', fun
 
 test('authenticated user can delete stock unit and variant stock is synced', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $variant = createStockUnitVariant();
 
     $stockUnit = ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'sim_free',
         'status' => 'available',
     ]);
 

@@ -66,6 +66,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Http\Controllers\VerifyEmailController;
+use Laravel\Fortify\Http\Requests\VerifyEmailRequest;
 
 // Route::inertia('/', 'welcome', [
 //     'canRegister' => Features::enabled(Features::registration()),
@@ -301,7 +302,7 @@ if (Features::enabled(Features::registration())) {
 if (Features::enabled(Features::emailVerification())) {
     Route::redirect('/email/verify', '/my-admin/email/verify', 301);
 
-    Route::get('/email/verify/{id}/{hash}', function (Request $request) {
+    Route::get('/email/verify/{id}/{hash}', function (VerifyEmailRequest $request) {
         return app(VerifyEmailController::class)($request);
     })
         ->middleware(['auth', 'signed', 'throttle:6,1'])

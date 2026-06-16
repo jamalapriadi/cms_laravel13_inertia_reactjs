@@ -40,8 +40,6 @@ class ProductStockUnitController extends Controller
                     $query->where(function ($q) use ($search) {
                         $q->where('imei_serial_number', 'like', "%{$search}%")
                             ->orWhere('barcode', 'like', "%{$search}%")
-                            ->orWhere('grade', 'like', "%{$search}%")
-                            ->orWhere('network_compatibility', 'like', "%{$search}%")
                             ->orWhereHas('product', function ($productQuery) use ($search) {
                                 $productQuery->where('name', 'like', "%{$search}%")
                                     ->orWhere('sku', 'like', "%{$search}%");

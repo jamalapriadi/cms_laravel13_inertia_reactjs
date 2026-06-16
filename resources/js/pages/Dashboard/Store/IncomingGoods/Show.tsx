@@ -23,7 +23,6 @@ interface IncomingGoods {
         stock_units: Array<{
             id: string;
             imei_serial_number: string;
-            network_compatibility?: string | null;
             status: string;
         }>;
     }>;
@@ -161,7 +160,6 @@ export default function Show({ incomingGoods }: Props) {
                                             {unit.imei_serial_number}
                                         </span>
                                         <span className="ml-2 text-muted-foreground">
-                                            {unit.network_compatibility ?? '-'}{' '}
                                             / {unit.status}
                                         </span>
                                     </div>

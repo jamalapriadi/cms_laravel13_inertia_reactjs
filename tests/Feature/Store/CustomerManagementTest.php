@@ -26,6 +26,7 @@ function createDashboardCustomer(array $attributes = []): Customer
 
 test('authenticated user can view customer dashboard with summary', function () {
     $admin = User::factory()->create();
+    $admin->is_super_admin = true;
     $customer = createDashboardCustomer(['name' => 'Jane Customer', 'email' => 'jane@example.com']);
 
     Order::create([
@@ -60,6 +61,7 @@ test('authenticated user can view customer dashboard with summary', function () 
 
 test('authenticated user can view customer order and cart activity', function () {
     $admin = User::factory()->create();
+    $admin->is_super_admin = true;
     $customer = createDashboardCustomer(['name' => 'Activity Customer']);
 
     $category = Category::create([
@@ -119,6 +121,7 @@ test('authenticated user can view customer order and cart activity', function ()
 
 test('authenticated user can disable customer login and reset password', function () {
     $admin = User::factory()->create();
+    $admin->is_super_admin = true;
     $customer = createDashboardCustomer(['password' => 'old-password']);
 
     $response = $this->actingAs($admin)
@@ -136,6 +139,7 @@ test('authenticated user can disable customer login and reset password', functio
 
 test('authenticated user can delete customer and detach commerce activity', function () {
     $admin = User::factory()->create();
+    $admin->is_super_admin = true;
     $customer = createDashboardCustomer();
 
     $order = Order::create([

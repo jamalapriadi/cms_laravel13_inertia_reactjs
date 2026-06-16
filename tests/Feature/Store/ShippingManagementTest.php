@@ -66,6 +66,7 @@ function createTestOrder(string $invoice, string $name, float $cost = 50000): Or
 
 test('authenticated user can view shipping list with metrics', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $order1 = createTestOrder('INV-SHIP-001', 'Alice', 20000);
     $order2 = createTestOrder('INV-SHIP-002', 'Bob', 35000);
 
@@ -106,6 +107,7 @@ test('authenticated user can view shipping list with metrics', function () {
 
 test('user can filter shipping records', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $order1 = createTestOrder('INV-FILTER-001', 'Alice', 20000);
     $order2 = createTestOrder('INV-FILTER-002', 'Bob', 30000);
 
@@ -152,6 +154,7 @@ test('user can filter shipping records', function () {
 
 test('user can create shipping record and trigger order sync', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $order = createTestOrder('INV-NEW-001', 'Charlie', 15000);
 
     // Verify order is initially pending
@@ -183,6 +186,7 @@ test('user can create shipping record and trigger order sync', function () {
 
 test('user can update shipping status to delivered and sync order to completed', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $order = createTestOrder('INV-UP-001', 'Dan', 25000);
 
     $shipping = Shipping::create([
@@ -222,6 +226,7 @@ test('user can update shipping status to delivered and sync order to completed',
 
 test('user can delete a shipping record', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $order = createTestOrder('INV-DEL-001', 'Eve', 12000);
 
     $shipping = Shipping::create([

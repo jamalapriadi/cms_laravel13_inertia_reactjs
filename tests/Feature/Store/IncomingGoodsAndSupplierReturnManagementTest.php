@@ -4,16 +4,16 @@ use App\Models\Shop\Category;
 use App\Models\Shop\IncomingGoods;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductStockUnit;
-use App\Models\Shop\ProductVariant;
 use App\Models\Shop\StockMovement;
 use App\Models\Shop\Supplier;
 use App\Models\Shop\SupplierReturn;
+use App\Models\Shop\VariantItem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-function createSupplierInventoryVariant(): ProductVariant
+function createSupplierInventoryVariant(): VariantItem
 {
     $category = Category::create([
         'name' => 'Electronics',
@@ -30,11 +30,11 @@ function createSupplierInventoryVariant(): ProductVariant
         'is_publish' => true,
     ]);
 
-    return ProductVariant::create([
+    return VariantItem::create([
         'product_id' => $product->id,
         'name' => '128GB Black',
         'sku' => 'IP15-128-BLK',
-        'price' => 14500000,
+        'selling_price' => 14500000,
         'cost_price' => 12000000,
         'stock' => 0,
         'track_stock' => true,
@@ -54,6 +54,7 @@ function createInventorySupplier(): Supplier
 
 test('authenticated user can create completed incoming goods and stock is synced', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $supplier = createInventorySupplier();
     $variant = createSupplierInventoryVariant();
 
@@ -73,11 +74,9 @@ test('authenticated user can create completed incoming goods and stock is synced
                     'stock_units' => [
                         [
                             'imei_serial_number' => '351234567890123',
-                            'network_compatibility' => 'sim_free',
                         ],
                         [
                             'imei_serial_number' => '990000862471854',
-                            'network_compatibility' => 'docomo',
                         ],
                     ],
                 ],
@@ -103,6 +102,7 @@ test('authenticated user can create completed incoming goods and stock is synced
 
 test('incoming goods validates stock unit count against item quantity', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $supplier = createInventorySupplier();
     $variant = createSupplierInventoryVariant();
 
@@ -123,7 +123,6 @@ test('incoming goods validates stock unit count against item quantity', function
                     'stock_units' => [
                         [
                             'imei_serial_number' => '351234567890124',
-                            'network_compatibility' => 'sim_free',
                         ],
                     ],
                 ],
@@ -135,13 +134,14 @@ test('incoming goods validates stock unit count against item quantity', function
 
 test('authenticated user can return damaged goods to supplier and stock is synced', function () {
     $user = User::factory()->create();
+    $user->is_super_admin = true;
     $supplier = createInventorySupplier();
     $variant = createSupplierInventoryVariant();
 
     $stockUnit = ProductStockUnit::create([
+        'product_id' => $variant->product_id,
         'product_variant_id' => $variant->id,
         'imei_serial_number' => '351234567890123',
-        'network_compatibility' => 'sim_free',
         'status' => 'available',
     ]);
 

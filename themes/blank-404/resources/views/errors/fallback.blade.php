@@ -17,9 +17,9 @@
     @if ($showHomeButton || $showAdminLoginButton)
         <div class="blank-card__actions">
             @if ($showAdminLoginButton)
-                {{-- <a href="{{ $adminLoginUrl }}" class="blank-button blank-button--primary">
+                <a href="{{ $adminLoginUrl }}" class="blank-button blank-button--primary">
                     Login Administrator
-                </a> --}}
+                </a>
             @endif
 
             @if ($showHomeButton)

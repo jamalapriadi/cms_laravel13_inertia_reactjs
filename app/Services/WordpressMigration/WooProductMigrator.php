@@ -261,10 +261,7 @@ class WooProductMigrator extends BaseMigrator
                                 'product_id' => $product->id,
                                 'product_variant_id' => null,
                                 'imei_serial_number' => 'WP-'.($product->sku ?: 'PROD').'-'.$wpProduct->ID.'-'.Str::random(5),
-                                'network_compatibility' => 'sim_free',
                                 'status' => 'available',
-                                'battery_health' => 100,
-                                'grade' => 'A',
                                 'note' => 'Migrated from WooCommerce',
                             ]);
                         }
@@ -287,10 +284,7 @@ class WooProductMigrator extends BaseMigrator
                                 'product_id' => $product->id,
                                 'product_variant_id' => null,
                                 'imei_serial_number' => 'WP-'.($product->sku ?: 'PROD').'-'.$wpProduct->ID.'-'.Str::random(5),
-                                'network_compatibility' => 'sim_free',
                                 'status' => 'available',
-                                'battery_health' => 100,
-                                'grade' => 'A',
                                 'note' => 'Migrated from WooCommerce (In Stock status)',
                             ]);
                         }

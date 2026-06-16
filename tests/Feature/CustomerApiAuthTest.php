@@ -358,7 +358,10 @@ test('customer can request api password reset link', function () {
     Notification::assertSentTo($customer, CustomerResetPasswordNotification::class, function ($notification) {
         $mail = $notification->toMail(Customer::where('email', 'reset@example.com')->first());
 
-        return str_contains($mail->actionUrl, config('customer.frontend_url').'/reset-password');
+        return $mail->actionUrl === route('customer.auth.password.reset', [
+            'token' => $notification->token,
+            'email' => 'reset@example.com',
+        ]);
     });
 });
 
