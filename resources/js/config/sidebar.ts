@@ -22,6 +22,7 @@ import {
     ShieldCheck,
     KeyRound,
     StickyNote,
+    Store,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -148,6 +149,45 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/banner-slides',
                 icon: Image,
                 permission: 'banner-slides.view',
+            },
+        ],
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cashier / POS
+    |--------------------------------------------------------------------------
+    */
+    {
+        label: 'Cashier / POS',
+        items: [
+            {
+                title: 'Point of Sale',
+                href: '/my-admin/dashboard/cashier',
+                icon: Store,
+                permission: 'orders.view', // Can be specific permission if needed
+                children: [
+                    {
+                        title: 'Dashboard Kasir',
+                        href: '/my-admin/dashboard/cashier',
+                        permission: 'orders.view',
+                    },
+                    {
+                        title: 'Shift Kasir',
+                        href: '/my-admin/dashboard/cashier/sessions',
+                        permission: 'orders.view',
+                    },
+                    {
+                        title: 'Transaksi Baru',
+                        href: '/my-admin/dashboard/cashier/orders/create',
+                        permission: 'orders.create',
+                    },
+                    {
+                        title: 'Riwayat Transaksi',
+                        href: '/my-admin/dashboard/cashier/orders',
+                        permission: 'orders.view',
+                    },
+                ],
             },
         ],
     },
