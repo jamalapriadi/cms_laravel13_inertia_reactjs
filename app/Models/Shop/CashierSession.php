@@ -23,6 +23,11 @@ class CashierSession extends Model
         'total_refund',
         'total_discount',
         'difference',
+        'cash_in_total',
+        'cash_out_total',
+        'expense_total',
+        'owner_withdrawal_total',
+        'adjustment_total',
         'status',
         'note',
         'closed_note',
@@ -40,6 +45,11 @@ class CashierSession extends Model
         'total_refund' => 'decimal:2',
         'total_discount' => 'decimal:2',
         'difference' => 'decimal:2',
+        'cash_in_total' => 'decimal:2',
+        'cash_out_total' => 'decimal:2',
+        'expense_total' => 'decimal:2',
+        'owner_withdrawal_total' => 'decimal:2',
+        'adjustment_total' => 'decimal:2',
     ];
 
     public function cashier()
@@ -50,5 +60,10 @@ class CashierSession extends Model
     public function orders()
     {
         return $this->hasMany(Order::class, 'cashier_session_id');
+    }
+
+    public function cashMovements()
+    {
+        return $this->hasMany(CashierCashMovement::class, 'cashier_session_id');
     }
 }

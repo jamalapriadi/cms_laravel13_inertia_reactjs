@@ -10,6 +10,7 @@ use App\Models\Shop\Payment;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductStockUnit;
 use App\Models\Shop\VariantItem;
+use App\Services\Cashier\CashDrawerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -32,12 +33,17 @@ class CashierController extends Controller
             $cashSales = $sessionOrders->where('payment_method', 'cash')->sum('grand_total');
             $nonCashSales = $sessionOrders->where('payment_method', '!=', 'cash')->sum('grand_total');
 
+            $movementSummary = app(CashDrawerService::class)->calculateSessionMovementSummary($activeSession);
+
             $sessionSummary = [
                 'opened_at' => $activeSession->opened_at,
                 'opening_cash' => $activeSession->opening_cash,
                 'cash_sales' => $cashSales,
                 'non_cash_sales' => $nonCashSales,
                 'total_sales' => $sessionOrders->sum('grand_total'),
+                'movement_summary' => $movementSummary,
+                'expected_cash' => $activeSession->opening_cash + $cashSales + $movementSummary['net_movement'],
+                'pending_movements_count' => $activeSession->cashMovements()->where('status', 'pending')->count(),
             ];
         }
 
@@ -107,6 +113,15 @@ class CashierController extends Controller
             ->where('status', 'open')
             ->first();
 
+        $pendingTransaction = null;
+        if (request()->has('pending_transaction_id')) {
+            $pendingTransaction = \App\Models\Shop\CashierPendingTransaction::with('items')
+                ->where('id', request('pending_transaction_id'))
+                ->where('status', 'pending')
+                ->where('cashier_id', request()->user()->id)
+                ->first();
+        }
+
         return Inertia::render('Dashboard/Cashier/Orders/Create', [
             'payment_methods' => [
                 ['code' => 'cash', 'name' => 'Cash'],
@@ -116,6 +131,7 @@ class CashierController extends Controller
                 ['code' => 'other', 'name' => 'Other'],
             ],
             'active_session' => $activeSession,
+            'pending_transaction' => $pendingTransaction,
         ]);
     }
 
@@ -207,6 +223,7 @@ class CashierController extends Controller
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|uuid',
             'items.*.variant_item_id' => 'nullable|uuid',
+            'items.*.stock_unit_id' => 'nullable|uuid',
             'items.*.qty' => 'required|integer|min:1',
             'payment_method' => 'required|string',
             'amount_paid' => 'required|numeric|min:0',
@@ -215,6 +232,7 @@ class CashierController extends Controller
             'customer_name' => 'nullable|string|max:255',
             'customer_phone' => 'nullable|string|max:255',
             'payment_note' => 'nullable|string',
+            'pending_transaction_id' => 'nullable|exists:cashier_pending_transactions,id',
         ]);
 
         $activeSession = CashierSession::where('cashier_id', $request->user()->id)
@@ -227,6 +245,19 @@ class CashierController extends Controller
 
         try {
             $order = DB::transaction(function () use ($validated, $request, $activeSession) {
+                // Verify pending transaction if exists
+                if (!empty($validated['pending_transaction_id'])) {
+                    $pendingTransaction = \App\Models\Shop\CashierPendingTransaction::where('id', $validated['pending_transaction_id'])
+                        ->where('status', 'pending')
+                        ->where('cashier_session_id', $activeSession->id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$pendingTransaction) {
+                        throw new \Exception('Pending transaction tidak valid atau sudah diproses.');
+                    }
+                }
+
                 $subtotal = 0;
                 $orderItems = [];
 
@@ -236,7 +267,14 @@ class CashierController extends Controller
                         ->where('status', 'available')
                         ->lockForUpdate();
 
-                    if ($item['variant_item_id']) {
+                    if (!empty($item['stock_unit_id'])) {
+                        $stockQuery->where('id', $item['stock_unit_id']);
+                        if ($item['qty'] > 1) {
+                            throw new \Exception("Stock unit spesifik (IMEI/Serial) hanya bisa dijual dengan quantity 1.");
+                        }
+                    }
+
+                    if (!empty($item['variant_item_id'])) {
                         $stockQuery->where('product_variant_id', $item['variant_item_id']);
                         $variant = VariantItem::with('product')->findOrFail($item['variant_item_id']);
                         $price = $variant->selling_price > 0 ? $variant->selling_price : $variant->product->base_price;
@@ -253,7 +291,7 @@ class CashierController extends Controller
                     $availableStock = $stockQuery->count();
 
                     if ($availableStock < $item['qty']) {
-                        throw new \Exception("Insufficient stock for {$productName} ".($variantName ? "({$variantName})" : ''));
+                        throw new \Exception("Insufficient stock for {$productName} ".($variantName ? "({$variantName})" : '').(!empty($item['stock_unit_id']) ? " [Stock Unit Not Available]" : ""));
                     }
 
                     $itemSubtotal = $price * $item['qty'];
@@ -261,7 +299,8 @@ class CashierController extends Controller
 
                     $orderItems[] = [
                         'product_id' => $item['product_id'],
-                        'product_variant_id' => $item['variant_item_id'],
+                        'product_variant_id' => $item['variant_item_id'] ?? null,
+                        'stock_unit_id' => $item['stock_unit_id'] ?? null,
                         'product_name' => $productName,
                         'variant_name' => $variantName,
                         'price' => $price,
@@ -328,12 +367,18 @@ class CashierController extends Controller
                 foreach ($orderItems as $item) {
                     $order->items()->create($item);
 
-                    $stockUnitsToUpdate = ProductStockUnit::where('product_id', $item['product_id'])
+                    $stockUnitsQuery = ProductStockUnit::where('product_id', $item['product_id'])
                         ->where('status', 'available')
-                        ->when($item['product_variant_id'], fn ($q) => $q->where('product_variant_id', $item['product_variant_id']))
-                        ->when(! $item['product_variant_id'], fn ($q) => $q->whereNull('product_variant_id'))
-                        ->limit($item['qty'])
-                        ->get();
+                        ->limit($item['qty']);
+
+                    if (!empty($item['stock_unit_id'])) {
+                        $stockUnitsQuery->where('id', $item['stock_unit_id']);
+                    } else {
+                        $stockUnitsQuery->when($item['product_variant_id'], fn ($q) => $q->where('product_variant_id', $item['product_variant_id']))
+                            ->when(! $item['product_variant_id'], fn ($q) => $q->whereNull('product_variant_id'));
+                    }
+
+                    $stockUnitsToUpdate = $stockUnitsQuery->get();
 
                     foreach ($stockUnitsToUpdate as $stockUnit) {
                         $stockUnit->update([
@@ -357,6 +402,14 @@ class CashierController extends Controller
                         'change_amount' => $validated['change_amount'],
                     ],
                 ]);
+
+                // 6. Convert pending transaction if exists
+                if (isset($pendingTransaction)) {
+                    $pendingTransaction->status = 'converted';
+                    $pendingTransaction->converted_order_id = $order->id;
+                    $pendingTransaction->converted_at = now();
+                    $pendingTransaction->save();
+                }
 
                 return $order;
             });

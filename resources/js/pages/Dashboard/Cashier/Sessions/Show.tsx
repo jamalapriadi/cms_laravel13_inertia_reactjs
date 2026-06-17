@@ -14,9 +14,11 @@ import { Store, Receipt, Banknote, CreditCard, Wallet, LockKeyhole } from 'lucid
 
 interface Props {
     session: any;
+    movements: any[];
+    pending_movements_count: number;
 }
 
-export default function CashierSessionsShow({ session }: Props) {
+export default function CashierSessionsShow({ session, movements, pending_movements_count }: Props) {
     const { auth } = usePage<any>().props;
     const isOwner = auth.user.id === session.cashier_id;
 
@@ -52,8 +54,13 @@ export default function CashierSessionsShow({ session }: Props) {
                                 Kembali
                             </Link>
                         </Button>
+                        {pending_movements_count > 0 && session.status === 'open' && (
+                            <div className="bg-amber-100 text-amber-800 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                                Ada {pending_movements_count} movement pending
+                            </div>
+                        )}
                         {session.status === 'open' && isOwner && (
-                            <Button asChild variant="destructive">
+                            <Button asChild variant="destructive" disabled={pending_movements_count > 0}>
                                 <Link href={`/my-admin/dashboard/cashier/sessions/${session.id}/close`}>
                                     <LockKeyhole className="mr-2 h-4 w-4" />
                                     Tutup Shift
@@ -172,6 +179,14 @@ export default function CashierSessionsShow({ session }: Props) {
                                 <span className="text-muted-foreground">Penjualan Non-Tunai</span>
                                 <span>{formatCurrency(session.non_cash_sales_total)}</span>
                             </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <span className="text-muted-foreground">Total Kas Masuk (Movement)</span>
+                                <span className="text-green-600">+{formatCurrency(session.cash_in_total || 0)}</span>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <span className="text-muted-foreground">Total Kas Keluar & Biaya</span>
+                                <span className="text-red-600">-{formatCurrency((session.cash_out_total || 0) + (session.expense_total || 0) + (session.owner_withdrawal_total || 0))}</span>
+                            </div>
                             <div className="flex justify-between pb-2">
                                 <span className="text-muted-foreground">Total Diskon Diberikan</span>
                                 <span className="text-destructive">{formatCurrency(session.total_discount)}</span>
@@ -179,6 +194,77 @@ export default function CashierSessionsShow({ session }: Props) {
                         </CardContent>
                     </Card>
                 </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Cash Movements pada Shift Ini</CardTitle>
+                        <CardDescription>
+                            Daftar pergerakan uang kas fisik selama shift ini.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Waktu</TableHead>
+                                    <TableHead>Tipe</TableHead>
+                                    <TableHead>Jumlah</TableHead>
+                                    <TableHead>Alasan</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {movements?.length > 0 ? (
+                                    movements.map((movement: any) => (
+                                        <TableRow key={movement.id}>
+                                            <TableCell>
+                                                {new Date(movement.created_at).toLocaleTimeString('id-ID')}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline">
+                                                    {movement.type.replace('_', ' ').toUpperCase()}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className={movement.direction === 'in' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                                                {movement.direction === 'in' ? '+' : '-'}{formatCurrency(movement.amount)}
+                                            </TableCell>
+                                            <TableCell>{movement.reason}</TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant={
+                                                        movement.status === 'approved' ? 'default' :
+                                                        movement.status === 'pending' ? 'secondary' :
+                                                        'destructive'
+                                                    }
+                                                >
+                                                    {movement.status.toUpperCase()}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    asChild
+                                                >
+                                                    <Link href={`/my-admin/dashboard/cashier/cash-movements/${movement.id}`}>
+                                                        Detail
+                                                    </Link>
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                                            Tidak ada cash movement pada shift ini.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
 
                 <Card>
                     <CardHeader>

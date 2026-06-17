@@ -183,9 +183,19 @@ export const sidebarConfig: SidebarGroup[] = [
                         permission: 'orders.create',
                     },
                     {
+                        title: 'Pending Transactions',
+                        href: '/my-admin/dashboard/cashier/pending-transactions',
+                        permission: 'orders.view',
+                    },
+                    {
                         title: 'Riwayat Transaksi',
                         href: '/my-admin/dashboard/cashier/orders',
                         permission: 'orders.view',
+                    },
+                    {
+                        title: 'Cash Movement',
+                        href: '/my-admin/dashboard/cashier/cash-movements',
+                        permission: 'cash-movements.view',
                     },
                 ],
             },

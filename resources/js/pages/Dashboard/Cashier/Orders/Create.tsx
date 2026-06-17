@@ -1,15 +1,23 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, ShoppingCart, Trash2, Plus, Minus, UserCircle } from 'lucide-react';
+import { Search, ShoppingCart, Trash2, Plus, Minus, UserCircle, Clock, ListOrdered } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 interface PaymentMethod {
     code: string;
@@ -19,6 +27,7 @@ interface PaymentMethod {
 interface Props {
     payment_methods: PaymentMethod[];
     active_session: any;
+    pending_transaction?: any;
 }
 
 interface ProductResult {
@@ -40,22 +49,46 @@ interface CartItem extends ProductResult {
     qty: number;
 }
 
-export default function CashierCreate({ payment_methods, active_session }: Props) {
+export default function CashierCreate({ payment_methods, active_session, pending_transaction }: Props) {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<ProductResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [cart, setCart] = useState<CartItem[]>([]);
+    
+    // Initialize cart from pending_transaction if exists
+    const initialCart = pending_transaction ? pending_transaction.items.map((item: any) => ({
+        id: item.stock_unit_id ? `su-${item.stock_unit_id}` : (item.variant_item_id ? `var-${item.variant_item_id}` : `prod-${item.product_id}`),
+        type: item.stock_unit_id ? 'stock_unit' : (item.variant_item_id ? 'variant_item' : 'simple_product'),
+        product_id: item.product_id,
+        variant_item_id: item.variant_item_id,
+        stock_unit_id: item.stock_unit_id,
+        name: item.name,
+        variant_label: item.variant_label,
+        sku: item.sku || '',
+        price: Number(item.unit_price),
+        stock: item.meta?.stock || 999, // Allow if stock isn't fully tracked here
+        thumbnail: item.meta?.thumbnail || null,
+        brand: null,
+        category: null,
+        qty: item.quantity,
+    })) : [];
+
+    const [cart, setCart] = useState<CartItem[]>(initialCart);
 
     const { data, setData, post, processing, errors } = useForm({
         items: [] as any[],
-        customer_name: '',
-        customer_phone: '',
-        discount: 0,
+        customer_name: pending_transaction?.customer?.name || '',
+        customer_phone: pending_transaction?.customer?.phone || '',
+        discount: pending_transaction ? Number(pending_transaction.discount_amount) : 0,
         payment_method: 'cash',
         amount_paid: 0,
         change_amount: 0,
         payment_note: '',
+        pending_transaction_id: pending_transaction?.id || null,
     });
+
+    const [isHoldModalOpen, setIsHoldModalOpen] = useState(false);
+    const [holdCartName, setHoldCartName] = useState('');
+    const [isHolding, setIsHolding] = useState(false);
 
     const formatCurrency = (amount: number | string) => {
         return new Intl.NumberFormat('id-ID', {
@@ -78,9 +111,12 @@ export default function CashierCreate({ payment_methods, active_session }: Props
         setData('items', cart.map(item => ({
             product_id: item.product_id,
             variant_item_id: item.variant_item_id,
+            stock_unit_id: item.stock_unit_id || null,
             qty: item.qty
         })));
     }, [cart]);
+
+    const [barcodeInput, setBarcodeInput] = useState('');
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -102,21 +138,55 @@ export default function CashierCreate({ payment_methods, active_session }: Props
         }
     };
 
-    const addToCart = (product: ProductResult) => {
+    const handleBarcodeScan = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!barcodeInput.trim()) return;
+
+        try {
+            const res = await axios.get('/my-admin/dashboard/cashier/barcode/scan', {
+                params: { code: barcodeInput.trim() }
+            });
+            
+            if (res.data.success) {
+                const product = res.data.data;
+                addToCart(product);
+            } else {
+                toast.error(res.data.message || 'Item tidak ditemukan.');
+            }
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Terjadi kesalahan saat memproses barcode.');
+        } finally {
+            setBarcodeInput('');
+        }
+    };
+
+    const addToCart = (product: ProductResult & { stock_unit_id?: string | null }) => {
         setCart(prev => {
+            if (product.type === 'stock_unit' && product.stock_unit_id) {
+                const existing = prev.find(item => item.stock_unit_id === product.stock_unit_id);
+                if (existing) {
+                    toast.error('Stock unit (IMEI/Serial) ini sudah ada di keranjang.');
+                    return prev;
+                }
+                toast.success(`${product.name} ditambahkan`);
+                return [...prev, { ...product, qty: 1 }];
+            }
+
             const existing = prev.find(item => item.id === product.id);
             if (existing) {
                 if (existing.qty >= product.stock) {
                     toast.error(`Stok tidak mencukupi. Sisa stok: ${product.stock}`);
                     return prev;
                 }
+                toast.success(`${product.name} qty ditambah`);
                 return prev.map(item => 
                     item.id === product.id ? { ...item, qty: item.qty + 1 } : item
                 );
             }
+            toast.success(`${product.name} ditambahkan`);
             return [...prev, { ...product, qty: 1 }];
         });
-        toast.success(`${product.name} ditambahkan`);
+        
         setSearchResults([]);
         setSearchQuery('');
     };
@@ -125,6 +195,10 @@ export default function CashierCreate({ payment_methods, active_session }: Props
         if (newQty < 1) return;
         setCart(prev => prev.map(item => {
             if (item.id === id) {
+                if (item.type === 'stock_unit') {
+                    toast.error('Item dengan serial/IMEI unik tidak bisa diubah quantity-nya.');
+                    return item;
+                }
                 if (newQty > item.stock) {
                     toast.error(`Maksimal stok: ${item.stock}`);
                     return item;
@@ -153,6 +227,36 @@ export default function CashierCreate({ payment_methods, active_session }: Props
         post('/my-admin/dashboard/cashier/orders');
     };
 
+    const handleHoldCart = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (cart.length === 0) {
+            toast.error('Keranjang masih kosong');
+            return;
+        }
+
+        setIsHolding(true);
+        router.post('/my-admin/dashboard/cashier/pending-transactions', {
+            name: holdCartName,
+            customer_name: data.customer_name,
+            customer_phone: data.customer_phone,
+            discount: data.discount,
+            note: data.payment_note,
+            items: cart.map(item => ({
+                product_id: item.product_id,
+                variant_item_id: item.variant_item_id,
+                stock_unit_id: item.stock_unit_id || null,
+                qty: item.qty
+            }))
+        }, {
+            onSuccess: () => {
+                setIsHoldModalOpen(false);
+                setHoldCartName('');
+                // cart will be cleared on redirect
+            },
+            onFinish: () => setIsHolding(false)
+        });
+    };
+
     return (
         <>
             <Head title="Point of Sale" />
@@ -173,21 +277,37 @@ export default function CashierCreate({ payment_methods, active_session }: Props
                     {/* Left Side: Product Search & Cart */}
                     <div className="flex-1 space-y-4">
                         <Card>
-                            <CardHeader className="pb-3">
+                            <CardHeader className="pb-3 border-b mb-3">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <Search className="h-5 w-5" />
-                                    Cari Produk
+                                    Scan Barcode / SKU / IMEI
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="space-y-4">
+                                <form onSubmit={handleBarcodeScan} className="flex gap-2">
+                                    <Input 
+                                        placeholder="Scan barcode, SKU, serial number, atau IMEI..." 
+                                        value={barcodeInput}
+                                        onChange={(e) => setBarcodeInput(e.target.value)}
+                                        autoFocus
+                                    />
+                                    <Button type="submit">
+                                        Add
+                                    </Button>
+                                </form>
+
+                                <Separator />
+
+                                <div className="text-sm text-muted-foreground font-medium flex items-center gap-2">
+                                    <Search className="h-4 w-4" /> Cari Produk Manual
+                                </div>
                                 <form onSubmit={handleSearch} className="flex gap-2">
                                     <Input 
                                         placeholder="Ketik nama produk atau SKU (min. 2 huruf)..." 
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        autoFocus
                                     />
-                                    <Button type="submit" disabled={isSearching}>
+                                    <Button type="submit" variant="secondary" disabled={isSearching}>
                                         {isSearching ? 'Mencari...' : 'Cari'}
                                     </Button>
                                 </form>
@@ -219,11 +339,21 @@ export default function CashierCreate({ payment_methods, active_session }: Props
                         </Card>
 
                         <Card className="flex-1 flex flex-col">
-                            <CardHeader className="pb-3">
+                            <CardHeader className="pb-3 flex flex-row items-center justify-between">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <ShoppingCart className="h-5 w-5" />
                                     Keranjang
                                 </CardTitle>
+                                <div className="flex items-center gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => setIsHoldModalOpen(true)} disabled={cart.length === 0}>
+                                        <Clock className="h-4 w-4 mr-1" /> Hold Cart
+                                    </Button>
+                                    <Button variant="secondary" size="sm" asChild>
+                                        <Link href="/my-admin/dashboard/cashier/pending-transactions">
+                                            <ListOrdered className="h-4 w-4 mr-1" /> Pending
+                                        </Link>
+                                    </Button>
+                                </div>
                             </CardHeader>
                             <CardContent className="flex-1 p-0">
                                 <Table>
@@ -399,6 +529,36 @@ export default function CashierCreate({ payment_methods, active_session }: Props
                 </div>
                 )}
             </div>
+
+            <Dialog open={isHoldModalOpen} onOpenChange={setIsHoldModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Hold Cart (Simpan Transaksi)</DialogTitle>
+                        <DialogDescription>
+                            Simpan keranjang ini sementara untuk diproses nanti. Stok tidak akan dikurangi.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Nama / Referensi Cart</Label>
+                            <Input 
+                                placeholder="Cth: Meja 2, Pelanggan A, dll..." 
+                                value={holdCartName}
+                                onChange={(e) => setHoldCartName(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsHoldModalOpen(false)} disabled={isHolding}>
+                            Batal
+                        </Button>
+                        <Button onClick={handleHoldCart} disabled={isHolding}>
+                            {isHolding ? 'Menyimpan...' : 'Simpan Cart'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

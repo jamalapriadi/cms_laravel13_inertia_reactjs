@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Store;
 use App\Http\Controllers\Controller;
 use App\Models\Shop\CashierSession;
 use App\Models\Shop\Order;
+use App\Services\Cashier\CashDrawerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -118,11 +119,22 @@ class CashierSessionController extends Controller
             $session->non_cash_sales_total = $nonCashSales;
             $session->total_sales = $totalSales;
             $session->total_discount = $totalDiscount;
-            $session->expected_cash = $session->opening_cash + $cashSales;
+            
+            // Calculate movement summary
+            $movementSummary = app(CashDrawerService::class)->calculateSessionMovementSummary($session);
+            $session->cash_in_total = $movementSummary['cash_in_total'];
+            $session->cash_out_total = $movementSummary['cash_out_total'];
+            $session->expense_total = $movementSummary['expense_total'];
+            $session->owner_withdrawal_total = $movementSummary['owner_withdrawal_total'];
+            $session->adjustment_total = $movementSummary['adjustment_total'];
+
+            $session->expected_cash = $session->opening_cash + $cashSales + $movementSummary['net_movement'];
         }
 
         return Inertia::render('Dashboard/Cashier/Sessions/Show', [
             'session' => $session,
+            'pending_movements_count' => $session->cashMovements()->where('status', 'pending')->count(),
+            'movements' => $session->cashMovements()->with(['createdBy', 'approvedBy'])->latest()->get(),
         ]);
     }
 
@@ -138,13 +150,22 @@ class CashierSessionController extends Controller
 
         $orders = Order::where('cashier_session_id', $session->id)->where('status', 'completed')->get();
         $cashSales = $orders->where('payment_method', 'cash')->sum('grand_total');
-        $expectedCash = $session->opening_cash + $cashSales;
+        
+        $pendingMovementsCount = $session->cashMovements()->where('status', 'pending')->count();
+        if ($pendingMovementsCount > 0) {
+            return redirect()->route('dashboard.cashier.sessions.show', $session->id)
+                ->with('error', 'Tidak dapat menutup shift karena masih ada cash movement yang menunggu approval.');
+        }
+
+        $movementSummary = app(CashDrawerService::class)->calculateSessionMovementSummary($session);
+        $expectedCash = $session->opening_cash + $cashSales + $movementSummary['net_movement'];
 
         return Inertia::render('Dashboard/Cashier/Sessions/Close', [
             'session' => $session,
             'summary' => [
                 'opening_cash' => $session->opening_cash,
                 'cash_sales' => $cashSales,
+                'movement_summary' => $movementSummary,
                 'expected_cash' => $expectedCash,
             ],
         ]);
@@ -172,7 +193,14 @@ class CashierSessionController extends Controller
             $nonCashSales = $orders->where('payment_method', '!=', 'cash')->sum('grand_total');
             $totalSales = $orders->sum('grand_total');
             $totalDiscount = $orders->sum('discount');
-            $expectedCash = $session->opening_cash + $cashSales;
+            
+            $pendingMovementsCount = $session->cashMovements()->where('status', 'pending')->count();
+            if ($pendingMovementsCount > 0) {
+                throw new \Exception('Tidak dapat menutup shift karena masih ada cash movement yang menunggu approval.');
+            }
+
+            $movementSummary = app(CashDrawerService::class)->calculateSessionMovementSummary($session);
+            $expectedCash = $session->opening_cash + $cashSales + $movementSummary['net_movement'];
             $difference = $request->closing_cash - $expectedCash;
 
             $session->update([
@@ -184,6 +212,11 @@ class CashierSessionController extends Controller
                 'total_sales' => $totalSales,
                 'total_discount' => $totalDiscount,
                 'difference' => $difference,
+                'cash_in_total' => $movementSummary['cash_in_total'],
+                'cash_out_total' => $movementSummary['cash_out_total'],
+                'expense_total' => $movementSummary['expense_total'],
+                'owner_withdrawal_total' => $movementSummary['owner_withdrawal_total'],
+                'adjustment_total' => $movementSummary['adjustment_total'],
                 'status' => 'closed',
                 'closed_note' => $request->closed_note,
             ]);

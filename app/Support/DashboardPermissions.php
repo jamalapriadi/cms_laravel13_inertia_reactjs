@@ -41,6 +41,7 @@ final class DashboardPermissions
             'banner-slides' => ['view', 'create', 'edit', 'delete'],
             'customers' => ['view', 'delete', 'update-status', 'reset-password'],
             'carts' => ['view', 'create', 'edit', 'delete', 'manage-items'],
+            'cash-movements' => ['view', 'view-all', 'create', 'cash-in', 'cash-out', 'expense', 'owner-withdrawal', 'adjustment', 'approve', 'reject', 'cancel', 'cancel-approved'],
             'payments' => ['view', 'detail', 'confirm', 'refund'],
             'stock-movements' => ['view', 'create', 'edit', 'delete'],
             'shippings' => ['view', 'create', 'edit', 'delete'],
@@ -108,6 +109,7 @@ final class DashboardPermissions
                 'product-specifications',
                 'faqs',
                 'banner-slides',
+                'cash-movements',
                 'customers',
                 'carts',
                 'payments',
@@ -135,6 +137,7 @@ final class DashboardPermissions
                 'products',
                 'product-stock-units',
                 'product-collections',
+                'cash-movements',
                 'customers',
                 'carts',
                 'orders',
@@ -161,6 +164,7 @@ final class DashboardPermissions
             ]),
             'cashier' => self::permissionsForModules([
                 'dashboard',
+                'cash-movements',
                 'customers',
                 'carts',
                 'orders',
@@ -168,7 +172,7 @@ final class DashboardPermissions
                 'shippings',
                 'products',
                 'product-stock-units',
-            ], ['view', 'detail', 'create', 'edit', 'update-status', 'confirm', 'refund']),
+            ], ['view', 'detail', 'create', 'edit', 'update-status', 'confirm', 'refund', 'cash-in', 'cash-out', 'expense', 'cancel']),
             'customer-service' => self::permissionsForModules([
                 'dashboard',
                 'customers',
@@ -260,6 +264,13 @@ final class DashboardPermissions
             'dashboard.media.update' => 'media.edit',
             'dashboard.media.destroy' => 'media.delete',
             'dashboard.media.store-image' => 'media.upload',
+            'dashboard.cashier.cash-movements.index' => 'cash-movements.view',
+            'dashboard.cashier.cash-movements.create' => 'cash-movements.create',
+            'dashboard.cashier.cash-movements.store' => 'cash-movements.create',
+            'dashboard.cashier.cash-movements.show' => 'cash-movements.view',
+            'dashboard.cashier.cash-movements.approve' => 'cash-movements.approve',
+            'dashboard.cashier.cash-movements.reject' => 'cash-movements.reject',
+            'dashboard.cashier.cash-movements.cancel' => 'cash-movements.cancel',
         ];
 
         if (array_key_exists($routeName, $explicit)) {
@@ -293,6 +304,7 @@ final class DashboardPermissions
             'product-specifications',
             'faqs',
             'banner-slides',
+            'cash-movements',
             'customers',
             'carts',
             'payments',
