@@ -36,6 +36,8 @@ use App\Http\Controllers\Store\BannerSlideController;
 use App\Http\Controllers\Store\BarcodeScannerController;
 use App\Http\Controllers\Store\BrandController;
 use App\Http\Controllers\Store\CartController;
+use App\Http\Controllers\Store\CashierController;
+use App\Http\Controllers\Store\CashierSessionController;
 use App\Http\Controllers\Store\CategoryController;
 use App\Http\Controllers\Store\CustomerController;
 use App\Http\Controllers\Store\FaqController;
@@ -233,6 +235,27 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
     Route::resource('ecommerce/suppliers', SupplierController::class)->names('suppliers')->middleware('website_mode:suppliers');
     Route::resource('ecommerce/incoming-goods', IncomingGoodsController::class)->names('incoming-goods')->middleware('website_mode:incoming-goods');
     Route::resource('ecommerce/supplier-returns', SupplierReturnController::class)->names('supplier-returns')->middleware('website_mode:supplier-returns');
+    Route::group(['prefix' => 'cashier', 'as' => 'dashboard.cashier.', 'middleware' => 'website_mode:orders'], function () {
+        Route::get('/', [CashierController::class, 'index'])->name('index');
+        Route::get('orders', [CashierController::class, 'orders'])->name('orders.index');
+        Route::get('orders/create', [CashierController::class, 'create'])->name('orders.create');
+        Route::post('orders', [CashierController::class, 'store'])->name('orders.store');
+        Route::get('orders/{order}', [CashierController::class, 'show'])->name('orders.show');
+        Route::get('orders/{order}/receipt', [CashierController::class, 'receipt'])->name('orders.receipt');
+        Route::get('products/search', [CashierController::class, 'searchProduct'])->name('products.search');
+
+        Route::get('sessions', [CashierSessionController::class, 'index'])->name('sessions.index');
+        Route::get('sessions/open', [CashierSessionController::class, 'open'])->name('sessions.open');
+        Route::post('sessions', [CashierSessionController::class, 'store'])->name('sessions.store');
+        Route::get('sessions/{session}', [CashierSessionController::class, 'show'])->name('sessions.show');
+        Route::get('sessions/{session}/close', [CashierSessionController::class, 'close'])->name('sessions.close');
+        Route::post('sessions/{session}/close', [CashierSessionController::class, 'closeStore'])->name('sessions.close.store');
+
+        Route::post('orders/{order}/cancel', [\App\Http\Controllers\Store\CashierOrderRefundController::class, 'cancelStore'])->name('orders.cancel.store');
+        Route::post('orders/{order}/refund/full', [\App\Http\Controllers\Store\CashierOrderRefundController::class, 'fullRefund'])->name('orders.refund.full');
+        Route::post('orders/{order}/refund/partial', [\App\Http\Controllers\Store\CashierOrderRefundController::class, 'partialRefund'])->name('orders.refund.partial');
+    });
+
     Route::get('orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt')->middleware('website_mode:orders');
     Route::resource('orders', OrderController::class)->names('orders')->middleware('website_mode:orders');
 

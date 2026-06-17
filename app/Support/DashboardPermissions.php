@@ -47,7 +47,7 @@ final class DashboardPermissions
             'suppliers' => ['view', 'create', 'edit', 'delete'],
             'incoming-goods' => ['view', 'create', 'edit', 'delete', 'print-barcode'],
             'supplier-returns' => ['view', 'create', 'edit', 'delete'],
-            'orders' => ['view', 'detail', 'create', 'edit', 'delete', 'update-status', 'export'],
+            'orders' => ['view', 'detail', 'create', 'edit', 'delete', 'update-status', 'export', 'refund'],
             'settings' => ['view', 'update'],
             'themes' => ['view', 'create', 'edit', 'delete'],
             'site-contents' => ['view', 'create', 'edit', 'delete'],
