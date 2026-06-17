@@ -12,6 +12,10 @@ interface Props {
     summary: {
         opening_cash: number;
         cash_sales: number;
+        movement_summary: {
+            net_movement: number;
+            [key: string]: number;
+        };
         expected_cash: number;
     };
 }
@@ -81,7 +85,12 @@ export default function CashierSessionsClose({ session, summary }: Props) {
                     <InfoIcon className="h-4 w-4" />
                     <AlertTitle>Informasi</AlertTitle>
                     <AlertDescription>
-                        Menurut perhitungan sistem, jumlah uang fisik di laci kasir seharusnya adalah <strong>{formatCurrency(summary.expected_cash)}</strong>.
+                        <p>Menurut perhitungan sistem, jumlah uang fisik di laci kasir seharusnya adalah <strong>{formatCurrency(summary.expected_cash)}</strong>.</p>
+                        <ul className="list-disc ml-5 mt-2 text-xs">
+                            <li>Modal Awal: {formatCurrency(summary.opening_cash)}</li>
+                            <li>Penjualan Tunai: {formatCurrency(summary.cash_sales)}</li>
+                            <li>Net Cash Movement: {summary.movement_summary.net_movement >= 0 ? '+' : '-'}{formatCurrency(Math.abs(summary.movement_summary.net_movement))}</li>
+                        </ul>
                     </AlertDescription>
                 </Alert>
 

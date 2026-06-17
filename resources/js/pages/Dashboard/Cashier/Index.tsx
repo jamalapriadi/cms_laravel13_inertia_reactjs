@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Store, Receipt, Banknote, ShoppingCart, PlusCircle, History } from 'lucide-react';
+import { Store, Receipt, Banknote, ShoppingCart, PlusCircle, History, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -51,9 +51,21 @@ export default function CashierIndex({ summary, recent_orders, active_session, s
                         </p>
                     </div>
                     <div className="flex gap-2">
+                        <Button asChild variant="secondary">
+                            <Link href="/my-admin/dashboard/cashier/pending-transactions">
+                                <History className="mr-2 h-4 w-4" />
+                                Pending
+                            </Link>
+                        </Button>
+                        <Button asChild variant="secondary">
+                            <Link href="/my-admin/dashboard/cashier/cash-movements">
+                                <Wallet className="mr-2 h-4 w-4" />
+                                Kas / Laci
+                            </Link>
+                        </Button>
                         <Button asChild variant="outline">
                             <Link href="/my-admin/dashboard/cashier/orders">
-                                <History className="mr-2 h-4 w-4" />
+                                <Receipt className="mr-2 h-4 w-4" />
                                 Riwayat
                             </Link>
                         </Button>
@@ -86,6 +98,7 @@ export default function CashierIndex({ summary, recent_orders, active_session, s
                                 <span>Modal: <strong>{formatCurrency(session_summary?.opening_cash || 0)}</strong></span>
                                 <span>Tunai: <strong>{formatCurrency(session_summary?.cash_sales || 0)}</strong></span>
                                 <span>Non-Tunai: <strong>{formatCurrency(session_summary?.non_cash_sales || 0)}</strong></span>
+                                <span>Net Movement: <strong>{session_summary?.movement_summary?.net_movement >= 0 ? '+' : '-'}{formatCurrency(Math.abs(session_summary?.movement_summary?.net_movement || 0))}</strong></span>
                             </div>
                         </div>
                         <Button asChild variant="outline" className="border-primary text-primary">
