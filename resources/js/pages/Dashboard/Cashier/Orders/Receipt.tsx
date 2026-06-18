@@ -80,7 +80,14 @@ export default function CashierReceipt({ order }: Props) {
                                     {item.variant_name && ` - ${item.variant_name}`}
                                 </div>
                                 <div className="flex justify-between mt-1">
-                                    <span>{item.qty} x {formatCurrency(item.price)}</span>
+                                    <span>
+                                        {item.qty} x {formatCurrency(item.price)}
+                                        {item.is_price_overridden && (
+                                            <span className="block text-[8px] text-gray-500 line-through">
+                                                Normal: {formatCurrency(item.original_unit_price || 0)}
+                                            </span>
+                                        )}
+                                    </span>
                                     <span>{formatCurrency(item.subtotal)}</span>
                                 </div>
                             </div>

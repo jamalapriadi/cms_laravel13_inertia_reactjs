@@ -197,6 +197,11 @@ export const sidebarConfig: SidebarGroup[] = [
                         href: '/my-admin/dashboard/cashier/cash-movements',
                         permission: 'cash-movements.view',
                     },
+                    {
+                        title: 'Daily Closing Report',
+                        href: '/my-admin/dashboard/cashier/reports/daily',
+                        permission: 'cashier.reports.daily.view',
+                    },
                 ],
             },
         ],

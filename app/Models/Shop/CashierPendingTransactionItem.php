@@ -17,6 +17,9 @@ class CashierPendingTransactionItem extends Model
             'quantity' => 'integer',
             'unit_price' => 'decimal:2',
             'subtotal' => 'decimal:2',
+            'original_unit_price' => 'decimal:2',
+            'final_unit_price' => 'decimal:2',
+            'is_price_overridden' => 'boolean',
             'meta' => 'array',
         ];
     }

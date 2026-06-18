@@ -55,6 +55,17 @@ final class DashboardPermissions
             'options' => ['view', 'create', 'edit', 'delete'],
             'media' => ['view', 'upload', 'edit', 'delete'],
             'api-documentation' => ['view'],
+            'cashier' => [
+                'price_override',
+                'price_override.approve',
+                'discount.apply',
+                'discount.approve',
+                'discount.approve_high_value',
+                'discount.view_approvals',
+                'discount.manage_approvals',
+                'reports.daily.view',
+                'reports.daily.view_all',
+            ],
         ];
     }
 
@@ -124,6 +135,7 @@ final class DashboardPermissions
                 'options',
                 'media',
                 'api-documentation',
+                'cashier',
             ]),
             'admin' => self::except(self::all(), [
                 'roles.delete',
@@ -162,17 +174,24 @@ final class DashboardPermissions
                 'supplier-returns',
                 'media',
             ]),
-            'cashier' => self::permissionsForModules([
-                'dashboard',
-                'cash-movements',
-                'customers',
-                'carts',
-                'orders',
-                'payments',
-                'shippings',
-                'products',
-                'product-stock-units',
-            ], ['view', 'detail', 'create', 'edit', 'update-status', 'confirm', 'refund', 'cash-in', 'cash-out', 'expense', 'cancel']),
+            'cashier' => array_merge(
+                self::permissionsForModules([
+                    'dashboard',
+                    'cash-movements',
+                    'customers',
+                    'carts',
+                    'orders',
+                    'payments',
+                    'shippings',
+                    'products',
+                    'product-stock-units',
+                ], ['view', 'detail', 'create', 'edit', 'update-status', 'confirm', 'refund', 'cash-in', 'cash-out', 'expense', 'cancel']),
+                [
+                    'cashier.discount.apply',
+                    'cashier.discount.view_approvals',
+                    'cashier.reports.daily.view',
+                ]
+            ),
             'customer-service' => self::permissionsForModules([
                 'dashboard',
                 'customers',
@@ -271,6 +290,15 @@ final class DashboardPermissions
             'dashboard.cashier.cash-movements.approve' => 'cash-movements.approve',
             'dashboard.cashier.cash-movements.reject' => 'cash-movements.reject',
             'dashboard.cashier.cash-movements.cancel' => 'cash-movements.cancel',
+            'dashboard.cashier.pricing.preview' => 'cashier.discount.apply',
+            'dashboard.cashier.discount-approvals.index' => 'cashier.discount.view_approvals',
+            'dashboard.cashier.discount-approvals.show' => 'cashier.discount.view_approvals',
+            'dashboard.cashier.discount-approvals.store' => 'cashier.discount.apply',
+            'dashboard.cashier.discount-approvals.approve' => 'cashier.discount.approve',
+            'dashboard.cashier.discount-approvals.reject' => 'cashier.discount.approve',
+            'dashboard.cashier.reports.daily' => 'cashier.reports.daily.view',
+            'dashboard.cashier.reports.daily.print' => 'cashier.reports.daily.view',
+            'dashboard.cashier.reports.daily.export' => 'cashier.reports.daily.view',
         ];
 
         if (array_key_exists($routeName, $explicit)) {

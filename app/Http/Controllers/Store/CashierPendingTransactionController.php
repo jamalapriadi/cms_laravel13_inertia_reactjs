@@ -9,6 +9,8 @@ use App\Models\Shop\Customer;
 use App\Models\Shop\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class CashierPendingTransactionController extends Controller
@@ -70,6 +72,9 @@ class CashierPendingTransactionController extends Controller
             'items.*.variant_item_id' => 'nullable|exists:variant_items,id',
             'items.*.stock_unit_id' => 'nullable|uuid',
             'items.*.qty' => 'required|integer|min:1',
+            'items.*.final_unit_price' => 'nullable|numeric|min:0',
+            'items.*.is_price_overridden' => 'nullable|boolean',
+            'items.*.price_override_reason' => 'nullable|string|max:1000',
         ]);
 
         $activeSession = CashierSession::where('cashier_id', $request->user()->id)
@@ -90,16 +95,16 @@ class CashierPendingTransactionController extends Controller
                     [
                         'name' => $request->customer_name ?? 'Customer',
                         'email' => "{$phone}@walkin.local",
-                        'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16)),
+                        'password' => Hash::make(Str::random(16)),
                     ]
                 );
             }
 
-            $pendingTransaction = new CashierPendingTransaction();
+            $pendingTransaction = new CashierPendingTransaction;
             $pendingTransaction->cashier_session_id = $activeSession->id;
             $pendingTransaction->cashier_id = $request->user()->id;
             $pendingTransaction->customer_id = $customer ? $customer->id : null;
-            $pendingTransaction->name = $request->name ?: 'Pending Transaction #' . date('Ymd-His');
+            $pendingTransaction->name = $request->name ?: 'Pending Transaction #'.date('Ymd-His');
             $pendingTransaction->status = 'pending';
             $pendingTransaction->discount_amount = $request->discount ?? 0;
             $pendingTransaction->note = $request->note;
@@ -111,16 +116,16 @@ class CashierPendingTransactionController extends Controller
 
             foreach ($request->items as $itemData) {
                 $product = Product::with(['variants.items'])->findOrFail($itemData['product_id']);
-                
+
                 $unitPrice = collect([$product->base_price, $product->selling_price])->filter()->first() ?? 0;
                 $variantLabel = null;
                 $sku = $product->sku;
 
-                if (!empty($itemData['variant_item_id'])) {
-                    $variantItem = collect($product->variants ?? [])->flatMap(function($v) {
+                if (! empty($itemData['variant_item_id'])) {
+                    $variantItem = collect($product->variants ?? [])->flatMap(function ($v) {
                         return $v->items ?? [];
                     })->where('id', $itemData['variant_item_id'])->first();
-                    
+
                     if ($variantItem) {
                         $unitPrice = $variantItem->selling_price ?? $variantItem->price ?? $product->base_price;
                         $variantLabel = $variantItem->name;
@@ -128,7 +133,9 @@ class CashierPendingTransactionController extends Controller
                     }
                 }
 
-                $itemSubtotal = $unitPrice * $itemData['qty'];
+                $isOverridden = isset($itemData['is_price_overridden']) ? filter_var($itemData['is_price_overridden'], FILTER_VALIDATE_BOOLEAN) : false;
+                $finalUnitPrice = $isOverridden && isset($itemData['final_unit_price']) ? (float) $itemData['final_unit_price'] : $unitPrice;
+                $itemSubtotal = $finalUnitPrice * $itemData['qty'];
                 $subtotal += $itemSubtotal;
 
                 $pendingTransaction->items()->create([
@@ -139,7 +146,11 @@ class CashierPendingTransactionController extends Controller
                     'variant_label' => $variantLabel,
                     'sku' => $sku,
                     'quantity' => $itemData['qty'],
-                    'unit_price' => $unitPrice,
+                    'unit_price' => $finalUnitPrice,
+                    'original_unit_price' => $unitPrice,
+                    'final_unit_price' => $finalUnitPrice,
+                    'is_price_overridden' => $isOverridden,
+                    'price_override_reason' => $isOverridden ? ($itemData['price_override_reason'] ?? null) : null,
                     'subtotal' => $itemSubtotal,
                     'meta' => [
                         'thumbnail' => $product->thumbnail,
@@ -158,7 +169,8 @@ class CashierPendingTransactionController extends Controller
                 ->with('success', 'Keranjang berhasil disimpan sementara.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan saat menyimpan cart: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat menyimpan cart: '.$e->getMessage());
         }
     }
 

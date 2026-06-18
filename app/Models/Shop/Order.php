@@ -37,6 +37,13 @@ class Order extends Model
         'payment_status',
         'status',
         'paid_at',
+        'item_discount_total',
+        'order_discount_total',
+        'price_override_total',
+        'discount_approval_status',
+        'discount_approved_by',
+        'discount_approved_at',
+        'discount_approval_note',
     ];
 
     protected $casts = [
@@ -47,6 +54,10 @@ class Order extends Model
         'amount_paid' => 'decimal:2',
         'change_amount' => 'decimal:2',
         'paid_at' => 'datetime',
+        'item_discount_total' => 'decimal:2',
+        'order_discount_total' => 'decimal:2',
+        'price_override_total' => 'decimal:2',
+        'discount_approved_at' => 'datetime',
     ];
 
     /*
@@ -88,5 +99,15 @@ class Order extends Model
     public function shipping()
     {
         return $this->hasOne(Shipping::class);
+    }
+
+    public function discountApprovals()
+    {
+        return $this->hasMany(OrderDiscountApproval::class);
+    }
+
+    public function discountApprovedBy()
+    {
+        return $this->belongsTo(User::class, 'discount_approved_by');
     }
 }
