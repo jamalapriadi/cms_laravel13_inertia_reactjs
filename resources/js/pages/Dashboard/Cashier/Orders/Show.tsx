@@ -85,8 +85,22 @@ export default function CashierOrderShow({ order }: Props) {
                                                     {item.variant_name && (
                                                         <p className="text-xs text-muted-foreground">{item.variant_name}</p>
                                                     )}
+                                                    {item.is_price_overridden && (
+                                                        <span className="text-xs text-amber-600 font-medium block">
+                                                            Manual Price: {item.price_override_reason}
+                                                        </span>
+                                                    )}
                                                 </TableCell>
-                                                <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
+                                                <TableCell className="text-right">
+                                                    {item.is_price_overridden ? (
+                                                        <div className="text-right">
+                                                            <p className="font-medium text-amber-700">{formatCurrency(item.price)}</p>
+                                                            <p className="text-xs text-muted-foreground line-through">{formatCurrency(item.original_unit_price || 0)}</p>
+                                                        </div>
+                                                    ) : (
+                                                        formatCurrency(item.price)
+                                                    )}
+                                                </TableCell>
                                                 <TableCell className="text-center">{item.qty}</TableCell>
                                                 <TableCell className="text-right font-medium">{formatCurrency(item.subtotal)}</TableCell>
                                             </TableRow>

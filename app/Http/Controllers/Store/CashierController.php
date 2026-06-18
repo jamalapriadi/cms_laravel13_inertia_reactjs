@@ -3,16 +3,21 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
+use App\Models\Shop\CashierPendingTransaction;
 use App\Models\Shop\CashierSession;
 use App\Models\Shop\Customer;
 use App\Models\Shop\Order;
+use App\Models\Shop\OrderDiscountApproval;
 use App\Models\Shop\Payment;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductStockUnit;
 use App\Models\Shop\VariantItem;
 use App\Services\Cashier\CashDrawerService;
+use App\Services\Cashier\PricingApprovalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class CashierController extends Controller
@@ -115,7 +120,7 @@ class CashierController extends Controller
 
         $pendingTransaction = null;
         if (request()->has('pending_transaction_id')) {
-            $pendingTransaction = \App\Models\Shop\CashierPendingTransaction::with('items')
+            $pendingTransaction = CashierPendingTransaction::with('items')
                 ->where('id', request('pending_transaction_id'))
                 ->where('status', 'pending')
                 ->where('cashier_id', request()->user()->id)
@@ -225,10 +230,14 @@ class CashierController extends Controller
             'items.*.variant_item_id' => 'nullable|uuid',
             'items.*.stock_unit_id' => 'nullable|uuid',
             'items.*.qty' => 'required|integer|min:1',
+            'items.*.final_unit_price' => 'nullable|numeric|min:0',
+            'items.*.price_override_reason' => 'nullable|string|max:1000',
             'payment_method' => 'required|string',
             'amount_paid' => 'required|numeric|min:0',
             'change_amount' => 'required|numeric|min:0',
-            'discount' => 'nullable|numeric|min:0',
+            'discount_type' => 'nullable|string|in:percentage,nominal',
+            'discount_value' => 'nullable|numeric|min:0',
+            'discount_approval_id' => 'nullable|uuid|exists:order_discount_approvals,id',
             'customer_name' => 'nullable|string|max:255',
             'customer_phone' => 'nullable|string|max:255',
             'payment_note' => 'nullable|string',
@@ -246,73 +255,79 @@ class CashierController extends Controller
         try {
             $order = DB::transaction(function () use ($validated, $request, $activeSession) {
                 // Verify pending transaction if exists
-                if (!empty($validated['pending_transaction_id'])) {
-                    $pendingTransaction = \App\Models\Shop\CashierPendingTransaction::where('id', $validated['pending_transaction_id'])
+                if (! empty($validated['pending_transaction_id'])) {
+                    $pendingTransaction = CashierPendingTransaction::where('id', $validated['pending_transaction_id'])
                         ->where('status', 'pending')
                         ->where('cashier_session_id', $activeSession->id)
                         ->lockForUpdate()
                         ->first();
 
-                    if (!$pendingTransaction) {
+                    if (! $pendingTransaction) {
                         throw new \Exception('Pending transaction tidak valid atau sudah diproses.');
                     }
                 }
 
-                $subtotal = 0;
+                // Calculate pricing and check approvals via service
+                $pricingService = app(PricingApprovalService::class);
+                $discountData = [
+                    'discount_type' => $validated['discount_type'] ?? null,
+                    'discount_value' => $validated['discount_value'] ?? 0,
+                ];
+
+                $pricingResult = $pricingService->calculateCartPricing($validated['items'], $discountData, $request->user());
+
+                $approvalRecord = null;
+                if ($pricingResult['requires_approval']) {
+                    if (empty($validated['discount_approval_id'])) {
+                        throw new \Exception($pricingResult['approval_reason'].' Silakan minta approval supervisor/admin.');
+                    }
+
+                    $approvalRecord = OrderDiscountApproval::where('id', $validated['discount_approval_id'])
+                        ->where('cashier_session_id', $activeSession->id)
+                        ->where('status', 'approved')
+                        ->first();
+
+                    if (! $approvalRecord) {
+                        throw new \Exception('Pengajuan diskon belum disetujui, ditolak, atau tidak valid.');
+                    }
+
+                    if ($approvalRecord->discount_type !== $pricingResult['discount_type'] ||
+                        (float) $approvalRecord->discount_value !== (float) $pricingResult['discount_value']) {
+                        throw new \Exception('Data diskon tidak cocok dengan approval yang disetujui.');
+                    }
+                }
+
+                $subtotal = $pricingResult['subtotal'];
+                $discount = $pricingResult['discount_amount'];
+                $grandTotal = $pricingResult['grand_total'];
                 $orderItems = [];
 
-                // 1. Validate stock & calculate subtotal
-                foreach ($validated['items'] as $item) {
+                // 1. Validate stock
+                foreach ($pricingResult['items'] as $item) {
                     $stockQuery = ProductStockUnit::where('product_id', $item['product_id'])
                         ->where('status', 'available')
                         ->lockForUpdate();
 
-                    if (!empty($item['stock_unit_id'])) {
+                    if (! empty($item['stock_unit_id'])) {
                         $stockQuery->where('id', $item['stock_unit_id']);
                         if ($item['qty'] > 1) {
-                            throw new \Exception("Stock unit spesifik (IMEI/Serial) hanya bisa dijual dengan quantity 1.");
+                            throw new \Exception('Stock unit spesifik (IMEI/Serial) hanya bisa dijual dengan quantity 1.');
                         }
                     }
 
-                    if (!empty($item['variant_item_id'])) {
+                    if (! empty($item['variant_item_id'])) {
                         $stockQuery->where('product_variant_id', $item['variant_item_id']);
-                        $variant = VariantItem::with('product')->findOrFail($item['variant_item_id']);
-                        $price = $variant->selling_price > 0 ? $variant->selling_price : $variant->product->base_price;
-                        $productName = $variant->product->name;
-                        $variantName = $variant->name;
                     } else {
                         $stockQuery->whereNull('product_variant_id');
-                        $product = Product::findOrFail($item['product_id']);
-                        $price = $product->base_price;
-                        $productName = $product->name;
-                        $variantName = null;
                     }
 
                     $availableStock = $stockQuery->count();
 
                     if ($availableStock < $item['qty']) {
-                        throw new \Exception("Insufficient stock for {$productName} ".($variantName ? "({$variantName})" : '').(!empty($item['stock_unit_id']) ? " [Stock Unit Not Available]" : ""));
+                        throw new \Exception("Insufficient stock for {$item['name']} ".($item['variant_label'] ? "({$item['variant_label']})" : '').(! empty($item['stock_unit_id']) ? ' [Stock Unit Not Available]' : ''));
                     }
 
-                    $itemSubtotal = $price * $item['qty'];
-                    $subtotal += $itemSubtotal;
-
-                    $orderItems[] = [
-                        'product_id' => $item['product_id'],
-                        'product_variant_id' => $item['variant_item_id'] ?? null,
-                        'stock_unit_id' => $item['stock_unit_id'] ?? null,
-                        'product_name' => $productName,
-                        'variant_name' => $variantName,
-                        'price' => $price,
-                        'qty' => $item['qty'],
-                        'subtotal' => $itemSubtotal,
-                    ];
-                }
-
-                $discount = $validated['discount'] ?? 0;
-                $grandTotal = $subtotal - $discount;
-                if ($grandTotal < 0) {
-                    $grandTotal = 0;
+                    $orderItems[] = $item;
                 }
 
                 // 2. Create Customer if needed (or use Walk-in)
@@ -327,7 +342,7 @@ class CashierController extends Controller
                         [
                             'name' => $customerName,
                             'email' => "{$customerPhone}@walkin.local",
-                            'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16)),
+                            'password' => Hash::make(Str::random(16)),
                             'is_active' => true,
                         ]
                     );
@@ -353,6 +368,13 @@ class CashierController extends Controller
                     'subtotal' => $subtotal,
                     'shipping_cost' => 0,
                     'discount' => $discount,
+                    'item_discount_total' => 0,
+                    'order_discount_total' => $discount,
+                    'price_override_total' => $pricingResult['price_override_total'],
+                    'discount_approval_status' => $approvalRecord ? 'approved' : 'not_required',
+                    'discount_approved_by' => $approvalRecord ? $approvalRecord->approved_by : null,
+                    'discount_approved_at' => $approvalRecord ? $approvalRecord->approved_at : null,
+                    'discount_approval_note' => $approvalRecord ? $approvalRecord->approval_note : null,
                     'grand_total' => $grandTotal,
                     'payment_method' => $validated['payment_method'],
                     'amount_paid' => $validated['amount_paid'],
@@ -363,19 +385,39 @@ class CashierController extends Controller
                     'paid_at' => now(),
                 ]);
 
+                // Attach order ID to approval record if it exists
+                if ($approvalRecord) {
+                    $approvalRecord->update(['order_id' => $order->id]);
+                }
+
                 // 4. Create Order Items & Reserve/Sold Stock
                 foreach ($orderItems as $item) {
-                    $order->items()->create($item);
+                    $order->items()->create([
+                        'product_id' => $item['product_id'],
+                        'product_variant_id' => $item['variant_item_id'],
+                        'product_name' => $item['name'],
+                        'variant_name' => $item['variant_label'],
+                        'price' => $item['final_unit_price'],
+                        'qty' => $item['qty'],
+                        'subtotal' => $item['subtotal'],
+                        'original_unit_price' => $item['original_unit_price'],
+                        'final_unit_price' => $item['final_unit_price'],
+                        'price_override_amount' => $item['price_override_amount'],
+                        'is_price_overridden' => $item['is_price_overridden'],
+                        'price_overridden_by' => $item['is_price_overridden'] ? $request->user()->id : null,
+                        'price_override_reason' => $item['price_override_reason'],
+                        'price_overridden_at' => $item['is_price_overridden'] ? now() : null,
+                    ]);
 
                     $stockUnitsQuery = ProductStockUnit::where('product_id', $item['product_id'])
                         ->where('status', 'available')
                         ->limit($item['qty']);
 
-                    if (!empty($item['stock_unit_id'])) {
+                    if (! empty($item['stock_unit_id'])) {
                         $stockUnitsQuery->where('id', $item['stock_unit_id']);
                     } else {
-                        $stockUnitsQuery->when($item['product_variant_id'], fn ($q) => $q->where('product_variant_id', $item['product_variant_id']))
-                            ->when(! $item['product_variant_id'], fn ($q) => $q->whereNull('product_variant_id'));
+                        $stockUnitsQuery->when($item['variant_item_id'], fn ($q) => $q->where('product_variant_id', $item['variant_item_id']))
+                            ->when(! $item['variant_item_id'], fn ($q) => $q->whereNull('product_variant_id'));
                     }
 
                     $stockUnitsToUpdate = $stockUnitsQuery->get();

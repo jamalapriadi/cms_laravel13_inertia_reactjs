@@ -1,12 +1,12 @@
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, ShoppingCart, Trash2, Plus, Minus, UserCircle, Clock, ListOrdered } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Search, ShoppingCart, Trash2, Plus, Minus, UserCircle, Clock, ListOrdered, Edit2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
@@ -47,9 +47,15 @@ interface ProductResult {
 
 interface CartItem extends ProductResult {
     qty: number;
+    final_unit_price: number;
+    is_price_overridden: boolean;
+    price_override_reason: string | null;
 }
 
 export default function CashierCreate({ payment_methods, active_session, pending_transaction }: Props) {
+    const { auth } = usePage().props as any;
+    const canOverridePrice = auth?.permissions?.includes('cashier.price_override') || auth?.user?.role === 'super-admin' || true; // Fallback to let backend reject if needed
+
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<ProductResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -64,12 +70,15 @@ export default function CashierCreate({ payment_methods, active_session, pending
         name: item.name,
         variant_label: item.variant_label,
         sku: item.sku || '',
-        price: Number(item.unit_price),
+        price: Number(item.original_unit_price || item.unit_price),
         stock: item.meta?.stock || 999, // Allow if stock isn't fully tracked here
         thumbnail: item.meta?.thumbnail || null,
         brand: null,
         category: null,
         qty: item.quantity,
+        final_unit_price: Number(item.final_unit_price || item.unit_price),
+        is_price_overridden: !!item.is_price_overridden,
+        price_override_reason: item.price_override_reason || null,
     })) : [];
 
     const [cart, setCart] = useState<CartItem[]>(initialCart);
@@ -78,7 +87,9 @@ export default function CashierCreate({ payment_methods, active_session, pending
         items: [] as any[],
         customer_name: pending_transaction?.customer?.name || '',
         customer_phone: pending_transaction?.customer?.phone || '',
-        discount: pending_transaction ? Number(pending_transaction.discount_amount) : 0,
+        discount_type: 'nominal',
+        discount_value: pending_transaction ? Number(pending_transaction.discount_amount) : 0,
+        discount_approval_id: null as string | null,
         payment_method: 'cash',
         amount_paid: 0,
         change_amount: 0,
@@ -86,9 +97,27 @@ export default function CashierCreate({ payment_methods, active_session, pending
         pending_transaction_id: pending_transaction?.id || null,
     });
 
-    const [isHoldModalOpen, setIsHoldModalOpen] = useState(false);
-    const [holdCartName, setHoldCartName] = useState('');
-    const [isHolding, setIsHolding] = useState(false);
+    // Pricing Preview State
+    const [pricingResult, setPricingResult] = useState<any>({
+        subtotal: 0,
+        discount_amount: 0,
+        grand_total: 0,
+        requires_approval: false,
+        approval_reason: null,
+        price_override_total: 0
+    });
+    const [isPreviewing, setIsPreviewing] = useState(false);
+
+    // Approval State
+    const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+    const [approvalNote, setApprovalNote] = useState('');
+    const [isRequestingApproval, setIsRequestingApproval] = useState(false);
+    const [currentApproval, setCurrentApproval] = useState<any>(null);
+
+    // Price Override Modal State
+    const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+    const [overridePrice, setOverridePrice] = useState<number>(0);
+    const [overrideReason, setOverrideReason] = useState<string>('');
 
     const formatCurrency = (amount: number | string) => {
         return new Intl.NumberFormat('id-ID', {
@@ -98,23 +127,185 @@ export default function CashierCreate({ payment_methods, active_session, pending
         }).format(Number(amount));
     };
 
-    // Calculate totals
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const grandTotal = Math.max(0, subtotal - data.discount);
-    
+    // Calculate change
     useEffect(() => {
-        const change = Math.max(0, data.amount_paid - grandTotal);
+        const change = Math.max(0, data.amount_paid - pricingResult.grand_total);
         setData('change_amount', change);
-    }, [data.amount_paid, grandTotal]);
+    }, [data.amount_paid, pricingResult.grand_total]);
 
+    // Update items in form data
     useEffect(() => {
         setData('items', cart.map(item => ({
             product_id: item.product_id,
             variant_item_id: item.variant_item_id,
             stock_unit_id: item.stock_unit_id || null,
-            qty: item.qty
+            qty: item.qty,
+            final_unit_price: item.final_unit_price,
+            is_price_overridden: item.is_price_overridden,
+            price_override_reason: item.price_override_reason,
         })));
     }, [cart]);
+
+    // Debounced Pricing Preview with Optimistic Update
+    useEffect(() => {
+        // Optimistic UI calculation for instant feedback
+        let localSubtotal = 0;
+        let localOverrideTotal = 0;
+        
+        cart.forEach(item => {
+            localSubtotal += item.final_unit_price * item.qty;
+            if (item.is_price_overridden) {
+                localOverrideTotal += (item.final_unit_price - item.price) * item.qty;
+            }
+        });
+
+        let localDiscountAmount = 0;
+        const discValue = Number(data.discount_value) || 0;
+        if (data.discount_type === 'nominal') {
+            localDiscountAmount = discValue;
+        } else if (data.discount_type === 'percentage') {
+            localDiscountAmount = localSubtotal * (discValue / 100);
+        }
+        
+        if (localDiscountAmount > localSubtotal) localDiscountAmount = localSubtotal;
+        
+        setPricingResult(prev => ({
+            ...prev,
+            subtotal: localSubtotal,
+            discount_amount: localDiscountAmount,
+            grand_total: Math.max(0, localSubtotal - localDiscountAmount),
+            price_override_total: localOverrideTotal
+        }));
+
+        // Debounce backend request for approval rules validation
+        const timer = setTimeout(() => {
+            if (cart.length > 0) {
+                previewPricing();
+            } else {
+                setPricingResult({
+                    subtotal: 0,
+                    discount_amount: 0,
+                    grand_total: 0,
+                    requires_approval: false,
+                    approval_reason: null,
+                    price_override_total: 0
+                });
+            }
+        }, 300); // Reduced from 500ms for slightly snappier backend update
+        return () => clearTimeout(timer);
+    }, [cart, data.discount_type, data.discount_value]);
+
+    const previewPricing = async () => {
+        setIsPreviewing(true);
+        try {
+            const payload = {
+                items: cart.map(item => ({
+                    product_id: item.product_id,
+                    variant_item_id: item.variant_item_id,
+                    stock_unit_id: item.stock_unit_id,
+                    qty: item.qty,
+                    final_unit_price: item.final_unit_price,
+                    is_price_overridden: item.is_price_overridden,
+                    price_override_reason: item.price_override_reason,
+                })),
+                discount_type: data.discount_type,
+                discount_value: data.discount_value || 0,
+            };
+            
+            const res = await axios.post('/my-admin/dashboard/cashier/pricing/preview', payload);
+            setPricingResult(res.data.data);
+            
+            // If it no longer requires approval, but we had an approval, clear it
+            if (!res.data.data.requires_approval && data.discount_approval_id) {
+                setData('discount_approval_id', null);
+                setCurrentApproval(null);
+            }
+        } catch (error: any) {
+            console.error('Failed to preview pricing', error);
+            if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+            }
+        } finally {
+            setIsPreviewing(false);
+        }
+    };
+
+    const requestApproval = async () => {
+        setIsRequestingApproval(true);
+        try {
+            const payload = {
+                items: cart.map(item => ({
+                    product_id: item.product_id,
+                    variant_item_id: item.variant_item_id,
+                    stock_unit_id: item.stock_unit_id,
+                    qty: item.qty,
+                    final_unit_price: item.final_unit_price,
+                    is_price_overridden: item.is_price_overridden,
+                    price_override_reason: item.price_override_reason,
+                })),
+                discount_type: data.discount_type,
+                discount_value: data.discount_value || 0,
+                request_note: approvalNote,
+                subtotal: pricingResult.subtotal,
+                discount_amount: pricingResult.discount_amount,
+                grand_total: pricingResult.grand_total,
+            };
+            
+            const res = await axios.post('/my-admin/dashboard/cashier/discount-approvals', payload);
+            setCurrentApproval(res.data.data);
+            setData('discount_approval_id', res.data.data.id);
+            setIsApprovalModalOpen(false);
+            setApprovalNote('');
+            toast.success('Permintaan approval berhasil dikirim. Menunggu persetujuan.');
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Gagal mengirim permintaan approval.');
+        } finally {
+            setIsRequestingApproval(false);
+        }
+    };
+
+    const checkApprovalStatus = async () => {
+        if (!currentApproval?.id) return;
+        try {
+            const res = await axios.get(`/my-admin/dashboard/cashier/discount-approvals/${currentApproval.id}`);
+            setCurrentApproval(res.data.data);
+            if (res.data.data.status === 'approved') {
+                toast.success('Approval telah disetujui!');
+            } else if (res.data.data.status === 'rejected') {
+                toast.error('Approval ditolak. Silakan ubah diskon/harga.');
+                setData('discount_approval_id', null);
+            } else {
+                toast.info('Status masih pending.');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const saveOverridePrice = () => {
+        if (!editingItem) return;
+        if (overridePrice < 0) {
+            toast.error('Harga tidak valid.');
+            return;
+        }
+        if (!overrideReason.trim()) {
+            toast.error('Alasan perubahan harga wajib diisi.');
+            return;
+        }
+
+        setCart(prev => prev.map(item => {
+            if (item.id === editingItem.id) {
+                return {
+                    ...item,
+                    final_unit_price: overridePrice,
+                    is_price_overridden: overridePrice !== item.price,
+                    price_override_reason: overrideReason,
+                };
+            }
+            return item;
+        }));
+        setEditingItem(null);
+    };
 
     const [barcodeInput, setBarcodeInput] = useState('');
 
@@ -169,7 +360,13 @@ export default function CashierCreate({ payment_methods, active_session, pending
                     return prev;
                 }
                 toast.success(`${product.name} ditambahkan`);
-                return [...prev, { ...product, qty: 1 }];
+                return [...prev, { 
+                    ...product, 
+                    qty: 1, 
+                    final_unit_price: product.price,
+                    is_price_overridden: false,
+                    price_override_reason: null
+                }];
             }
 
             const existing = prev.find(item => item.id === product.id);
@@ -184,7 +381,13 @@ export default function CashierCreate({ payment_methods, active_session, pending
                 );
             }
             toast.success(`${product.name} ditambahkan`);
-            return [...prev, { ...product, qty: 1 }];
+            return [...prev, { 
+                ...product, 
+                qty: 1,
+                final_unit_price: product.price,
+                is_price_overridden: false,
+                price_override_reason: null
+            }];
         });
         
         setSearchResults([]);
@@ -219,13 +422,23 @@ export default function CashierCreate({ payment_methods, active_session, pending
             toast.error('Keranjang masih kosong');
             return;
         }
-        if (data.amount_paid < grandTotal && data.payment_method === 'cash') {
+        if (data.amount_paid < pricingResult.grand_total && data.payment_method === 'cash') {
             toast.error('Jumlah uang dibayar kurang dari total pembayaran');
             return;
+        }
+        if (pricingResult.requires_approval) {
+            if (!currentApproval || currentApproval.status !== 'approved') {
+                toast.error('Transaksi membutuhkan approval diskon yang disetujui.');
+                return;
+            }
         }
 
         post('/my-admin/dashboard/cashier/orders');
     };
+
+    const [isHoldModalOpen, setIsHoldModalOpen] = useState(false);
+    const [holdCartName, setHoldCartName] = useState('');
+    const [isHolding, setIsHolding] = useState(false);
 
     const handleHoldCart = (e: React.FormEvent) => {
         e.preventDefault();
@@ -239,19 +452,21 @@ export default function CashierCreate({ payment_methods, active_session, pending
             name: holdCartName,
             customer_name: data.customer_name,
             customer_phone: data.customer_phone,
-            discount: data.discount,
+            discount: pricingResult.discount_amount,
             note: data.payment_note,
             items: cart.map(item => ({
                 product_id: item.product_id,
                 variant_item_id: item.variant_item_id,
                 stock_unit_id: item.stock_unit_id || null,
-                qty: item.qty
+                qty: item.qty,
+                final_unit_price: item.final_unit_price,
+                is_price_overridden: item.is_price_overridden,
+                price_override_reason: item.price_override_reason
             }))
         }, {
             onSuccess: () => {
                 setIsHoldModalOpen(false);
                 setHoldCartName('');
-                // cart will be cleared on redirect
             },
             onFinish: () => setIsHolding(false)
         });
@@ -273,7 +488,7 @@ export default function CashierCreate({ payment_methods, active_session, pending
                 )}
 
                 {active_session && (
-                <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col xl:flex-row gap-6">
                     {/* Left Side: Product Search & Cart */}
                     <div className="flex-1 space-y-4">
                         <Card>
@@ -343,6 +558,7 @@ export default function CashierCreate({ payment_methods, active_session, pending
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <ShoppingCart className="h-5 w-5" />
                                     Keranjang
+                                    {isPreviewing && <span className="text-xs text-muted-foreground animate-pulse ml-2">(Menghitung...)</span>}
                                 </CardTitle>
                                 <div className="flex items-center gap-2">
                                     <Button variant="outline" size="sm" onClick={() => setIsHoldModalOpen(true)} disabled={cart.length === 0}>
@@ -355,11 +571,12 @@ export default function CashierCreate({ payment_methods, active_session, pending
                                     </Button>
                                 </div>
                             </CardHeader>
-                            <CardContent className="flex-1 p-0">
+                            <CardContent className="flex-1 p-0 overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Item</TableHead>
+                                            <TableHead className="w-1/3">Item</TableHead>
+                                            <TableHead>Harga</TableHead>
                                             <TableHead className="w-32 text-center">Qty</TableHead>
                                             <TableHead className="text-right">Subtotal</TableHead>
                                             <TableHead className="w-12"></TableHead>
@@ -371,7 +588,39 @@ export default function CashierCreate({ payment_methods, active_session, pending
                                                 <TableCell>
                                                     <p className="font-medium text-sm">{item.name}</p>
                                                     {item.variant_label && <p className="text-xs text-muted-foreground">{item.variant_label}</p>}
-                                                    <p className="text-xs text-muted-foreground">{formatCurrency(item.price)}</p>
+                                                    {item.is_price_overridden && (
+                                                        <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-100 text-yellow-800 border border-yellow-200 text-[10px] rounded font-medium">
+                                                            Manual Price
+                                                        </span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2 group">
+                                                        <div>
+                                                            {item.is_price_overridden ? (
+                                                                <>
+                                                                    <p className="text-sm font-semibold">{formatCurrency(item.final_unit_price)}</p>
+                                                                    <p className="text-[10px] text-muted-foreground line-through">{formatCurrency(item.price)}</p>
+                                                                </>
+                                                            ) : (
+                                                                <p className="text-sm">{formatCurrency(item.price)}</p>
+                                                            )}
+                                                        </div>
+                                                        {canOverridePrice && (
+                                                            <Button 
+                                                                variant="ghost" 
+                                                                size="icon" 
+                                                                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                onClick={() => {
+                                                                    setEditingItem(item);
+                                                                    setOverridePrice(item.final_unit_price);
+                                                                    setOverrideReason(item.price_override_reason || '');
+                                                                }}
+                                                            >
+                                                                <Edit2 className="h-3 w-3" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center justify-center gap-2">
@@ -385,7 +634,7 @@ export default function CashierCreate({ payment_methods, active_session, pending
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-right font-medium">
-                                                    {formatCurrency(item.price * item.qty)}
+                                                    {formatCurrency(item.final_unit_price * item.qty)}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => removeFromCart(item.id)}>
@@ -395,7 +644,7 @@ export default function CashierCreate({ payment_methods, active_session, pending
                                             </TableRow>
                                         )) : (
                                             <TableRow>
-                                                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                                                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                                                     Keranjang masih kosong
                                                 </TableCell>
                                             </TableRow>
@@ -407,68 +656,134 @@ export default function CashierCreate({ payment_methods, active_session, pending
                     </div>
 
                     {/* Right Side: Checkout Form */}
-                    <div className="w-full md:w-[380px] shrink-0">
+                    <div className="w-full xl:w-[420px] shrink-0">
                         <form onSubmit={handleSubmit}>
-                            <Card className="sticky top-6">
-                                <CardHeader className="bg-primary/5 pb-4 border-b">
-                                    <CardTitle className="text-xl">Pembayaran</CardTitle>
+                            <Card className="sticky top-6 shadow-lg border-muted">
+                                <CardHeader className="bg-muted/30 pb-4 border-b">
+                                    <CardTitle className="text-xl flex items-center gap-2">
+                                        <ShoppingCart className="h-5 w-5 text-primary" />
+                                        Ringkasan & Pembayaran
+                                    </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-4 pt-4">
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                                <CardContent className="space-y-6 pt-6">
+                                    {pricingResult.requires_approval && (
+                                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                                            <div className="flex items-start gap-3">
+                                                <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                                                <div className="space-y-1 w-full">
+                                                    <p className="text-sm font-medium text-amber-900">Membutuhkan Approval</p>
+                                                    <p className="text-xs text-amber-700">{pricingResult.approval_reason}</p>
+                                                    
+                                                    {currentApproval ? (
+                                                        <div className="mt-3 bg-white p-2 rounded border border-amber-100 flex items-center justify-between">
+                                                            <div>
+                                                                <span className="text-[10px] font-bold uppercase text-muted-foreground">Status</span>
+                                                                <div className="flex items-center gap-1">
+                                                                    {currentApproval.status === 'approved' && <CheckCircle2 className="h-3 w-3 text-green-600" />}
+                                                                    {currentApproval.status === 'pending' && <Clock className="h-3 w-3 text-amber-600" />}
+                                                                    <span className={`text-xs font-semibold ${
+                                                                        currentApproval.status === 'approved' ? 'text-green-600' :
+                                                                        currentApproval.status === 'rejected' ? 'text-destructive' : 'text-amber-600'
+                                                                    }`}>
+                                                                        {currentApproval.status.toUpperCase()}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <Button type="button" size="sm" variant="outline" className="h-7 text-xs" onClick={checkApprovalStatus}>
+                                                                Refresh
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <Button type="button" size="sm" className="w-full mt-3 bg-amber-600 hover:bg-amber-700" onClick={() => setIsApprovalModalOpen(true)}>
+                                                            Request Approval Supervisor
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-4 bg-muted/20 p-4 rounded-xl border border-muted/50">
+                                        <div className="flex items-center gap-2 text-primary font-medium mb-1">
                                             <UserCircle className="h-4 w-4" />
-                                            <span className="text-sm font-medium">Data Pelanggan</span>
+                                            <span className="text-sm">Data Pelanggan</span>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label>Nama Pelanggan (Opsional)</Label>
-                                            <Input 
-                                                placeholder="Walk-in Customer" 
-                                                value={data.customer_name}
-                                                onChange={e => setData('customer_name', e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>No HP (Opsional)</Label>
-                                            <Input 
-                                                placeholder="08xxxxxxxxxx" 
-                                                value={data.customer_phone}
-                                                onChange={e => setData('customer_phone', e.target.value)}
-                                            />
+                                        <div className="space-y-3">
+                                            <div>
+                                                <Label className="text-xs text-muted-foreground mb-1 block">Nama Pelanggan (Opsional)</Label>
+                                                <Input 
+                                                    className="bg-white"
+                                                    placeholder="Walk-in Customer" 
+                                                    value={data.customer_name}
+                                                    onChange={e => setData('customer_name', e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label className="text-xs text-muted-foreground mb-1 block">No HP (Opsional)</Label>
+                                                <Input 
+                                                    className="bg-white"
+                                                    placeholder="08xxxxxxxxxx" 
+                                                    value={data.customer_phone}
+                                                    onChange={e => setData('customer_phone', e.target.value)}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                    
-                                    <Separator />
 
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between text-sm">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between text-sm items-center">
                                             <span className="text-muted-foreground">Subtotal</span>
-                                            <span className="font-medium">{formatCurrency(subtotal)}</span>
+                                            <span className="font-semibold">{formatCurrency(pricingResult.subtotal)}</span>
                                         </div>
                                         
-                                        <div className="space-y-2">
-                                            <Label>Diskon (Rp)</Label>
-                                            <Input 
-                                                type="number" 
-                                                min="0"
-                                                value={data.discount || ''}
-                                                onChange={e => setData('discount', Number(e.target.value))}
-                                                placeholder="0"
-                                            />
+                                        <div className="space-y-2 bg-muted/10 p-3 rounded-lg border border-dashed border-muted">
+                                            <Label className="text-xs text-muted-foreground block mb-1">Diskon Order</Label>
+                                            <div className="flex gap-2">
+                                                <Select value={data.discount_type} onValueChange={(v) => setData('discount_type', v)}>
+                                                    <SelectTrigger className="w-[100px] bg-white">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="nominal">Rp</SelectItem>
+                                                        <SelectItem value="percentage">%</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <Input 
+                                                    type="number" 
+                                                    min="0"
+                                                    className="flex-1 bg-white"
+                                                    value={data.discount_value || ''}
+                                                    onChange={e => setData('discount_value', Number(e.target.value))}
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                            {pricingResult.discount_amount > 0 && (
+                                                <p className="text-xs text-right text-emerald-600 font-medium mt-1">
+                                                    Potongan: -{formatCurrency(pricingResult.discount_amount)}
+                                                </p>
+                                            )}
                                         </div>
 
-                                        <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                                        {pricingResult.price_override_total < 0 && (
+                                            <div className="flex justify-between text-sm items-center text-amber-600 bg-amber-50 p-2 rounded border border-amber-100">
+                                                <span>Koreksi Harga (Total)</span>
+                                                <span className="font-medium">{formatCurrency(pricingResult.price_override_total)}</span>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between items-center text-xl font-bold pt-4 border-t">
                                             <span>Total</span>
-                                            <span className="text-primary">{formatCurrency(grandTotal)}</span>
+                                            <span className="text-primary tracking-tight">{formatCurrency(pricingResult.grand_total)}</span>
                                         </div>
                                     </div>
 
-                                    <Separator />
+                                    <Separator className="my-2" />
 
-                                    <div className="space-y-3">
+                                    <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label>Metode Pembayaran</Label>
+                                            <Label className="text-xs text-muted-foreground">Metode Pembayaran</Label>
                                             <Select value={data.payment_method} onValueChange={(v) => setData('payment_method', v)}>
-                                                <SelectTrigger>
+                                                <SelectTrigger className="h-11">
                                                     <SelectValue placeholder="Pilih Metode" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -480,25 +795,28 @@ export default function CashierCreate({ payment_methods, active_session, pending
                                             {errors.payment_method && <span className="text-xs text-destructive">{errors.payment_method}</span>}
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <Label>Jumlah Dibayar (Rp)</Label>
+                                        <div className="space-y-2 bg-primary/5 p-3 rounded-xl border border-primary/10">
+                                            <Label className="text-xs text-primary font-medium">Jumlah Dibayar (Rp)</Label>
                                             <Input 
                                                 type="number" 
                                                 min="0"
+                                                className="h-12 text-lg font-semibold bg-white border-primary/20"
                                                 value={data.amount_paid || ''}
                                                 onChange={e => setData('amount_paid', Number(e.target.value))}
                                                 placeholder="0"
                                                 required
                                             />
+                                            
+                                            <div className="flex justify-between items-center text-sm font-medium pt-2">
+                                                <span className={data.change_amount > 0 ? "text-emerald-600" : "text-muted-foreground"}>Kembalian</span>
+                                                <span className={data.change_amount > 0 ? "text-emerald-600 font-bold text-lg" : "text-muted-foreground"}>
+                                                    {formatCurrency(data.change_amount)}
+                                                </span>
+                                            </div>
                                         </div>
 
-                                        <div className="flex justify-between text-sm font-medium pt-2">
-                                            <span className={data.change_amount > 0 ? "text-green-600" : "text-muted-foreground"}>Kembalian</span>
-                                            <span className={data.change_amount > 0 ? "text-green-600" : "text-muted-foreground"}>{formatCurrency(data.change_amount)}</span>
-                                        </div>
-
-                                        <div className="space-y-2 pt-2">
-                                            <Label>Catatan (Opsional)</Label>
+                                        <div className="space-y-2 pt-1">
+                                            <Label className="text-xs text-muted-foreground">Catatan (Opsional)</Label>
                                             <Input 
                                                 placeholder="Catatan pembayaran..." 
                                                 value={data.payment_note}
@@ -508,7 +826,8 @@ export default function CashierCreate({ payment_methods, active_session, pending
                                     </div>
                                     
                                     {(errors as any).error && (
-                                        <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20">
+                                        <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-lg border border-destructive/20 flex items-center gap-2">
+                                            <AlertCircle className="h-4 w-4" />
                                             {(errors as any).error}
                                         </div>
                                     )}
@@ -518,7 +837,11 @@ export default function CashierCreate({ payment_methods, active_session, pending
                                         type="submit" 
                                         className="w-full" 
                                         size="lg" 
-                                        disabled={processing || cart.length === 0}
+                                        disabled={
+                                            processing || 
+                                            cart.length === 0 || 
+                                            (pricingResult.requires_approval && currentApproval?.status !== 'approved')
+                                        }
                                     >
                                         {processing ? 'Memproses...' : 'Selesaikan Transaksi'}
                                     </Button>
@@ -530,6 +853,7 @@ export default function CashierCreate({ payment_methods, active_session, pending
                 )}
             </div>
 
+            {/* Hold Cart Dialog */}
             <Dialog open={isHoldModalOpen} onOpenChange={setIsHoldModalOpen}>
                 <DialogContent>
                     <DialogHeader>
@@ -555,6 +879,89 @@ export default function CashierCreate({ payment_methods, active_session, pending
                         </Button>
                         <Button onClick={handleHoldCart} disabled={isHolding}>
                             {isHolding ? 'Menyimpan...' : 'Simpan Cart'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Request Approval Dialog */}
+            <Dialog open={isApprovalModalOpen} onOpenChange={setIsApprovalModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Request Approval Diskon/Harga</DialogTitle>
+                        <DialogDescription>
+                            Diskon atau perubahan harga melebihi batas. Silakan minta persetujuan Supervisor/Admin.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="p-3 bg-muted/50 rounded-md text-sm border space-y-1">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Alasan Blokir:</span>
+                                <span className="font-medium text-right text-amber-700">{pricingResult.approval_reason}</span>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Catatan Permintaan (Wajib)</Label>
+                            <Input 
+                                placeholder="Cth: Diskon promo akhir tahun disetujui Pak Budi..." 
+                                value={approvalNote}
+                                onChange={(e) => setApprovalNote(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsApprovalModalOpen(false)} disabled={isRequestingApproval}>
+                            Batal
+                        </Button>
+                        <Button onClick={requestApproval} disabled={isRequestingApproval || !approvalNote.trim()}>
+                            {isRequestingApproval ? 'Mengirim...' : 'Kirim Request'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Price Modal */}
+            <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Ubah Harga Item</DialogTitle>
+                        <DialogDescription>
+                            Masukkan harga baru untuk {editingItem?.name} {editingItem?.variant_label ? `(${editingItem?.variant_label})` : ''}
+                        </DialogDescription>
+                    </DialogHeader>
+                    {editingItem && (
+                        <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label>Harga Original</Label>
+                                <Input disabled value={formatCurrency(editingItem.price)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Harga Baru (Final)</Label>
+                                <Input 
+                                    type="number"
+                                    min="0"
+                                    value={overridePrice}
+                                    onChange={(e) => setOverridePrice(Number(e.target.value))}
+                                    autoFocus
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Alasan Perubahan Harga (Wajib)</Label>
+                                <Input 
+                                    placeholder="Cth: Harga nego, kondisi barang cacat..." 
+                                    value={overrideReason}
+                                    onChange={(e) => setOverrideReason(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setEditingItem(null)}>
+                            Batal
+                        </Button>
+                        <Button onClick={saveOverridePrice} disabled={!overrideReason.trim()}>
+                            Simpan Perubahan
                         </Button>
                     </DialogFooter>
                 </DialogContent>

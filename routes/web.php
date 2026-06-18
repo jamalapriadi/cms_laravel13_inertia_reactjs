@@ -8,6 +8,8 @@ use App\Http\Controllers\Customer\Auth\CustomerPasswordResetLinkController;
 use App\Http\Controllers\Customer\Auth\CustomerRegisteredUserController;
 use App\Http\Controllers\Customer\Auth\CustomerVerifyEmailController;
 use App\Http\Controllers\Customer\CustomerDashboardController;
+use App\Http\Controllers\Dashboard\CashierDiscountApprovalController;
+use App\Http\Controllers\Dashboard\CashierPricingController;
 use App\Http\Controllers\Dashboard\Cms\PageTranslationController;
 use App\Http\Controllers\Dashboard\Cms\PostTranslationController;
 use App\Http\Controllers\Dashboard\KabupatenController;
@@ -36,7 +38,11 @@ use App\Http\Controllers\Store\BannerSlideController;
 use App\Http\Controllers\Store\BarcodeScannerController;
 use App\Http\Controllers\Store\BrandController;
 use App\Http\Controllers\Store\CartController;
+use App\Http\Controllers\Store\CashierBarcodeController;
+use App\Http\Controllers\Store\CashierCashMovementController;
 use App\Http\Controllers\Store\CashierController;
+use App\Http\Controllers\Store\CashierDailyClosingReportController;
+use App\Http\Controllers\Store\CashierOrderRefundController;
 use App\Http\Controllers\Store\CashierPendingTransactionController;
 use App\Http\Controllers\Store\CashierSessionController;
 use App\Http\Controllers\Store\CategoryController;
@@ -244,7 +250,17 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
         Route::get('orders/{order}', [CashierController::class, 'show'])->name('orders.show');
         Route::get('orders/{order}/receipt', [CashierController::class, 'receipt'])->name('orders.receipt');
         Route::get('products/search', [CashierController::class, 'searchProduct'])->name('products.search');
-        Route::get('barcode/scan', [\App\Http\Controllers\Store\CashierBarcodeController::class, 'scan'])->name('barcode.scan');
+        Route::get('barcode/scan', [CashierBarcodeController::class, 'scan'])->name('barcode.scan');
+
+        // Pricing Preview
+        Route::post('pricing/preview', [CashierPricingController::class, 'preview'])->name('pricing.preview');
+
+        // Discount Approvals
+        Route::get('discount-approvals', [CashierDiscountApprovalController::class, 'index'])->name('discount-approvals.index');
+        Route::post('discount-approvals', [CashierDiscountApprovalController::class, 'store'])->name('discount-approvals.store');
+        Route::get('discount-approvals/{approval}', [CashierDiscountApprovalController::class, 'show'])->name('discount-approvals.show');
+        Route::post('discount-approvals/{approval}/approve', [CashierDiscountApprovalController::class, 'approve'])->name('discount-approvals.approve');
+        Route::post('discount-approvals/{approval}/reject', [CashierDiscountApprovalController::class, 'reject'])->name('discount-approvals.reject');
 
         Route::get('sessions', [CashierSessionController::class, 'index'])->name('sessions.index');
         Route::get('sessions/open', [CashierSessionController::class, 'open'])->name('sessions.open');
@@ -253,9 +269,9 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
         Route::get('sessions/{session}/close', [CashierSessionController::class, 'close'])->name('sessions.close');
         Route::post('sessions/{session}/close', [CashierSessionController::class, 'closeStore'])->name('sessions.close.store');
 
-        Route::post('orders/{order}/cancel', [\App\Http\Controllers\Store\CashierOrderRefundController::class, 'cancelStore'])->name('orders.cancel.store');
-        Route::post('orders/{order}/refund/full', [\App\Http\Controllers\Store\CashierOrderRefundController::class, 'fullRefund'])->name('orders.refund.full');
-        Route::post('orders/{order}/refund/partial', [\App\Http\Controllers\Store\CashierOrderRefundController::class, 'partialRefund'])->name('orders.refund.partial');
+        Route::post('orders/{order}/cancel', [CashierOrderRefundController::class, 'cancelStore'])->name('orders.cancel.store');
+        Route::post('orders/{order}/refund/full', [CashierOrderRefundController::class, 'fullRefund'])->name('orders.refund.full');
+        Route::post('orders/{order}/refund/partial', [CashierOrderRefundController::class, 'partialRefund'])->name('orders.refund.partial');
 
         Route::get('pending-transactions', [CashierPendingTransactionController::class, 'index'])->name('pending-transactions.index');
         Route::post('pending-transactions', [CashierPendingTransactionController::class, 'store'])->name('pending-transactions.store');
@@ -263,13 +279,17 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
         Route::post('pending-transactions/{pendingTransaction}/resume', [CashierPendingTransactionController::class, 'resume'])->name('pending-transactions.resume');
         Route::post('pending-transactions/{pendingTransaction}/cancel', [CashierPendingTransactionController::class, 'cancel'])->name('pending-transactions.cancel');
 
-        Route::get('cash-movements', [\App\Http\Controllers\Store\CashierCashMovementController::class, 'index'])->name('cash-movements.index');
-        Route::get('cash-movements/create', [\App\Http\Controllers\Store\CashierCashMovementController::class, 'create'])->name('cash-movements.create');
-        Route::post('cash-movements', [\App\Http\Controllers\Store\CashierCashMovementController::class, 'store'])->name('cash-movements.store');
-        Route::get('cash-movements/{movement}', [\App\Http\Controllers\Store\CashierCashMovementController::class, 'show'])->name('cash-movements.show');
-        Route::post('cash-movements/{movement}/approve', [\App\Http\Controllers\Store\CashierCashMovementController::class, 'approve'])->name('cash-movements.approve');
-        Route::post('cash-movements/{movement}/reject', [\App\Http\Controllers\Store\CashierCashMovementController::class, 'reject'])->name('cash-movements.reject');
-        Route::post('cash-movements/{movement}/cancel', [\App\Http\Controllers\Store\CashierCashMovementController::class, 'cancel'])->name('cash-movements.cancel');
+        Route::get('cash-movements', [CashierCashMovementController::class, 'index'])->name('cash-movements.index');
+        Route::get('cash-movements/create', [CashierCashMovementController::class, 'create'])->name('cash-movements.create');
+        Route::post('cash-movements', [CashierCashMovementController::class, 'store'])->name('cash-movements.store');
+        Route::get('cash-movements/{movement}', [CashierCashMovementController::class, 'show'])->name('cash-movements.show');
+        Route::post('cash-movements/{movement}/approve', [CashierCashMovementController::class, 'approve'])->name('cash-movements.approve');
+        Route::post('cash-movements/{movement}/reject', [CashierCashMovementController::class, 'reject'])->name('cash-movements.reject');
+        Route::post('cash-movements/{movement}/cancel', [CashierCashMovementController::class, 'cancel'])->name('cash-movements.cancel');
+
+        Route::get('reports/daily', [CashierDailyClosingReportController::class, 'index'])->name('reports.daily');
+        Route::get('reports/daily/print', [CashierDailyClosingReportController::class, 'print'])->name('reports.daily.print');
+        Route::get('reports/daily/export', [CashierDailyClosingReportController::class, 'export'])->name('reports.daily.export');
     });
 
     Route::get('orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt')->middleware('website_mode:orders');
