@@ -28,4 +28,25 @@ class Kabupaten extends Model
     {
         return $this->hasMany(Kecamatan::class);
     }
+
+    public function scopeSearch($query, $search)
+    {
+        return $query->when($search, function ($q, $search) {
+            $q->where('name', 'like', "%{$search}%")
+                ->orWhere('id', 'like', "%{$search}%");
+        });
+    }
+
+    public function scopeSort($query, $sort, $direction)
+    {
+        $sort = $sort ?: 'name';
+        $direction = in_array(strtolower($direction ?? ''), ['asc', 'desc']) ? strtolower($direction) : 'asc';
+
+        $allowedSortColumns = ['id', 'name', 'province_id'];
+        if (in_array($sort, $allowedSortColumns)) {
+            $query->orderBy($sort, $direction);
+        }
+
+        return $query;
+    }
 }

@@ -9,6 +9,9 @@ use App\Http\Controllers\Api\V1\Customer\CustomerAuthController;
 use App\Http\Controllers\Api\V1\FaqController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\HomeController;
+use App\Http\Controllers\Api\V1\KabupatenController;
+use App\Http\Controllers\Api\V1\KecamatanController;
+use App\Http\Controllers\Api\V1\KelurahanController;
 use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\OpenApiController;
 use App\Http\Controllers\Api\V1\OrderController;
@@ -16,6 +19,7 @@ use App\Http\Controllers\Api\V1\PageController;
 use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\ProductCollectionController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\ProvinceController;
 use App\Http\Controllers\Api\V1\SiteContentController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +49,22 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::get('faqs', [FaqController::class, 'index'])->name('faqs.index');
     Route::get('site-contents', [SiteContentController::class, 'index'])->name('site-contents.index');
     Route::get('site-contents/{group}', [SiteContentController::class, 'group'])->name('site-contents.group');
+
+    Route::get('provinces', [ProvinceController::class, 'index'])->name('provinces.index');
+    Route::get('provinces/{province}', [ProvinceController::class, 'show'])->name('provinces.show');
+    Route::get('provinces/{province}/kabupatens', [ProvinceController::class, 'kabupatens'])->name('provinces.kabupatens');
+
+    Route::get('kabupatens', [KabupatenController::class, 'index'])->name('kabupatens.index');
+    Route::get('kabupatens/{kabupaten}', [KabupatenController::class, 'show'])->name('kabupatens.show');
+    Route::get('kabupatens/{kabupaten}/kecamatans', [KabupatenController::class, 'kecamatans'])->name('kabupatens.kecamatans');
+
+    Route::get('kecamatans', [KecamatanController::class, 'index'])->name('kecamatans.index');
+    Route::get('kecamatans/{kecamatan}', [KecamatanController::class, 'show'])->name('kecamatans.show');
+    Route::get('kecamatans/{kecamatan}/kelurahans', [KecamatanController::class, 'kelurahans'])->name('kecamatans.kelurahans');
+
+    Route::get('kelurahans', [KelurahanController::class, 'index'])->name('kelurahans.index');
+    Route::get('kelurahans/{kelurahan}', [KelurahanController::class, 'show'])->name('kelurahans.show');
+
     Route::get('cart', [CartController::class, 'show'])->name('cart.show');
     Route::post('cart/items', [CartController::class, 'store'])->name('cart.items.store');
     Route::put('cart/items/{item}', [CartController::class, 'update'])->name('cart.items.update');
