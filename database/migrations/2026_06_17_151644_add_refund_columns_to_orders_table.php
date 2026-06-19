@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -20,9 +21,9 @@ return new class extends Migration
             $table->string('refund_reason')->nullable()->after('refund_total');
         });
 
-        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
-            \Illuminate\Support\Facades\DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'processing', 'shipped', 'completed', 'cancelled', 'refunded', 'partially_refunded') DEFAULT 'pending'");
-            \Illuminate\Support\Facades\DB::statement("ALTER TABLE orders MODIFY COLUMN payment_status ENUM('pending', 'paid', 'failed', 'expired', 'refunded', 'partially_refunded', 'cancelled') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'processing', 'shipped', 'completed', 'cancelled', 'refunded', 'partially_refunded') DEFAULT 'pending'");
+            DB::statement("ALTER TABLE orders MODIFY COLUMN payment_status ENUM('pending', 'paid', 'failed', 'expired', 'refunded', 'partially_refunded', 'cancelled') DEFAULT 'pending'");
         }
     }
 
@@ -42,9 +43,9 @@ return new class extends Migration
             ]);
         });
 
-        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
-            \Illuminate\Support\Facades\DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'processing', 'shipped', 'completed', 'cancelled') DEFAULT 'pending'");
-            \Illuminate\Support\Facades\DB::statement("ALTER TABLE orders MODIFY COLUMN payment_status ENUM('pending', 'paid', 'failed', 'expired', 'refunded') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'processing', 'shipped', 'completed', 'cancelled') DEFAULT 'pending'");
+            DB::statement("ALTER TABLE orders MODIFY COLUMN payment_status ENUM('pending', 'paid', 'failed', 'expired', 'refunded') DEFAULT 'pending'");
         }
     }
 };

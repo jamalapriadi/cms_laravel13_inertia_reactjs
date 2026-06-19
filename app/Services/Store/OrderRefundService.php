@@ -62,7 +62,7 @@ class OrderRefundService
             $order = Order::where('id', $order->id)->lockForUpdate()->first();
 
             if ($order->status === 'refunded') {
-                throw new \Exception("Order has already been fully refunded.");
+                throw new \Exception('Order has already been fully refunded.');
             }
 
             // Calculate remaining amount if partially refunded
@@ -119,8 +119,8 @@ class OrderRefundService
 
             foreach ($data['items'] as $itemData) {
                 $orderItem = $order->items()->where('id', $itemData['order_item_id'])->lockForUpdate()->first();
-                if (!$orderItem) {
-                    throw new \Exception("Order item not found.");
+                if (! $orderItem) {
+                    throw new \Exception('Order item not found.');
                 }
 
                 $refundedQty = $existingRefundItems->has($orderItem->id) ? collect($existingRefundItems[$orderItem->id])->sum('quantity') : 0;
@@ -234,9 +234,9 @@ class OrderRefundService
         // 1. Stock Unit handling
         // Get reserved stock units for this order and variant/product
         $stockUnits = ProductStockUnit::where('reserved_order_id', $orderItem->order_id)
-            ->when($orderItem->product_variant_id, function($q) use ($orderItem) {
+            ->when($orderItem->product_variant_id, function ($q) use ($orderItem) {
                 return $q->where('product_variant_id', $orderItem->product_variant_id);
-            }, function($q) use ($orderItem) {
+            }, function ($q) use ($orderItem) {
                 return $q->where('product_id', $orderItem->product_id);
             })
             ->whereIn('status', ['reserved', 'sold'])
@@ -264,7 +264,7 @@ class OrderRefundService
                 }
             } else {
                 $product = Product::where('id', $orderItem->product_id)->lockForUpdate()->first();
-                if ($product && !$product->has_variant) {
+                if ($product && ! $product->has_variant) {
                     $product->increment('stock', $remainingQuantity);
                 }
             }
@@ -276,7 +276,7 @@ class OrderRefundService
      */
     protected function updateCashierSession(Order $order, float $refundAmount)
     {
-        if (!$order->cashier_session_id) {
+        if (! $order->cashier_session_id) {
             return;
         }
 
@@ -285,12 +285,12 @@ class OrderRefundService
             // we should not subtract from total_sales, usually total_sales reflects gross sales.
             // but we add to total_refund
             $session->total_refund += $refundAmount;
-            
+
             // if paid by cash, we should reduce the expected cash because cashier gives money back to customer
             if ($order->payment_method === 'cash') {
                 $session->expected_cash -= $refundAmount;
             }
-            
+
             // Recalculate difference if shift is somehow closed (though usually refund after close needs admin permission)
             if ($session->closed_at) {
                 $session->difference = $session->closing_cash - $session->expected_cash;

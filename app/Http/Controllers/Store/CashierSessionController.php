@@ -119,7 +119,7 @@ class CashierSessionController extends Controller
             $session->non_cash_sales_total = $nonCashSales;
             $session->total_sales = $totalSales;
             $session->total_discount = $totalDiscount;
-            
+
             // Calculate movement summary
             $movementSummary = app(CashDrawerService::class)->calculateSessionMovementSummary($session);
             $session->cash_in_total = $movementSummary['cash_in_total'];
@@ -150,7 +150,7 @@ class CashierSessionController extends Controller
 
         $orders = Order::where('cashier_session_id', $session->id)->where('status', 'completed')->get();
         $cashSales = $orders->where('payment_method', 'cash')->sum('grand_total');
-        
+
         $pendingMovementsCount = $session->cashMovements()->where('status', 'pending')->count();
         if ($pendingMovementsCount > 0) {
             return redirect()->route('dashboard.cashier.sessions.show', $session->id)
@@ -193,7 +193,7 @@ class CashierSessionController extends Controller
             $nonCashSales = $orders->where('payment_method', '!=', 'cash')->sum('grand_total');
             $totalSales = $orders->sum('grand_total');
             $totalDiscount = $orders->sum('discount');
-            
+
             $pendingMovementsCount = $session->cashMovements()->where('status', 'pending')->count();
             if ($pendingMovementsCount > 0) {
                 throw new \Exception('Tidak dapat menutup shift karena masih ada cash movement yang menunggu approval.');

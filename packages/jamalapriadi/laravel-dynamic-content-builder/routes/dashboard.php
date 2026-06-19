@@ -3,6 +3,7 @@
 use App\Http\Controllers\Dashboard\ContentTypeController;
 use App\Http\Controllers\Dashboard\CustomFieldGroupController;
 use App\Http\Controllers\Dashboard\DynamicContentEntryController;
+use App\Http\Controllers\Dashboard\DynamicContentTranslationController;
 use Illuminate\Support\Facades\Route;
 use Jamalapriadi\DynamicContentBuilder\Http\Controllers\Dashboard\MediaLibraryController;
 
@@ -94,5 +95,13 @@ $route->group(function (): void {
             Route::delete('/{contentEntry}', [DynamicContentEntryController::class, 'destroy'])
                 ->middleware('dynamic-content-builder.authorize:dynamic-contents.delete')
                 ->name('destroy');
+
+            Route::prefix('{contentEntry}/translations')
+                ->name('translations.')
+                ->group(function (): void {
+                    Route::get('/', [DynamicContentTranslationController::class, 'index'])->name('index');
+                    Route::get('/{language}', [DynamicContentTranslationController::class, 'edit'])->name('edit');
+                    Route::put('/{language}', [DynamicContentTranslationController::class, 'update'])->name('update');
+                });
         });
 });

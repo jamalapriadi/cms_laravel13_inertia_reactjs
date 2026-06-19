@@ -22,15 +22,15 @@ class CashierBarcodeController extends Controller
         $stockUnit = ProductStockUnit::with(['product.brand', 'product.category', 'variantItem'])
             ->where(function ($q) use ($code) {
                 $q->where('imei_serial_number', $code)
-                  ->orWhere('barcode', $code);
+                    ->orWhere('barcode', $code);
             })->first();
 
         if ($stockUnit) {
             if ($stockUnit->status !== 'available') {
                 return response()->json([
                     'success' => false,
-                    'message' => "Stock unit ditemukan, tetapi statusnya " . $stockUnit->status . " (tidak available).",
-                    'data' => null
+                    'message' => 'Stock unit ditemukan, tetapi statusnya '.$stockUnit->status.' (tidak available).',
+                    'data' => null,
                 ], 400);
             }
 
@@ -41,7 +41,7 @@ class CashierBarcodeController extends Controller
                 'success' => true,
                 'message' => 'Stock unit found.',
                 'data' => [
-                    'id' => 'su_' . $stockUnit->id,
+                    'id' => 'su_'.$stockUnit->id,
                     'type' => 'stock_unit',
                     'product_id' => $product->id,
                     'variant_item_id' => $variant ? $variant->id : null,
@@ -58,7 +58,7 @@ class CashierBarcodeController extends Controller
                     'thumbnail' => $variant && $variant->image ? $variant->image : $product->thumbnail,
                     'brand' => $product->brand ? $product->brand->name : null,
                     'category' => $product->category ? $product->category->name : null,
-                ]
+                ],
             ]);
         }
 
@@ -66,15 +66,15 @@ class CashierBarcodeController extends Controller
         $variant = VariantItem::with(['product.brand', 'product.category'])
             ->where(function ($q) use ($code) {
                 $q->where('barcode', $code)
-                  ->orWhere('sku', $code);
+                    ->orWhere('sku', $code);
             })->first();
 
         if ($variant) {
-            if (!$variant->is_active || !$variant->product || !$variant->product->is_publish) {
-                 return response()->json([
+            if (! $variant->is_active || ! $variant->product || ! $variant->product->is_publish) {
+                return response()->json([
                     'success' => false,
-                    'message' => "Varian atau produk tidak aktif.",
-                    'data' => null
+                    'message' => 'Varian atau produk tidak aktif.',
+                    'data' => null,
                 ], 400);
             }
 
@@ -86,8 +86,8 @@ class CashierBarcodeController extends Controller
             if ($availableStock <= 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Produk ditemukan, tetapi stok tidak tersedia.",
-                    'data' => null
+                    'message' => 'Produk ditemukan, tetapi stok tidak tersedia.',
+                    'data' => null,
                 ], 400);
             }
 
@@ -97,7 +97,7 @@ class CashierBarcodeController extends Controller
                 'success' => true,
                 'message' => 'Variant item found.',
                 'data' => [
-                    'id' => 'v_' . $variant->id,
+                    'id' => 'v_'.$variant->id,
                     'type' => 'variant_item',
                     'product_id' => $product->id,
                     'variant_item_id' => $variant->id,
@@ -112,7 +112,7 @@ class CashierBarcodeController extends Controller
                     'thumbnail' => $variant->image ?: $product->thumbnail,
                     'brand' => $product->brand ? $product->brand->name : null,
                     'category' => $product->category ? $product->category->name : null,
-                ]
+                ],
             ]);
         }
 
@@ -120,23 +120,23 @@ class CashierBarcodeController extends Controller
         $product = Product::with(['brand', 'category'])
             ->where(function ($q) use ($code) {
                 $q->where('barcode', $code)
-                  ->orWhere('sku', $code);
+                    ->orWhere('sku', $code);
             })->first();
 
         if ($product) {
-            if (!$product->is_publish) {
+            if (! $product->is_publish) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Produk tidak aktif/publish.",
-                    'data' => null
+                    'message' => 'Produk tidak aktif/publish.',
+                    'data' => null,
                 ], 400);
             }
 
             if ($product->has_variant) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Produk memiliki varian. Silakan scan barcode spesifik variannya.",
-                    'data' => null
+                    'message' => 'Produk memiliki varian. Silakan scan barcode spesifik variannya.',
+                    'data' => null,
                 ], 400);
             }
 
@@ -148,8 +148,8 @@ class CashierBarcodeController extends Controller
             if ($availableStock <= 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Produk ditemukan, tetapi stok tidak tersedia.",
-                    'data' => null
+                    'message' => 'Produk ditemukan, tetapi stok tidak tersedia.',
+                    'data' => null,
                 ], 400);
             }
 
@@ -157,7 +157,7 @@ class CashierBarcodeController extends Controller
                 'success' => true,
                 'message' => 'Product found.',
                 'data' => [
-                    'id' => 'p_' . $product->id,
+                    'id' => 'p_'.$product->id,
                     'type' => 'simple_product',
                     'product_id' => $product->id,
                     'variant_item_id' => null,
@@ -172,14 +172,14 @@ class CashierBarcodeController extends Controller
                     'thumbnail' => $product->thumbnail,
                     'brand' => $product->brand ? $product->brand->name : null,
                     'category' => $product->category ? $product->category->name : null,
-                ]
+                ],
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => "Barcode, SKU, serial number, atau IMEI tidak ditemukan.",
-            'data' => null
+            'message' => 'Barcode, SKU, serial number, atau IMEI tidak ditemukan.',
+            'data' => null,
         ], 404);
     }
 }

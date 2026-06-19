@@ -60,4 +60,9 @@ class ContentEntry extends Model
                     ->orWhere('published_at', '<=', now());
             });
     }
+
+    public function translations()
+    {
+        return $this->hasMany(ContentEntryTranslation::class);
+    }
 }

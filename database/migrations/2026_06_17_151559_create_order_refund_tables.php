@@ -34,7 +34,7 @@ return new class extends Migration
             $table->uuid('product_id')->nullable();
             $table->uuid('variant_item_id')->nullable();
             $table->uuid('stock_unit_id')->nullable();
-            
+
             $table->integer('quantity');
             $table->decimal('unit_price', 15, 2)->default(0);
             $table->decimal('subtotal', 15, 2)->default(0);

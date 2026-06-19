@@ -1,9 +1,10 @@
 <?php
 
+use App\Models\Shop\CashierCashMovement;
 use App\Models\Shop\CashierSession;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     // Create necessary permissions and roles if they don't exist
@@ -22,7 +23,7 @@ beforeEach(function () {
 
     $cashierRole = Role::firstOrCreate(['name' => 'cashier']);
     $cashierRole->givePermissionTo($permissions);
-    
+
     $adminRole = Role::firstOrCreate(['name' => 'super-admin']);
     $adminRole->givePermissionTo($permissions);
 
@@ -75,7 +76,7 @@ it('requires approval for large cash out', function () {
         ]);
 
     $response->assertRedirect();
-    
+
     $this->assertDatabaseHas('cashier_cash_movements', [
         'cashier_session_id' => $this->session->id,
         'type' => 'cash_out',
@@ -85,7 +86,7 @@ it('requires approval for large cash out', function () {
 });
 
 it('admin can approve pending movement', function () {
-    $movement = \App\Models\Shop\CashierCashMovement::create([
+    $movement = CashierCashMovement::create([
         'cashier_session_id' => $this->session->id,
         'cashier_id' => $this->cashier->id,
         'created_by' => $this->cashier->id,
@@ -102,7 +103,7 @@ it('admin can approve pending movement', function () {
         ]);
 
     $response->assertRedirect();
-    
+
     $this->assertDatabaseHas('cashier_cash_movements', [
         'id' => $movement->id,
         'status' => 'approved',

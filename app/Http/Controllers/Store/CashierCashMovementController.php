@@ -8,20 +8,17 @@ use App\Models\Shop\CashierSession;
 use App\Services\Cashier\CashDrawerService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
 
 class CashierCashMovementController extends Controller
 {
-    public function __construct(private CashDrawerService $cashDrawerService)
-    {
-    }
+    public function __construct(private CashDrawerService $cashDrawerService) {}
 
     public function index(Request $request)
     {
         $user = $request->user();
         $isAdmin = $user->hasRole(['super-admin', 'admin', 'owner']);
 
-        if (!$user->can('cash-movements.view') && !$user->can('cash-movements.view-all')) {
+        if (! $user->can('cash-movements.view') && ! $user->can('cash-movements.view-all')) {
             abort(403);
         }
 
@@ -34,7 +31,7 @@ class CashierCashMovementController extends Controller
 
         $movements = CashierCashMovement::query()
             ->with(['cashier', 'cashierSession', 'createdBy', 'approvedBy'])
-            ->when(!$isAdmin && !$user->can('cash-movements.view-all'), function ($q) use ($user) {
+            ->when(! $isAdmin && ! $user->can('cash-movements.view-all'), function ($q) use ($user) {
                 // If not admin and cannot view all, only view own movements or movements in their active session
                 $q->where(function ($sub) use ($user) {
                     $sub->where('created_by', $user->id)
@@ -46,7 +43,7 @@ class CashierCashMovementController extends Controller
             })
             ->when($search, function ($q) use ($search) {
                 $q->where('reason', 'like', "%{$search}%")
-                  ->orWhere('note', 'like', "%{$search}%");
+                    ->orWhere('note', 'like', "%{$search}%");
             })
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($type, fn ($q) => $q->where('type', $type))
@@ -54,7 +51,7 @@ class CashierCashMovementController extends Controller
             ->when($dateRange, function ($q) use ($dateRange) {
                 $dates = explode(',', $dateRange);
                 if (count($dates) === 2) {
-                    $q->whereBetween('created_at', [$dates[0] . ' 00:00:00', $dates[1] . ' 23:59:59']);
+                    $q->whereBetween('created_at', [$dates[0].' 00:00:00', $dates[1].' 23:59:59']);
                 }
             })
             ->latest()
@@ -70,7 +67,7 @@ class CashierCashMovementController extends Controller
 
     public function create(Request $request)
     {
-        if (!$request->user()->can('cash-movements.create')) {
+        if (! $request->user()->can('cash-movements.create')) {
             abort(403);
         }
 
@@ -81,7 +78,7 @@ class CashierCashMovementController extends Controller
             ->where('status', 'open')
             ->first();
 
-        if (!$activeSession && !$isAdmin) {
+        if (! $activeSession && ! $isAdmin) {
             return redirect()->route('dashboard.cashier.index')
                 ->with('error', 'Silakan buka shift terlebih dahulu sebelum mencatat cash movement.');
         }
@@ -94,7 +91,7 @@ class CashierCashMovementController extends Controller
 
     public function store(Request $request)
     {
-        if (!$request->user()->can('cash-movements.create')) {
+        if (! $request->user()->can('cash-movements.create')) {
             abort(403);
         }
 
@@ -117,13 +114,13 @@ class CashierCashMovementController extends Controller
         ];
 
         $typePerm = $typePermissionMap[$validated['type']] ?? null;
-        if ($typePerm && !$request->user()->can("cash-movements.{$typePerm}")) {
+        if ($typePerm && ! $request->user()->can("cash-movements.{$typePerm}")) {
             return back()->withErrors(['error' => "Anda tidak memiliki akses untuk membuat {$validated['type']}."]);
         }
 
         try {
             $movement = $this->cashDrawerService->createMovement($request->user(), $validated);
-            
+
             $message = 'Cash movement berhasil dicatat.';
             if ($movement->status === 'pending') {
                 $message .= ' Menunggu approval.';
@@ -141,7 +138,7 @@ class CashierCashMovementController extends Controller
         $user = $request->user();
         $isAdmin = $user->hasRole(['super-admin', 'admin', 'owner']);
 
-        if (!$isAdmin && !$user->can('cash-movements.view-all') && $movement->created_by !== $user->id && $movement->cashier_id !== $user->id) {
+        if (! $isAdmin && ! $user->can('cash-movements.view-all') && $movement->created_by !== $user->id && $movement->cashier_id !== $user->id) {
             abort(403);
         }
 
@@ -155,7 +152,7 @@ class CashierCashMovementController extends Controller
 
     public function approve(Request $request, CashierCashMovement $movement)
     {
-        if (!$request->user()->can('cash-movements.approve')) {
+        if (! $request->user()->can('cash-movements.approve')) {
             abort(403);
         }
 
@@ -163,6 +160,7 @@ class CashierCashMovementController extends Controller
 
         try {
             $this->cashDrawerService->approveMovement($movement, $request->user(), $request->note);
+
             return back()->with('success', 'Movement approved.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -171,7 +169,7 @@ class CashierCashMovementController extends Controller
 
     public function reject(Request $request, CashierCashMovement $movement)
     {
-        if (!$request->user()->can('cash-movements.reject')) {
+        if (! $request->user()->can('cash-movements.reject')) {
             abort(403);
         }
 
@@ -179,6 +177,7 @@ class CashierCashMovementController extends Controller
 
         try {
             $this->cashDrawerService->rejectMovement($movement, $request->user(), $request->note);
+
             return back()->with('success', 'Movement rejected.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -191,6 +190,7 @@ class CashierCashMovementController extends Controller
 
         try {
             $this->cashDrawerService->cancelMovement($movement, $request->user(), $request->note);
+
             return back()->with('success', 'Movement cancelled.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
