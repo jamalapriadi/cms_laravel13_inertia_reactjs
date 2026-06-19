@@ -35,6 +35,10 @@ class OpenApiController extends Controller
                     'name' => 'Pages',
                     'description' => 'Published static and dynamic pages for the Next.js frontend.',
                 ],
+                [
+                    'name' => 'Regions',
+                    'description' => 'Indonesian regional master data (Provinces, Kabupatens, Kecamatans, Kelurahans).',
+                ],
             ],
             'paths' => [
                 '/pages' => [
@@ -313,6 +317,113 @@ class OpenApiController extends Controller
                                 ],
                             ],
                             '422' => ['$ref' => '#/components/responses/ValidationError'],
+                        ],
+                    ],
+                ],
+                '/provinces' => [
+                    'get' => [
+                        'tags' => ['Regions'],
+                        'summary' => 'Get list of provinces',
+                        'parameters' => [
+                            $this->queryParameter('search', 'Search by name or id.'),
+                            $this->queryParameter('per_page', 'Items per page.', 'integer', 15),
+                            $this->queryParameter('page', 'Page number.', 'integer', 1),
+                        ],
+                        'responses' => [
+                            '200' => ['$ref' => '#/components/responses/SuccessResponse'],
+                        ],
+                    ],
+                ],
+                '/provinces/{province}/kabupatens' => [
+                    'get' => [
+                        'tags' => ['Regions'],
+                        'summary' => 'Get kabupatens by province',
+                        'parameters' => [
+                            $this->queryParameter('province', 'Province ID.', 'string', null, 'path'),
+                            $this->queryParameter('search', 'Search by name or id.'),
+                            $this->queryParameter('per_page', 'Items per page.', 'integer', 15),
+                            $this->queryParameter('page', 'Page number.', 'integer', 1),
+                        ],
+                        'responses' => [
+                            '200' => ['$ref' => '#/components/responses/SuccessResponse'],
+                        ],
+                    ],
+                ],
+                '/kabupatens' => [
+                    'get' => [
+                        'tags' => ['Regions'],
+                        'summary' => 'Get list of kabupatens',
+                        'parameters' => [
+                            $this->queryParameter('province_id', 'Filter by province ID.'),
+                            $this->queryParameter('search', 'Search by name or id.'),
+                            $this->queryParameter('per_page', 'Items per page.', 'integer', 15),
+                            $this->queryParameter('page', 'Page number.', 'integer', 1),
+                        ],
+                        'responses' => [
+                            '200' => ['$ref' => '#/components/responses/SuccessResponse'],
+                        ],
+                    ],
+                ],
+                '/kabupatens/{kabupaten}/kecamatans' => [
+                    'get' => [
+                        'tags' => ['Regions'],
+                        'summary' => 'Get kecamatans by kabupaten',
+                        'parameters' => [
+                            $this->queryParameter('kabupaten', 'Kabupaten ID.', 'string', null, 'path'),
+                            $this->queryParameter('search', 'Search by name or id.'),
+                            $this->queryParameter('per_page', 'Items per page.', 'integer', 15),
+                            $this->queryParameter('page', 'Page number.', 'integer', 1),
+                        ],
+                        'responses' => [
+                            '200' => ['$ref' => '#/components/responses/SuccessResponse'],
+                        ],
+                    ],
+                ],
+                '/kecamatans' => [
+                    'get' => [
+                        'tags' => ['Regions'],
+                        'summary' => 'Get list of kecamatans',
+                        'parameters' => [
+                            $this->queryParameter('kabupaten_id', 'Filter by kabupaten ID.'),
+                            $this->queryParameter('province_id', 'Filter by province ID.'),
+                            $this->queryParameter('search', 'Search by name or id.'),
+                            $this->queryParameter('per_page', 'Items per page.', 'integer', 15),
+                            $this->queryParameter('page', 'Page number.', 'integer', 1),
+                        ],
+                        'responses' => [
+                            '200' => ['$ref' => '#/components/responses/SuccessResponse'],
+                        ],
+                    ],
+                ],
+                '/kecamatans/{kecamatan}/kelurahans' => [
+                    'get' => [
+                        'tags' => ['Regions'],
+                        'summary' => 'Get kelurahans by kecamatan',
+                        'parameters' => [
+                            $this->queryParameter('kecamatan', 'Kecamatan ID.', 'string', null, 'path'),
+                            $this->queryParameter('search', 'Search by name or id.'),
+                            $this->queryParameter('per_page', 'Items per page.', 'integer', 15),
+                            $this->queryParameter('page', 'Page number.', 'integer', 1),
+                        ],
+                        'responses' => [
+                            '200' => ['$ref' => '#/components/responses/SuccessResponse'],
+                        ],
+                    ],
+                ],
+                '/kelurahans' => [
+                    'get' => [
+                        'tags' => ['Regions'],
+                        'summary' => 'Get list of kelurahans',
+                        'parameters' => [
+                            $this->queryParameter('kecamatan_id', 'Filter by kecamatan ID.'),
+                            $this->queryParameter('kabupaten_id', 'Filter by kabupaten ID.'),
+                            $this->queryParameter('province_id', 'Filter by province ID.'),
+                            $this->queryParameter('search', 'Search by name or id.'),
+                            $this->queryParameter('per_page', 'Items per page.', 'integer', 15),
+                            $this->queryParameter('page', 'Page number.', 'integer', 1),
+                        ],
+                        'responses' => [
+                            '200' => ['$ref' => '#/components/responses/SuccessResponse'],
                         ],
                     ],
                 ],
