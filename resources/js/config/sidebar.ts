@@ -34,6 +34,7 @@ export interface SidebarItem {
     target?: '_blank' | '_self';
     rel?: string;
     children?: SidebarItem[];
+    isEcommerce?: boolean;
 }
 
 export interface SidebarGroup {
@@ -107,10 +108,12 @@ export const sidebarConfig: SidebarGroup[] = [
                 children: [],
             },
             {
+                key: 'product-collections',
                 title: 'Promo',
                 href: '/my-admin/dashboard/ecommerce/product-collections',
                 icon: BadgeDollarSign,
                 permission: 'product-collections.view',
+                isEcommerce: true,
                 children: [
                     {
                         title: 'Product Collections',
@@ -162,10 +165,12 @@ export const sidebarConfig: SidebarGroup[] = [
         label: 'Cashier / POS',
         items: [
             {
+                key: 'cashier',
                 title: 'Point of Sale',
                 href: '/my-admin/dashboard/cashier',
                 icon: Store,
                 permission: 'orders.view', // Can be specific permission if needed
+                isEcommerce: true,
                 children: [
                     {
                         title: 'Dashboard Kasir',
@@ -221,6 +226,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/products',
                 icon: Package,
                 permission: 'products.view',
+                isEcommerce: true,
             },
             {
                 key: 'product-stock-units',
@@ -228,6 +234,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/product-stock-units',
                 icon: ScanBarcode,
                 permission: 'product-stock-units.view',
+                isEcommerce: true,
             },
             {
                 key: 'orders',
@@ -235,6 +242,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/orders',
                 icon: ClipboardList,
                 permission: 'orders.view',
+                isEcommerce: true,
             },
             {
                 key: 'customers',
@@ -242,6 +250,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/customers',
                 icon: Users,
                 permission: 'customers.view',
+                isEcommerce: true,
             },
             {
                 key: 'carts',
@@ -249,6 +258,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/carts',
                 icon: ShoppingCart,
                 permission: 'carts.view',
+                isEcommerce: true,
             },
             {
                 key: 'payments',
@@ -256,6 +266,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/payments',
                 icon: ShoppingBag,
                 permission: 'payments.view',
+                isEcommerce: true,
             },
             {
                 key: 'stock-movements',
@@ -263,6 +274,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/stock-movements',
                 icon: Warehouse,
                 permission: 'stock-movements.view',
+                isEcommerce: true,
             },
             {
                 key: 'shipping',
@@ -270,6 +282,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/shipping',
                 icon: Truck,
                 permission: 'shippings.view',
+                isEcommerce: true,
             },
             {
                 key: 'suppliers',
@@ -277,6 +290,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/suppliers',
                 icon: Users,
                 permission: 'suppliers.view',
+                isEcommerce: true,
             },
             {
                 key: 'incoming-goods',
@@ -284,6 +298,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/incoming-goods',
                 icon: ArrowDownLeft,
                 permission: 'incoming-goods.view',
+                isEcommerce: true,
             },
             {
                 key: 'supplier-returns',
@@ -291,6 +306,7 @@ export const sidebarConfig: SidebarGroup[] = [
                 href: '/my-admin/dashboard/ecommerce/supplier-returns',
                 icon: ArrowUpRight,
                 permission: 'supplier-returns.view',
+                isEcommerce: true,
             },
         ],
     },

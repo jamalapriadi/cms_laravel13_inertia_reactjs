@@ -9,11 +9,6 @@ export function filterSidebar(
 ): SidebarGroup[] {
     return config
         .map((group) => {
-            // Hide the entire Ecommerce group if in blog mode
-            if (websiteMode === 'blog' && group.label === 'Ecommerce') {
-                return null;
-            }
-
             const items = group.items
                 .map((item) =>
                     filterSidebarItem(
@@ -42,10 +37,17 @@ function filterSidebarItem(
     websiteMode: string,
     enabledEcommerceMenus: string[],
 ): SidebarItem | null {
-    // If simple blog commerce mode, only show allowed ecommerce keys
-    if (websiteMode === 'simple_blog_commerce' && item.key) {
-        if (!enabledEcommerceMenus.includes(item.key)) {
+    // Hide ecommerce items based on website mode
+    if (item.isEcommerce) {
+        if (websiteMode === 'blog') {
             return null;
+        }
+
+        if (websiteMode === 'simple_blog_commerce') {
+            // Only show if the item's key is explicitly enabled
+            if (!item.key || !enabledEcommerceMenus.includes(item.key)) {
+                return null;
+            }
         }
     }
 
@@ -63,7 +65,14 @@ function filterSidebarItem(
     }
 
     if (hasPermission(user, item.permission)) {
-        return item;
+        // Fallback for items with explicitly empty children array like Dynamic Content
+        if (item.children !== undefined && item.children.length === 0) {
+            return item;
+        }
+        // Normal item with no children defined
+        if (item.children === undefined) {
+            return item;
+        }
     }
 
     return null;
