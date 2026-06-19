@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Languages, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import {
@@ -132,13 +132,24 @@ export default function Index({ contentType, entries, filters }: Props) {
                     {canEdit && (
                         <Link
                             href={
+                                `/my-admin/dashboard/content/${contentType.slug}/${row.id}/translations`
+                            }
+                        >
+                            <Button size="sm" variant="secondary" title="Translate">
+                                <Languages className="h-3.5 w-3.5" />
+                            </Button>
+                        </Link>
+                    )}
+                    {canEdit && (
+                        <Link
+                            href={
                                 edit({
                                     contentType: contentType.slug,
                                     contentEntry: row.id,
                                 }).url
                             }
                         >
-                            <Button size="sm" variant="secondary">
+                            <Button size="sm" variant="secondary" title="Edit">
                                 <Pencil className="h-3.5 w-3.5" />
                             </Button>
                         </Link>

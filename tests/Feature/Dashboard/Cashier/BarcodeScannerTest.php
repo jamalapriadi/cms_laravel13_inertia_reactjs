@@ -1,15 +1,15 @@
 <?php
 
-use App\Models\Shop\Product;
-use App\Models\Shop\VariantItem;
-use App\Models\Shop\ProductStockUnit;
-use App\Models\Shop\Category;
-use App\Models\User;
 use App\Models\Shop\CashierSession;
+use App\Models\Shop\Category;
+use App\Models\Shop\Product;
+use App\Models\Shop\ProductStockUnit;
+use App\Models\Shop\VariantItem;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
@@ -33,7 +33,7 @@ beforeEach(function () {
 
     $this->category = Category::create([
         'name' => 'Test Category',
-        'slug' => 'test-category-' . Str::random(5),
+        'slug' => 'test-category-'.Str::random(5),
     ]);
 
     $this->withoutVite();
@@ -51,7 +51,7 @@ it('can scan a product by SKU', function () {
     ProductStockUnit::create([
         'product_id' => $product->id,
         'status' => 'available',
-        'imei_serial_number' => Str::random(10)
+        'imei_serial_number' => Str::random(10),
     ]);
 
     $response = $this->actingAs($this->cashier)
@@ -80,7 +80,7 @@ it('can scan a variant item by SKU', function () {
         'product_id' => $product->id,
         'product_variant_id' => $variant->id,
         'status' => 'available',
-        'imei_serial_number' => Str::random(10)
+        'imei_serial_number' => Str::random(10),
     ]);
 
     $response = $this->actingAs($this->cashier)
@@ -102,7 +102,7 @@ it('can scan a stock unit by IMEI', function () {
     $stockUnit = ProductStockUnit::create([
         'product_id' => $product->id,
         'status' => 'available',
-        'imei_serial_number' => 'IMEI123456789'
+        'imei_serial_number' => 'IMEI123456789',
     ]);
 
     $response = $this->actingAs($this->cashier)
@@ -148,7 +148,7 @@ it('validates stock when storing an order via POS', function () {
     $stockUnit = ProductStockUnit::create([
         'product_id' => $product->id,
         'status' => 'available',
-        'imei_serial_number' => 'IMEI-TEST'
+        'imei_serial_number' => 'IMEI-TEST',
     ]);
 
     $response = $this->actingAs($this->cashier)->post(route('dashboard.cashier.orders.store'), [
@@ -158,7 +158,7 @@ it('validates stock when storing an order via POS', function () {
                 'variant_item_id' => null,
                 'stock_unit_id' => $stockUnit->id,
                 'qty' => 1,
-            ]
+            ],
         ],
         'payment_method' => 'cash',
         'amount_paid' => 10000,
@@ -186,7 +186,7 @@ it('fails if specific stock unit is requested with qty > 1', function () {
     $stockUnit = ProductStockUnit::create([
         'product_id' => $product->id,
         'status' => 'available',
-        'imei_serial_number' => 'IMEI-TEST2'
+        'imei_serial_number' => 'IMEI-TEST2',
     ]);
 
     $response = $this->actingAs($this->cashier)->post(route('dashboard.cashier.orders.store'), [
@@ -196,7 +196,7 @@ it('fails if specific stock unit is requested with qty > 1', function () {
                 'variant_item_id' => null,
                 'stock_unit_id' => $stockUnit->id,
                 'qty' => 2,
-            ]
+            ],
         ],
         'payment_method' => 'cash',
         'amount_paid' => 20000,

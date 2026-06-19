@@ -1,16 +1,16 @@
 <?php
 
+use App\Http\Middleware\EnsureDashboardPermission;
 use App\Models\Shop\Order;
-use App\Models\Shop\Product;
-use App\Models\Shop\ProductStockUnit;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    
+
     // Create permissions
     Permission::firstOrCreate(['name' => 'orders.delete']);
     Permission::firstOrCreate(['name' => 'orders.refund']);
@@ -23,7 +23,7 @@ beforeEach(function () {
 
 it('can cancel an order', function () {
     $order = Order::create([
-        'invoice_number' => 'INV-' . time(),
+        'invoice_number' => 'INV-'.time(),
         'customer_name' => 'Test User',
         'status' => 'completed',
         'payment_status' => 'paid',
@@ -31,12 +31,12 @@ it('can cancel an order', function () {
     ]);
 
     $this->withoutExceptionHandling();
-    $this->withoutMiddleware(\App\Http\Middleware\EnsureDashboardPermission::class);
+    $this->withoutMiddleware(EnsureDashboardPermission::class);
 
     $response = actingAs($this->user)->post(route('dashboard.cashier.orders.cancel.store', $order), [
         'reason' => 'test cancel',
     ]);
-    
+
     $response->assertSessionHas('success');
 
     $order->refresh();
@@ -46,7 +46,7 @@ it('can cancel an order', function () {
 
 it('can fully refund an order', function () {
     $order = Order::create([
-        'invoice_number' => 'INV-2-' . time(),
+        'invoice_number' => 'INV-2-'.time(),
         'customer_name' => 'Test User 2',
         'status' => 'completed',
         'payment_status' => 'paid',
@@ -54,7 +54,7 @@ it('can fully refund an order', function () {
     ]);
 
     $this->withoutExceptionHandling();
-    $this->withoutMiddleware(\App\Http\Middleware\EnsureDashboardPermission::class);
+    $this->withoutMiddleware(EnsureDashboardPermission::class);
 
     actingAs($this->user)->post(route('dashboard.cashier.orders.refund.full', $order), [
         'reason' => 'test refund',

@@ -3,6 +3,7 @@
 namespace App\Models\Dashboard;
 
 use App\Models\BlockTranslation;
+use App\Models\ContentEntryTranslation;
 use App\Models\PageTranslation;
 use App\Models\PostTranslation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -60,6 +61,11 @@ class Language extends Model
     public function blockTranslations(): HasMany
     {
         return $this->hasMany(BlockTranslation::class);
+    }
+
+    public function contentEntryTranslations(): HasMany
+    {
+        return $this->hasMany(ContentEntryTranslation::class);
     }
 
     public function scopeEnabled($query)
