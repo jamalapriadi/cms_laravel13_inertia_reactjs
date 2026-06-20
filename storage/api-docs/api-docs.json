@@ -910,9 +910,20 @@
                         }
                     },
                     {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Locale or language code.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id",
+                            "nullable": true
+                        }
+                    },
+                    {
                         "name": "language",
                         "in": "query",
-                        "description": "Language code, default locale, or language tag.",
+                        "description": "Alias for locale.",
                         "required": false,
                         "schema": {
                             "type": "string",
@@ -1027,9 +1038,20 @@
                         }
                     },
                     {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Locale or language code.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "id",
+                            "nullable": true
+                        }
+                    },
+                    {
                         "name": "language",
                         "in": "query",
-                        "description": "Language code, default locale, or language tag.",
+                        "description": "Alias for locale.",
                         "required": false,
                         "schema": {
                             "type": "string",

@@ -1,4 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -140,6 +141,28 @@ export default function Edit({
         published_at: formatDateTimeLocal(postTranslation.published_at),
         blocks: initialBlocks,
     });
+
+    useEffect(() => {
+        setData({
+            title: postTranslation.title ?? '',
+            slug: postTranslation.slug ?? '',
+            content: postTranslation.content ?? '',
+            status: postTranslation.status ?? 'draft',
+            published_at: formatDateTimeLocal(postTranslation.published_at),
+            blocks: blocks.map((block) => ({
+                block_id: block.id,
+                translations: block.text_items.reduce<Record<string, string>>(
+                    (carry, item) => {
+                        carry[item.path] = item.translated ?? '';
+
+                        return carry;
+                    },
+                    {},
+                ),
+            })),
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [language.id]);
 
     const updateBlockTranslation = (
         blockId: number,

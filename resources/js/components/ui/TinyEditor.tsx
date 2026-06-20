@@ -131,28 +131,45 @@ export default function TinyEditor({ value, onChange, height = 400 }: Props) {
         });
 
         return () => {
+            if (!window.tinymce) return;
             const editor = window.tinymce.get(editorId);
             if (editor) {
-                editor.destroy();
-            } else {
-                window.tinymce.remove(currentTextarea);
+                try {
+                    editor.remove();
+                } catch (e) {
+                    // Ignore errors during remove
+                }
             }
         };
-    }, [isTinyLoaded, height]);
+    }, [isTinyLoaded, height, editorId]);
 
     // Keep value updated
     useEffect(() => {
         if (!isTinyLoaded || !window.tinymce) return;
 
-        const editor =
-            window.tinymce.get(editorId) ||
-            window.tinymce.editors.find(
-                (e: any) => e.getElement() === textareaRef.current,
-            );
-        if (editor && editor.getContent() !== value) {
-            editor.setContent(value || '');
+        try {
+            const editor = window.tinymce.get(editorId);
+            
+            if (!editor && window.tinymce.editors) {
+                // Fallback for some TinyMCE versions where get() might fail initially
+                const editors = Array.isArray(window.tinymce.editors) 
+                    ? window.tinymce.editors 
+                    : Object.values(window.tinymce.editors);
+                    
+                const found = editors.find(
+                    (e: any) => e && typeof e.getElement === 'function' && e.getElement() === textareaRef.current,
+                );
+                
+                if (found && found.getContent() !== value) {
+                    found.setContent(value || '');
+                }
+            } else if (editor && editor.getContent() !== value) {
+                editor.setContent(value || '');
+            }
+        } catch (error) {
+            console.error('Error updating TinyMCE content:', error);
         }
-    }, [value, isTinyLoaded]);
+    }, [value, isTinyLoaded, editorId]);
 
     return (
         <textarea
