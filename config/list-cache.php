@@ -4,6 +4,7 @@ use App\Models\Block;
 use App\Models\BlockTranslation;
 use App\Models\Brand;
 use App\Models\ContentEntry;
+use App\Models\ContentEntryTranslation;
 use App\Models\ContentType;
 use App\Models\CustomField;
 use App\Models\CustomFieldGroup;
@@ -73,6 +74,7 @@ return [
         'api.banner-slides' => ['ttl' => 1800],
         'api.brands' => ['ttl' => 1800],
         'api.categories' => ['ttl' => 1800],
+        'api.dynamic-content' => ['ttl' => 900],
         'api.menus' => ['ttl' => 1800],
         'api.orders' => ['ttl' => 300],
         'api.pages' => ['ttl' => 900],
@@ -129,10 +131,11 @@ return [
         Cart::class => ['carts'],
         CartItem::class => ['carts'],
         Category::class => ['api.categories', 'api.product-collections', 'api.products', 'categories', 'products', 'product-collections', 'search-options'],
-        ContentEntry::class => ['content-types'],
-        ContentType::class => ['content-types'],
-        CustomField::class => ['custom-field-groups', 'content-types'],
-        CustomFieldGroup::class => ['custom-field-groups', 'content-types'],
+        ContentEntry::class => ['api.dynamic-content', 'content-types'],
+        ContentEntryTranslation::class => ['api.dynamic-content'],
+        ContentType::class => ['api.dynamic-content', 'content-types'],
+        CustomField::class => ['api.dynamic-content', 'custom-field-groups', 'content-types'],
+        CustomFieldGroup::class => ['api.dynamic-content', 'custom-field-groups', 'content-types'],
         Customer::class => ['api.orders', 'carts', 'customers', 'orders'],
         Faq::class => ['faqs'],
         IncomingGoods::class => ['incoming-goods', 'product-stock-units', 'stock-movements'],
@@ -140,11 +143,11 @@ return [
         Kabupaten::class => ['wilayah'],
         Kecamatan::class => ['wilayah'],
         Kelurahan::class => ['wilayah'],
-        Language::class => ['api.pages', 'api.posts', 'api.site-contents', 'pages', 'posts', 'site-contents', 'translations'],
+        Language::class => ['api.dynamic-content', 'api.pages', 'api.posts', 'api.site-contents', 'pages', 'posts', 'site-contents', 'translations'],
         Menu::class => ['api.menus', 'menus'],
         MenuItem::class => ['api.menus', 'menus'],
         MenuItemTranslation::class => ['api.menus', 'menus'],
-        Option::class => ['api.site-contents', 'options', 'site-contents'],
+        Option::class => ['api.dynamic-content', 'api.site-contents', 'options', 'site-contents'],
         Order::class => ['api.orders', 'orders', 'payments', 'shipping', 'stock-movements'],
         OrderItem::class => ['api.orders', 'api.products', 'orders', 'products'],
         Package::class => ['packages'],

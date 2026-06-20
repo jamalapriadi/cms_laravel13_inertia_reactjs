@@ -2,6 +2,9 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Services\Api;
 
+use App\Models\ContentEntryTranslation;
+use App\Models\Dashboard\Language;
+use App\Services\Cms\LanguageManager;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +18,7 @@ class DynamicContentApiService
 {
     public function __construct(
         private readonly DynamicContentFieldService $dynamicContentFieldService,
-        private readonly \App\Services\ActiveLanguageService $activeLanguageService,
+        private readonly LanguageManager $languageManager,
     ) {}
 
     /**
@@ -56,33 +59,18 @@ class DynamicContentApiService
     {
         $perPage = (int) ($filters['per_page'] ?? 10);
         $fields = $this->dynamicContentFieldService->activeFieldsForContentType($contentType)->keyBy('name');
-
-        $activeLanguages = $this->activeLanguageService->activeLanguages();
-        $localeCode = $this->activeLanguageService->resolveLocale($requestedLocale);
-        $fallbackCode = $this->activeLanguageService->defaultCode();
-
-        $localeLanguage = $activeLanguages->firstWhere('code', $localeCode);
-        $fallbackLanguage = $activeLanguages->firstWhere('code', $fallbackCode);
-
-        $languageIds = array_filter([$localeLanguage?->id, $fallbackLanguage?->id]);
+        $language = filled($requestedLocale) ? $this->resolveLanguage($requestedLocale) : null;
+        $fallbackLanguage = $language ? $this->defaultLanguage() : null;
 
         $query = ContentEntry::query()
-            ->with(['translations' => function ($query) use ($languageIds): void {
-                if ($languageIds !== []) {
-                    $query->whereIn('language_id', array_unique($languageIds));
-                } else {
-                    $query->whereRaw('1 = 0');
-                }
-            }])
             ->where('content_type_id', $contentType->id)
             ->published()
-            ->when($filters['search'] ?? null, function (Builder $query, string $search): void {
-                $query->where(function (Builder $query) use ($search): void {
-                    $query->where('title', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%")
-                        ->orWhere('excerpt', 'like', "%{$search}%")
-                        ->orWhere('data', 'like', "%{$search}%");
-                });
+            ->with([
+                'translations' => fn ($query) => $this->constrainTranslations($query, $language, $fallbackLanguage),
+                'translations.language',
+            ])
+            ->when($filters['search'] ?? null, function (Builder $query, string $search) use ($language): void {
+                $this->applySearch($query, $search, $language);
             })
             ->when(
                 array_key_exists('is_featured', $filters)
@@ -102,40 +90,44 @@ class DynamicContentApiService
 
         $paginator = $query->paginate($perPage)->withQueryString();
 
-        $this->hydrateEntries($paginator->getCollection(), $contentType, $localeLanguage?->id, $fallbackLanguage?->id);
+        $this->hydrateEntries($paginator->getCollection(), $contentType, $language, $fallbackLanguage);
 
         return $paginator;
     }
 
     public function findPublishedEntry(ContentType $contentType, string $entrySlug, ?string $requestedLocale = null): ?ContentEntry
     {
-        $activeLanguages = $this->activeLanguageService->activeLanguages();
-        $localeCode = $this->activeLanguageService->resolveLocale($requestedLocale);
-        $fallbackCode = $this->activeLanguageService->defaultCode();
-
-        $localeLanguage = $activeLanguages->firstWhere('code', $localeCode);
-        $fallbackLanguage = $activeLanguages->firstWhere('code', $fallbackCode);
-
-        $languageIds = array_filter([$localeLanguage?->id, $fallbackLanguage?->id]);
+        $language = filled($requestedLocale) ? $this->resolveLanguage($requestedLocale) : null;
+        $fallbackLanguage = $language ? $this->defaultLanguage() : null;
 
         $entry = ContentEntry::query()
-            ->with(['translations' => function ($query) use ($languageIds): void {
-                if ($languageIds !== []) {
-                    $query->whereIn('language_id', array_unique($languageIds));
-                } else {
-                    $query->whereRaw('1 = 0');
-                }
-            }])
             ->where('content_type_id', $contentType->id)
             ->published()
-            ->where('slug', $entrySlug)
+            ->with([
+                'translations' => fn ($query) => $this->constrainTranslations($query, $language, $fallbackLanguage),
+                'translations.language',
+            ])
+            ->where(function (Builder $query) use ($entrySlug, $language): void {
+                $query->where('slug', $entrySlug);
+
+                if (! $language) {
+                    return;
+                }
+
+                $query->orWhereHas('translations', function (Builder $translationQuery) use ($entrySlug, $language): void {
+                    $translationQuery->where('slug', $entrySlug)
+                        ->where('language_id', $language->id);
+
+                    $this->applyPublishedTranslation($translationQuery);
+                });
+            })
             ->first();
 
         if (! $entry) {
             return null;
         }
 
-        $this->hydrateEntries(collect([$entry]), $contentType, $localeLanguage?->id, $fallbackLanguage?->id);
+        $this->hydrateEntries(collect([$entry]), $contentType, $language, $fallbackLanguage);
 
         return $entry;
     }
@@ -143,19 +135,24 @@ class DynamicContentApiService
     /**
      * @param  Collection<int, ContentEntry>  $entries
      */
-    private function hydrateEntries(Collection $entries, ContentType $contentType, ?int $localeLanguageId = null, ?int $fallbackLanguageId = null): void
+    private function hydrateEntries(Collection $entries, ContentType $contentType, ?Language $language = null, ?Language $fallbackLanguage = null): void
     {
         $fieldDefinitions = $this->dynamicContentFieldService
             ->activeFieldsForContentType($contentType)
             ->keyBy('name')
             ->all();
 
+        $entries->each(function (ContentEntry $entry) use ($language, $fallbackLanguage): void {
+            $translation = $this->resolvePublishedTranslation($entry, $language, $fallbackLanguage);
+
+            $entry->setRelation('apiResolvedTranslation', $translation);
+            $entry->setAttribute('api_language', $this->languagePayload($language));
+            $entry->setAttribute('api_resolved_data', $this->resolvedFieldData($entry, $translation));
+        });
+
         $mediaMap = $this->mediaPayloadMap($entries, $fieldDefinitions);
 
-        $entries->each(function (ContentEntry $entry) use ($contentType, $fieldDefinitions, $mediaMap, $localeLanguageId, $fallbackLanguageId): void {
-            if ($localeLanguageId) {
-                $entry->resolveTranslation($localeLanguageId, $fallbackLanguageId);
-            }
+        $entries->each(function (ContentEntry $entry) use ($contentType, $fieldDefinitions, $mediaMap): void {
             $entry->setRelation('contentType', $contentType);
             $entry->setAttribute('api_field_definitions', $fieldDefinitions);
             $entry->setAttribute('api_media_map', $mediaMap);
@@ -170,6 +167,7 @@ class DynamicContentApiService
     {
         $paths = $entries
             ->flatMap(function (ContentEntry $entry) use ($fieldDefinitions): array {
+                $resolvedData = $entry->getAttribute('api_resolved_data');
                 $items = [];
 
                 foreach ($fieldDefinitions as $name => $field) {
@@ -177,7 +175,9 @@ class DynamicContentApiService
                         continue;
                     }
 
-                    $value = $entry->data[$name] ?? null;
+                    $value = is_array($resolvedData)
+                        ? ($resolvedData[$name] ?? null)
+                        : ($entry->data[$name] ?? null);
 
                     if ($field->type === 'gallery') {
                         foreach ((array) $value as $path) {
@@ -276,5 +276,158 @@ class DynamicContentApiService
         }
 
         return MediaPath::url($path);
+    }
+
+    private function resolveLanguage(?string $locale): ?Language
+    {
+        return $this->languageManager->resolveLanguageByLocale($locale);
+    }
+
+    private function defaultLanguage(): ?Language
+    {
+        return $this->languageManager->getDefaultLanguage();
+    }
+
+    private function constrainTranslations($query, ?Language $language, ?Language $fallbackLanguage): void
+    {
+        $languageIds = collect([$language?->id, $fallbackLanguage?->id])
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($languageIds === []) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->whereIn('language_id', $languageIds);
+    }
+
+    private function applySearch(Builder $query, string $search, ?Language $language): void
+    {
+        $query->where(function (Builder $searchQuery) use ($search, $language): void {
+            $searchQuery
+                ->where('title', 'like', "%{$search}%")
+                ->orWhere('slug', 'like', "%{$search}%")
+                ->orWhere('excerpt', 'like', "%{$search}%")
+                ->orWhere('data', 'like', "%{$search}%")
+                ->orWhereHas('translations', function (Builder $translationQuery) use ($search, $language): void {
+                    if ($language) {
+                        $translationQuery->where('language_id', $language->id);
+                    }
+
+                    $translationQuery->where(function (Builder $nestedQuery) use ($search): void {
+                        $nestedQuery
+                            ->where('title', 'like', "%{$search}%")
+                            ->orWhere('slug', 'like', "%{$search}%")
+                            ->orWhere('excerpt', 'like', "%{$search}%")
+                            ->orWhere('data', 'like', "%{$search}%");
+                    });
+                });
+        });
+    }
+
+    private function applyPublishedTranslation(Builder $query): void
+    {
+        $query
+            ->where('status', 'published')
+            ->where(function (Builder $publishedQuery): void {
+                $publishedQuery->whereNull('published_at')
+                    ->orWhere('published_at', '<=', now());
+            });
+    }
+
+    private function resolvePublishedTranslation(ContentEntry $entry, ?Language $language, ?Language $fallbackLanguage): ?ContentEntryTranslation
+    {
+        foreach ([$language, $fallbackLanguage] as $candidateLanguage) {
+            if (! $candidateLanguage) {
+                continue;
+            }
+
+            $translation = $entry->translationForLanguage($candidateLanguage->id);
+
+            if ($translation && $this->translationIsPublished($translation)) {
+                return $translation;
+            }
+        }
+
+        return null;
+    }
+
+    private function translationIsPublished(ContentEntryTranslation $translation): bool
+    {
+        return $translation->status === 'published'
+            && ($translation->published_at === null || $translation->published_at->lte(now()));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function resolvedFieldData(ContentEntry $entry, ?ContentEntryTranslation $translation): array
+    {
+        $resolvedData = is_array($entry->data) ? $entry->data : [];
+
+        if (! $translation || ! is_array($translation->data)) {
+            return $resolvedData;
+        }
+
+        foreach ($translation->data as $key => $value) {
+            $resolvedData[$key] = array_key_exists($key, $resolvedData)
+                ? $this->mergeTranslatedValue($resolvedData[$key], $value)
+                : (blank($value) ? null : $value);
+        }
+
+        return collect($resolvedData)
+            ->reject(fn (mixed $value) => $value === null)
+            ->all();
+    }
+
+    private function mergeTranslatedValue(mixed $original, mixed $translated): mixed
+    {
+        if (blank($translated)) {
+            return $original;
+        }
+
+        if (! is_array($original) || ! is_array($translated)) {
+            return $translated;
+        }
+
+        if (array_is_list($original) || array_is_list($translated)) {
+            return $translated === [] ? $original : $translated;
+        }
+
+        $merged = $original;
+
+        foreach ($translated as $key => $value) {
+            if (array_key_exists($key, $merged)) {
+                $merged[$key] = $this->mergeTranslatedValue($merged[$key], $value);
+
+                continue;
+            }
+
+            if (! blank($value)) {
+                $merged[$key] = $value;
+            }
+        }
+
+        return $merged;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function languagePayload(?Language $language): ?array
+    {
+        if (! $language) {
+            return null;
+        }
+
+        return [
+            'id' => $language->id,
+            'code' => strtolower((string) $language->code),
+            'name' => $language->english_name,
+        ];
     }
 }

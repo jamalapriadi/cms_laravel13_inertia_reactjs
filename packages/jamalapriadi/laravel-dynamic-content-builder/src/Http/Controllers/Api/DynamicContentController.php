@@ -2,6 +2,8 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Http\Controllers\Api;
 
+use App\Services\Cache\ListCacheService;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Jamalapriadi\DynamicContentBuilder\Http\Requests\Api\DynamicContentIndexRequest;
@@ -15,14 +17,20 @@ class DynamicContentController extends Controller
         private readonly DynamicContentApiService $dynamicContentApiService,
     ) {}
 
-    public function contentTypes(): JsonResponse
+    public function contentTypes(Request $request): JsonResponse
     {
-        $contentTypes = $this->dynamicContentApiService->listActiveContentTypes();
+        $payload = app(ListCacheService::class)->rememberRequest('api.dynamic-content', $request, function (): array {
+            $contentTypes = $this->dynamicContentApiService->listActiveContentTypes();
+
+            return [
+                'data' => DynamicContentTypeResource::collection($contentTypes)->resolve(),
+            ];
+        });
 
         return response()->json([
             'success' => true,
             'message' => 'Content types retrieved successfully',
-            'data' => DynamicContentTypeResource::collection($contentTypes)->resolve(),
+            'data' => $payload['data'],
         ]);
     }
 
@@ -37,22 +45,29 @@ class DynamicContentController extends Controller
             ], 404);
         }
 
-        $entries = $this->dynamicContentApiService->paginatePublishedEntries(
-            $contentType,
-            $request->validated(),
-            $request->query('locale')
-        );
+        $payload = app(ListCacheService::class)->rememberRequest('api.dynamic-content', $request, function () use ($contentType, $request): array {
+            $entries = $this->dynamicContentApiService->paginatePublishedEntries(
+                $contentType,
+                $request->validated(),
+                $request->query('locale')
+            );
+
+            return [
+                'data' => DynamicContentEntryResource::collection($entries->getCollection())->resolve($request),
+                'meta' => [
+                    'current_page' => $entries->currentPage(),
+                    'per_page' => $entries->perPage(),
+                    'total' => $entries->total(),
+                    'last_page' => $entries->lastPage(),
+                ],
+            ];
+        });
 
         return response()->json([
             'success' => true,
             'message' => 'Content entries retrieved successfully',
-            'data' => DynamicContentEntryResource::collection($entries->getCollection())->resolve($request),
-            'meta' => [
-                'current_page' => $entries->currentPage(),
-                'per_page' => $entries->perPage(),
-                'total' => $entries->total(),
-                'last_page' => $entries->lastPage(),
-            ],
+            'data' => $payload['data'],
+            'meta' => $payload['meta'],
         ]);
     }
 
@@ -67,9 +82,21 @@ class DynamicContentController extends Controller
             ], 404);
         }
 
-        $entry = $this->dynamicContentApiService->findPublishedEntry($contentType, $entrySlug, $request->query('locale'));
+        $payload = app(ListCacheService::class)->rememberRequest('api.dynamic-content', $request, function () use ($contentType, $entrySlug, $request): ?array {
+            $entry = $this->dynamicContentApiService->findPublishedEntry(
+                $contentType,
+                $entrySlug,
+                $request->query('locale')
+            );
 
-        if (! $entry) {
+            if (! $entry) {
+                return null;
+            }
+
+            return DynamicContentEntryResource::make($entry)->resolve($request);
+        });
+
+        if (! $payload) {
             return response()->json([
                 'success' => false,
                 'message' => 'Content entry not found',
@@ -79,7 +106,7 @@ class DynamicContentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Content entry retrieved successfully',
-            'data' => DynamicContentEntryResource::make($entry)->resolve(),
+            'data' => $payload,
         ]);
     }
 }
