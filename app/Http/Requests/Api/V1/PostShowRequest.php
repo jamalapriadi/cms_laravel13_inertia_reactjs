@@ -20,6 +20,7 @@ class PostShowRequest extends FormRequest
     {
         return [
             'language' => ['nullable', 'string', 'max:35'],
+            'locale' => ['nullable', 'string', 'max:35'],
         ];
     }
 

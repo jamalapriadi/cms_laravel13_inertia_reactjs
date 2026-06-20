@@ -15,6 +15,7 @@ class DynamicContentApiService
 {
     public function __construct(
         private readonly DynamicContentFieldService $dynamicContentFieldService,
+        private readonly \App\Services\ActiveLanguageService $activeLanguageService,
     ) {}
 
     /**
@@ -51,12 +52,28 @@ class DynamicContentApiService
      * @param  array<string, mixed>  $filters
      * @return LengthAwarePaginator<int, ContentEntry>
      */
-    public function paginatePublishedEntries(ContentType $contentType, array $filters): LengthAwarePaginator
+    public function paginatePublishedEntries(ContentType $contentType, array $filters, ?string $requestedLocale = null): LengthAwarePaginator
     {
         $perPage = (int) ($filters['per_page'] ?? 10);
         $fields = $this->dynamicContentFieldService->activeFieldsForContentType($contentType)->keyBy('name');
 
+        $activeLanguages = $this->activeLanguageService->activeLanguages();
+        $localeCode = $this->activeLanguageService->resolveLocale($requestedLocale);
+        $fallbackCode = $this->activeLanguageService->defaultCode();
+
+        $localeLanguage = $activeLanguages->firstWhere('code', $localeCode);
+        $fallbackLanguage = $activeLanguages->firstWhere('code', $fallbackCode);
+
+        $languageIds = array_filter([$localeLanguage?->id, $fallbackLanguage?->id]);
+
         $query = ContentEntry::query()
+            ->with(['translations' => function ($query) use ($languageIds): void {
+                if ($languageIds !== []) {
+                    $query->whereIn('language_id', array_unique($languageIds));
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            }])
             ->where('content_type_id', $contentType->id)
             ->published()
             ->when($filters['search'] ?? null, function (Builder $query, string $search): void {
@@ -85,14 +102,30 @@ class DynamicContentApiService
 
         $paginator = $query->paginate($perPage)->withQueryString();
 
-        $this->hydrateEntries($paginator->getCollection(), $contentType);
+        $this->hydrateEntries($paginator->getCollection(), $contentType, $localeLanguage?->id, $fallbackLanguage?->id);
 
         return $paginator;
     }
 
-    public function findPublishedEntry(ContentType $contentType, string $entrySlug): ?ContentEntry
+    public function findPublishedEntry(ContentType $contentType, string $entrySlug, ?string $requestedLocale = null): ?ContentEntry
     {
+        $activeLanguages = $this->activeLanguageService->activeLanguages();
+        $localeCode = $this->activeLanguageService->resolveLocale($requestedLocale);
+        $fallbackCode = $this->activeLanguageService->defaultCode();
+
+        $localeLanguage = $activeLanguages->firstWhere('code', $localeCode);
+        $fallbackLanguage = $activeLanguages->firstWhere('code', $fallbackCode);
+
+        $languageIds = array_filter([$localeLanguage?->id, $fallbackLanguage?->id]);
+
         $entry = ContentEntry::query()
+            ->with(['translations' => function ($query) use ($languageIds): void {
+                if ($languageIds !== []) {
+                    $query->whereIn('language_id', array_unique($languageIds));
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            }])
             ->where('content_type_id', $contentType->id)
             ->published()
             ->where('slug', $entrySlug)
@@ -102,7 +135,7 @@ class DynamicContentApiService
             return null;
         }
 
-        $this->hydrateEntries(collect([$entry]), $contentType);
+        $this->hydrateEntries(collect([$entry]), $contentType, $localeLanguage?->id, $fallbackLanguage?->id);
 
         return $entry;
     }
@@ -110,7 +143,7 @@ class DynamicContentApiService
     /**
      * @param  Collection<int, ContentEntry>  $entries
      */
-    private function hydrateEntries(Collection $entries, ContentType $contentType): void
+    private function hydrateEntries(Collection $entries, ContentType $contentType, ?int $localeLanguageId = null, ?int $fallbackLanguageId = null): void
     {
         $fieldDefinitions = $this->dynamicContentFieldService
             ->activeFieldsForContentType($contentType)
@@ -119,7 +152,10 @@ class DynamicContentApiService
 
         $mediaMap = $this->mediaPayloadMap($entries, $fieldDefinitions);
 
-        $entries->each(function (ContentEntry $entry) use ($contentType, $fieldDefinitions, $mediaMap): void {
+        $entries->each(function (ContentEntry $entry) use ($contentType, $fieldDefinitions, $mediaMap, $localeLanguageId, $fallbackLanguageId): void {
+            if ($localeLanguageId) {
+                $entry->resolveTranslation($localeLanguageId, $fallbackLanguageId);
+            }
             $entry->setRelation('contentType', $contentType);
             $entry->setAttribute('api_field_definitions', $fieldDefinitions);
             $entry->setAttribute('api_media_map', $mediaMap);

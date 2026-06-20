@@ -23,6 +23,7 @@ class PostIndexRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:191'],
             'language' => ['nullable', 'string', 'max:35'],
+            'locale' => ['nullable', 'string', 'max:35'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
             'sort' => ['nullable', 'string', Rule::in(['latest', 'oldest'])],
