@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\ProductCollectionController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProvinceController;
 use App\Http\Controllers\Api\V1\SiteContentController;
+use App\Http\Controllers\Api\V1\TagController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function (): void {
@@ -34,6 +35,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::get('pages/{slug}', [PageController::class, 'show'])->name('pages.show');
     Route::get('posts', [PostController::class, 'index'])->name('posts.index');
     Route::get('posts/{slug}', [PostController::class, 'show'])->name('posts.show');
+    Route::get('tags', [TagController::class, 'index'])->name('tags.index');
+    Route::get('tags/{slug}', [TagController::class, 'show'])->name('tags.show');
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::get('category/{slug}', [CategoryController::class, 'showBySlug'])->name('category.show');
     Route::get('categories/{slug}', [CategoryController::class, 'showBySlug'])->name('categories.show');
