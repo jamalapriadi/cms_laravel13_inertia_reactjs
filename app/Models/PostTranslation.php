@@ -13,6 +13,7 @@ class PostTranslation extends Model
         'language_id',
         'title',
         'slug',
+        'excerpt',
         'content',
         'status',
         'published_at',

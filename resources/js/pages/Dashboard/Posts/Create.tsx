@@ -60,6 +60,8 @@ type DropPosition = 'before' | 'after' | 'inside';
 
 type PostFormData = {
     title: string;
+    slug: string;
+    excerpt: string;
     content: string;
     status: string;
     category_id: string;
@@ -73,6 +75,13 @@ interface DropIndicator {
     id: number | string;
     position: DropPosition;
 }
+
+const slugify = (value: string) =>
+    value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
 
 const resolveDropTarget = (id: number | string) => {
     if (typeof id === 'string' && id.startsWith('preview-')) {
@@ -171,6 +180,8 @@ export default function Create({ categories = [], tags = [] }: any) {
      */
     const { data, setData, post, processing, errors } = useForm<PostFormData>({
         title: '',
+        slug: '',
+        excerpt: '',
         content: '',
         status: 'draft',
         category_id: '',
@@ -186,6 +197,14 @@ export default function Create({ categories = [], tags = [] }: any) {
     useEffect(() => {
         setData('content', JSON.stringify(pageBlocks));
     }, [pageBlocks, setData]);
+
+    const updateTitle = (title: string) => {
+        setData('title', title);
+
+        if (!data.slug) {
+            setData('slug', slugify(title));
+        }
+    };
 
     /**
      * ✅ UPDATE BLOCK
@@ -380,7 +399,9 @@ export default function Create({ categories = [], tags = [] }: any) {
                     <header className="flex shrink-0 flex-col gap-3 border-b bg-background px-4 py-3 xl:flex-row xl:items-center">
                         <Input
                             value={data.title}
-                            onChange={(e) => setData('title', e.target.value)}
+                            onChange={(event) =>
+                                updateTitle(event.target.value)
+                            }
                             placeholder="Post title..."
                             className="h-10 text-lg font-semibold xl:max-w-xl"
                         />
@@ -406,9 +427,9 @@ export default function Create({ categories = [], tags = [] }: any) {
                             </Button>
                         </div>
 
-                        {(errors.title || errors.content) && (
+                        {(errors.title || errors.slug || errors.content) && (
                             <div className="text-sm text-destructive">
-                                {errors.title || errors.content}
+                                {errors.title || errors.slug || errors.content}
                             </div>
                         )}
                     </header>
@@ -513,12 +534,24 @@ export default function Create({ categories = [], tags = [] }: any) {
 
                         <aside className="min-h-0 overflow-y-auto border-t bg-background p-4 xl:border-t-0 xl:border-l">
                             <PostMetadataPanel
+                                slug={data.slug}
+                                excerpt={data.excerpt}
                                 categories={categories}
                                 tags={tags}
                                 selectedCategoryId={data.category_id}
                                 selectedTagNames={data.tag_names}
                                 featuredImage={data.featured_image}
                                 publishedAt={data.published_at}
+                                errors={{
+                                    slug: errors.slug,
+                                    excerpt: errors.excerpt,
+                                }}
+                                onSlugChange={(value) =>
+                                    setData('slug', value)
+                                }
+                                onExcerptChange={(value) =>
+                                    setData('excerpt', value)
+                                }
                                 onCategoryChange={(id) =>
                                     setData('category_id', id)
                                 }

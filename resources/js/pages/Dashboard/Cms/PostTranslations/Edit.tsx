@@ -52,6 +52,7 @@ type PostPayload = {
     id: number;
     title: string;
     slug: string;
+    excerpt: string | null;
     content: string | null;
     status: string;
     published_at: string | null;
@@ -60,6 +61,7 @@ type PostPayload = {
 type PostTranslationPayload = {
     title: string;
     slug: string;
+    excerpt: string | null;
     content: string | null;
     status: string;
     published_at: string | null;
@@ -86,6 +88,7 @@ interface Props {
 type FormData = {
     title: string;
     slug: string;
+    excerpt: string;
     content: string;
     status: string;
     published_at: string;
@@ -136,6 +139,7 @@ export default function Edit({
     const { data, setData, put, processing, errors } = useForm<FormData>({
         title: postTranslation.title ?? '',
         slug: postTranslation.slug ?? '',
+        excerpt: postTranslation.excerpt ?? '',
         content: postTranslation.content ?? '',
         status: postTranslation.status ?? 'draft',
         published_at: formatDateTimeLocal(postTranslation.published_at),
@@ -146,6 +150,7 @@ export default function Edit({
         setData({
             title: postTranslation.title ?? '',
             slug: postTranslation.slug ?? '',
+            excerpt: postTranslation.excerpt ?? '',
             content: postTranslation.content ?? '',
             status: postTranslation.status ?? 'draft',
             published_at: formatDateTimeLocal(postTranslation.published_at),
@@ -337,6 +342,29 @@ export default function Edit({
                                         }
                                     />
                                     <FieldError message={errors.slug} />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Original Excerpt</Label>
+                                    <Textarea
+                                        value={post.excerpt ?? ''}
+                                        readOnly
+                                        rows={4}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Translated Excerpt</Label>
+                                    <Textarea
+                                        value={data.excerpt}
+                                        onChange={(event) =>
+                                            setData(
+                                                'excerpt',
+                                                event.target.value,
+                                            )
+                                        }
+                                        rows={4}
+                                    />
+                                    <FieldError message={errors.excerpt} />
                                 </div>
 
                                 <div className="space-y-2 md:col-span-2">

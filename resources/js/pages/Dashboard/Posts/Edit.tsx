@@ -60,6 +60,8 @@ type DropPosition = 'before' | 'after' | 'inside';
 
 type PostFormData = {
     title: string;
+    slug: string;
+    excerpt: string;
     status: string;
     blocks: string;
     category_id: string;
@@ -198,6 +200,8 @@ export default function Edit({
      */
     const { data, setData, put, processing, errors } = useForm<PostFormData>({
         title: post.title ?? '',
+        slug: post.slug ?? '',
+        excerpt: post.excerpt ?? '',
         status: post.status ?? 'draft',
         blocks: '',
         category_id: categoryId ?? '',
@@ -442,9 +446,9 @@ export default function Edit({
                             </Button>
                         </div>
 
-                        {(errors.title || errors.blocks) && (
+                        {(errors.title || errors.slug || errors.blocks) && (
                             <div className="text-sm text-destructive">
-                                {errors.title || errors.blocks}
+                                {errors.title || errors.slug || errors.blocks}
                             </div>
                         )}
                     </header>
@@ -549,12 +553,24 @@ export default function Edit({
 
                         <aside className="min-h-0 overflow-y-auto border-t bg-background p-4 xl:border-t-0 xl:border-l">
                             <PostMetadataPanel
+                                slug={data.slug}
+                                excerpt={data.excerpt}
                                 categories={categories}
                                 tags={tags}
                                 selectedCategoryId={data.category_id}
                                 selectedTagNames={data.tag_names}
                                 featuredImage={data.featured_image}
                                 publishedAt={data.published_at}
+                                errors={{
+                                    slug: errors.slug,
+                                    excerpt: errors.excerpt,
+                                }}
+                                onSlugChange={(value) =>
+                                    setData('slug', value)
+                                }
+                                onExcerptChange={(value) =>
+                                    setData('excerpt', value)
+                                }
                                 onCategoryChange={(id) =>
                                     setData('category_id', id)
                                 }

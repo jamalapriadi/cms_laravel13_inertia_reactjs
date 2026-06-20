@@ -24,8 +24,12 @@ class UpdatePostRequest extends FormRequest
      */
     public function rules(): array
     {
+        $postId = $this->route('post')?->id;
+
         return [
             'title' => 'required|string|max:255',
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('posts', 'slug')->ignore($postId)],
+            'excerpt' => 'nullable|string',
             'blocks' => ['nullable', 'json', new ValidPostBlocks],
             'status' => ['required', 'string', Rule::in(['draft', 'publish'])],
             'category_id' => ['nullable', 'uuid', 'exists:post_categories,id'],

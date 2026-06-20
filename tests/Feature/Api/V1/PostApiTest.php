@@ -48,6 +48,7 @@ beforeEach(function () {
         $table->unsignedBigInteger('user_id');
         $table->string('title');
         $table->string('slug')->unique();
+        $table->text('excerpt')->nullable();
         $table->longText('content')->nullable();
         $table->string('type')->default('post');
         $table->string('status')->default('publish');
@@ -107,6 +108,7 @@ beforeEach(function () {
         $table->unsignedBigInteger('language_id');
         $table->string('title');
         $table->string('slug');
+        $table->text('excerpt')->nullable();
         $table->longText('content')->nullable();
         $table->string('status')->default('draft');
         $table->timestamp('published_at')->nullable();
@@ -202,4 +204,35 @@ test('it filters by news category when the category exists', function () {
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.slug', 'market-news')
         ->assertJsonPath('meta.total', 1);
+});
+
+test('it prefers translated excerpt when available', function () {
+    $language = enableApiPostIndonesianLanguage();
+
+    $post = Post::query()->create([
+        'user_id' => 1,
+        'title' => 'Market Update',
+        'slug' => 'market-update',
+        'excerpt' => 'Default excerpt',
+        'content' => '<p>Default content</p>',
+        'type' => 'post',
+        'status' => 'publish',
+        'published_at' => now()->subDay(),
+    ]);
+
+    PostTranslation::query()->create([
+        'post_id' => $post->id,
+        'language_id' => $language->id,
+        'title' => 'Market Update ID',
+        'slug' => 'market-update-id',
+        'excerpt' => 'Excerpt terjemahan',
+        'content' => '<p>Konten terjemahan</p>',
+        'status' => 'publish',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $this->getJson('/api/v1/posts?language=id&per_page=10&page=1&sort=latest')
+        ->assertSuccessful()
+        ->assertJsonPath('data.0.slug', 'market-update-id')
+        ->assertJsonPath('data.0.excerpt', 'Excerpt terjemahan');
 });

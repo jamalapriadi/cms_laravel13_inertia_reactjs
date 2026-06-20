@@ -26,6 +26,8 @@ class StorePostRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('posts', 'slug')],
+            'excerpt' => 'nullable|string',
             'content' => ['nullable', 'json', new ValidPostBlocks],
             'status' => ['required', 'string', Rule::in(['draft', 'publish'])],
             'category_id' => ['nullable', 'uuid', 'exists:post_categories,id'],

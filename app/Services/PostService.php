@@ -9,6 +9,7 @@ use App\Services\Cms\BlockTreeService;
 use App\Support\MediaPath;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -26,7 +27,8 @@ class PostService
             $post = Post::create([
                 'user_id' => $userId,
                 'title' => $data['title'],
-                'slug' => Str::slug($data['title']).'-'.uniqid(),
+                'slug' => $this->uniqueSlug($data['slug'] ?? null, $data['title']),
+                'excerpt' => $data['excerpt'] ?? null,
                 'content' => json_encode($blocks),
                 'status' => $data['status'],
                 'type' => 'post',
@@ -49,6 +51,8 @@ class PostService
 
             $post->update([
                 'title' => $data['title'],
+                'slug' => $this->uniqueSlug($data['slug'] ?? null, $data['title'], $post),
+                'excerpt' => $data['excerpt'] ?? null,
                 'content' => json_encode($blocks),
                 'status' => $data['status'],
                 'published_at' => $this->resolvePublishedAt($data),
@@ -113,6 +117,28 @@ class PostService
         }
 
         return $data['status'] === 'publish' ? now() : null;
+    }
+
+    private function uniqueSlug(?string $slug, string $title, ?Post $ignore = null): string
+    {
+        $base = Str::slug($slug ?: $title) ?: Str::random(8);
+        $candidate = $base;
+        $suffix = 2;
+
+        while ($this->slugExists($candidate, $ignore)) {
+            $candidate = "{$base}-{$suffix}";
+            $suffix++;
+        }
+
+        return $candidate;
+    }
+
+    private function slugExists(string $slug, ?Post $ignore): bool
+    {
+        return Post::query()
+            ->where('slug', $slug)
+            ->when($ignore, fn (Builder $query) => $query->whereKeyNot($ignore->id))
+            ->exists();
     }
 
     private function syncPostCategory(Post $post, array $data): void

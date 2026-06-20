@@ -3,9 +3,11 @@ import { useMemo, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 
 import MediaImagePicker from '@/components/media/MediaImagePicker';
+import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 // import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -13,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import Textarea from '@/components/ui/textarea';
 
 type TaxonomyOption = {
     id: number;
@@ -27,12 +30,20 @@ type CategoryOption = {
 };
 
 interface Props {
+    slug: string;
+    excerpt: string;
     categories: CategoryOption[];
     tags: TaxonomyOption[];
     selectedCategoryId?: string | null;
     selectedTagNames: string[];
     featuredImage?: string | null;
     publishedAt?: string | null;
+    errors?: {
+        slug?: string;
+        excerpt?: string;
+    };
+    onSlugChange: (value: string) => void;
+    onExcerptChange: (value: string) => void;
     onCategoryChange: (id: string) => void;
     onTagNamesChange: (names: string[]) => void;
     onFeaturedImageChange: (path: string | null) => void;
@@ -170,12 +181,17 @@ function TagInput({
 }
 
 export default function PostMetadataPanel({
+    slug,
+    excerpt,
     categories,
     tags,
     selectedCategoryId,
     selectedTagNames,
     featuredImage,
     publishedAt,
+    errors,
+    onSlugChange,
+    onExcerptChange,
     onCategoryChange,
     onTagNamesChange,
     onFeaturedImageChange,
@@ -185,8 +201,33 @@ export default function PostMetadataPanel({
         <div className="space-y-6">
             <section className="space-y-3">
                 <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    Post Settings
+                    Page Settings
                 </h2>
+
+                <div className="space-y-2">
+                    <Label htmlFor="post-slug">Slug</Label>
+                    <Input
+                        id="post-slug"
+                        value={slug}
+                        onChange={(event) => onSlugChange(event.target.value)}
+                        placeholder="about-us"
+                        aria-invalid={Boolean(errors?.slug)}
+                    />
+                    <InputError message={errors?.slug} />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="post-excerpt">Excerpt</Label>
+                    <Textarea
+                        id="post-excerpt"
+                        value={excerpt}
+                        onChange={(event) =>
+                            onExcerptChange(event.target.value)
+                        }
+                        rows={4}
+                        error={errors?.excerpt}
+                    />
+                </div>
 
                 <MediaImagePicker
                     label="Featured Image"

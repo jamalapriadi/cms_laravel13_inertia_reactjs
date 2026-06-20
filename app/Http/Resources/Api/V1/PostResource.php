@@ -18,12 +18,15 @@ class PostResource extends JsonResource
     public function toArray(Request $request): array
     {
         $translation = $this->resolvedTranslation();
+        $excerpt = $translation?->excerpt
+            ?: $this->resource->excerpt
+            ?: $this->excerpt($translation?->content ?? $this->content);
 
         return [
             'id' => $this->id,
             'title' => $translation?->title ?? $this->title,
             'slug' => $translation?->slug ?? $this->slug,
-            'excerpt' => $this->excerpt($translation?->content ?? $this->content),
+            'excerpt' => $excerpt,
             'thumbnail' => $this->mediaUrl($this->metaValue('featured_image')),
             'published_at' => ($translation?->published_at ?? $this->published_at)?->toJSON(),
             'categories' => CategoryResource::collection($this->categories()),
