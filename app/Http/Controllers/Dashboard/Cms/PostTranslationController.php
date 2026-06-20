@@ -101,6 +101,7 @@ class PostTranslationController extends Controller
                 'id' => $post->id,
                 'title' => $post->title,
                 'slug' => $post->slug,
+                'excerpt' => $post->excerpt,
                 'content' => $post->content,
                 'status' => $post->status,
                 'published_at' => $post->published_at?->toIso8601String(),
@@ -108,6 +109,7 @@ class PostTranslationController extends Controller
             'postTranslation' => [
                 'title' => $postTranslation?->title ?? '',
                 'slug' => $postTranslation?->slug ?? Str::slug($post->title),
+                'excerpt' => $postTranslation?->excerpt ?? '',
                 'content' => $postTranslation?->content ?? '',
                 'status' => $postTranslation?->status ?? 'draft',
                 'published_at' => $postTranslation?->published_at?->toIso8601String(),
@@ -150,6 +152,7 @@ class PostTranslationController extends Controller
                 [
                     'title' => $validated['title'],
                     'slug' => $validated['slug'],
+                    'excerpt' => $validated['excerpt'] ?? null,
                     'content' => $validated['content'] ?? null,
                     'status' => $validated['status'],
                     'published_at' => $validated['published_at'] ?? null,

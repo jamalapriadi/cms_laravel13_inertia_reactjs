@@ -2,8 +2,11 @@
 
 use App\Http\Middleware\EnsureDashboardPermission;
 use App\Models\Block;
+use App\Models\BlockTranslation;
+use App\Models\Dashboard\Language;
 use App\Models\Post;
 use App\Models\PostCategory;
+use App\Models\PostTranslation;
 use App\Models\Term;
 use App\Models\TermTaxonomy;
 use App\Models\User;
@@ -77,6 +80,8 @@ test('it stores a post with nested editor blocks', function () {
 
     $response = $this->actingAs($user)->post(route('posts.store'), [
         'title' => 'Block Builder Post',
+        'slug' => 'block-builder-post',
+        'excerpt' => 'Short summary for the block builder post.',
         'status' => 'draft',
         'content' => json_encode($blocks),
     ]);
@@ -85,7 +90,9 @@ test('it stores a post with nested editor blocks', function () {
 
     $post = Post::query()->where('title', 'Block Builder Post')->firstOrFail();
 
-    expect($post->blocks)->toHaveCount(7)
+    expect($post->slug)->toBe('block-builder-post')
+        ->and($post->excerpt)->toBe('Short summary for the block builder post.')
+        ->and($post->blocks)->toHaveCount(7)
         ->and($post->content)->toBe(json_encode($blocks));
 
     $section = Block::query()->where('post_id', $post->id)->where('type', 'section')->firstOrFail();
@@ -130,6 +137,8 @@ test('it replaces nested editor blocks when updating a post', function () {
 
     $response = $this->actingAs($user)->put(route('posts.update', $post), [
         'title' => 'Updated title',
+        'slug' => 'updated-title',
+        'excerpt' => 'Updated excerpt',
         'status' => 'publish',
         'blocks' => json_encode($blocks),
     ]);
@@ -139,6 +148,8 @@ test('it replaces nested editor blocks when updating a post', function () {
     $post->refresh();
 
     expect($post->title)->toBe('Updated title')
+        ->and($post->slug)->toBe('updated-title')
+        ->and($post->excerpt)->toBe('Updated excerpt')
         ->and($post->status)->toBe('publish')
         ->and($post->published_at)->not->toBeNull()
         ->and($post->blocks)->toHaveCount(7);
@@ -188,4 +199,66 @@ test('it stores post category tags and featured image metadata', function () {
         ->and($post->featuredImage()->value('meta_value'))->toBe('posts/featured-image.jpg')
         ->and($post->published_at?->format('Y-m-d H:i:s'))->toBe('2026-05-24 09:30:00')
         ->and($tag->refresh()->count)->toBe(1);
+});
+
+test('it stores post field and block translations including excerpt', function () {
+    $user = User::factory()->create();
+    $language = Language::query()->create([
+        'code' => 'id',
+        'english_name' => 'Indonesian',
+        'active' => 1,
+    ]);
+    $post = Post::query()->create([
+        'user_id' => $user->id,
+        'title' => 'Original Post',
+        'slug' => 'original-post',
+        'excerpt' => 'Original excerpt',
+        'status' => 'publish',
+        'type' => 'post',
+    ]);
+    $block = Block::query()->create([
+        'post_id' => $post->id,
+        'type' => 'heading',
+        'props' => ['text' => 'Original heading', 'level' => 'h1'],
+        'styles' => [],
+        'order' => 0,
+    ]);
+
+    $response = $this->actingAs($user)->put(route('dashboard.cms.posts.translations.update', [
+        'post' => $post->id,
+        'language' => $language->id,
+    ]), [
+        'title' => 'Posting Terjemahan',
+        'slug' => 'posting-terjemahan',
+        'excerpt' => 'Ringkasan terjemahan',
+        'content' => 'Konten terjemahan',
+        'status' => 'publish',
+        'blocks' => [
+            [
+                'block_id' => $block->id,
+                'translations' => [
+                    'text' => 'Judul terjemahan',
+                ],
+            ],
+        ],
+    ]);
+
+    $response->assertRedirect();
+
+    $translation = PostTranslation::query()
+        ->where('post_id', $post->id)
+        ->where('language_id', $language->id)
+        ->firstOrFail();
+    $blockTranslation = BlockTranslation::query()
+        ->where('block_id', $block->id)
+        ->where('language_id', $language->id)
+        ->firstOrFail();
+
+    expect($translation->title)->toBe('Posting Terjemahan')
+        ->and($translation->slug)->toBe('posting-terjemahan')
+        ->and($translation->excerpt)->toBe('Ringkasan terjemahan')
+        ->and($blockTranslation->props)->toBe([
+            'text' => 'Judul terjemahan',
+            'level' => 'h1',
+        ]);
 });

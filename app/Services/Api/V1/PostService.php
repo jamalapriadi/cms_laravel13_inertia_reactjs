@@ -118,6 +118,7 @@ class PostService
             $searchQuery
                 ->where('title', 'like', "%{$search}%")
                 ->orWhere('slug', 'like', "%{$search}%")
+                ->orWhere('excerpt', 'like', "%{$search}%")
                 ->orWhere('content', 'like', "%{$search}%")
                 ->orWhereHas('translations', function (Builder $translationQuery) use ($search, $language): void {
                     if ($language) {

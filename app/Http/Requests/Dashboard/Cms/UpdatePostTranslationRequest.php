@@ -35,6 +35,7 @@ class UpdatePostTranslationRequest extends FormRequest
                     ->ignore($existingTranslationId)
                     ->where(fn ($query) => $query->where('language_id', $languageId)),
             ],
+            'excerpt' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
             'status' => ['required', 'string', Rule::in(['draft', 'publish'])],
             'published_at' => ['nullable', 'date'],

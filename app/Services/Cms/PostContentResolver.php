@@ -21,6 +21,7 @@ class PostContentResolver
                 'id' => $post->id,
                 'title' => $post->title,
                 'slug' => $post->slug,
+                'excerpt' => $post->excerpt,
                 'content' => $post->content,
                 'status' => $post->status,
                 'published_at' => $post->published_at?->toIso8601String(),
