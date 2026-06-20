@@ -42,8 +42,15 @@ class PostController extends Controller
                 schema: new OA\Schema(type: 'string', nullable: true, example: 'news'),
             ),
             new OA\Parameter(
+                name: 'locale',
+                description: 'Locale or language code.',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string', nullable: true, example: 'id'),
+            ),
+            new OA\Parameter(
                 name: 'language',
-                description: 'Language code, default locale, or language tag.',
+                description: 'Alias for locale.',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', nullable: true, example: 'id'),
@@ -133,8 +140,15 @@ class PostController extends Controller
                 schema: new OA\Schema(type: 'string', example: 'contoh-slug-post'),
             ),
             new OA\Parameter(
+                name: 'locale',
+                description: 'Locale or language code.',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string', nullable: true, example: 'id'),
+            ),
+            new OA\Parameter(
                 name: 'language',
-                description: 'Language code, default locale, or language tag.',
+                description: 'Alias for locale.',
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', nullable: true, example: 'id'),
@@ -171,9 +185,10 @@ class PostController extends Controller
     )]
     public function show(PostShowRequest $request, string $slug): JsonResponse
     {
+        $validated = $request->validated();
         $post = $this->postService->findPublishedBySlug(
             $slug,
-            $request->validated('language')
+            $validated['locale'] ?? $validated['language'] ?? null
         );
 
         if (! $post) {

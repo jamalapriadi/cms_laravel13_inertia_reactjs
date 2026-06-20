@@ -208,3 +208,59 @@ test('it returns not found for missing content types or unpublished entries', fu
         ->assertJsonPath('success', false)
         ->assertJsonPath('message', 'Content entry not found');
 });
+
+test('it returns localized dynamic content based on locale parameter', function () {
+    $language = \App\Models\Dashboard\Language::firstOrCreate(
+        ['code' => 'id'],
+        ['name' => 'Indonesia', 'is_active' => true]
+    );
+    \App\Models\Dashboard\Option::updateOrCreate(['key' => 'default_language'], ['value' => 'en']);
+    \App\Models\Dashboard\Option::updateOrCreate(['key' => 'languages'], ['value' => json_encode(['en', 'id'])]);
+
+    $contentType = createApiDynamicContentType();
+    $group = createApiDynamicFieldGroup($contentType);
+
+    createApiDynamicField($group, [
+        'label' => 'Customer Name',
+        'name' => 'customer_name',
+    ]);
+
+    $entry = \App\Models\ContentEntry::create([
+        'content_type_id' => $contentType->id,
+        'title' => 'English Testimonial',
+        'slug' => 'english-testimonial',
+        'status' => 'published',
+        'data' => [
+            'customer_name' => 'John Doe',
+        ],
+    ]);
+
+    $entry->translations()->create([
+        'language_id' => $language->id,
+        'title' => 'Testimoni Indonesia',
+        'slug' => 'testimoni-indonesia',
+        'status' => 'published',
+        'data' => [
+            'customer_name' => 'Budi Santoso',
+        ],
+    ]);
+
+    $this->getJson('/api/v1/content/testimonials')
+        ->assertSuccessful()
+        ->assertJsonPath('data.0.title', 'English Testimonial')
+        ->assertJsonPath('data.0.fields.customer_name', 'John Doe');
+
+    $this->getJson('/api/v1/content/testimonials?locale=id')
+        ->assertSuccessful()
+        ->dump()->assertJsonPath('data.0.title', 'Testimoni Indonesia')
+        ->assertJsonPath('data.0.fields.customer_name', 'Budi Santoso');
+
+    $this->getJson('/api/v1/content/testimonials/english-testimonial')
+        ->assertSuccessful()
+        ->assertJsonPath('data.title', 'English Testimonial');
+
+    $this->getJson('/api/v1/content/testimonials/english-testimonial?locale=id')
+        ->assertSuccessful()
+        ->assertJsonPath('data.title', 'Testimoni Indonesia')
+        ->assertJsonPath('data.fields.customer_name', 'Budi Santoso');
+});

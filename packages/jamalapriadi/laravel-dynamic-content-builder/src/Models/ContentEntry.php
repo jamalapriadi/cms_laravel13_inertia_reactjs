@@ -65,4 +65,57 @@ class ContentEntry extends Model
     {
         return (string) config('auth.providers.users.model', 'App\\Models\\User');
     }
+
+    public function translations()
+    {
+        return $this->hasMany(\App\Models\ContentEntryTranslation::class);
+    }
+
+    public function translationForLanguage(int $languageId, ?int $fallbackLanguageId = null): ?\App\Models\ContentEntryTranslation
+    {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\ContentEntryTranslation> $translations */
+        $translations = $this->relationLoaded('translations')
+            ? $this->translations
+            : $this->translations()->get();
+
+        $translation = $translations->firstWhere('language_id', $languageId);
+
+        if ($translation) {
+            return $translation;
+        }
+
+        if ($fallbackLanguageId) {
+            return $translations->firstWhere('language_id', $fallbackLanguageId);
+        }
+
+        return null;
+    }
+
+    public function resolveTranslation(int $languageId, ?int $fallbackLanguageId = null): self
+    {
+        $translation = $this->translationForLanguage($languageId, $fallbackLanguageId);
+
+        if ($translation) {
+            $this->title = $translation->title ?: $this->title;
+            $this->slug = $translation->slug ?: $this->slug;
+            $this->excerpt = $translation->excerpt ?: $this->excerpt;
+            $this->status = $translation->status ?: $this->status;
+            if ($translation->published_at) {
+                $this->published_at = $translation->published_at;
+            }
+
+            if (is_array($translation->data)) {
+                $originalData = is_array($this->data) ? $this->data : [];
+                $mergedData = $originalData;
+                foreach ($translation->data as $key => $value) {
+                    if (! blank($value)) {
+                        $mergedData[$key] = $value;
+                    }
+                }
+                $this->data = $mergedData;
+            }
+        }
+
+        return $this;
+    }
 }

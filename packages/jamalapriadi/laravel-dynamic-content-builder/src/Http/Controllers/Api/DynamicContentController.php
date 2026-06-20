@@ -40,6 +40,7 @@ class DynamicContentController extends Controller
         $entries = $this->dynamicContentApiService->paginatePublishedEntries(
             $contentType,
             $request->validated(),
+            $request->query('locale')
         );
 
         return response()->json([
@@ -55,7 +56,7 @@ class DynamicContentController extends Controller
         ]);
     }
 
-    public function show(string $contentTypeSlug, string $entrySlug): JsonResponse
+    public function show(DynamicContentIndexRequest $request, string $contentTypeSlug, string $entrySlug): JsonResponse
     {
         $contentType = $this->dynamicContentApiService->findActiveContentType($contentTypeSlug);
 
@@ -66,7 +67,7 @@ class DynamicContentController extends Controller
             ], 404);
         }
 
-        $entry = $this->dynamicContentApiService->findPublishedEntry($contentType, $entrySlug);
+        $entry = $this->dynamicContentApiService->findPublishedEntry($contentType, $entrySlug, $request->query('locale'));
 
         if (! $entry) {
             return response()->json([

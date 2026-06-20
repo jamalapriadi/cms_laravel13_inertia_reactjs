@@ -27,7 +27,7 @@ class PostService
      */
     public function paginatePublished(array $filters): LengthAwarePaginator
     {
-        $language = $this->resolveLanguage($filters['language'] ?? null);
+        $language = $this->resolveLanguage($filters['locale'] ?? $filters['language'] ?? null);
         $fallbackLanguage = $this->defaultLanguage();
         $perPage = (int) ($filters['per_page'] ?? 10);
 
