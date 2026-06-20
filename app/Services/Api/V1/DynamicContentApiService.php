@@ -59,6 +59,7 @@ class DynamicContentApiService
         $query = ContentEntry::query()
             ->where('content_type_id', $contentType->id)
             ->published()
+            ->with('translations.language')
             ->when($filters['search'] ?? null, function (Builder $query, string $search): void {
                 $query->where(function (Builder $query) use ($search): void {
                     $query->where('title', 'like', "%{$search}%")
@@ -87,11 +88,12 @@ class DynamicContentApiService
         return $paginator;
     }
 
-    public function findPublishedEntry(ContentType $contentType, string $entrySlug): ?ContentEntry
+    public function findPublishedEntry(ContentType $contentType, string $entrySlug, ?string $locale = null): ?ContentEntry
     {
         $entry = ContentEntry::query()
             ->where('content_type_id', $contentType->id)
             ->published()
+            ->with('translations.language')
             ->where('slug', $entrySlug)
             ->first();
 

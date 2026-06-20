@@ -13,16 +13,23 @@ class DynamicContentEntryResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $locale = $request->query('locale');
+        $translation = null;
+
+        if ($locale && $this->relationLoaded('translations')) {
+            $translation = $this->translations->firstWhere('language.code', $locale);
+        }
+
         return [
             'id' => $this->id,
             'content_type' => $this->contentTypePayload(),
-            'title' => $this->title,
-            'slug' => $this->slug,
-            'excerpt' => $this->excerpt,
+            'title' => $translation ? $translation->title : $this->title,
+            'slug' => $translation ? $translation->slug : $this->slug,
+            'excerpt' => $translation ? $translation->excerpt : $this->excerpt,
             'status' => $this->status,
             'published_at' => $this->published_at?->format('Y-m-d H:i:s'),
             'sort_order' => $this->sort_order,
-            'fields' => $this->fieldsPayload(),
+            'fields' => $this->fieldsPayload($translation),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
@@ -51,18 +58,20 @@ class DynamicContentEntryResource extends JsonResource
     /**
      * @return array<string, mixed>
      */
-    private function fieldsPayload(): array
+    private function fieldsPayload($translation = null): array
     {
         $definitions = $this->resource->getAttribute('api_field_definitions');
         $mediaMap = $this->resource->getAttribute('api_media_map') ?? [];
         $payload = [];
+
+        $sourceData = $translation && is_array($translation->data) ? $translation->data : $this->data;
 
         foreach ((array) $definitions as $name => $field) {
             if (! $field instanceof CustomField) {
                 continue;
             }
 
-            $value = $this->data[$name] ?? null;
+            $value = $sourceData[$name] ?? null;
 
             $payload[$name] = match ($field->type) {
                 'image', 'file' => is_string($value) ? ($mediaMap[$value] ?? null) : null,

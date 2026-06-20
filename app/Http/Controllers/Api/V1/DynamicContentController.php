@@ -9,6 +9,7 @@ use App\Http\Resources\Api\V1\DynamicContentTypeResource;
 use App\Services\Api\V1\DynamicContentApiService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 class DynamicContentController extends Controller
@@ -54,6 +55,7 @@ class DynamicContentController extends Controller
             new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 1, minimum: 1)),
             new OA\Parameter(name: 'sort', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['title', 'published_at', 'sort_order', 'created_at'])),
             new OA\Parameter(name: 'order', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['asc', 'desc'])),
+            new OA\Parameter(name: 'locale', in: 'query', required: false, schema: new OA\Schema(type: 'string', example: 'en')),
         ],
         responses: [
             new OA\Response(
@@ -99,6 +101,7 @@ class DynamicContentController extends Controller
         parameters: [
             new OA\Parameter(name: 'content_type_slug', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'entry_slug', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'locale', in: 'query', required: false, schema: new OA\Schema(type: 'string', example: 'en')),
         ],
         responses: [
             new OA\Response(
@@ -111,7 +114,7 @@ class DynamicContentController extends Controller
             ),
         ],
     )]
-    public function show(string $contentTypeSlug, string $entrySlug): JsonResponse
+    public function show(Request $request, string $contentTypeSlug, string $entrySlug): JsonResponse
     {
         $contentType = $this->dynamicContentApiService->findActiveContentType($contentTypeSlug);
 
@@ -119,7 +122,7 @@ class DynamicContentController extends Controller
             return $this->errorResponse('Content type not found', 404);
         }
 
-        $entry = $this->dynamicContentApiService->findPublishedEntry($contentType, $entrySlug);
+        $entry = $this->dynamicContentApiService->findPublishedEntry($contentType, $entrySlug, $request->query('locale'));
 
         if (! $entry) {
             return $this->errorResponse('Content entry not found', 404);
