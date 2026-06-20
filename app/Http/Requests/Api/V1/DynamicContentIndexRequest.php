@@ -24,6 +24,7 @@ class DynamicContentIndexRequest extends FormRequest
             'page' => ['nullable', 'integer', 'min:1'],
             'sort' => ['nullable', 'string', Rule::in(['title', 'published_at', 'sort_order', 'created_at'])],
             'order' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
+            'locale' => ['nullable', 'string', 'max:5'],
         ];
     }
 
