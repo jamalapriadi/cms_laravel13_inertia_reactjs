@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Textarea from '@/components/ui/textarea';
 import TinyEditor from '@/components/ui/TinyEditor';
+import MultiSearchableSelect from '@/components/MultiSearchableSelect';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -32,10 +33,16 @@ interface Unit {
     code: string;
 }
 
+interface Tag {
+    id: string;
+    term: { name: string };
+}
+
 interface Props {
     categories: Category[];
     brands: Brand[];
     units: Unit[];
+    tags: Tag[];
 }
 
 const productSchema = z.object({
@@ -52,11 +59,12 @@ const productSchema = z.object({
     meta_title: z.string().nullable().optional(),
     meta_description: z.string().nullable().optional(),
     is_publish: z.boolean().default(true),
+    tags: z.array(z.string()).nullable().optional().default([]),
 });
 
 type ProductFormData = z.output<typeof productSchema>;
 
-export default function Create({ categories, brands, units }: Props) {
+export default function Create({ categories, brands, units, tags }: Props) {
     const [processing, setProcessing] = useState(false);
 
     const {
@@ -80,6 +88,7 @@ export default function Create({ categories, brands, units }: Props) {
             meta_title: '',
             meta_description: '',
             is_publish: true,
+            tags: [],
         },
     });
 
@@ -241,6 +250,25 @@ export default function Create({ categories, brands, units }: Props) {
                                     }
                                     placeholder="-- No Unit --"
                                     error={errors.unit_id?.message}
+                                    clearable
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1 md:col-span-2">
+                                <Label>Tags Optional</Label>
+                                <MultiSearchableSelect
+                                    options={tags.map((tag) => ({
+                                        value: tag.id,
+                                        label: tag.term.name,
+                                    }))}
+                                    value={watch('tags') ?? []}
+                                    onChange={(value) =>
+                                        setValue('tags', value, {
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                    placeholder="-- Select Tags --"
+                                    error={errors.tags?.message}
                                     clearable
                                 />
                             </div>

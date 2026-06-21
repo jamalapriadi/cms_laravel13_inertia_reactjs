@@ -14,6 +14,7 @@ use App\Models\Shop\Category;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductVariant;
 use App\Models\Shop\VariantItem;
+use App\Models\TermTaxonomy;
 use App\Models\Unit;
 use App\Support\MediaPath;
 use App\Support\UniqueSlug;
@@ -121,11 +122,13 @@ class ProductController extends Controller
         $categories = Category::select('id', 'name')->get();
         $brands = Brand::select('id', 'name')->where('is_active', true)->get();
         $units = Unit::select('id', 'name', 'code')->where('is_active', true)->get();
+        $tags = TermTaxonomy::with('term')->where('taxonomy', 'tags')->get();
 
         return Inertia::render('Dashboard/Store/Product/Create', [
             'categories' => $categories,
             'brands' => $brands,
             'units' => $units,
+            'tags' => $tags,
         ]);
     }
 
@@ -149,6 +152,10 @@ class ProductController extends Controller
         }
 
         $product = Product::create($data);
+
+        if ($request->has('tags')) {
+            $product->tags()->sync($request->validated('tags', []));
+        }
 
         if ($product->has_variant) {
             return redirect()
@@ -201,7 +208,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $product->load(['category', 'brand', 'variants.options', 'variantItems.stockUnits']);
+        $product->load(['category', 'brand', 'variants.options', 'variantItems.stockUnits', 'tags.term']);
 
         $categories = Category::select('id', 'name')->get();
 
@@ -213,11 +220,14 @@ class ProductController extends Controller
             ->where('is_active', true)
             ->get();
 
+        $tags = TermTaxonomy::with('term')->where('taxonomy', 'tags')->get();
+
         return Inertia::render('Dashboard/Store/Product/Edit', [
             'product' => $product,
             'categories' => $categories,
             'brands' => $brands,
             'units' => $units,
+            'tags' => $tags,
         ]);
     }
 
@@ -248,6 +258,10 @@ class ProductController extends Controller
         }
 
         $product->update($data);
+
+        if ($request->has('tags')) {
+            $product->tags()->sync($request->validated('tags', []));
+        }
 
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }

@@ -62,6 +62,8 @@ class ProductRequest extends FormRequest
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
             'is_publish' => ['nullable', 'boolean'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['exists:term_taxonomy,id'],
         ];
     }
 

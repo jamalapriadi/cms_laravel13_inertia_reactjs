@@ -47,6 +47,7 @@ class ProductCatalogService
             ->with([
                 'category',
                 'brand',
+                'tags.term',
                 'images' => fn ($imageQuery) => $imageQuery->orderByDesc('is_primary')->orderBy('sort_order')->latest(),
                 'variantItems' => fn ($variantQuery) => $variantQuery
                     ->where('is_active', true)

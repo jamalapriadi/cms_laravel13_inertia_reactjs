@@ -27,6 +27,7 @@ class ProductResource extends JsonResource
             'short_description' => $this->shortDescription(),
             'brand' => EcommerceBrandResource::make($this->whenLoaded('brand')),
             'categories' => EcommerceCategoryResource::collection(collect([$this->whenLoaded('category')])->filter()),
+            'tags' => TagResource::collection($this->whenLoaded('tags')),
             'thumbnail' => $this->thumbnail(),
             'price' => (float) $this->base_price,
             'min_price' => $priceRange['min'],

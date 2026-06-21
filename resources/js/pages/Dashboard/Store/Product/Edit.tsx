@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Textarea from '@/components/ui/textarea';
 import TinyEditor from '@/components/ui/TinyEditor';
+import MultiSearchableSelect from '@/components/MultiSearchableSelect';
 
 import AppLayout from '@/layouts/master-data-layout';
 
@@ -49,6 +50,7 @@ interface Product {
     meta_title?: string | null;
     meta_description?: string | null;
     is_publish: boolean;
+    tags?: { id: string; term: { name: string } }[];
 }
 
 interface Props {
@@ -56,6 +58,7 @@ interface Props {
     categories: Category[];
     brands: Brand[];
     units: Unit[];
+    tags: { id: string; term: { name: string } }[];
 }
 
 const productSchema = z.object({
@@ -75,6 +78,7 @@ const productSchema = z.object({
     meta_title: z.string().nullable().optional(),
     meta_description: z.string().nullable().optional(),
     is_publish: z.boolean().default(true),
+    tags: z.array(z.string()).nullable().optional().default([]),
 });
 
 type ProductFormData = z.output<typeof productSchema>;
@@ -84,6 +88,7 @@ export default function Edit({
     categories,
     brands,
     units,
+    tags,
 }: Props) {
     const [processing, setProcessing] = useState(false);
 
@@ -109,6 +114,7 @@ export default function Edit({
             meta_title: initialProduct.meta_title ?? '',
             meta_description: initialProduct.meta_description ?? '',
             is_publish: Boolean(initialProduct.is_publish),
+            tags: initialProduct.tags?.map((t) => String(t.id)) ?? [],
         },
     });
 
@@ -278,6 +284,25 @@ export default function Edit({
                                     }
                                     placeholder="-- No Unit --"
                                     error={errors.unit_id?.message}
+                                    clearable
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1 md:col-span-2">
+                                <Label>Tags Optional</Label>
+                                <MultiSearchableSelect
+                                    options={tags.map((tag) => ({
+                                        value: String(tag.id),
+                                        label: tag.term.name,
+                                    }))}
+                                    value={watch('tags') ?? []}
+                                    onChange={(value) =>
+                                        setValue('tags', value, {
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                    placeholder="-- Select Tags --"
+                                    error={errors.tags?.message}
                                     clearable
                                 />
                             </div>
