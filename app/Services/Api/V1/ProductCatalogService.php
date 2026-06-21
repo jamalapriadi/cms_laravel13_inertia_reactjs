@@ -110,6 +110,10 @@ class ProductCatalogService
         if ($collectionId = $locks['collection_id'] ?? null) {
             $query->whereHas('collectionItems', fn (Builder $itemQuery) => $itemQuery->where('product_collection_id', $collectionId));
         }
+
+        if ($tagId = $locks['tag_id'] ?? null) {
+            $query->whereHas('tags', fn (Builder $tagQuery) => $tagQuery->where('term_taxonomy.id', $tagId));
+        }
     }
 
     /**

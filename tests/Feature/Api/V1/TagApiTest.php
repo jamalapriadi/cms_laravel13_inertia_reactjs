@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Shop\Category;
+use App\Models\Shop\Product;
 use App\Models\Term;
 use App\Models\TermTaxonomy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -61,9 +63,25 @@ it('can sort tags by name ascending', function () {
         ->assertJsonPath('data.1.name', 'Zebra');
 });
 
-it('can retrieve tag detail by slug', function () {
+it('can retrieve tag detail by slug with products', function () {
     $term = Term::create(['name' => 'Bunga Papan', 'slug' => 'bunga-papan']);
-    TermTaxonomy::create(['term_id' => $term->id, 'taxonomy' => 'tags', 'description' => 'Detail desc']);
+    $tag = TermTaxonomy::create(['term_id' => $term->id, 'taxonomy' => 'tags', 'description' => 'Detail desc']);
+
+    $category = Category::create([
+        'name' => 'Category X',
+        'slug' => 'category-x',
+    ]);
+    $product = Product::create([
+        'category_id' => $category->id,
+        'name' => 'Product X',
+        'slug' => 'product-x',
+        'is_publish' => true,
+        'visibility' => 'public',
+        'status' => 'active',
+        'base_price' => 1000,
+    ]);
+
+    $tag->products()->attach($product->id);
 
     $response = $this->getJson('/api/v1/tags/bunga-papan');
 
@@ -71,7 +89,17 @@ it('can retrieve tag detail by slug', function () {
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.name', 'Bunga Papan')
         ->assertJsonPath('data.slug', 'bunga-papan')
-        ->assertJsonPath('data.description', 'Detail desc');
+        ->assertJsonPath('data.description', 'Detail desc')
+        ->assertJsonStructure([
+            'data' => [
+                'products' => [
+                    'data',
+                    'meta',
+                ],
+            ],
+        ]);
+
+    $response->assertJsonPath('data.products.data.0.name', 'Product X');
 });
 
 it('returns 404 if tag is not found', function () {

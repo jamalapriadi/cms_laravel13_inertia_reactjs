@@ -8,6 +8,7 @@
 
 namespace App\Models\Shop;
 
+use App\Models\TermTaxonomy;
 use App\Models\Unit;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -138,5 +139,11 @@ class Product extends Model
     public function collectionItems(): HasMany
     {
         return $this->hasMany(ProductCollectionItem::class);
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(TermTaxonomy::class, 'product_term_taxonomy', 'product_id', 'term_taxonomy_id')
+            ->where('taxonomy', 'tags');
     }
 }

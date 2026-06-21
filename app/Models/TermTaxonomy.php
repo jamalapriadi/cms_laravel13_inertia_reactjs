@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Shop\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -37,5 +38,10 @@ class TermTaxonomy extends Model
     public function posts()
     {
         return $this->belongsToMany(Post::class, 'term_relationships');
+    }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_term_taxonomy', 'term_taxonomy_id', 'product_id');
     }
 }

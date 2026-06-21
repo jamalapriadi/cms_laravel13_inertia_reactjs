@@ -3,19 +3,24 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\ProductIndexRequest;
 use App\Http\Requests\Api\V1\TagIndexRequest;
 use App\Http\Resources\Api\V1\TagResource;
 use App\Models\Term;
 use App\Models\TermTaxonomy;
+use App\Services\Api\V1\ProductCatalogService;
 use App\Services\Cache\ListCacheService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 class TagController extends Controller
 {
     use ApiResponse;
+
+    public function __construct(
+        private readonly ProductCatalogService $productCatalogService
+    ) {}
 
     #[OA\Get(
         path: '/api/v1/tags',
@@ -135,7 +140,7 @@ class TagController extends Controller
 
     #[OA\Get(
         path: '/api/v1/tags/{slug}',
-        description: 'Returns tag detail by slug.',
+        description: 'Returns tag detail by slug, including its assigned products.',
         summary: 'Get tag detail by slug',
         tags: ['Tags'],
         parameters: [
@@ -146,6 +151,14 @@ class TagController extends Controller
                 required: true,
                 schema: new OA\Schema(type: 'string', example: 'bunga-papan'),
             ),
+            new OA\Parameter(name: 'search', description: 'Search query for products', in: 'query', required: false, schema: new OA\Schema(type: 'string', nullable: true)),
+            new OA\Parameter(name: 'category', description: 'Filter by category slug or id', in: 'query', required: false, schema: new OA\Schema(type: 'string', nullable: true)),
+            new OA\Parameter(name: 'brand', description: 'Filter by brand slug or id', in: 'query', required: false, schema: new OA\Schema(type: 'string', nullable: true)),
+            new OA\Parameter(name: 'min_price', description: 'Minimum price filter', in: 'query', required: false, schema: new OA\Schema(type: 'number', nullable: true)),
+            new OA\Parameter(name: 'max_price', description: 'Maximum price filter', in: 'query', required: false, schema: new OA\Schema(type: 'number', nullable: true)),
+            new OA\Parameter(name: 'sort', description: 'Sort criteria', in: 'query', required: false, schema: new OA\Schema(type: 'string', default: 'latest')),
+            new OA\Parameter(name: 'page', description: 'Page number', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 1)),
+            new OA\Parameter(name: 'per_page', description: 'Items per page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 12)),
         ],
         responses: [
             new OA\Response(
@@ -159,14 +172,19 @@ class TagController extends Controller
                         new OA\Property(
                             property: 'data',
                             type: 'object',
-                            required: ['id', 'name', 'slug', 'description', 'created_at', 'updated_at'],
                             properties: [
-                                new OA\Property(property: 'id', type: 'integer', example: 1),
-                                new OA\Property(property: 'name', type: 'string', example: 'Bunga Papan'),
-                                new OA\Property(property: 'slug', type: 'string', example: 'bunga-papan'),
-                                new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Description of the tag'),
-                                new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
-                                new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
+                                new OA\Property(property: 'id', type: 'integer'),
+                                new OA\Property(property: 'name', type: 'string'),
+                                new OA\Property(property: 'slug', type: 'string'),
+                                new OA\Property(property: 'description', type: 'string', nullable: true),
+                                new OA\Property(
+                                    property: 'products',
+                                    type: 'object',
+                                    properties: [
+                                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object')),
+                                        new OA\Property(property: 'meta', ref: '#/components/schemas/PaginationMeta'),
+                                    ]
+                                ),
                             ]
                         ),
                     ],
@@ -186,9 +204,11 @@ class TagController extends Controller
             ),
         ],
     )]
-    public function show(Request $request, string $slug): JsonResponse
+    public function show(ProductIndexRequest $request, string $slug): JsonResponse
     {
-        $payload = app(ListCacheService::class)->rememberRequest("api.tags.show.{$slug}", $request, function () use ($request, $slug): ?array {
+        $filters = $request->validated();
+
+        $payload = app(ListCacheService::class)->rememberRequest("api.tags.show.{$slug}", $request, function () use ($filters, $request, $slug): ?array {
             $tag = TermTaxonomy::with('term')
                 ->where('taxonomy', 'tags')
                 ->whereHas('term', function ($q) use ($slug) {
@@ -200,7 +220,16 @@ class TagController extends Controller
                 return null;
             }
 
-            return TagResource::make($tag)->resolve($request);
+            $products = $this->productCatalogService->paginateForFilters(
+                $filters,
+                $request,
+                ['tag_id' => $tag->id]
+            );
+
+            return [
+                ...TagResource::make($tag)->resolve($request),
+                'products' => $products,
+            ];
         });
 
         if (! $payload) {
