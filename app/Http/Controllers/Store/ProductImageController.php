@@ -7,6 +7,7 @@ use App\Http\Requests\Store\ProductImage\ProductImageRequest;
 use App\Http\Requests\Store\ProductImage\ProductImageUpdateRequest;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductImage;
+use App\Services\MediaUploadService;
 use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -15,6 +16,10 @@ use Inertia\Inertia;
 
 class ProductImageController extends Controller
 {
+    public function __construct(
+        protected MediaUploadService $mediaUploadService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -80,7 +85,7 @@ class ProductImageController extends Controller
             foreach ($files as $index => $file) {
                 ProductImage::create([
                     'product_id' => $data['product_id'],
-                    'image' => $file->store('product_images', 'public'),
+                    'image' => $this->mediaUploadService->uploadImage($file, 'product_images'),
                     'is_primary' => $isPrimary && $index === 0,
                     'sort_order' => $sortOrder + $index,
                 ]);
@@ -90,7 +95,7 @@ class ProductImageController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('product_images', 'public');
+            $data['image'] = $this->mediaUploadService->uploadImage($request->file('image'), 'product_images');
         } elseif ($mediaPath = MediaPath::normalize($request->input('image'))) {
             $data['image'] = $mediaPath;
         } else {
@@ -132,20 +137,14 @@ class ProductImageController extends Controller
         $data = Arr::except($request->validated(), ['image']);
 
         if ($request->hasFile('image')) {
-            if ($productImage->image) {
-                Storage::disk('public')->delete($productImage->image);
-            }
-            $data['image'] = $request->file('image')->store('product_images', 'public');
-        } elseif ($request->has('image') && $request->input('image') === '') {
-            $data['image'] = null;
+            $this->mediaUploadService->delete($productImage->image);
+            $data['image'] = $this->mediaUploadService->uploadImage($request->file('image'), 'product_images');
         } elseif ($request->filled('image')) {
             $data['image'] = MediaPath::normalize($request->input('image')) ?? $productImage->image;
         }
 
-        // If is_primary is true, un-primary others
-        if (! empty($data['is_primary'])) {
-            ProductImage::where('product_id', $data['product_id'])
-                ->where('is_primary', true)
+        if ($data['is_primary'] ?? false) {
+            ProductImage::where('product_id', $productImage->product_id)
                 ->where('id', '!=', $productImage->id)
                 ->update(['is_primary' => false]);
         }
@@ -161,7 +160,7 @@ class ProductImageController extends Controller
     public function destroy(ProductImage $productImage)
     {
         if ($productImage->image) {
-            Storage::disk('public')->delete($productImage->image);
+            $this->mediaUploadService->delete($productImage->image);
         }
 
         $productImage->delete();

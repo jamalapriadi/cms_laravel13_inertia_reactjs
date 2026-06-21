@@ -45,7 +45,7 @@ class Media extends Model
 
     public function url()
     {
-        return $this->disk === 'public'
+        return ($this->disk === 'public' || $this->disk === 'idcloudhost')
             ? MediaPath::url($this->path)
             : null;
     }

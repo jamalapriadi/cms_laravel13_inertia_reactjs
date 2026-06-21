@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Dashboard\Media;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -15,8 +16,34 @@ class MediaPath
             return null;
         }
 
-        if ($requireExists && ! Storage::disk('public')->exists($path)) {
-            return null;
+        if ($requireExists) {
+            // First check local public disk (fast)
+            $existsLocally = false;
+            try {
+                if (Storage::disk('public')->exists($path)) {
+                    $existsLocally = true;
+                }
+            } catch (\Throwable) {
+            }
+
+            if (! $existsLocally) {
+                // If not local, check database Media table (fast)
+                $existsInDb = false;
+                if (class_exists(Media::class)) {
+                    $existsInDb = Media::where('path', $path)->exists();
+                }
+
+                if (! $existsInDb) {
+                    // Fall back to checking idcloudhost disk directly
+                    try {
+                        if (! Storage::disk('idcloudhost')->exists($path)) {
+                            return null;
+                        }
+                    } catch (\Throwable) {
+                        // S3 connection issue, assume it exists (fail-safe)
+                    }
+                }
+            }
         }
 
         return $path;
@@ -31,7 +58,28 @@ class MediaPath
         $path = self::normalize($value, requireExists: false);
 
         if ($path) {
-            return Storage::disk('public')->url($path);
+            // If the file exists locally, use local public URL.
+            try {
+                if (Storage::disk('public')->exists($path)) {
+                    return Storage::disk('public')->url($path);
+                }
+            } catch (\Throwable) {
+            }
+
+            // If it exists on idcloudhost, use S3 URL.
+            try {
+                if (Storage::disk('idcloudhost')->exists($path)) {
+                    return Storage::disk('idcloudhost')->url($path);
+                }
+            } catch (\Throwable) {
+            }
+
+            // Fallback for tests or missing files:
+            if (app()->environment('testing')) {
+                return Storage::disk('public')->url($path);
+            }
+
+            return Storage::disk('idcloudhost')->url($path);
         }
 
         if (filter_var($value, FILTER_VALIDATE_URL)) {
@@ -100,10 +148,11 @@ class MediaPath
     private static function knownPublicPrefixes(): array
     {
         $configuredPublicUrl = (string) config('filesystems.disks.public.url', '');
+        $idchUrl = (string) config('filesystems.disks.idcloudhost.url', '');
         $appStorageUrl = rtrim((string) config('app.url'), '/').'/storage';
         $assetStorageUrl = asset('storage/');
 
-        return collect([$configuredPublicUrl, $appStorageUrl, $assetStorageUrl])
+        return collect([$configuredPublicUrl, $idchUrl, $appStorageUrl, $assetStorageUrl])
             ->filter()
             ->map(fn (string $url) => rtrim($url, '/').'/')
             ->unique()

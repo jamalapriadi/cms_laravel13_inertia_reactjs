@@ -9,16 +9,20 @@ use App\Http\Resources\Store\ProductCollectionResource;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductCollection;
 use App\Models\Shop\ProductCollectionItem;
+use App\Services\MediaUploadService;
 use App\Support\MediaPath;
 use App\Support\UniqueSlug;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProductCollectionController extends Controller
 {
+    public function __construct(
+        protected MediaUploadService $mediaUploadService
+    ) {}
+
     public function index(Request $request): Response
     {
         $search = trim((string) $request->query('search', ''));
@@ -76,7 +80,7 @@ class ProductCollectionController extends Controller
             : UniqueSlug::make(ProductCollection::class, $data['name']);
 
         if ($request->hasFile('banner_image')) {
-            $data['banner_image'] = $request->file('banner_image')->store('product_collections', 'public');
+            $data['banner_image'] = $this->mediaUploadService->uploadImage($request->file('banner_image'), 'product_collections');
         } elseif ($mediaPath = MediaPath::normalize($request->input('banner_image'))) {
             $data['banner_image'] = $mediaPath;
         }
@@ -150,11 +154,8 @@ class ProductCollectionController extends Controller
             : UniqueSlug::make(ProductCollection::class, $data['name'], ignoreId: $productCollection->id);
 
         if ($request->hasFile('banner_image')) {
-            if ($productCollection->banner_image) {
-                Storage::disk('public')->delete($productCollection->banner_image);
-            }
-
-            $data['banner_image'] = $request->file('banner_image')->store('product_collections', 'public');
+            $this->mediaUploadService->delete($productCollection->banner_image);
+            $data['banner_image'] = $this->mediaUploadService->uploadImage($request->file('banner_image'), 'product_collections');
         } elseif ($request->has('banner_image') && $request->input('banner_image') === '') {
             $data['banner_image'] = null;
         } elseif ($request->filled('banner_image')) {

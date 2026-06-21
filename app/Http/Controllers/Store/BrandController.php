@@ -7,6 +7,7 @@ use App\Http\Requests\Store\Brand\BrandRequest;
 use App\Http\Requests\Store\Brand\BrandUpdateRequest;
 use App\Models\Brand;
 use App\Models\Shop\Product;
+use App\Services\MediaUploadService;
 use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -16,6 +17,10 @@ use Inertia\Inertia;
 
 class BrandController extends Controller
 {
+    public function __construct(
+        protected MediaUploadService $mediaUploadService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -74,7 +79,7 @@ class BrandController extends Controller
         }
 
         if ($request->hasFile('logo')) {
-            $data['logo'] = $request->file('logo')->store('brands', 'public');
+            $data['logo'] = $this->mediaUploadService->uploadImage($request->file('logo'), 'brands');
         } elseif ($mediaPath = MediaPath::normalize($request->input('logo'))) {
             $data['logo'] = $mediaPath;
         }
@@ -118,10 +123,8 @@ class BrandController extends Controller
         }
 
         if ($request->hasFile('logo')) {
-            if ($brand->logo) {
-                Storage::disk('public')->delete($brand->logo);
-            }
-            $data['logo'] = $request->file('logo')->store('brands', 'public');
+            $this->mediaUploadService->delete($brand->logo);
+            $data['logo'] = $this->mediaUploadService->uploadImage($request->file('logo'), 'brands');
         } elseif ($request->has('logo') && $request->input('logo') === '') {
             $data['logo'] = null;
         } elseif ($request->filled('logo')) {

@@ -105,7 +105,7 @@ test('user can add a specification to a product and it redirects back', function
 });
 
 test('user can upload a product image and it redirects back', function () {
-    Storage::fake('public');
+    Storage::fake('idcloudhost');
 
     $user = User::factory()->create();
     $user->is_super_admin = true;
@@ -146,7 +146,7 @@ test('user can upload a product image and it redirects back', function () {
     ]);
 
     $image = ProductImage::where('product_id', $product->id)->first();
-    Storage::disk('public')->assertExists($image->image);
+    Storage::disk('idcloudhost')->assertExists($image->image);
 });
 
 test('user can add a product image from media library path', function () {

@@ -77,7 +77,7 @@ test('option value returns scalar strings and decoded arrays', function () {
 });
 
 test('media json upload keeps ico files as ico assets', function () {
-    Storage::fake('public');
+    Storage::fake('idcloudhost');
 
     $user = User::factory()->create();
     Permission::findOrCreate('media.upload', 'web');

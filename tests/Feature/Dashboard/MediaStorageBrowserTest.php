@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Storage;
 uses(RefreshDatabase::class);
 
 test('media page lists folders and files from public storage', function () {
-    Storage::fake('public');
+    Storage::fake('idcloudhost');
 
     $user = User::factory()->create();
     $user->is_super_admin = true;
 
-    Storage::disk('public')->put('media/2026/05/logo.webp', 'image');
-    Storage::disk('public')->put('documents/manual.pdf', 'document');
+    Storage::disk('idcloudhost')->put('media/2026/05/logo.webp', 'image');
+    Storage::disk('idcloudhost')->put('documents/manual.pdf', 'document');
 
     $response = $this
         ->actingAs($user)
@@ -33,12 +33,12 @@ test('media page lists folders and files from public storage', function () {
 });
 
 test('media page can open a storage folder', function () {
-    Storage::fake('public');
+    Storage::fake('idcloudhost');
 
     $user = User::factory()->create();
     $user->is_super_admin = true;
 
-    Storage::disk('public')->put('media/2026/05/logo.webp', 'image');
+    Storage::disk('idcloudhost')->put('media/2026/05/logo.webp', 'image');
 
     $response = $this
         ->actingAs($user)
@@ -57,12 +57,12 @@ test('media page can open a storage folder', function () {
 });
 
 test('media library treats webp files as previewable images', function () {
-    Storage::fake('public');
+    Storage::fake('idcloudhost');
 
     $user = User::factory()->create();
     $user->is_super_admin = true;
 
-    Storage::disk('public')->put('media/2026/06/banner.webp', 'webp image');
+    Storage::disk('idcloudhost')->put('media/2026/06/banner.webp', 'webp image');
 
     $response = $this
         ->actingAs($user)
@@ -74,16 +74,16 @@ test('media library treats webp files as previewable images', function () {
         ->assertJsonPath('storageItems.0.name', 'banner.webp')
         ->assertJsonPath('storageItems.0.path', 'media/2026/06/banner.webp')
         ->assertJsonPath('storageItems.0.mime_type', 'image/webp')
-        ->assertJsonPath('storageItems.0.url', fn (string $url) => str_contains($url, '/storage/media/2026/06/banner.webp'));
+        ->assertJsonPath('storageItems.0.url', fn (string $url) => str_contains($url, 'media/2026/06/banner.webp'));
 });
 
 test('media storage file can be permanently deleted', function () {
-    Storage::fake('public');
+    Storage::fake('idcloudhost');
 
     $user = User::factory()->create();
     $user->is_super_admin = true;
 
-    Storage::disk('public')->put('media/2026/05/logo.webp', 'image');
+    Storage::disk('idcloudhost')->put('media/2026/05/logo.webp', 'image');
 
     $this
         ->actingAs($user)
@@ -92,11 +92,11 @@ test('media storage file can be permanently deleted', function () {
         ])
         ->assertRedirect();
 
-    Storage::disk('public')->assertMissing('media/2026/05/logo.webp');
+    Storage::disk('idcloudhost')->assertMissing('media/2026/05/logo.webp');
 });
 
 test('media upload converts supported images to webp', function () {
-    Storage::fake('public');
+    Storage::fake('idcloudhost');
 
     $user = User::factory()->create();
     $user->is_super_admin = true;
@@ -109,7 +109,7 @@ test('media upload converts supported images to webp', function () {
 
     $response->assertRedirect();
 
-    $files = Storage::disk('public')->allFiles('media');
+    $files = Storage::disk('idcloudhost')->allFiles('media');
 
     expect($files)
         ->toHaveCount(1)
@@ -118,7 +118,7 @@ test('media upload converts supported images to webp', function () {
 });
 
 test('media json upload returns preview data for uploaded webp images', function () {
-    Storage::fake('public');
+    Storage::fake('idcloudhost');
 
     $user = User::factory()->create();
     $user->is_super_admin = true;
@@ -134,5 +134,5 @@ test('media json upload returns preview data for uploaded webp images', function
         ->assertJsonPath('media.mime_type', 'image/webp')
         ->assertJsonPath('media.file_name', fn (string $name) => str_ends_with($name, '.webp'))
         ->assertJsonPath('media.path', fn (string $path) => str_starts_with($path, 'media/') && str_ends_with($path, '.webp'))
-        ->assertJsonPath('url', fn (string $url) => str_contains($url, '/storage/media/') && str_ends_with($url, '.webp'));
+        ->assertJsonPath('url', fn (string $url) => str_contains($url, 'media/') && str_ends_with($url, '.webp'));
 });

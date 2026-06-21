@@ -67,15 +67,23 @@ class OptionController extends Controller
 
                 if ($path !== null) {
                     if ($oldPath && $oldPath !== $path) {
-                        if (str_starts_with($oldPath, 'settings/') && Storage::disk('public')->exists($oldPath)) {
-                            Storage::disk('public')->delete($oldPath);
+                        if (str_starts_with($oldPath, 'settings/')) {
+                            if (Storage::disk('idcloudhost')->exists($oldPath)) {
+                                Storage::disk('idcloudhost')->delete($oldPath);
+                            } elseif (Storage::disk('public')->exists($oldPath)) {
+                                Storage::disk('public')->delete($oldPath);
+                            }
                         }
                     }
                     $data[$field] = $path;
                 } else {
                     if ($oldPath) {
-                        if (str_starts_with($oldPath, 'settings/') && Storage::disk('public')->exists($oldPath)) {
-                            Storage::disk('public')->delete($oldPath);
+                        if (str_starts_with($oldPath, 'settings/')) {
+                            if (Storage::disk('idcloudhost')->exists($oldPath)) {
+                                Storage::disk('idcloudhost')->delete($oldPath);
+                            } elseif (Storage::disk('public')->exists($oldPath)) {
+                                Storage::disk('public')->delete($oldPath);
+                            }
                         }
                     }
                     $data[$field] = null;
@@ -91,7 +99,9 @@ class OptionController extends Controller
                 $oldPath = Option::getByKey($field);
 
                 if ($oldPath) {
-                    if (Storage::disk('public')->exists($oldPath)) {
+                    if (Storage::disk('idcloudhost')->exists($oldPath)) {
+                        Storage::disk('idcloudhost')->delete($oldPath);
+                    } elseif (Storage::disk('public')->exists($oldPath)) {
                         Storage::disk('public')->delete($oldPath);
                     }
                 }
@@ -99,7 +109,7 @@ class OptionController extends Controller
                 // beri nama unik
                 $filename = time().'_'.$field.'.'.$file->getClientOriginalExtension();
 
-                $path = $file->storeAs('settings', $filename, 'public');
+                $path = $file->storeAs('settings', $filename, 'idcloudhost');
 
                 $data[$field] = $path;
             }

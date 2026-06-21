@@ -39,17 +39,13 @@ class MediaService
 
         $extension = strtolower($file->getClientOriginalExtension());
         $filename = $uuid.'.'.$extension;
-
-        $path = $file->storeAs($folder, $filename, 'public');
+        $size = $file->getSize();
+        $uploadedMimeType = $file->getMimeType();
 
         $width = null;
         $height = null;
-        $size = $file->getSize();
 
-        // Convert supported raster images to webp. Keep ico/svg as-is.
-        $uploadedMimeType = $file->getMimeType();
-
-        if (in_array($uploadedMimeType, [
+        $shouldConvertToWebp = in_array($uploadedMimeType, [
             'image/jpeg',
             'image/png',
             'image/gif',
@@ -57,8 +53,9 @@ class MediaService
             'image/x-webp',
             'image/bmp',
             'image/avif',
-        ], true) || $extension === 'webp') {
+        ], true) || $extension === 'webp';
 
+        if ($shouldConvertToWebp) {
             $image = $this->imageManager->decodePath($file->getRealPath());
 
             $width = $image->width();
@@ -68,16 +65,16 @@ class MediaService
             $webpPath = $folder.'/'.$webpName;
             $encodedWebp = (string) $image->encodeUsingFileExtension('webp', quality: 80);
 
-            Storage::disk('public')->put($webpPath, $encodedWebp);
-
-            Storage::disk('public')->delete($path);
+            Storage::disk('idcloudhost')->put($webpPath, $encodedWebp);
 
             $path = $webpPath;
             $filename = $webpName;
             $size = strlen($encodedWebp);
+        } else {
+            $path = $file->storeAs($folder, $filename, 'idcloudhost');
         }
 
-        $mimeType = $path === ($webpPath ?? null)
+        $mimeType = isset($webpPath) && $path === $webpPath
             ? 'image/webp'
             : $uploadedMimeType;
 
@@ -87,7 +84,7 @@ class MediaService
             'file_name' => $filename,
             'mime_type' => $mimeType,
             'path' => $path,
-            'disk' => 'public',
+            'disk' => 'idcloudhost',
             'size' => $size,
             'width' => $width,
             'height' => $height,

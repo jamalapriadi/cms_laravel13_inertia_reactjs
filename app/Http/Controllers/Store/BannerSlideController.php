@@ -6,15 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Store\BannerSlide\BannerSlideRequest;
 use App\Http\Resources\Store\BannerSlideResource;
 use App\Models\Shop\BannerSlide;
+use App\Services\MediaUploadService;
 use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class BannerSlideController extends Controller
 {
+    public function __construct(
+        protected MediaUploadService $mediaUploadService
+    ) {}
+
     public function index(Request $request): Response
     {
         $search = trim((string) $request->query('search', ''));
@@ -68,13 +72,13 @@ class BannerSlideController extends Controller
         $data = Arr::except($request->validated(), ['image', 'mobile_image']);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('banner_slides', 'public');
+            $data['image'] = $this->mediaUploadService->uploadImage($request->file('image'), 'banner_slides');
         } elseif ($mediaPath = MediaPath::normalize($request->input('image'))) {
             $data['image'] = $mediaPath;
         }
 
         if ($request->hasFile('mobile_image')) {
-            $data['mobile_image'] = $request->file('mobile_image')->store('banner_slides/mobile', 'public');
+            $data['mobile_image'] = $this->mediaUploadService->uploadImage($request->file('mobile_image'), 'banner_slides/mobile');
         } elseif ($mediaPath = MediaPath::normalize($request->input('mobile_image'))) {
             $data['mobile_image'] = $mediaPath;
         }
@@ -99,21 +103,17 @@ class BannerSlideController extends Controller
         $data = Arr::except($request->validated(), ['image', 'mobile_image']);
 
         if ($request->hasFile('image')) {
-            if ($bannerSlide->image) {
-                Storage::disk('public')->delete($bannerSlide->image);
-            }
+            $this->mediaUploadService->delete($bannerSlide->image);
 
-            $data['image'] = $request->file('image')->store('banner_slides', 'public');
+            $data['image'] = $this->mediaUploadService->uploadImage($request->file('image'), 'banner_slides');
         } elseif ($request->filled('image')) {
             $data['image'] = MediaPath::normalize($request->input('image')) ?? $bannerSlide->image;
         }
 
         if ($request->hasFile('mobile_image')) {
-            if ($bannerSlide->mobile_image) {
-                Storage::disk('public')->delete($bannerSlide->mobile_image);
-            }
+            $this->mediaUploadService->delete($bannerSlide->mobile_image);
 
-            $data['mobile_image'] = $request->file('mobile_image')->store('banner_slides/mobile', 'public');
+            $data['mobile_image'] = $this->mediaUploadService->uploadImage($request->file('mobile_image'), 'banner_slides/mobile');
         } elseif ($request->has('mobile_image') && $request->input('mobile_image') === '') {
             $data['mobile_image'] = null;
         } elseif ($request->filled('mobile_image')) {

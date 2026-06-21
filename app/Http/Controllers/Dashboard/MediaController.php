@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Dashboard\Media;
 use App\Services\Dashboard\MediaService;
+use App\Services\MediaUploadService;
 use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -39,7 +40,7 @@ class MediaController extends Controller
         $path = trim((string) $request->query('path', ''), '/');
         $search = $request->query('search');
         $date = $request->query('date');
-        $disk = Storage::disk('public');
+        $disk = Storage::disk('idcloudhost');
 
         abort_if(str_contains($path, '..'), 404);
 
@@ -93,7 +94,7 @@ class MediaController extends Controller
                     'type' => 'file',
                     'name' => basename($file),
                     'path' => $file,
-                    'url' => Storage::disk('public')->url($file),
+                    'url' => Storage::disk('idcloudhost')->url($file),
                     'mime_type' => $this->safeMimeType($disk, $file),
                     'size' => $this->safeSize($disk, $file),
                     'last_modified' => $lastModified ? date('Y-m-d H:i:s', $lastModified) : null,
@@ -190,10 +191,16 @@ class MediaController extends Controller
         $path = trim($data['path'], '/');
 
         abort_if(str_contains($path, '..'), 404);
-        abort_if(! Storage::disk('public')->exists($path), 404);
 
-        Storage::disk('public')->delete($path);
-        Media::query()->where('disk', 'public')->where('path', $path)->delete();
+        if (Storage::disk('idcloudhost')->exists($path)) {
+            Storage::disk('idcloudhost')->delete($path);
+            Media::query()->where('disk', 'idcloudhost')->where('path', $path)->delete();
+        } elseif (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+            Media::query()->where('disk', 'public')->where('path', $path)->delete();
+        } else {
+            abort(404);
+        }
 
         return back()->with('success', 'File deleted successfully.');
     }
@@ -216,16 +223,16 @@ class MediaController extends Controller
         ]);
     }
 
-    public function store_image(Request $request)
+    public function store_image(Request $request, MediaUploadService $mediaUploadService)
     {
         $request->validate([
             'image' => 'required|image|max:2048',
         ]);
 
-        $path = $request->file('image')->store('posts', 'public');
+        $path = $mediaUploadService->uploadImage($request->file('image'), 'posts');
 
         return response()->json([
-            'url' => Storage::disk('public')->url($path),
+            'url' => $mediaUploadService->url($path),
         ]);
     }
 

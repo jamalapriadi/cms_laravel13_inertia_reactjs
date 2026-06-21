@@ -71,6 +71,19 @@ return [
             'report' => false,
         ],
 
+        'idcloudhost' => [
+            'driver' => 's3',
+            'key' => env('IDCH_ACCESS_KEY_ID'),
+            'secret' => env('IDCH_SECRET_ACCESS_KEY'),
+            'region' => env('IDCH_DEFAULT_REGION', 'us-east-1'),
+            'bucket' => env('IDCH_BUCKET'),
+            'url' => env('IDCH_URL'),
+            'endpoint' => env('IDCH_ENDPOINT'),
+            'use_path_style_endpoint' => env('IDCH_USE_PATH_STYLE_ENDPOINT', true),
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
     ],
 
     /*

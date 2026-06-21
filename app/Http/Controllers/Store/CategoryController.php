@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Store\Category\CategoryRequest;
 use App\Http\Requests\Store\Category\CategoryUpdateRequest;
 use App\Models\Shop\Category;
+use App\Services\MediaUploadService;
 use App\Support\MediaPath;
 use App\Support\UniqueSlug;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,6 +19,10 @@ use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
+    public function __construct(
+        protected MediaUploadService $mediaUploadService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -67,7 +72,7 @@ class CategoryController extends Controller
         $data['slug'] = UniqueSlug::make(Category::class, $data['name']);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('categories', 'public');
+            $data['image'] = $this->mediaUploadService->uploadImage($request->file('image'), 'categories');
         } elseif ($mediaPath = MediaPath::normalize($request->input('image'))) {
             $data['image'] = $mediaPath;
         }
@@ -115,10 +120,8 @@ class CategoryController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            if ($category->image) {
-                Storage::disk('public')->delete($category->image);
-            }
-            $data['image'] = $request->file('image')->store('categories', 'public');
+            $this->mediaUploadService->delete($category->image);
+            $data['image'] = $this->mediaUploadService->uploadImage($request->file('image'), 'categories');
         } elseif ($request->has('image') && $request->input('image') === '') {
             $data['image'] = null;
         } elseif ($request->filled('image')) {

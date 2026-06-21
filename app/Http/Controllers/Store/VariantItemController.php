@@ -9,16 +9,20 @@ use App\Models\Shop\Product;
 use App\Models\Shop\ProductVariantOption;
 use App\Models\Shop\VariantItem;
 use App\Models\Unit;
+use App\Services\MediaUploadService;
 use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class VariantItemController extends Controller
 {
+    public function __construct(
+        protected MediaUploadService $mediaUploadService
+    ) {}
+
     public function index(Request $request)
     {
         $search = $request->query('search');
@@ -92,7 +96,7 @@ class VariantItemController extends Controller
             $itemData = Arr::except($data, ['items']);
 
             if ($request->hasFile('image')) {
-                $itemData['image'] = $request->file('image')->store('variant_items', 'public');
+                $itemData['image'] = $this->mediaUploadService->uploadImage($request->file('image'), 'variant_items');
             } elseif ($mediaPath = MediaPath::normalize($request->input('image'))) {
                 $itemData['image'] = $mediaPath;
             }
@@ -128,11 +132,8 @@ class VariantItemController extends Controller
         $variantData = Arr::except($data, ['option_ids', 'image']);
 
         if ($request->hasFile('image')) {
-            if ($variantItem->image) {
-                Storage::disk('public')->delete($variantItem->image);
-            }
-
-            $variantData['image'] = $request->file('image')->store('variant_items', 'public');
+            $this->mediaUploadService->delete($variantItem->image);
+            $variantData['image'] = $this->mediaUploadService->uploadImage($request->file('image'), 'variant_items');
         } elseif ($request->has('image') && $request->input('image') === '') {
             $variantData['image'] = null;
         } elseif ($request->filled('image')) {
@@ -153,7 +154,7 @@ class VariantItemController extends Controller
         $productId = $variantItem->product_id;
 
         if ($variantItem->image) {
-            Storage::disk('public')->delete($variantItem->image);
+            $this->mediaUploadService->delete($variantItem->image);
         }
 
         $variantItem->delete();

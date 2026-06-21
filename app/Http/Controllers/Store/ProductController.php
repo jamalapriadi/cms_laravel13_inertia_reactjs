@@ -16,6 +16,7 @@ use App\Models\Shop\ProductVariant;
 use App\Models\Shop\VariantItem;
 use App\Models\TermTaxonomy;
 use App\Models\Unit;
+use App\Services\MediaUploadService;
 use App\Support\MediaPath;
 use App\Support\UniqueSlug;
 use Illuminate\Http\Request;
@@ -26,6 +27,10 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        protected MediaUploadService $mediaUploadService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -146,7 +151,7 @@ class ProductController extends Controller
         }
 
         if ($request->hasFile('thumbnail')) {
-            $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
+            $data['thumbnail'] = $this->mediaUploadService->uploadImage($request->file('thumbnail'), 'products');
         } elseif ($mediaPath = MediaPath::normalize($request->input('thumbnail'))) {
             $data['thumbnail'] = $mediaPath;
         }
@@ -247,10 +252,8 @@ class ProductController extends Controller
         }
 
         if ($request->hasFile('thumbnail')) {
-            if ($product->thumbnail) {
-                Storage::disk('public')->delete($product->thumbnail);
-            }
-            $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
+            $this->mediaUploadService->delete($product->thumbnail);
+            $data['thumbnail'] = $this->mediaUploadService->uploadImage($request->file('thumbnail'), 'products');
         } elseif ($request->has('thumbnail') && $request->input('thumbnail') === '') {
             $data['thumbnail'] = null;
         } elseif ($request->filled('thumbnail')) {
