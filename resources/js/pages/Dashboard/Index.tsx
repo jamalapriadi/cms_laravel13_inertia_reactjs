@@ -439,7 +439,7 @@ export default function Dashboard({
                                 }`}
                             >
                                 <ShoppingCart className="h-4 w-4" />
-                                E-Commerce & Rental
+                                E-Commerce
                             </button>
                         </div>
                     ) : (
@@ -713,7 +713,7 @@ export default function Dashboard({
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-0 text-xs text-muted-foreground">
-                                    <span>Tanya Jawab rental & profil</span>
+                                    <span>Tanya Jawab</span>
                                 </CardContent>
                             </Card>
 
@@ -971,7 +971,7 @@ export default function Dashboard({
                                                     Integrasi Map & Wilayah
                                                 </p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    Wilayah operasional rental
+                                                    Wilayah operasional
                                                 </p>
                                             </div>
                                             <Badge
