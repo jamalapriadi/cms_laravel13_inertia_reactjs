@@ -11,6 +11,7 @@ import AppLayout from '@/layouts/app-layout';
 
 interface Term {
     name: string;
+    slug: string;
 }
 
 interface Item {
@@ -30,6 +31,7 @@ export default function Edit({ taxonomy, item }: Props) {
      */
     const { data, setData, put, processing, errors } = useForm({
         name: item.term.name ?? '',
+        slug: item.term.slug ?? '',
         description: item.description ?? '',
     });
 
@@ -109,6 +111,27 @@ export default function Edit({ taxonomy, item }: Props) {
                                 {errors.name && (
                                     <p className="text-sm text-destructive">
                                         {errors.name}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* SLUG */}
+                            <div className="space-y-2">
+                                <Label htmlFor="slug">Slug</Label>
+                                <Input
+                                    id="slug"
+                                    value={data.slug}
+                                    onChange={(e) =>
+                                        setData('slug', e.target.value)
+                                    }
+                                    placeholder="slug-term"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    You can edit this slug manually. Make sure it remains unique.
+                                </p>
+                                {errors.slug && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.slug}
                                     </p>
                                 )}
                             </div>

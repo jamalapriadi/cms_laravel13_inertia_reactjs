@@ -47,6 +47,7 @@ interface Props {
 
 const productSchema = z.object({
     name: z.string().min(3, 'Product name must be at least 3 characters'),
+    slug: z.string().optional().or(z.literal('')),
     category_id: z.string().min(1, 'Category is required'),
     brand_id: z.string().nullable().optional(),
     unit_id: z.string().nullable().optional(),
@@ -77,6 +78,7 @@ export default function Create({ categories, brands, units, tags }: Props) {
         resolver: zodResolver(productSchema),
         defaultValues: {
             name: '',
+            slug: '',
             category_id: '',
             unit_id: null,
             brand_id: null,
@@ -93,6 +95,19 @@ export default function Create({ categories, brands, units, tags }: Props) {
     });
 
     const hasVariant = watch('has_variant');
+    const name = watch('name');
+
+    useEffect(() => {
+        const slugified = (name || '')
+            .toString()
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '');
+        setValue('slug', slugified);
+    }, [name, setValue]);
 
     useEffect(() => {
         register('description');
@@ -158,6 +173,25 @@ export default function Create({ categories, brands, units, tags }: Props) {
                                 {errors.name && (
                                     <p className="text-sm text-destructive">
                                         {errors.name.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-1 md:col-span-2">
+                                <Label>Slug</Label>
+                                <Input
+                                    type="text"
+                                    readOnly
+                                    className="bg-muted pointer-events-none select-none"
+                                    {...register('slug')}
+                                    placeholder="slug-produk"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Slug will be generated automatically after saving.
+                                </p>
+                                {errors.slug && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.slug.message}
                                     </p>
                                 )}
                             </div>

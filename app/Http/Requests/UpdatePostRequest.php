@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Rules\ValidPostBlocks;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UpdatePostRequest extends FormRequest
@@ -18,6 +19,18 @@ class UpdatePostRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('slug')) {
+            $this->merge([
+                'slug' => Str::slug($this->slug),
+            ]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
@@ -28,7 +41,7 @@ class UpdatePostRequest extends FormRequest
 
         return [
             'title' => 'required|string|max:255',
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('posts', 'slug')->ignore($postId)],
+            'slug' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('posts', 'slug')->ignore($postId)],
             'excerpt' => 'nullable|string',
             'blocks' => ['nullable', 'json', new ValidPostBlocks],
             'status' => ['required', 'string', Rule::in(['draft', 'publish'])],

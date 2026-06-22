@@ -54,6 +54,10 @@ import {
 
 import PostEditorLayout from '@/layouts/post-editor-layout';
 import type { BlockInstance } from '@/types/block';
+import { DEFAULT_CONTENT_EDITOR } from '@/utils/content-editor';
+import type { ContentEditorMode } from '@/utils/content-editor';
+import { generateSlug, shouldAutoSyncSlug } from '@/utils/slug';
+import ClassicPostEditor from './components/ClassicPostEditor';
 import PostMetadataPanel from './components/PostMetadataPanel';
 
 type DropPosition = 'before' | 'after' | 'inside';
@@ -76,12 +80,11 @@ interface DropIndicator {
     position: DropPosition;
 }
 
-const slugify = (value: string) =>
-    value
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+interface Props {
+    categories?: any[];
+    tags?: any[];
+    editorMode?: ContentEditorMode;
+}
 
 const resolveDropTarget = (id: number | string) => {
     if (typeof id === 'string' && id.startsWith('preview-')) {
@@ -131,7 +134,22 @@ function DraggableBlock({ item, disabled, onClick }: any) {
     );
 }
 
-export default function Create({ categories = [], tags = [] }: any) {
+export default function Create({
+    categories = [],
+    tags = [],
+    editorMode = DEFAULT_CONTENT_EDITOR,
+}: Props) {
+    return editorMode === 'classic_editor' ? (
+        <ClassicPostEditor categories={categories} tags={tags} />
+    ) : (
+        <BlockPostCreate categories={categories} tags={tags} />
+    );
+}
+
+function BlockPostCreate({
+    categories = [],
+    tags = [],
+}: Omit<Props, 'editorMode'>) {
     const [selectedBlock, setSelectedBlock] = useState<BlockInstance | null>(
         null,
     );
@@ -199,10 +217,12 @@ export default function Create({ categories = [], tags = [] }: any) {
     }, [pageBlocks, setData]);
 
     const updateTitle = (title: string) => {
+        const shouldSyncSlug = shouldAutoSyncSlug(data.slug, data.title);
+
         setData('title', title);
 
-        if (!data.slug) {
-            setData('slug', slugify(title));
+        if (shouldSyncSlug) {
+            setData('slug', generateSlug(title));
         }
     };
 
@@ -542,6 +562,7 @@ export default function Create({ categories = [], tags = [] }: any) {
                                 selectedTagNames={data.tag_names}
                                 featuredImage={data.featured_image}
                                 publishedAt={data.published_at}
+                                readOnly={true}
                                 errors={{
                                     slug: errors.slug,
                                     excerpt: errors.excerpt,

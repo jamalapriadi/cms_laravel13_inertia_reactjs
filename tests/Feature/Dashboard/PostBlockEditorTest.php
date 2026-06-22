@@ -162,6 +162,53 @@ test('it replaces nested editor blocks when updating a post', function () {
         ->and(Block::query()->where('post_id', $post->id)->where('props->text', 'Old heading')->exists())->toBeFalse();
 });
 
+test('it updates a post with a single rich editor block for classic editing', function () {
+    $user = User::factory()->create();
+    $post = Post::query()->create([
+        'user_id' => $user->id,
+        'title' => 'Old title',
+        'slug' => 'old-title',
+        'status' => 'draft',
+        'type' => 'post',
+    ]);
+
+    Block::query()->create([
+        'post_id' => $post->id,
+        'type' => 'heading',
+        'props' => ['text' => 'Old heading'],
+        'styles' => [],
+        'order' => 0,
+    ]);
+
+    $html = '<p><strong>Updated</strong> classic body</p>';
+    $blocks = [[
+        'type' => 'rich-editor',
+        'data' => ['html' => $html],
+        'styles' => [],
+        'children' => [],
+    ]];
+
+    $response = $this->actingAs($user)->put(route('posts.update', $post), [
+        'title' => 'Updated title',
+        'slug' => 'updated-title',
+        'status' => 'publish',
+        'blocks' => json_encode($blocks),
+    ]);
+
+    $response->assertRedirect(route('posts.index'));
+
+    $post->refresh();
+
+    expect($post->content)->toBe(json_encode($blocks))
+        ->and($post->published_at)->not->toBeNull()
+        ->and($post->blocks)->toHaveCount(1)
+        ->and(Block::query()->where('post_id', $post->id)->firstOrFail()->type)->toBe('rich-editor')
+        ->and(Block::query()->where('post_id', $post->id)->firstOrFail()->props)->toBe([
+            'html' => $html,
+        ])
+        ->and(Block::query()->where('post_id', $post->id)->where('props->text', 'Old heading')->exists())->toBeFalse();
+});
+
 test('it stores post category tags and featured image metadata', function () {
     $user = User::factory()->create();
     $category = PostCategory::query()->create([

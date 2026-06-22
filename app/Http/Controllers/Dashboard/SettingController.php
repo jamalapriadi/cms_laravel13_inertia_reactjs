@@ -7,6 +7,7 @@ use App\Models\Dashboard\Language;
 use App\Models\Dashboard\Option;
 use App\Models\User;
 use App\Services\Api\V1\SiteContentApiService;
+use App\Support\ContentEditorMode;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
@@ -109,7 +110,11 @@ class SettingController extends Controller
 
     public function reading()
     {
-        return Inertia::render('Dashboard/Settings/Reading');
+        return Inertia::render('Dashboard/Settings/Writing', [
+            'defaultContentEditor' => ContentEditorMode::normalize(
+                Option::getByKey('default_content_editor', ContentEditorMode::BLOCK)
+            ),
+        ]);
     }
 
     public function create()

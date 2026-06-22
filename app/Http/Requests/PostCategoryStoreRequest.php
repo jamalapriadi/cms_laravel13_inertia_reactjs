@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class PostCategoryStoreRequest extends FormRequest
 {
@@ -16,6 +18,18 @@ class PostCategoryStoreRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('slug')) {
+            $this->merge([
+                'slug' => Str::slug($this->slug),
+            ]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
@@ -24,6 +38,7 @@ class PostCategoryStoreRequest extends FormRequest
     {
         return [
             'category_name' => 'required|string|max:191',
+            'slug' => ['nullable', 'string', 'max:191', Rule::unique('post_categories', 'slug')],
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:post_categories,id',
             'featured_image' => 'nullable|string',

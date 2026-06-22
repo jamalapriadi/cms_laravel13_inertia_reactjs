@@ -7,6 +7,7 @@ use App\Models\Term;
 use App\Models\TermTaxonomy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class TaxonomyController extends Controller
@@ -52,7 +53,6 @@ class TaxonomyController extends Controller
 
         $term = Term::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
         ]);
 
         TermTaxonomy::create([
@@ -76,12 +76,18 @@ class TaxonomyController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:191',
+            'slug' => [
+                'required',
+                'string',
+                'max:191',
+                Rule::unique('terms', 'slug')->ignore($termTaxonomy->term_id),
+            ],
             'description' => 'nullable|string',
         ]);
 
         $termTaxonomy->term->update([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => Str::slug($request->slug),
         ]);
 
         $termTaxonomy->update([

@@ -5,6 +5,7 @@ namespace App\Http\Requests\Store\Product;
 use App\Models\Shop\VariantItem;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProductUpdateRequest extends FormRequest
@@ -26,6 +27,7 @@ class ProductUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'slug' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('products', 'slug')->ignore($this->route('product')?->id)],
             'category_id' => ['required', 'uuid', 'exists:categories,id'],
             'brand_id' => ['nullable', 'uuid', 'exists:brands,id'],
             'unit_id' => ['nullable', 'string', 'exists:units,id'],
@@ -82,5 +84,10 @@ class ProductUpdateRequest extends FormRequest
             'is_featured' => filter_var($this->is_featured, FILTER_VALIDATE_BOOLEAN),
             'sort_order' => $this->filled('sort_order') ? (int) $this->sort_order : 0,
         ]);
+        if ($this->filled('slug')) {
+            $this->merge([
+                'slug' => Str::slug($this->slug),
+            ]);
+        }
     }
 }

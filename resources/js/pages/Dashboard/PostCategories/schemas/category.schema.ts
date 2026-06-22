@@ -11,6 +11,8 @@ export const categorySchema = z.object({
 
     parent_id: z.string().optional(),
 
+    slug: z.string().optional().or(z.literal('')),
+
     featured_image: z
         .string()
         .url('URL tidak valid')

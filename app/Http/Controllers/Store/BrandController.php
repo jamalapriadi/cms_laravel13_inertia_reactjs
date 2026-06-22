@@ -12,7 +12,6 @@ use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class BrandController extends Controller
@@ -71,7 +70,7 @@ class BrandController extends Controller
     public function store(BrandRequest $request)
     {
         $data = $request->validated();
-        $data['slug'] = Str::slug($data['name']);
+        unset($data['slug']);
 
         if (auth()->check()) {
             $data['created_by'] = auth()->id();
@@ -113,10 +112,6 @@ class BrandController extends Controller
     public function update(BrandUpdateRequest $request, Brand $brand)
     {
         $data = Arr::except($request->validated(), ['logo']);
-
-        if (isset($data['name']) && $data['name'] !== $brand->name) {
-            $data['slug'] = Str::slug($data['name']);
-        }
 
         if (auth()->check()) {
             $data['updated_by'] = auth()->id();

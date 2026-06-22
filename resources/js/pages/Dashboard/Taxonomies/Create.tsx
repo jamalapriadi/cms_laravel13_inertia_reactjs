@@ -1,4 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -19,8 +20,21 @@ export default function Create({ taxonomy }: Props) {
      */
     const { data, setData, post, processing, errors } = useForm({
         name: '',
+        slug: '',
         description: '',
     });
+
+    useEffect(() => {
+        const slugified = (data.name || '')
+            .toString()
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '');
+        setData('slug', slugified);
+    }, [data.name]);
 
     /**
      * ✅ TITLE RESOLVER
@@ -87,6 +101,26 @@ export default function Create({ taxonomy }: Props) {
                                 {errors.name && (
                                     <p className="text-sm text-destructive">
                                         {errors.name}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* SLUG */}
+                            <div className="space-y-2">
+                                <Label htmlFor="slug">Slug</Label>
+                                <Input
+                                    id="slug"
+                                    value={data.slug}
+                                    readOnly
+                                    className="bg-muted pointer-events-none select-none"
+                                    placeholder="slug-otomatis"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Slug will be generated automatically after saving.
+                                </p>
+                                {errors.slug && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.slug}
                                     </p>
                                 )}
                             </div>

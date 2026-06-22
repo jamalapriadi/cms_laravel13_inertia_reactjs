@@ -8,7 +8,6 @@ use App\Http\Requests\Store\Category\CategoryUpdateRequest;
 use App\Models\Shop\Category;
 use App\Services\MediaUploadService;
 use App\Support\MediaPath;
-use App\Support\UniqueSlug;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -69,7 +68,7 @@ class CategoryController extends Controller
     public function store(CategoryRequest $request)
     {
         $data = $request->validated();
-        $data['slug'] = UniqueSlug::make(Category::class, $data['name']);
+        unset($data['slug']);
 
         if ($request->hasFile('image')) {
             $data['image'] = $this->mediaUploadService->uploadImage($request->file('image'), 'categories');
@@ -114,10 +113,6 @@ class CategoryController extends Controller
     public function update(CategoryUpdateRequest $request, Category $category)
     {
         $data = Arr::except($request->validated(), ['image']);
-
-        if (isset($data['name']) && $data['name'] !== $category->name) {
-            $data['slug'] = UniqueSlug::make(Category::class, $data['name'], ignoreId: $category->id);
-        }
 
         if ($request->hasFile('image')) {
             $this->mediaUploadService->delete($category->image);

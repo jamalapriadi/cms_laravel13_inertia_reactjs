@@ -121,6 +121,55 @@ test('it replaces nested editor blocks when updating a page', function () {
         ->and(Block::query()->where('page_id', $page->id)->where('props->text', 'Old heading')->exists())->toBeFalse();
 });
 
+test('it updates a page with a single rich editor block for classic editing', function () {
+    $this->withoutMiddleware(EnsureDashboardPermission::class);
+
+    $user = User::factory()->create();
+    $page = Page::query()->create([
+        'title' => 'Old page',
+        'slug' => 'old-page',
+        'status' => 'draft',
+        'created_by' => $user->id,
+        'updated_by' => $user->id,
+    ]);
+
+    Block::query()->create([
+        'page_id' => $page->id,
+        'type' => 'heading',
+        'props' => ['text' => 'Old heading'],
+        'styles' => [],
+        'order' => 0,
+    ]);
+
+    $html = '<p>Updated classic page body</p>';
+    $blocks = [[
+        'type' => 'rich-editor',
+        'data' => ['html' => $html],
+        'styles' => [],
+        'children' => [],
+    ]];
+
+    $response = $this->actingAs($user)->put(route('pages.update', $page), [
+        'title' => 'Updated page',
+        'slug' => 'updated-page',
+        'status' => 'publish',
+        'blocks' => json_encode($blocks),
+    ]);
+
+    $response->assertRedirect(route('pages.index'));
+
+    $page->refresh();
+
+    expect($page->content)->toBe(json_encode($blocks))
+        ->and($page->published_at)->not->toBeNull()
+        ->and($page->blocks)->toHaveCount(1)
+        ->and(Block::query()->where('page_id', $page->id)->firstOrFail()->type)->toBe('rich-editor')
+        ->and(Block::query()->where('page_id', $page->id)->firstOrFail()->props)->toBe([
+            'html' => $html,
+        ])
+        ->and(Block::query()->where('page_id', $page->id)->where('props->text', 'Old heading')->exists())->toBeFalse();
+});
+
 test('it stores page field and block translations', function () {
     $this->withoutMiddleware(EnsureDashboardPermission::class);
 

@@ -54,9 +54,22 @@ import {
 
 import PostEditorLayout from '@/layouts/post-editor-layout';
 import type { BlockInstance } from '@/types/block';
+import { DEFAULT_CONTENT_EDITOR } from '@/utils/content-editor';
+import type { ContentEditorMode } from '@/utils/content-editor';
+import ClassicPostEdit from './components/ClassicPostEdit';
 import PostMetadataPanel from './components/PostMetadataPanel';
 
 type DropPosition = 'before' | 'after' | 'inside';
+
+type Props = {
+    post: any;
+    blocks: BlockInstance[];
+    categoryId?: string | null;
+    categories?: any[];
+    tags?: any[];
+    editorMode?: ContentEditorMode;
+    classicContent?: string | null;
+};
 
 type PostFormData = {
     title: string;
@@ -145,12 +158,29 @@ function DraggableBlock({ item, disabled, onClick }: any) {
  * EDIT PAGE
  */
 export default function Edit({
+    editorMode = DEFAULT_CONTENT_EDITOR,
+    classicContent = '',
+    ...props
+}: Props) {
+    if (editorMode === 'classic_editor') {
+        return (
+            <ClassicPostEdit
+                {...props}
+                classicContent={classicContent}
+            />
+        );
+    }
+
+    return <BlockPostEdit {...props} />;
+}
+
+function BlockPostEdit({
     post,
     blocks,
     categoryId,
     categories = [],
     tags = [],
-}: any) {
+}: Omit<Props, 'editorMode' | 'classicContent'>) {
     const [pageBlocks, setPageBlocks] = useState<BlockInstance[]>(blocks ?? []);
     const [selectedBlock, setSelectedBlock] = useState<BlockInstance | null>(
         null,

@@ -10,6 +10,7 @@ use App\Models\Page;
 use App\Services\Cms\BlockTreeService;
 use App\Services\Cms\LanguageManager;
 use App\Services\PageService;
+use App\Support\ContentEditorMode;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -62,7 +63,11 @@ class PageController extends Controller
 
     public function create()
     {
-        return Inertia::render('Dashboard/Pages/Create');
+        return Inertia::render('Dashboard/Pages/Create', [
+            'editorMode' => ContentEditorMode::normalize(
+                get_option('default_content_editor', ContentEditorMode::BLOCK)
+            ),
+        ]);
     }
 
     public function store(StorePageRequest $request, PageService $service)
@@ -76,11 +81,24 @@ class PageController extends Controller
     {
         $blocks = $blockTreeService->buildEditorTree(
             $page->blocks()->orderBy('order')->get()
+        )->all();
+
+        $preferredEditorMode = ContentEditorMode::normalize(
+            get_option('default_content_editor', ContentEditorMode::BLOCK)
         );
+        $classicContent = ContentEditorMode::extractClassicContent($blocks, $page->content);
+        $editorMode = $preferredEditorMode === ContentEditorMode::CLASSIC
+            && $classicContent !== null
+            ? ContentEditorMode::CLASSIC
+            : ContentEditorMode::BLOCK;
 
         return Inertia::render('Dashboard/Pages/Edit', [
             'page' => $page,
             'blocks' => $blocks,
+            'editorMode' => $editorMode,
+            'classicContent' => $editorMode === ContentEditorMode::CLASSIC
+                ? $classicContent
+                : null,
         ]);
     }
 

@@ -11,10 +11,21 @@ namespace App\Models\Shop;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Sluggable\HasSlug;
+use Spatie\Sluggable\SlugOptions;
 
 class Brand extends Model
 {
-    use HasUuids, SoftDeletes;
+    use HasSlug, HasUuids, SoftDeletes;
+
+    public function getSlugOptions(): SlugOptions
+    {
+        return SlugOptions::create()
+            ->generateSlugsFrom('name')
+            ->saveSlugsTo('slug')
+            ->doNotGenerateSlugsOnUpdate()
+            ->startSlugSuffixFrom(2);
+    }
 
     protected $fillable = [
         'name',

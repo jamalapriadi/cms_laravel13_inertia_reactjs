@@ -324,7 +324,7 @@ test('product slug stays unique when renaming a product to an existing name', fu
 
     expect($product->refresh())
         ->name->toBe('iPhone X')
-        ->slug->toBe('iphone-x-2');
+        ->slug->toBe('iphone-xr');
 });
 
 test('store entities can use existing media library paths for images', function () {

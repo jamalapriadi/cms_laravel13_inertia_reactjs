@@ -4,6 +4,8 @@ namespace App\Http\Requests\Store\Category;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class CategoryUpdateRequest extends FormRequest
 {
@@ -24,6 +26,7 @@ class CategoryUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'slug' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('categories', 'slug')->ignore($this->route('category')?->id)],
             'parent_id' => ['nullable', 'uuid', 'exists:categories,id'],
             'description' => ['nullable', 'string'],
             'image' => $this->hasFile('image')
@@ -44,5 +47,10 @@ class CategoryUpdateRequest extends FormRequest
             'show_home' => filter_var($this->show_home, FILTER_VALIDATE_BOOLEAN),
             'is_publish' => filter_var($this->is_publish, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
         ]);
+        if ($this->filled('slug')) {
+            $this->merge([
+                'slug' => Str::slug($this->slug),
+            ]);
+        }
     }
 }

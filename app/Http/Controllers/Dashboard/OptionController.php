@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\OptionRequest;
 use App\Models\Dashboard\Option;
 use App\Services\Dashboard\OptionService;
+use App\Support\ContentEditorMode;
 use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class OptionController extends Controller
@@ -41,6 +43,14 @@ class OptionController extends Controller
             $validationRules['website_mode'] = 'required|in:blog,commerce,simple_blog_commerce';
             $validationRules['enabled_ecommerce_menus'] = 'nullable|array';
             $validationRules['enabled_ecommerce_menus.*'] = 'string|in:products,product-variants,variant-items,brands,categories,units,product-stock-units,orders,customers,carts,payments,stock-movements,shipping,suppliers,incoming-goods,supplier-returns';
+        }
+
+        if ($request->has('default_content_editor')) {
+            $validationRules['default_content_editor'] = [
+                'required',
+                'string',
+                Rule::in(ContentEditorMode::allowed()),
+            ];
         }
 
         $request->validate($validationRules);

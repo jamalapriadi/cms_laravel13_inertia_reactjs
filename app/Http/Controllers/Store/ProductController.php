@@ -18,7 +18,6 @@ use App\Models\TermTaxonomy;
 use App\Models\Unit;
 use App\Services\MediaUploadService;
 use App\Support\MediaPath;
-use App\Support\UniqueSlug;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
@@ -143,7 +142,7 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $data = $request->validated();
-        $data['slug'] = UniqueSlug::make(Product::class, $data['name']);
+        unset($data['slug']);
 
         if (auth()->check()) {
             $data['created_by'] = auth()->id();
@@ -242,10 +241,6 @@ class ProductController extends Controller
     public function update(ProductUpdateRequest $request, Product $product)
     {
         $data = Arr::except($request->validated(), ['thumbnail']);
-
-        if (isset($data['name']) && $data['name'] !== $product->name) {
-            $data['slug'] = UniqueSlug::make(Product::class, $data['name'], ignoreId: $product->id);
-        }
 
         if (auth()->check()) {
             $data['updated_by'] = auth()->id();

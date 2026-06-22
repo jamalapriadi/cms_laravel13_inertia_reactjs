@@ -21,6 +21,7 @@ export function useCategoryForm({
         resolver: zodResolver(categorySchema),
         defaultValues: {
             category_name: '',
+            slug: '',
             description: '',
             parent_id: '',
             featured_image: '',

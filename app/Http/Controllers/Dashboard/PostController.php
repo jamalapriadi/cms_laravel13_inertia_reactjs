@@ -12,6 +12,7 @@ use App\Models\TermTaxonomy;
 use App\Services\Cms\BlockTreeService;
 use App\Services\Cms\LanguageManager;
 use App\Services\PostService;
+use App\Support\ContentEditorMode;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -69,6 +70,9 @@ class PostController extends Controller
     public function create()
     {
         return Inertia::render('Dashboard/Posts/Create', [
+            'editorMode' => ContentEditorMode::normalize(
+                get_option('default_content_editor', ContentEditorMode::BLOCK)
+            ),
             'categories' => PostCategory::query()
                 ->select('id', 'category_name')
                 ->orderBy('category_name')
@@ -99,11 +103,24 @@ class PostController extends Controller
 
         $blocks = $blockTreeService->buildEditorTree(
             $post->blocks()->orderBy('order')->get()
+        )->all();
+
+        $preferredEditorMode = ContentEditorMode::normalize(
+            get_option('default_content_editor', ContentEditorMode::BLOCK)
         );
+        $classicContent = ContentEditorMode::extractClassicContent($blocks, $post->content);
+        $editorMode = $preferredEditorMode === ContentEditorMode::CLASSIC
+            && $classicContent !== null
+            ? ContentEditorMode::CLASSIC
+            : ContentEditorMode::BLOCK;
 
         return Inertia::render('Dashboard/Posts/Edit', [
             'post' => $post,
             'blocks' => $blocks,
+            'editorMode' => $editorMode,
+            'classicContent' => $editorMode === ContentEditorMode::CLASSIC
+                ? $classicContent
+                : null,
             'categoryId' => $post->metas
                 ->firstWhere('meta_key', 'post_category_id')
                 ?->meta_value,

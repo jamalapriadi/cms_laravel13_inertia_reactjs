@@ -17,6 +17,7 @@ import AppLayout from '@/layouts/master-data-layout';
 interface Brand {
     id: string;
     name: string;
+    slug: string;
     description: string | null;
     logo?: string | null;
     is_active: boolean;
@@ -28,6 +29,7 @@ interface Props {
 
 const brandSchema = z.object({
     name: z.string().min(3, 'Brand name must be at least 3 characters'),
+    slug: z.string().min(1, 'Slug is required'),
     description: z.string().nullable().optional(),
     logo: z.any().optional(),
     is_active: z.boolean().default(true),
@@ -56,6 +58,7 @@ export default function Edit({ brand: initialBrand }: Props) {
 
         defaultValues: {
             name: initialBrand.name,
+            slug: initialBrand.slug ?? '',
             description: initialBrand.description || '',
             logo: initialBrand.logo ?? undefined,
             is_active: !!initialBrand.is_active,
@@ -138,6 +141,25 @@ export default function Edit({ brand: initialBrand }: Props) {
                             {errors.name && (
                                 <p className="text-sm text-destructive">
                                     {errors.name.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* SLUG */}
+                        <div className="flex flex-col gap-1">
+                            <Label>Slug</Label>
+                            <Input
+                                type="text"
+                                aria-invalid={!!errors.slug}
+                                {...register('slug')}
+                                placeholder="slug-brand"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                You can edit this slug manually. Make sure it remains unique.
+                            </p>
+                            {errors.slug && (
+                                <p className="text-sm text-destructive">
+                                    {errors.slug.message}
                                 </p>
                             )}
                         </div>

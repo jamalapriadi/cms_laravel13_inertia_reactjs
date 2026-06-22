@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Controller } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ interface Category {
     category_name: string;
     description?: string;
     parent_id?: string;
+    slug?: string;
 }
 
 interface Props {
@@ -45,8 +47,26 @@ export default function CategoryForm({
         register,
         control,
         handleSubmit,
+        watch,
+        setValue,
         formState: { errors, isSubmitting },
     } = form;
+
+    const categoryName = watch('category_name');
+
+    useEffect(() => {
+        if (!isEdit) {
+            const slugified = (categoryName || '')
+                .toString()
+                .toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]+/g, '')
+                .replace(/\-\-+/g, '-')
+                .replace(/^-+/, '')
+                .replace(/-+$/, '');
+            setValue('slug', slugified);
+        }
+    }, [categoryName, isEdit, setValue]);
 
     return (
         <Card>
@@ -67,6 +87,34 @@ export default function CategoryForm({
                         {errors.category_name && (
                             <p className="text-sm text-destructive">
                                 {errors.category_name.message}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* SLUG */}
+                    <div className="space-y-2">
+                        <Label>Slug</Label>
+
+                        <Input
+                            {...register('slug')}
+                            readOnly={!isEdit}
+                            className={!isEdit ? 'bg-muted pointer-events-none select-none' : ''}
+                            placeholder="category-slug"
+                        />
+
+                        {!isEdit ? (
+                            <p className="text-xs text-muted-foreground">
+                                Slug will be generated automatically after saving.
+                            </p>
+                        ) : (
+                            <p className="text-xs text-muted-foreground">
+                                You can edit this slug manually. Make sure it remains unique.
+                            </p>
+                        )}
+
+                        {errors.slug && (
+                            <p className="text-sm text-destructive">
+                                {errors.slug.message as string}
                             </p>
                         )}
                     </div>

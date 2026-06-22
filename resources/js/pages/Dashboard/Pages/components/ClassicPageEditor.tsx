@@ -1,12 +1,20 @@
 import { Head, useForm } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import type React from 'react';
 import { toast } from 'sonner';
 
 import { store } from '@/actions/App/Http/Controllers/Dashboard/PageController';
-import BlockBuilderWorkspace from '@/components/editor/BlockBuilderWorkspace';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -14,13 +22,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import PageEditorLayout from '@/layouts/page-editor-layout';
-import type { BlockInstance } from '@/types/block';
-import { DEFAULT_CONTENT_EDITOR } from '@/utils/content-editor';
-import type { ContentEditorMode } from '@/utils/content-editor';
+import TinyEditor from '@/components/ui/TinyEditor';
+import { buildClassicEditorBlocks } from '@/utils/content-editor';
 import { generateSlug, shouldAutoSyncSlug } from '@/utils/slug';
-import ClassicPageEditor from './components/ClassicPageEditor';
-import PageMetadataPanel from './components/PageMetadataPanel';
+import PageMetadataPanel from './PageMetadataPanel';
 
 type PageFormData = {
     title: string;
@@ -34,29 +39,15 @@ type PageFormData = {
     seo_keywords: string;
     og_image: string;
     published_at: string;
+    classic_content: string;
 };
 
-interface Props {
-    editorMode?: ContentEditorMode;
-}
-
-export default function Create({
-    editorMode = DEFAULT_CONTENT_EDITOR,
-}: Props) {
-    return editorMode === 'classic_editor' ? (
-        <ClassicPageEditor />
-    ) : (
-        <BlockPageCreate />
-    );
-}
-
-function BlockPageCreate() {
-    const [pageBlocks, setPageBlocks] = useState<BlockInstance[]>([]);
+export default function ClassicPageEditor() {
     const { data, setData, post, processing, errors } = useForm<PageFormData>({
         title: '',
         slug: '',
         excerpt: '',
-        blocks: '',
+        blocks: '[]',
         status: 'draft',
         featured_image: '',
         seo_title: '',
@@ -64,11 +55,15 @@ function BlockPageCreate() {
         seo_keywords: '',
         og_image: '',
         published_at: '',
+        classic_content: '',
     });
 
     useEffect(() => {
-        setData('blocks', JSON.stringify(pageBlocks));
-    }, [pageBlocks, setData]);
+        setData(
+            'blocks',
+            JSON.stringify(buildClassicEditorBlocks(data.classic_content)),
+        );
+    }, [data.classic_content, setData]);
 
     const updateTitle = (title: string) => {
         const shouldSyncSlug = shouldAutoSyncSlug(data.slug, data.title);
@@ -136,10 +131,43 @@ function BlockPageCreate() {
                     )}
                 </header>
 
-                <BlockBuilderWorkspace
-                    blocks={pageBlocks}
-                    onChange={setPageBlocks}
-                    metadataPanel={
+                <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[minmax(0,1fr)_360px]">
+                    <main className="min-h-0 overflow-y-auto bg-muted/20 p-4">
+                        <div className="mx-auto max-w-5xl">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Classic Editor</CardTitle>
+                                    <CardDescription>
+                                        Write the page content with the existing
+                                        rich text editor while keeping the saved
+                                        data compatible with the CMS block
+                                        renderer.
+                                    </CardDescription>
+                                </CardHeader>
+
+                                <CardContent className="space-y-3">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="page-content">
+                                            Content
+                                        </Label>
+                                        <TinyEditor
+                                            value={data.classic_content}
+                                            onChange={(value) =>
+                                                setData(
+                                                    'classic_content',
+                                                    value,
+                                                )
+                                            }
+                                            height={560}
+                                        />
+                                        <InputError message={errors.blocks} />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </main>
+
+                    <aside className="min-h-0 overflow-y-auto border-t bg-background p-4 xl:border-t-0 xl:border-l">
                         <PageMetadataPanel
                             slug={data.slug}
                             excerpt={data.excerpt}
@@ -172,20 +200,9 @@ function BlockPageCreate() {
                                 setData('seo_keywords', value)
                             }
                         />
-                    }
-                />
+                    </aside>
+                </div>
             </form>
         </>
     );
 }
-
-Create.layout = (page: React.ReactNode) => (
-    <PageEditorLayout
-        breadcrumbs={[
-            { title: 'Pages', href: '/my-admin/dashboard/pages' },
-            { title: 'Create', href: '/my-admin/dashboard/pages/create' },
-        ]}
-    >
-        {page}
-    </PageEditorLayout>
-);

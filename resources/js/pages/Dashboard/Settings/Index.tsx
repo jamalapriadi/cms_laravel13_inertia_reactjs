@@ -3,6 +3,7 @@ import {
     Headphones,
     Languages,
     FileText,
+    PenSquare,
     Search,
     Settings,
     Users,
@@ -25,14 +26,13 @@ import {
     ArrowDownLeft,
     ArrowUpRight,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import type { LucideIcon } from 'lucide-react';
 
 interface MenuItem {
     title: string;
@@ -54,6 +54,13 @@ const MENUS: MenuItem[] = [
             'The title and meta description help define how your web shows up on search engines.',
         href: '/my-admin/dashboard/config/preferences',
         icon: Search,
+    },
+    {
+        title: 'Writing Settings',
+        description:
+            'Choose whether new posts and pages open in the classic editor or the block editor.',
+        href: '/my-admin/dashboard/config/reading',
+        icon: PenSquare,
     },
     {
         title: 'Users & Permissions',
@@ -273,6 +280,7 @@ export default function ConfigMain({ websiteMode, enabledEcommerceMenus }: Props
                                                     {ECOMMERCE_MENUS.map((menu) => {
                                                         const checked = data.enabled_ecommerce_menus.includes(menu.key);
                                                         const MenuIcon = menu.icon;
+
                                                         return (
                                                             <div
                                                                 key={menu.key}

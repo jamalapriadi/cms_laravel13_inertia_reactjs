@@ -42,6 +42,7 @@ interface Props {
         slug?: string;
         excerpt?: string;
     };
+    readOnly?: boolean;
     onSlugChange: (value: string) => void;
     onExcerptChange: (value: string) => void;
     onCategoryChange: (id: string) => void;
@@ -190,6 +191,7 @@ export default function PostMetadataPanel({
     featuredImage,
     publishedAt,
     errors,
+    readOnly = false,
     onSlugChange,
     onExcerptChange,
     onCategoryChange,
@@ -212,7 +214,18 @@ export default function PostMetadataPanel({
                         onChange={(event) => onSlugChange(event.target.value)}
                         placeholder="about-us"
                         aria-invalid={Boolean(errors?.slug)}
+                        readOnly={readOnly}
+                        className={readOnly ? 'bg-muted pointer-events-none select-none' : ''}
                     />
+                    {readOnly ? (
+                        <p className="text-xs text-muted-foreground">
+                            Slug will be generated automatically after saving.
+                        </p>
+                    ) : (
+                        <p className="text-xs text-muted-foreground">
+                            You can edit this slug manually. Make sure it remains unique.
+                        </p>
+                    )}
                     <InputError message={errors?.slug} />
                 </div>
 

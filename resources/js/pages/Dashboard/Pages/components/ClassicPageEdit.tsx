@@ -1,12 +1,20 @@
 import { Head, useForm } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import type React from 'react';
 import { toast } from 'sonner';
 
 import { update } from '@/actions/App/Http/Controllers/Dashboard/PageController';
-import BlockBuilderWorkspace from '@/components/editor/BlockBuilderWorkspace';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -14,12 +22,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import PageEditorLayout from '@/layouts/page-editor-layout';
-import type { BlockInstance } from '@/types/block';
-import { DEFAULT_CONTENT_EDITOR } from '@/utils/content-editor';
-import type { ContentEditorMode } from '@/utils/content-editor';
-import ClassicPageEdit from './components/ClassicPageEdit';
-import PageMetadataPanel from './components/PageMetadataPanel';
+import TinyEditor from '@/components/ui/TinyEditor';
+import { buildClassicEditorBlocks } from '@/utils/content-editor';
+import PageMetadataPanel from './PageMetadataPanel';
 
 type PageFormData = {
     title: string;
@@ -33,6 +38,7 @@ type PageFormData = {
     seo_keywords: string;
     og_image: string;
     published_at: string;
+    classic_content: string;
 };
 
 interface PagePayload {
@@ -51,8 +57,6 @@ interface PagePayload {
 
 interface Props {
     page: PagePayload;
-    blocks: BlockInstance[];
-    editorMode?: ContentEditorMode;
     classicContent?: string | null;
 }
 
@@ -70,30 +74,15 @@ const formatDateTimeLocal = (value?: string | null) => {
     return date.toISOString().slice(0, 16);
 };
 
-export default function Edit({
-    editorMode = DEFAULT_CONTENT_EDITOR,
+export default function ClassicPageEdit({
+    page,
     classicContent = '',
-    ...props
 }: Props) {
-    if (editorMode === 'classic_editor') {
-        return (
-            <ClassicPageEdit
-                page={props.page}
-                classicContent={classicContent}
-            />
-        );
-    }
-
-    return <BlockPageEdit {...props} />;
-}
-
-function BlockPageEdit({ page, blocks }: Omit<Props, 'editorMode' | 'classicContent'>) {
-    const [pageBlocks, setPageBlocks] = useState<BlockInstance[]>(blocks ?? []);
     const { data, setData, put, processing, errors } = useForm<PageFormData>({
         title: page.title ?? '',
         slug: page.slug ?? '',
         excerpt: page.excerpt ?? '',
-        blocks: '',
+        blocks: '[]',
         status: page.status ?? 'draft',
         featured_image: page.featured_image ?? '',
         seo_title: page.seo_title ?? '',
@@ -101,11 +90,15 @@ function BlockPageEdit({ page, blocks }: Omit<Props, 'editorMode' | 'classicCont
         seo_keywords: page.seo_keywords ?? '',
         og_image: page.og_image ?? '',
         published_at: formatDateTimeLocal(page.published_at),
+        classic_content: classicContent,
     });
 
     useEffect(() => {
-        setData('blocks', JSON.stringify(pageBlocks));
-    }, [pageBlocks, setData]);
+        setData(
+            'blocks',
+            JSON.stringify(buildClassicEditorBlocks(data.classic_content)),
+        );
+    }, [data.classic_content, setData]);
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -165,10 +158,42 @@ function BlockPageEdit({ page, blocks }: Omit<Props, 'editorMode' | 'classicCont
                     )}
                 </header>
 
-                <BlockBuilderWorkspace
-                    blocks={pageBlocks}
-                    onChange={setPageBlocks}
-                    metadataPanel={
+                <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[minmax(0,1fr)_360px]">
+                    <main className="min-h-0 overflow-y-auto bg-muted/20 p-4">
+                        <div className="mx-auto max-w-5xl">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Classic Editor</CardTitle>
+                                    <CardDescription>
+                                        Edit page content with the existing rich
+                                        text editor while keeping the stored
+                                        data compatible with the block renderer.
+                                    </CardDescription>
+                                </CardHeader>
+
+                                <CardContent className="space-y-3">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="page-content">
+                                            Content
+                                        </Label>
+                                        <TinyEditor
+                                            value={data.classic_content}
+                                            onChange={(value) =>
+                                                setData(
+                                                    'classic_content',
+                                                    value,
+                                                )
+                                            }
+                                            height={560}
+                                        />
+                                        <InputError message={errors.blocks} />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </main>
+
+                    <aside className="min-h-0 overflow-y-auto border-t bg-background p-4 xl:border-t-0 xl:border-l">
                         <PageMetadataPanel
                             slug={data.slug}
                             excerpt={data.excerpt}
@@ -201,20 +226,9 @@ function BlockPageEdit({ page, blocks }: Omit<Props, 'editorMode' | 'classicCont
                                 setData('seo_keywords', value)
                             }
                         />
-                    }
-                />
+                    </aside>
+                </div>
             </form>
         </>
     );
 }
-
-Edit.layout = (page: React.ReactNode) => (
-    <PageEditorLayout
-        breadcrumbs={[
-            { title: 'Pages', href: '/my-admin/dashboard/pages' },
-            { title: 'Edit', href: '/my-admin/dashboard/pages' },
-        ]}
-    >
-        {page}
-    </PageEditorLayout>
-);

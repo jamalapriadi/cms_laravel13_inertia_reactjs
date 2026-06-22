@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -26,6 +26,7 @@ interface Props {
 
 const categorySchema = z.object({
     name: z.string().min(3, 'Category name must be at least 3 characters'),
+    slug: z.string().optional().or(z.literal('')),
     parent_id: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     image: z.any().optional(),
@@ -53,12 +54,27 @@ export default function Create({ categories }: Props) {
         resolver: zodResolver(categorySchema),
         defaultValues: {
             parent_id: null,
+            slug: '',
             description: '',
             sort_order: 0,
             show_home: false,
             is_publish: true,
         },
     });
+
+    const name = watch('name');
+
+    useEffect(() => {
+        const slugified = (name || '')
+            .toString()
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '');
+        setValue('slug', slugified);
+    }, [name, setValue]);
 
     /**
      * SUBMIT
@@ -123,6 +139,26 @@ export default function Create({ categories }: Props) {
                             {errors.name && (
                                 <p className="text-sm text-destructive">
                                     {errors.name.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* SLUG */}
+                        <div className="flex flex-col gap-1">
+                            <Label>Slug</Label>
+                            <Input
+                                type="text"
+                                readOnly
+                                className="bg-muted pointer-events-none select-none"
+                                {...register('slug')}
+                                placeholder="slug-category"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Slug will be generated automatically after saving.
+                            </p>
+                            {errors.slug && (
+                                <p className="text-sm text-destructive">
+                                    {errors.slug.message}
                                 </p>
                             )}
                         </div>

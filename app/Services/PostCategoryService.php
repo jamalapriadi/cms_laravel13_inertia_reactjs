@@ -6,7 +6,6 @@ namespace App\Services;
 
 use App\Models\PostCategory;
 use App\Support\MediaPath;
-use Illuminate\Support\Str;
 
 class PostCategoryService
 {
@@ -26,7 +25,7 @@ class PostCategoryService
 
     public function create($data)
     {
-        $data['slug'] = Str::slug($data['category_name']);
+        unset($data['slug']);
         $data['user_id'] = auth()->id();
 
         if (array_key_exists('featured_image', $data)) {
@@ -38,8 +37,6 @@ class PostCategoryService
 
     public function update(PostCategory $category, $data)
     {
-        $data['slug'] = Str::slug($data['category_name']);
-
         if (array_key_exists('featured_image', $data)) {
             $data['featured_image'] = MediaPath::normalize($data['featured_image'], requireExists: false);
         }

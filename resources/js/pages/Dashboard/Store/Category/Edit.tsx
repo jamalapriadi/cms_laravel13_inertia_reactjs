@@ -24,6 +24,7 @@ interface Category {
     id: string;
     parent_id: string | null;
     name: string;
+    slug: string;
     description?: string | null;
     image?: string | null;
     sort_order: number;
@@ -38,6 +39,7 @@ interface Props {
 
 const categorySchema = z.object({
     name: z.string().min(3, 'Category name must be at least 3 characters'),
+    slug: z.string().min(1, 'Slug is required'),
     parent_id: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     image: z.any().optional(),
@@ -69,6 +71,7 @@ export default function Edit({ category: initialCategory, categories }: Props) {
 
         defaultValues: {
             name: initialCategory.name,
+            slug: initialCategory.slug ?? '',
             parent_id: initialCategory.parent_id || null,
             description: initialCategory.description ?? '',
             image: initialCategory.image ?? undefined,
@@ -157,6 +160,25 @@ export default function Edit({ category: initialCategory, categories }: Props) {
                             {errors.name && (
                                 <p className="text-sm text-destructive">
                                     {errors.name.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* SLUG */}
+                        <div className="flex flex-col gap-1">
+                            <Label>Slug</Label>
+                            <Input
+                                type="text"
+                                aria-invalid={!!errors.slug}
+                                {...register('slug')}
+                                placeholder="slug-category"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                You can edit this slug manually. Make sure it remains unique.
+                            </p>
+                            {errors.slug && (
+                                <p className="text-sm text-destructive">
+                                    {errors.slug.message}
                                 </p>
                             )}
                         </div>
