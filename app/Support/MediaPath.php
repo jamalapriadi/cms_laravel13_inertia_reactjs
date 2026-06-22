@@ -66,14 +66,6 @@ class MediaPath
             } catch (\Throwable) {
             }
 
-            // If it exists on idcloudhost, use S3 URL.
-            try {
-                if (Storage::disk('idcloudhost')->exists($path)) {
-                    return Storage::disk('idcloudhost')->url($path);
-                }
-            } catch (\Throwable) {
-            }
-
             // Fallback for tests or missing files:
             if (app()->environment('testing')) {
                 return Storage::disk('public')->url($path);

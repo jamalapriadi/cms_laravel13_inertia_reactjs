@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'idcloudhost' => [
+        'url' => env('IDCH_URL'),
+        'media_prefix' => env('IDCH_MEDIA_PREFIX', 'media'),
+    ],
+
 ];

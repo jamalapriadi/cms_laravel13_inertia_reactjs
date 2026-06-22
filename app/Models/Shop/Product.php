@@ -48,6 +48,9 @@ class Product extends Model
         'is_publish',
         'created_by',
         'updated_by',
+        'wp_id',
+        'thumbnail_url',
+        'thumbnail_mime_type',
     ];
 
     protected $casts = [
@@ -145,5 +148,29 @@ class Product extends Model
     {
         return $this->belongsToMany(TermTaxonomy::class, 'product_term_taxonomy', 'product_id', 'term_taxonomy_id')
             ->where('taxonomy', 'tags');
+    }
+
+    public function getThumbnailFullUrlAttribute(): ?string
+    {
+        if (! empty($this->thumbnail_url)) {
+            return $this->thumbnail_url;
+        }
+
+        $value = $this->thumbnail;
+
+        if (! $value) {
+            return null;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        $baseUrl = rtrim(config('services.idcloudhost.url'), '/');
+        if (empty($baseUrl)) {
+            return null;
+        }
+
+        return $baseUrl.'/'.ltrim($value, '/');
     }
 }

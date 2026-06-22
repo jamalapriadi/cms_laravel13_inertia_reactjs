@@ -21,6 +21,10 @@ class Post extends Model
         'mime_type',
         'comment_status',
         'published_at',
+        'wp_id',
+        'featured_image',
+        'featured_image_url',
+        'featured_image_mime_type',
     ];
 
     protected $casts = [
@@ -120,5 +124,29 @@ class Post extends Model
                 'styles' => $block->styles ?? [],
             ])->values()->all(),
         ];
+    }
+
+    public function getFeaturedImageFullUrlAttribute(): ?string
+    {
+        if (! empty($this->featured_image_url)) {
+            return $this->featured_image_url;
+        }
+
+        $value = $this->featured_image;
+
+        if (! $value) {
+            return null;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        $baseUrl = rtrim(config('services.idcloudhost.url'), '/');
+        if (empty($baseUrl)) {
+            return null;
+        }
+
+        return $baseUrl.'/'.ltrim($value, '/');
     }
 }
