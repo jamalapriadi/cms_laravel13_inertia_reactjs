@@ -8,6 +8,7 @@
 
 namespace App\Models\Shop;
 
+use App\Support\MediaPath;
 use App\Models\TermTaxonomy;
 use App\Models\Unit;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -177,11 +178,6 @@ class Product extends Model
             return $value;
         }
 
-        $baseUrl = rtrim(config('services.idcloudhost.url'), '/');
-        if (empty($baseUrl)) {
-            return null;
-        }
-
-        return $baseUrl.'/'.ltrim($value, '/');
+        return MediaPath::url($value);
     }
 }

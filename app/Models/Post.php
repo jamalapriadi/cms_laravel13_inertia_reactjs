@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Dashboard\Language;
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -155,11 +156,6 @@ class Post extends Model
             return $value;
         }
 
-        $baseUrl = rtrim(config('services.idcloudhost.url'), '/');
-        if (empty($baseUrl)) {
-            return null;
-        }
-
-        return $baseUrl.'/'.ltrim($value, '/');
+        return MediaPath::url($value);
     }
 }

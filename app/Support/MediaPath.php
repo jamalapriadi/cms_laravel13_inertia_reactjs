@@ -34,13 +34,13 @@ class MediaPath
                 }
 
                 if (! $existsInDb) {
-                    // Fall back to checking idcloudhost disk directly
+                    // Fall back to checking the legacy disk alias directly
                     try {
                         if (! Storage::disk('idcloudhost')->exists($path)) {
                             return null;
                         }
                     } catch (\Throwable) {
-                        // S3 connection issue, assume it exists (fail-safe)
+                        // Legacy disk unavailable, assume it exists (fail-safe)
                     }
                 }
             }
@@ -141,10 +141,11 @@ class MediaPath
     {
         $configuredPublicUrl = (string) config('filesystems.disks.public.url', '');
         $idchUrl = (string) config('filesystems.disks.idcloudhost.url', '');
+        $legacyServiceUrl = (string) config('services.idcloudhost.url', '');
         $appStorageUrl = rtrim((string) config('app.url'), '/').'/storage';
         $assetStorageUrl = asset('storage/');
 
-        return collect([$configuredPublicUrl, $idchUrl, $appStorageUrl, $assetStorageUrl])
+        return collect([$configuredPublicUrl, $idchUrl, $legacyServiceUrl, $appStorageUrl, $assetStorageUrl])
             ->filter()
             ->map(fn (string $url) => rtrim($url, '/').'/')
             ->unique()

@@ -36,7 +36,7 @@ return [
     ],
 
     'idcloudhost' => [
-        'url' => env('IDCH_URL'),
+        'url' => env('IDCH_URL', rtrim(env('APP_URL', 'http://localhost'), '/').'/storage'),
         'media_prefix' => env('IDCH_MEDIA_PREFIX', 'media'),
     ],
 

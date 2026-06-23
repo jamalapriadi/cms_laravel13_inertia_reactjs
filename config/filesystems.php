@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', env('FILESYSTEM_DRIVER', 'public')),
 
     /*
     |--------------------------------------------------------------------------
@@ -41,22 +41,10 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('IMG_URL')
-                ? rtrim(env('IMG_URL'), '/')
-                : rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
-            'throw' => true,
-            'report' => true,
+            'throw' => false,
         ],
-
-        // 'public' => [
-        //     'driver' => 'local',
-        //     'root' => storage_path('app/public'),
-        //     'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
-        //     'visibility' => 'public',
-        //     'throw' => false,
-        //     'report' => false,
-        // ],
 
         's3' => [
             'driver' => 's3',
@@ -72,14 +60,9 @@ return [
         ],
 
         'idcloudhost' => [
-            'driver' => 's3',
-            'key' => env('IDCH_ACCESS_KEY_ID'),
-            'secret' => env('IDCH_SECRET_ACCESS_KEY'),
-            'region' => env('IDCH_DEFAULT_REGION', 'us-east-1'),
-            'bucket' => env('IDCH_BUCKET'),
-            'url' => env('IDCH_URL'),
-            'endpoint' => env('IDCH_ENDPOINT'),
-            'use_path_style_endpoint' => env('IDCH_USE_PATH_STYLE_ENDPOINT', true),
+            'driver' => 'local',
+            'root' => storage_path('app/public'),
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
