@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\KecamatanController;
 use App\Http\Controllers\Api\V1\KelurahanController;
 use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\OpenApiController;
+use App\Http\Controllers\Api\V1\OptionController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PageController;
 use App\Http\Controllers\Api\V1\PostController;
@@ -51,7 +52,12 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::get('product-collections/{slug}', [ProductCollectionController::class, 'showBySlug'])->name('product-collections.show');
     Route::get('faqs', [FaqController::class, 'index'])->name('faqs.index');
     Route::get('site-contents', [SiteContentController::class, 'index'])->name('site-contents.index');
-    Route::get('site-contents/{group}', [SiteContentController::class, 'group'])->name('site-contents.group');
+    Route::get('site-contents/{key}', [SiteContentController::class, 'show'])->name('site-contents.show');
+    Route::get('site-contents/group/{group}', [SiteContentController::class, 'group'])->name('site-contents.group');
+    Route::get('options', [OptionController::class, 'index'])->name('options.index');
+    Route::get('options/general', [OptionController::class, 'general'])->name('options.general');
+    Route::get('options/preferences', [OptionController::class, 'preferences'])->name('options.preferences');
+    Route::get('site-config', [OptionController::class, 'siteConfig'])->name('site-config');
 
     Route::get('provinces', [ProvinceController::class, 'index'])->name('provinces.index');
     Route::get('provinces/{province}', [ProvinceController::class, 'show'])->name('provinces.show');

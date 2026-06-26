@@ -39,6 +39,10 @@ class OpenApiController extends Controller
                     'name' => 'Regions',
                     'description' => 'Indonesian regional master data (Provinces, Kabupatens, Kecamatans, Kelurahans).',
                 ],
+                [
+                    'name' => 'General Options',
+                    'description' => 'Public general website configuration settings.',
+                ],
             ],
             'paths' => [
                 '/pages' => [
@@ -424,6 +428,141 @@ class OpenApiController extends Controller
                         ],
                         'responses' => [
                             '200' => ['$ref' => '#/components/responses/SuccessResponse'],
+                        ],
+                    ],
+                ],
+                '/options/general' => [
+                    'get' => [
+                        'tags' => ['General Options'],
+                        'summary' => 'Get public general website configuration',
+                        'description' => 'Returns website general configuration from the options table.',
+                        'responses' => [
+                            '200' => [
+                                'description' => 'Success response containing configuration data.',
+                                'content' => [
+                                    'application/json' => [
+                                        'example' => [
+                                            'success' => true,
+                                            'message' => 'General configuration retrieved successfully.',
+                                            'data' => [
+                                                'site_name' => 'Gitatrading Store',
+                                                'site_tagline' => '...',
+                                                'site_description' => '...',
+                                                'site_short_description' => '...',
+                                                'site_logo' => 'https://img.gitatrading-store.com/storage/...',
+                                                'site_logo_footer' => 'https://img.gitatrading-store.com/storage/...',
+                                                'site_logo_mobile' => 'https://img.gitatrading-store.com/storage/...',
+                                                'site_favicon' => 'https://img.gitatrading-store.com/storage/...',
+                                                'contact' => [
+                                                    'email' => '...',
+                                                    'phone' => '...',
+                                                    'whatsapp' => '...',
+                                                    'address' => '...',
+                                                ],
+                                                'social_media' => [
+                                                    'facebook' => '...',
+                                                    'instagram' => '...',
+                                                    'x' => '...',
+                                                    'youtube' => '...',
+                                                    'tiktok' => '...',
+                                                ],
+                                                'marketplace' => [
+                                                    'tokopedia' => '...',
+                                                ],
+                                                'seo' => [
+                                                    'meta_title' => '...',
+                                                    'meta_description' => '...',
+                                                    'meta_keywords' => '...',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                '/options' => [
+                    'get' => [
+                        'tags' => ['General Options'],
+                        'summary' => 'Get combined general and preferences configurations',
+                        'description' => 'Returns combined general and preferences configuration from the options table.',
+                        'responses' => [
+                            '200' => [
+                                'description' => 'Success response containing combined configurations.',
+                                'content' => [
+                                    'application/json' => [
+                                        'example' => [
+                                            'success' => true,
+                                            'message' => 'Website options retrieved successfully.',
+                                            'data' => [
+                                                'general' => new \stdClass,
+                                                'preferences' => new \stdClass,
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                '/options/preferences' => [
+                    'get' => [
+                        'tags' => ['General Options'],
+                        'summary' => 'Get public website preferences configuration',
+                        'description' => 'Returns website preferences configuration from the options table.',
+                        'responses' => [
+                            '200' => [
+                                'description' => 'Success response containing preferences data.',
+                                'content' => [
+                                    'application/json' => [
+                                        'example' => [
+                                            'success' => true,
+                                            'message' => 'Preferences configuration retrieved successfully.',
+                                            'data' => [
+                                                'theme' => [
+                                                    'default_mode' => 'light',
+                                                    'primary_color' => '#10b981',
+                                                    'secondary_color' => '#111827',
+                                                ],
+                                                'layout' => [
+                                                    'container_width' => 'default',
+                                                    'enable_breadcrumb' => true,
+                                                    'enable_sticky_header' => true,
+                                                ],
+                                                'display' => [
+                                                    'show_product_rating' => true,
+                                                    'show_product_stock' => true,
+                                                    'show_product_sku' => true,
+                                                    'show_blog_author' => true,
+                                                    'show_blog_date' => true,
+                                                ],
+                                                'currency' => [
+                                                    'code' => 'JPY',
+                                                    'symbol' => '¥',
+                                                    'position' => 'before',
+                                                ],
+                                                'locale' => [
+                                                    'default_language' => 'en',
+                                                    'timezone' => 'Asia/Tokyo',
+                                                ],
+                                                'seo' => [
+                                                    'meta_keywords' => '...',
+                                                    'meta_description' => '...',
+                                                ],
+                                                'snippets' => [
+                                                    'robot_txt' => '...',
+                                                    'head' => '...',
+                                                    'body' => '...',
+                                                    'footer' => '...',
+                                                ],
+                                                'social_sharing_image' => 'https://img.gitatrading-store.com/storage/...',
+                                                'email_recipient' => '...',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                 ],

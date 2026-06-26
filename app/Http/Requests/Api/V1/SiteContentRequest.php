@@ -17,16 +17,29 @@ class SiteContentRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'locale' => ['nullable', 'string', 'max:35'],
             'lang' => ['nullable', 'string', 'max:35'],
+            'group' => ['nullable', 'string', 'max:255'],
+            'key' => ['nullable', 'string', 'max:255'],
+            'type' => ['nullable', 'string', 'max:255'],
+            'format' => ['nullable', 'string', 'in:grouped,list'],
+            'include_all_locales' => ['nullable', 'boolean'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }
 
     protected function prepareForValidation(): void
     {
-        $lang = $this->query('lang');
+        $locale = $this->query('locale') ?? $this->query('lang');
 
         $this->merge([
-            'lang' => is_string($lang) && trim($lang) !== '' ? strtolower(trim($lang)) : null,
+            'locale' => is_string($locale) && trim($locale) !== '' ? strtolower(trim($locale)) : null,
+            'lang' => is_string($locale) && trim($locale) !== '' ? strtolower(trim($locale)) : null,
+            'format' => $this->query('format') ? strtolower(trim($this->query('format'))) : 'grouped',
+            'include_all_locales' => $this->has('include_all_locales') ? filter_var($this->query('include_all_locales'), FILTER_VALIDATE_BOOLEAN) : false,
+            'page' => $this->query('page') ? (int) $this->query('page') : null,
+            'per_page' => $this->query('per_page') ? (int) $this->query('per_page') : null,
         ]);
     }
 }

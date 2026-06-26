@@ -4,6 +4,9 @@ namespace App\Services\Api\V1;
 
 use App\Models\Shop\SiteContent;
 use App\Services\ActiveLanguageService;
+use App\Support\MediaPath;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -18,63 +21,241 @@ class SiteContentApiService
     ) {}
 
     /**
-     * @return array<string, mixed>
+     * Get public site contents based on filters.
+     *
+     * @param  array<string, mixed>  $filters
+     * @return array<string, mixed>|LengthAwarePaginator|list<array<string, mixed>>
      */
-    public function all(?string $requestedLocale = null): array
+    public function getPublicContents(array $filters = []): array|LengthAwarePaginator
     {
-        return $this->remember($requestedLocale, null);
+        $locale = $this->activeLanguageService->resolveLocale($filters['locale'] ?? $filters['lang'] ?? null);
+        $fallbackLocale = $this->activeLanguageService->defaultCode();
+        $includeAllLocales = (bool) ($filters['include_all_locales'] ?? false);
+        $format = $filters['format'] ?? 'grouped';
+
+        $query = SiteContent::query()
+            ->active()
+            ->when(! empty($filters['group']), fn ($q) => $q->group($filters['group']))
+            ->when(! empty($filters['key']), fn ($q) => $q->where('key', $filters['key']))
+            ->when(! empty($filters['type']), fn ($q) => $q->type($filters['type']))
+            ->orderBy('group')
+            ->orderBy('sort_order')
+            ->orderBy('key');
+
+        if ($includeAllLocales) {
+            $query->with('translations');
+        } else {
+            $query->with(['translations' => function ($q) use ($locale, $fallbackLocale): void {
+                $q->whereIn('locale', array_values(array_unique([$locale, $fallbackLocale])));
+            }]);
+        }
+
+        // Handle pagination if requested
+        if (isset($filters['page']) || isset($filters['per_page'])) {
+            $perPage = $filters['per_page'] ?? 15;
+            $paginator = $query->paginate($perPage);
+
+            // Transform paginator items
+            $transformedItems = collect($paginator->items())->map(function (SiteContent $content) use ($locale, $fallbackLocale, $includeAllLocales) {
+                return $this->transformContent($content, $locale, $fallbackLocale, $includeAllLocales);
+            })->all();
+
+            // Replace the items in the paginator
+            return new LengthAwarePaginator(
+                $transformedItems,
+                $paginator->total(),
+                $paginator->perPage(),
+                $paginator->currentPage(),
+                ['path' => LengthAwarePaginator::resolveCurrentPath()]
+            );
+        }
+
+        $contents = $query->get();
+
+        if ($format === 'list') {
+            return $contents->map(function (SiteContent $content) use ($locale, $fallbackLocale, $includeAllLocales) {
+                return $this->transformContent($content, $locale, $fallbackLocale, $includeAllLocales);
+            })->all();
+        }
+
+        return $this->groupContents($contents, $locale, $fallbackLocale, $includeAllLocales);
     }
 
     /**
-     * @return array<string, mixed>
+     * Get a single public site content by key.
+     *
+     * @return array<string, mixed>|null
      */
-    public function group(string $group, ?string $requestedLocale = null): array
+    public function getPublicContentByKey(string $key, ?string $requestedLocale = null): ?array
     {
-        return $this->remember($requestedLocale, $this->normalizeGroup($group));
+        $locale = $this->activeLanguageService->resolveLocale($requestedLocale);
+        $fallbackLocale = $this->activeLanguageService->defaultCode();
+
+        $content = SiteContent::query()
+            ->active()
+            ->where('key', $key)
+            ->with(['translations' => function ($q) use ($locale, $fallbackLocale): void {
+                $q->whereIn('locale', array_values(array_unique([$locale, $fallbackLocale])));
+            }])
+            ->first();
+
+        if (! $content) {
+            return null;
+        }
+
+        return $this->transformContent($content, $locale, $fallbackLocale, false);
     }
 
+    /**
+     * Transform a single site content model into a normalized array structure.
+     *
+     * @return array<string, mixed>
+     */
+    private function transformContent(SiteContent $content, string $locale, string $fallbackLocale, bool $includeAllLocales): array
+    {
+        if ($includeAllLocales) {
+            $values = [];
+            foreach ($this->activeLanguageService->activeCodes() as $activeLocale) {
+                $rawVal = $content->translation($activeLocale)?->value;
+                $values[$activeLocale] = $this->normalizeValue($rawVal, $content->type);
+            }
+
+            return [
+                'key' => $content->key,
+                'group' => $content->group,
+                'type' => $content->type,
+                'values' => $values,
+            ];
+        }
+
+        $primaryValue = $content->translation($locale)?->value;
+        $fallbackValue = $content->translation($fallbackLocale)?->value;
+        $usesFallback = ! filled($primaryValue) && filled($fallbackValue);
+        $resolvedLocale = $usesFallback ? $fallbackLocale : $locale;
+        $rawValue = $usesFallback ? $fallbackValue : $primaryValue;
+
+        return [
+            'key' => $content->key,
+            'group' => $content->group,
+            'locale' => $resolvedLocale,
+            'type' => $content->type,
+            'value' => $this->normalizeValue($rawValue, $content->type),
+        ];
+    }
+
+    /**
+     * Group contents collection into a nested key-value array format.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function groupContents(Collection $contents, string $locale, string $fallbackLocale, bool $includeAllLocales): array
+    {
+        $grouped = [];
+
+        foreach ($contents as $content) {
+            $group = $content->group ?: 'ungrouped';
+
+            if ($includeAllLocales) {
+                $values = [];
+                foreach ($this->activeLanguageService->activeCodes() as $activeLocale) {
+                    $rawVal = $content->translation($activeLocale)?->value;
+                    $values[$activeLocale] = $this->normalizeValue($rawVal, $content->type);
+                }
+                $grouped[$group][$content->key] = $values;
+            } else {
+                $primaryValue = $content->translation($locale)?->value;
+                $fallbackValue = $content->translation($fallbackLocale)?->value;
+                $rawValue = ! filled($primaryValue) && filled($fallbackValue) ? $fallbackValue : $primaryValue;
+                $grouped[$group][$content->key] = $this->normalizeValue($rawValue, $content->type);
+            }
+        }
+
+        return $grouped;
+    }
+
+    /**
+     * Normalize values based on type.
+     */
+    public function normalizeValue(mixed $value, ?string $type): mixed
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return match ($type) {
+            'boolean' => in_array(strtolower((string) $value), ['1', 'true', 'on', 'yes'], true),
+            'number' => str_contains((string) $value, '.') ? (float) $value : (int) $value,
+            'json' => $this->safeJsonDecode($value),
+            'image' => MediaPath::url((string) $value),
+            default => (string) $value,
+        };
+    }
+
+    /**
+     * Safely decode JSON.
+     */
+    private function safeJsonDecode(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        try {
+            return json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return $value;
+        }
+    }
+
+    /**
+     * Backward-compatible helper to flush cache.
+     */
     public function flushCache(): void
     {
         Cache::forever(self::CACHE_VERSION_KEY, (string) Str::uuid());
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function remember(?string $requestedLocale, ?string $group): array
+    // Keep these methods for backward compatibility, routing, and usage
+    public function all(?string $requestedLocale = null): array
+    {
+        return $this->getPublicContents([
+            'locale' => $requestedLocale,
+            'format' => 'grouped',
+        ]);
+    }
+
+    public function group(string $group, ?string $requestedLocale = null): array
     {
         $locale = $this->activeLanguageService->resolveLocale($requestedLocale);
         $fallbackLocale = $this->activeLanguageService->defaultCode();
-        $version = $this->cacheVersion();
-        $cacheKey = $this->cacheKey($version, $locale, $fallbackLocale, $group);
 
-        return Cache::remember(
-            $cacheKey,
-            now()->addSeconds(self::CACHE_TTL_SECONDS),
-            fn () => $this->buildPayload($requestedLocale, $locale, $fallbackLocale, $group)
-        );
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function buildPayload(?string $requestedLocale, string $locale, string $fallbackLocale, ?string $group): array
-    {
         $contents = SiteContent::query()
             ->active()
             ->group($group)
-            ->with(['translations' => function ($query) use ($locale, $fallbackLocale): void {
-                $query->whereIn('locale', array_values(array_unique([$locale, $fallbackLocale])));
+            ->with(['translations' => function ($q) use ($locale, $fallbackLocale): void {
+                $q->whereIn('locale', array_values(array_unique([$locale, $fallbackLocale])));
             }])
-            ->orderBy('group')
             ->orderBy('sort_order')
             ->orderBy('key')
             ->get();
 
-        $items = $contents
-            ->map(fn (SiteContent $content) => $this->contentItem($content, $locale, $fallbackLocale))
-            ->values()
-            ->all();
+        $items = $contents->map(function (SiteContent $content) use ($locale, $fallbackLocale) {
+            $primaryValue = $content->translation($locale)?->value;
+            $fallbackValue = $content->translation($fallbackLocale)?->value;
+            $usesFallback = ! filled($primaryValue) && filled($fallbackValue);
+
+            return [
+                'id' => $content->id,
+                'key' => $content->key,
+                'group' => $content->group,
+                'type' => $content->type,
+                'value' => $this->normalizeValue($usesFallback ? $fallbackValue : $primaryValue, $content->type),
+                'locale' => $usesFallback ? $fallbackLocale : $locale,
+                'fallback_used' => $usesFallback,
+                'sort_order' => $content->sort_order,
+                'updated_at' => $content->updated_at?->toIso8601String(),
+            ];
+        })->values()->all();
 
         return [
             'language' => [
@@ -84,85 +265,8 @@ class SiteContentApiService
                 'active' => $this->activeLanguageService->activeCodes(),
             ],
             'group' => $group,
-            'contents' => $group ? $this->flatContents($items) : $this->groupedContents($items),
+            'contents' => collect($items)->mapWithKeys(fn (array $item) => [(string) $item['key'] => $item['value']])->all(),
             'items' => $items,
-            'cache' => [
-                'ttl_seconds' => self::CACHE_TTL_SECONDS,
-                'generated_at' => now()->toIso8601String(),
-            ],
         ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function contentItem(SiteContent $content, string $locale, string $fallbackLocale): array
-    {
-        $primaryValue = $content->translation($locale)?->value;
-        $fallbackValue = $content->translation($fallbackLocale)?->value;
-        $usesFallback = ! filled($primaryValue) && filled($fallbackValue);
-
-        return [
-            'id' => $content->id,
-            'key' => $content->key,
-            'group' => $content->group,
-            'type' => $content->type,
-            'value' => $content->value($locale, $fallbackLocale),
-            'locale' => $usesFallback ? $fallbackLocale : $locale,
-            'fallback_used' => $usesFallback,
-            'sort_order' => $content->sort_order,
-            'updated_at' => $content->updated_at?->toIso8601String(),
-        ];
-    }
-
-    /**
-     * @param  list<array<string, mixed>>  $items
-     * @return array<string, string|null>
-     */
-    private function flatContents(array $items): array
-    {
-        return collect($items)
-            ->mapWithKeys(fn (array $item) => [(string) $item['key'] => $item['value']])
-            ->all();
-    }
-
-    /**
-     * @param  list<array<string, mixed>>  $items
-     * @return array<string, array<string, string|null>>
-     */
-    private function groupedContents(array $items): array
-    {
-        return collect($items)
-            ->groupBy(fn (array $item) => $item['group'] ?: 'ungrouped')
-            ->map(fn ($groupItems) => $groupItems->mapWithKeys(
-                fn (array $item) => [(string) $item['key'] => $item['value']]
-            )->all())
-            ->all();
-    }
-
-    private function cacheVersion(): string
-    {
-        $version = Cache::get(self::CACHE_VERSION_KEY);
-
-        if (is_string($version) && $version !== '') {
-            return $version;
-        }
-
-        $version = (string) Str::uuid();
-        Cache::forever(self::CACHE_VERSION_KEY, $version);
-
-        return $version;
-    }
-
-    private function cacheKey(string $version, string $locale, string $fallbackLocale, ?string $group): string
-    {
-        $payload = implode('|', [$version, $locale, $fallbackLocale, $group ?? '*']);
-
-        return 'api:v1:site_contents:'.hash('sha256', $payload);
-    }
-
-    private function normalizeGroup(string $group): string
-    {
-        return strtolower(trim($group));
     }
 }
