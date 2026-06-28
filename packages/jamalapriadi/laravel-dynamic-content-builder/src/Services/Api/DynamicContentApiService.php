@@ -77,6 +77,45 @@ class DynamicContentApiService
                     && $filters['is_featured'] !== null
                     && $fields->has('is_featured'),
                 fn (Builder $query) => $query->where('data->is_featured', (bool) $filters['is_featured']),
+            )
+            ->when(
+                filled($filters['province_id'] ?? null),
+                function (Builder $query) use ($filters): void {
+                    $provinceId = $filters['province_id'];
+                    $query->where(function (Builder $q) use ($provinceId): void {
+                        $q->where('data->province', $provinceId)
+                            ->orWhere('data->province_id', $provinceId);
+                    });
+                }
+            )
+            ->when(
+                ! filled($filters['province_id'] ?? null) && filled($filters['province'] ?? null),
+                function (Builder $query) use ($filters, $language): void {
+                    $provinceSlug = $filters['province'];
+                    $provinceEntry = ContentEntry::query()
+                        ->whereHas('contentType', fn ($q) => $q->where('slug', 'provinces'))
+                        ->where(function (Builder $q) use ($provinceSlug, $language): void {
+                            $q->where('slug', $provinceSlug);
+                            if ($language) {
+                                $q->orWhereHas('translations', function (Builder $tq) use ($provinceSlug, $language): void {
+                                    $tq->where('slug', $provinceSlug)
+                                        ->where('language_id', $language->id)
+                                        ->where('status', 'published');
+                                });
+                            }
+                        })
+                        ->published()
+                        ->first();
+
+                    if (! $provinceEntry) {
+                        $query->whereRaw('1 = 0');
+                    } else {
+                        $query->where(function (Builder $q) use ($provinceEntry): void {
+                            $q->where('data->province', $provinceEntry->id)
+                                ->orWhere('data->province_id', $provinceEntry->id);
+                        });
+                    }
+                }
             );
 
         $sort = (string) ($filters['sort'] ?? '');

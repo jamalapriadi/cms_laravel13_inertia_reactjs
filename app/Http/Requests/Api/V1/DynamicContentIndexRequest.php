@@ -25,6 +25,8 @@ class DynamicContentIndexRequest extends FormRequest
             'sort' => ['nullable', 'string', Rule::in(['title', 'published_at', 'sort_order', 'created_at'])],
             'order' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
             'locale' => ['nullable', 'string', 'max:5'],
+            'province' => ['nullable', 'string', 'regex:/^[a-z0-9\-]+$/'],
+            'province_id' => ['nullable', 'string', 'uuid'],
         ];
     }
 

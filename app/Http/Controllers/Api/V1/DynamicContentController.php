@@ -56,6 +56,8 @@ class DynamicContentController extends Controller
             new OA\Parameter(name: 'sort', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['title', 'published_at', 'sort_order', 'created_at'])),
             new OA\Parameter(name: 'order', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['asc', 'desc'])),
             new OA\Parameter(name: 'locale', in: 'query', required: false, schema: new OA\Schema(type: 'string', example: 'en')),
+            new OA\Parameter(name: 'province', in: 'query', required: false, schema: new OA\Schema(type: 'string'), description: 'Filter content entries by related province slug.'),
+            new OA\Parameter(name: 'province_id', in: 'query', required: false, schema: new OA\Schema(type: 'string'), description: 'Filter content entries by related province content entry ID.'),
         ],
         responses: [
             new OA\Response(

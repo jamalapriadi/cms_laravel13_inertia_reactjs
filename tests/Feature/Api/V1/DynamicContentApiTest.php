@@ -460,3 +460,88 @@ test('it caches dynamic content responses separately for each locale', function 
     expect(Cache::get($cache->modulesRegistryKey(), []))->toContain('api.dynamic-content');
     expect(Cache::get($cache->moduleRegistryKey('api.dynamic-content'), []))->toHaveCount(2);
 });
+
+test('it filters dynamic content entries by province slug or province_id', function () {
+    // 1. Create content types: 'locations' and 'provinces'
+    $provinceType = ContentType::query()->create([
+        'name' => 'Provinces',
+        'slug' => 'provinces',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    $locationType = ContentType::query()->create([
+        'name' => 'Locations',
+        'slug' => 'locations',
+        'is_active' => true,
+        'sort_order' => 2,
+    ]);
+
+    // 2. Create province entries
+    $jawaTengah = ContentEntry::query()->create([
+        'content_type_id' => $provinceType->id,
+        'title' => 'Jawa Tengah',
+        'slug' => 'jawa-tengah',
+        'status' => 'published',
+        'published_at' => now()->subMinute(),
+        'data' => [],
+    ]);
+
+    $jawaBarat = ContentEntry::query()->create([
+        'content_type_id' => $provinceType->id,
+        'title' => 'Jawa Barat',
+        'slug' => 'jawa-barat',
+        'status' => 'published',
+        'published_at' => now()->subMinute(),
+        'data' => [],
+    ]);
+
+    // 3. Create location entries associated with the provinces in their 'data' JSON column
+    $location1 = ContentEntry::query()->create([
+        'content_type_id' => $locationType->id,
+        'title' => 'Semarang Store',
+        'slug' => 'semarang-store',
+        'status' => 'published',
+        'published_at' => now()->subMinute(),
+        'data' => [
+            'province' => $jawaTengah->id, // field name is 'province'
+        ],
+    ]);
+
+    $location2 = ContentEntry::query()->create([
+        'content_type_id' => $locationType->id,
+        'title' => 'Bandung Store',
+        'slug' => 'bandung-store',
+        'status' => 'published',
+        'published_at' => now()->subMinute(),
+        'data' => [
+            'province_id' => $jawaBarat->id, // field name is 'province_id'
+        ],
+    ]);
+
+    // Test Case 1: Filter by province slug (resolved to Semarang Store)
+    $this->getJson('/api/v1/content/locations?province=jawa-tengah')
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.slug', 'semarang-store')
+        ->assertJsonPath('meta.total', 1);
+
+    // Test Case 2: Filter by province_id directly (resolved to Bandung Store)
+    $this->getJson("/api/v1/content/locations?province_id={$jawaBarat->id}")
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.slug', 'bandung-store')
+        ->assertJsonPath('meta.total', 1);
+
+    // Test Case 3: Filter by non-existent province slug (should return empty response)
+    $this->getJson('/api/v1/content/locations?province=non-existent-slug')
+        ->assertSuccessful()
+        ->assertJsonCount(0, 'data')
+        ->assertJsonPath('meta.total', 0);
+
+    // Test Case 4: No filter (should return all locations)
+    $this->getJson('/api/v1/content/locations')
+        ->assertSuccessful()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('meta.total', 2);
+});
