@@ -39,7 +39,12 @@ interface Props {
     fields?: DynamicFieldDefinition[];
 }
 
-export default function Index({ contentType, entries, filters, fields = [] }: Props) {
+export default function Index({
+    contentType,
+    entries,
+    filters,
+    fields = [],
+}: Props) {
     const { hasPermission } = usePermission();
     const canCreate = hasPermission('dynamic-contents.create');
     const canEdit = hasPermission('dynamic-contents.edit');
@@ -104,13 +109,39 @@ export default function Index({ contentType, entries, filters, fields = [] }: Pr
                 }
                 const val = row.data?.[field.name];
                 if (val === null || val === undefined) {
-                    return <span className="text-sm text-muted-foreground">-</span>;
+                    return (
+                        <span className="text-sm text-muted-foreground">-</span>
+                    );
                 }
                 if (typeof val === 'boolean') {
-                    return <span className="text-sm">{val ? 'Yes' : 'No'}</span>;
+                    return (
+                        <span className="text-sm">{val ? 'Yes' : 'No'}</span>
+                    );
                 }
                 if (Array.isArray(val)) {
                     return <span className="text-sm">{val.join(', ')}</span>;
+                }
+                if (field.type === 'wysiwyg') {
+                    const cleanText = stripHtml(String(val));
+                    return (
+                        <span
+                            className="block max-w-[250px] truncate text-sm text-muted-foreground"
+                            title={cleanText}
+                        >
+                            {cleanText || '-'}
+                        </span>
+                    );
+                }
+                if (field.type === 'textarea') {
+                    const strVal = String(val);
+                    return (
+                        <span
+                            className="block max-w-[250px] truncate text-sm text-muted-foreground"
+                            title={strVal}
+                        >
+                            {strVal || '-'}
+                        </span>
+                    );
                 }
                 return <span className="text-sm">{String(val)}</span>;
             },
@@ -153,11 +184,13 @@ export default function Index({ contentType, entries, filters, fields = [] }: Pr
                 <div className="flex gap-2">
                     {canEdit && (
                         <Link
-                            href={
-                                `/my-admin/dashboard/content/${contentType.slug}/${row.id}/translations`
-                            }
+                            href={`/my-admin/dashboard/content/${contentType.slug}/${row.id}/translations`}
                         >
-                            <Button size="sm" variant="secondary" title="Translate">
+                            <Button
+                                size="sm"
+                                variant="secondary"
+                                title="Translate"
+                            >
                                 <Languages className="h-3.5 w-3.5" />
                             </Button>
                         </Link>
@@ -290,4 +323,15 @@ export default function Index({ contentType, entries, filters, fields = [] }: Pr
             </AlertDialog>
         </>
     );
+}
+
+function stripHtml(html: string): string {
+    return html
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'");
 }
