@@ -27,9 +27,14 @@ class DynamicContentEntryController extends Controller
             'status' => trim((string) $request->query('status', '')),
         ])->through(fn (ContentEntry $entry) => $this->entryPayload($entry));
 
+        $fields = $this->dynamicContentFieldService->activeFieldsForContentType($contentType)
+            ->map(fn ($field) => $this->dynamicContentFieldService->fieldPayload($field))
+            ->all();
+
         return Inertia::render('Dashboard/DynamicContent/Index', [
             'contentType' => $this->contentTypePayload($contentType),
             'entries' => $entries,
+            'fields' => $fields,
             'filters' => [
                 'search' => trim((string) $request->query('search', '')),
                 'status' => trim((string) $request->query('status', '')),
@@ -130,6 +135,7 @@ class DynamicContentEntryController extends Controller
             'published_at' => $entry->published_at?->toIso8601String(),
             'sort_order' => $entry->sort_order,
             'data' => $entry->data ?? [],
+            'relation_labels' => $this->resolveRelationLabels($entry),
             'created_at' => $entry->created_at?->toIso8601String(),
             'updated_at' => $entry->updated_at?->toIso8601String(),
             'creator' => $entry->creator ? [
@@ -141,6 +147,61 @@ class DynamicContentEntryController extends Controller
                 'name' => $entry->updater->name,
             ] : null,
         ];
+    }
+
+    private function resolveRelationLabels(ContentEntry $entry): array
+    {
+        $labels = [];
+        $contentType = $entry->contentType;
+        if (! $contentType) {
+            return [];
+        }
+
+        $fields = $this->dynamicContentFieldService->activeFieldsForContentType($contentType);
+        foreach ($fields as $field) {
+            if ($field->type === 'relation') {
+                $val = $entry->data[$field->name] ?? null;
+                if ($val) {
+                    $config = $field->options;
+                    $sourceTypeId = $config['source_content_type_id'] ?? null;
+                    $labelField = $config['label_field'] ?? 'title';
+
+                    if ($sourceTypeId) {
+                        if ($config['is_multiple'] ?? false) {
+                            $ids = is_array($val) ? $val : json_decode($val, true);
+                            if (! is_array($ids)) {
+                                $ids = [$val];
+                            }
+                            $names = [];
+                            foreach ($ids as $id) {
+                                $targetEntry = ContentEntry::find($id);
+                                if ($targetEntry) {
+                                    $names[] = $labelField === 'title'
+                                        ? ($targetEntry->title ?? $id)
+                                        : ($targetEntry->data[$labelField] ?? $targetEntry->title ?? $id);
+                                } else {
+                                    $names[] = '-';
+                                }
+                            }
+                            $labels[$field->name] = implode(', ', $names);
+                        } else {
+                            $targetEntry = ContentEntry::find($val);
+                            if ($targetEntry) {
+                                $labels[$field->name] = $labelField === 'title'
+                                    ? ($targetEntry->title ?? $val)
+                                    : ($targetEntry->data[$labelField] ?? $targetEntry->title ?? $val);
+                            } else {
+                                $labels[$field->name] = 'Data tidak ditemukan';
+                            }
+                        }
+                    }
+                } else {
+                    $labels[$field->name] = '-';
+                }
+            }
+        }
+
+        return $labels;
     }
 
     /**

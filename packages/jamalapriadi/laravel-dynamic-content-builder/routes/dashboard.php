@@ -35,6 +35,9 @@ $route->group(function (): void {
     Route::delete('content-types/{contentType}', [ContentTypeController::class, 'destroy'])
         ->middleware('dynamic-content-builder.authorize:content-types.delete')
         ->name('content-types.destroy');
+    Route::get('content-builder/content-types/{contentType}/entries/options', [ContentTypeController::class, 'entryOptions'])
+        ->middleware('dynamic-content-builder.authorize:dynamic-contents.view')
+        ->name('content-types.entries.options');
 
     Route::get('custom-fields', [CustomFieldGroupController::class, 'index'])
         ->middleware('dynamic-content-builder.authorize:custom-fields.view')

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
     Select,
     SelectContent,
@@ -11,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import Textarea from '@/components/ui/textarea';
 import TinyEditor from '@/components/ui/TinyEditor';
-import type { DynamicFieldDefinition } from '@/types/dynamic-content';
+import type { DynamicFieldDefinition, DynamicFieldRelationConfig } from '@/types/dynamic-content';
 import MediaLibraryFieldPicker from './MediaLibraryFieldPicker';
 
 interface Props {
@@ -228,6 +229,14 @@ function renderInput(
                     onChange={(event) => onChange(event.target.value)}
                 />
             );
+        case 'relation':
+            return (
+                <RelationFieldInput
+                    field={field}
+                    value={value}
+                    onChange={onChange}
+                />
+            );
         case 'text':
         default:
             return (
@@ -239,4 +248,101 @@ function renderInput(
                 />
             );
     }
+}
+
+function RelationFieldInput({
+    field,
+    value,
+    onChange,
+}: {
+    field: DynamicFieldDefinition;
+    value: unknown;
+    onChange: (value: unknown) => void;
+}) {
+    const config = field.options as unknown as DynamicFieldRelationConfig;
+    const sourceContentTypeId = config?.source_content_type_id;
+    const labelField = config?.label_field || 'title';
+    const placeholder = config?.placeholder || field.placeholder || 'Select option';
+    const isMultiple = config?.is_multiple || false;
+
+    const [options, setOptions] = useState<Array<{ label: string; value: string }>>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!sourceContentTypeId) {
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
+        fetch(`/my-admin/dashboard/content-builder/content-types/${sourceContentTypeId}/entries/options?label_field=${labelField}`)
+            .then((res) => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then((data) => {
+                setOptions(data);
+                setLoading(false);
+            })
+            .catch(() => {
+                setLoading(false);
+            });
+    }, [sourceContentTypeId, labelField]);
+
+    if (loading) {
+        return <p className="text-xs text-muted-foreground animate-pulse">Loading options...</p>;
+    }
+
+    if (!sourceContentTypeId) {
+        return <p className="text-xs text-destructive">Relation source not configured.</p>;
+    }
+
+    if (isMultiple) {
+        const selectedValues = Array.isArray(value) ? value : [];
+        return (
+            <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-2">
+                {options.map((option) => {
+                    const checked = selectedValues.includes(option.value);
+                    return (
+                        <label
+                            key={option.value}
+                            className="flex items-center gap-3 text-sm py-1 cursor-pointer"
+                        >
+                            <Checkbox
+                                checked={checked}
+                                onCheckedChange={(nextChecked) => {
+                                    if (nextChecked) {
+                                        onChange([...selectedValues, option.value]);
+                                    } else {
+                                        onChange(selectedValues.filter((v) => v !== option.value));
+                                    }
+                                }}
+                            />
+                            <span>{option.label}</span>
+                        </label>
+                    );
+                })}
+                {options.length === 0 && (
+                    <p className="text-xs text-muted-foreground">No options found.</p>
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <Select
+            value={value ? String(value) : ''}
+            onValueChange={(nextValue) => onChange(nextValue || null)}
+        >
+            <SelectTrigger className="w-full">
+                <SelectValue placeholder={placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+                {options.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    );
 }

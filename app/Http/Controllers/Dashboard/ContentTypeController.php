@@ -83,6 +83,34 @@ class ContentTypeController extends Controller
             ->with('success', 'Content type deleted successfully.');
     }
 
+    public function entryOptions(ContentType $contentType, Request $request)
+    {
+        $labelField = $request->query('label_field', 'title');
+
+        $entries = $contentType->entries()
+            ->orderBy('sort_order')
+            ->latest('created_at')
+            ->get();
+
+        return response()->json(
+            $entries->map(function ($entry) use ($labelField) {
+                $label = null;
+                if ($labelField === 'title') {
+                    $label = $entry->title;
+                } elseif (isset($entry->data[$labelField])) {
+                    $label = $entry->data[$labelField];
+                } else {
+                    $label = $entry->title ?: $entry->id;
+                }
+
+                return [
+                    'label' => $label,
+                    'value' => $entry->id,
+                ];
+            })
+        );
+    }
+
     /**
      * @return array<string, mixed>
      */

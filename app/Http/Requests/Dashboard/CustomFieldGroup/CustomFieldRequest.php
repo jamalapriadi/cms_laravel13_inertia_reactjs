@@ -49,7 +49,58 @@ class CustomFieldRequest extends FormRequest
             'type' => ['required', 'string', Rule::in(DynamicContent::fieldTypes())],
             'placeholder' => ['nullable', 'string', 'max:255'],
             'instructions' => ['nullable', 'string'],
-            'options' => ['nullable'],
+            'options' => [
+                Rule::requiredIf(fn () => $this->input('type') === 'relation'),
+                'nullable',
+                'array',
+            ],
+            'options.source_content_type_id' => [
+                Rule::requiredIf(fn () => $this->input('type') === 'relation'),
+                'nullable',
+                'uuid',
+                Rule::exists('content_types', 'id')->whereNull('deleted_at'),
+            ],
+            'options.label_field' => [
+                Rule::requiredIf(fn () => $this->input('type') === 'relation'),
+                'nullable',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    if ($this->input('type') !== 'relation') {
+                        return;
+                    }
+                    if ($value === 'title') {
+                        return;
+                    }
+                    $sourceTypeId = $this->input('options.source_content_type_id');
+                    if (! $sourceTypeId) {
+                        return;
+                    }
+                    $exists = CustomField::query()
+                        ->where('name', $value)
+                        ->whereHas('group', function ($query) use ($sourceTypeId) {
+                            $query->where('target_type', 'content_type')
+                                ->where('target_id', $sourceTypeId)
+                                ->whereNull('deleted_at');
+                        })
+                        ->whereNull('deleted_at')
+                        ->exists();
+
+                    if (! $exists) {
+                        $fail("The label field '{$value}' is not a valid field in the source content type.");
+                    }
+                },
+            ],
+            'options.value_field' => [
+                Rule::requiredIf(fn () => $this->input('type') === 'relation'),
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'options.is_multiple' => [
+                'nullable',
+                'boolean',
+            ],
             'default_value' => ['nullable'],
             'validation_rules' => ['nullable'],
             'is_required' => ['nullable', 'boolean'],

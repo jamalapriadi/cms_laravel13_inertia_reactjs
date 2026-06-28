@@ -25,6 +25,7 @@ import { usePermission } from '@/lib/permissions';
 import type {
     DynamicContentEntry,
     DynamicContentType,
+    DynamicFieldDefinition,
 } from '@/types/dynamic-content';
 import type { LaravelPagination } from '@/types/LaravelPagination';
 
@@ -35,9 +36,10 @@ interface Props {
         search?: string;
         status?: string;
     };
+    fields?: DynamicFieldDefinition[];
 }
 
-export default function Index({ contentType, entries, filters }: Props) {
+export default function Index({ contentType, entries, filters, fields = [] }: Props) {
     const { hasPermission } = usePermission();
     const canCreate = hasPermission('dynamic-contents.create');
     const canEdit = hasPermission('dynamic-contents.edit');
@@ -93,6 +95,26 @@ export default function Index({ contentType, entries, filters }: Props) {
                 </div>
             ),
         },
+        ...fields.map((field) => ({
+            label: field.label,
+            render: (row: DynamicContentEntry) => {
+                if (field.type === 'relation') {
+                    const label = row.relation_labels?.[field.name];
+                    return <span className="text-sm">{label ?? '-'}</span>;
+                }
+                const val = row.data?.[field.name];
+                if (val === null || val === undefined) {
+                    return <span className="text-sm text-muted-foreground">-</span>;
+                }
+                if (typeof val === 'boolean') {
+                    return <span className="text-sm">{val ? 'Yes' : 'No'}</span>;
+                }
+                if (Array.isArray(val)) {
+                    return <span className="text-sm">{val.join(', ')}</span>;
+                }
+                return <span className="text-sm">{String(val)}</span>;
+            },
+        })),
         {
             label: 'Status',
             render: (row: DynamicContentEntry) => (

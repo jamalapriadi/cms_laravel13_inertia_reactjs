@@ -86,7 +86,9 @@ class DynamicContentFieldService
             'type' => $field->type,
             'placeholder' => $field->placeholder,
             'instructions' => $field->instructions,
-            'options' => DynamicContent::normalizeOptions($field->options ?? []),
+            'options' => $field->type === 'relation'
+                ? $field->options
+                : DynamicContent::normalizeOptions($field->options ?? []),
             'default_value' => $this->formValue($field, $field->default_value),
             'validation_rules' => DynamicContent::normalizeValidationRules($field->validation_rules ?? []),
             'is_required' => (bool) $field->is_required,
@@ -104,6 +106,19 @@ class DynamicContentFieldService
         $type = (string) ($data['type'] ?? 'text');
         $defaultValue = $this->normalizeDefinitionDefaultValue($type, $data['default_value'] ?? null);
 
+        $options = null;
+        if ($type === 'relation') {
+            $options = [
+                'source_content_type_id' => $data['options']['source_content_type_id'] ?? null,
+                'label_field' => $data['options']['label_field'] ?? 'title',
+                'value_field' => $data['options']['value_field'] ?? 'id',
+                'placeholder' => $data['options']['placeholder'] ?? null,
+                'is_multiple' => filter_var($data['options']['is_multiple'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            ];
+        } elseif (DynamicContent::supportsOptions($type)) {
+            $options = DynamicContent::normalizeOptions($data['options'] ?? []);
+        }
+
         return [
             'label' => trim((string) ($data['label'] ?? '')),
             'name' => DynamicContent::normalizeFieldName((string) ($data['name'] ?? '')),
@@ -114,9 +129,7 @@ class DynamicContentFieldService
             'instructions' => filled($data['instructions'] ?? null)
                 ? trim((string) $data['instructions'])
                 : null,
-            'options' => DynamicContent::supportsOptions($type)
-                ? DynamicContent::normalizeOptions($data['options'] ?? [])
-                : null,
+            'options' => $options,
             'default_value' => $defaultValue,
             'validation_rules' => DynamicContent::normalizeValidationRules($data['validation_rules'] ?? []),
             'is_required' => (bool) ($data['is_required'] ?? false),
@@ -138,6 +151,9 @@ class DynamicContentFieldService
                 ? $this->richTextSanitizer->sanitize($value)
                 : null,
             'json' => $this->normalizeJsonValue($value),
+            'relation' => ($field->options['is_multiple'] ?? false)
+                ? $this->normalizeArrayValues($value)
+                : $this->normalizeTextValue($value),
             default => $value,
         };
     }
@@ -148,6 +164,7 @@ class DynamicContentFieldService
             return match ($field->type) {
                 'checkbox', 'gallery' => [],
                 'true_false' => false,
+                'relation' => ($field->options['is_multiple'] ?? false) ? [] : null,
                 default => null,
             };
         }
@@ -156,6 +173,7 @@ class DynamicContentFieldService
             'checkbox', 'gallery' => Arr::wrap($value),
             'true_false' => (bool) $value,
             'json' => is_string($value) ? $value : json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+            'relation' => ($field->options['is_multiple'] ?? false) ? Arr::wrap($value) : $value,
             default => $value,
         };
     }
@@ -173,6 +191,7 @@ class DynamicContentFieldService
             'true_false' => ['boolean'],
             'date', 'datetime' => ['date'],
             'json' => ['string', 'json'],
+            'relation' => ($field->options['is_multiple'] ?? false) ? ['array'] : ['string'],
             default => ['nullable'],
         };
 
@@ -182,13 +201,30 @@ class DynamicContentFieldService
             array_unshift($rules, 'nullable');
         }
 
-        $options = DynamicContent::optionValues(DynamicContent::normalizeOptions($field->options ?? []));
+        if ($field->type === 'relation') {
+            $sourceContentTypeId = $field->options['source_content_type_id'] ?? null;
+            if ($sourceContentTypeId) {
+                $rule = Rule::exists('content_entries', 'id')
+                    ->where('content_type_id', $sourceContentTypeId)
+                    ->whereNull('deleted_at');
 
-        if (in_array($field->type, ['select', 'radio'], true) && $options !== []) {
-            $rules[] = Rule::in($options);
+                if (! ($field->options['is_multiple'] ?? false)) {
+                    $rules[] = $rule;
+                }
+            }
+        } else {
+            $options = DynamicContent::optionValues(DynamicContent::normalizeOptions($field->options ?? []));
+
+            if (in_array($field->type, ['select', 'radio'], true) && $options !== []) {
+                $rules[] = Rule::in($options);
+            }
         }
 
         if (in_array($field->type, ['checkbox', 'gallery'], true) && $field->is_required) {
+            $rules[] = 'min:1';
+        }
+
+        if ($field->type === 'relation' && ($field->options['is_multiple'] ?? false) && $field->is_required) {
             $rules[] = 'min:1';
         }
 
@@ -215,6 +251,17 @@ class DynamicContentFieldService
 
             if ($options !== []) {
                 $rules[] = Rule::in($options);
+            }
+
+            return $rules;
+        }
+
+        if ($field->type === 'relation') {
+            $sourceContentTypeId = $field->options['source_content_type_id'] ?? null;
+            if ($sourceContentTypeId) {
+                $rules[] = Rule::exists('content_entries', 'id')
+                    ->where('content_type_id', $sourceContentTypeId)
+                    ->whereNull('deleted_at');
             }
 
             return $rules;

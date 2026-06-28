@@ -43,6 +43,10 @@ interface FieldFormData {
     is_required: boolean;
     is_active: boolean;
     sort_order: number;
+    relation_source_content_type_id: string;
+    relation_label_field: string;
+    relation_value_field: string;
+    relation_is_multiple: boolean;
 }
 
 const supportsOptions = (type: string) =>
@@ -55,27 +59,37 @@ const slugifyName = (value: string) =>
         .replace(/[^a-z0-9]+/g, '_')
         .replace(/^_+|_+$/g, '');
 
-const fieldToFormData = (field?: DynamicFieldDefinition): FieldFormData => ({
-    label: field?.label ?? '',
-    name: field?.name ?? '',
-    type: field?.type ?? 'text',
-    placeholder: field?.placeholder ?? '',
-    instructions: field?.instructions ?? '',
-    options:
-        field?.options
-            ?.map((option) => `${option.label}:${option.value}`)
-            .join('\n') ?? '',
-    default_value:
-        field?.type === 'json'
-            ? String(field.default_value ?? '')
-            : Array.isArray(field?.default_value)
-              ? field.default_value.join('\n')
-              : String(field?.default_value ?? ''),
-    validation_rules: field?.validation_rules?.join('\n') ?? '',
-    is_required: field?.is_required ?? false,
-    is_active: field?.is_active ?? true,
-    sort_order: field?.sort_order ?? 0,
-});
+const fieldToFormData = (field?: DynamicFieldDefinition): FieldFormData => {
+    const isRelation = field?.type === 'relation';
+    const relationOpts = isRelation && typeof field?.options === 'object' && field?.options && !Array.isArray(field?.options)
+        ? (field.options as Record<string, any>)
+        : {};
+
+    return {
+        label: field?.label ?? '',
+        name: field?.name ?? '',
+        type: field?.type ?? 'text',
+        placeholder: field?.placeholder ?? '',
+        instructions: field?.instructions ?? '',
+        options: !isRelation && Array.isArray(field?.options)
+            ? field.options.map((option) => `${option.label}:${option.value}`).join('\n')
+            : '',
+        default_value:
+            field?.type === 'json'
+                ? String(field.default_value ?? '')
+                : Array.isArray(field?.default_value)
+                  ? field.default_value.join('\n')
+                  : String(field?.default_value ?? ''),
+        validation_rules: field?.validation_rules?.join('\n') ?? '',
+        is_required: field?.is_required ?? false,
+        is_active: field?.is_active ?? true,
+        sort_order: field?.sort_order ?? 0,
+        relation_source_content_type_id: relationOpts.source_content_type_id ?? '',
+        relation_label_field: relationOpts.label_field ?? 'title',
+        relation_value_field: relationOpts.value_field ?? 'id',
+        relation_is_multiple: relationOpts.is_multiple ?? false,
+    };
+};
 
 export default function Edit({
     customFieldGroup,
@@ -88,7 +102,7 @@ export default function Edit({
     const canDelete = hasPermission('custom-fields.delete');
     const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
     const [isFieldFormOpen, setIsFieldFormOpen] = useState(false);
-    const { data, setData, post, put, processing, errors, reset } =
+    const { data, setData, post, put, processing, errors, reset, transform } =
         useForm<FieldFormData>(fieldToFormData());
 
     const openCreateForm = () => {
@@ -113,6 +127,21 @@ export default function Edit({
 
     const submitField = (event: React.FormEvent) => {
         event.preventDefault();
+
+        transform((data) => {
+            if (data.type === 'relation') {
+                return {
+                    ...data,
+                    options: {
+                        source_content_type_id: data.relation_source_content_type_id,
+                        label_field: data.relation_label_field,
+                        value_field: data.relation_value_field,
+                        is_multiple: data.relation_is_multiple,
+                    },
+                } as any;
+            }
+            return data;
+        });
 
         const callback = editingFieldId ? put : post;
         const url = editingFieldId
@@ -523,6 +552,68 @@ export default function Edit({
                                         </p>
                                         <Error message={errors.options} />
                                     </Field>
+                                )}
+
+                                {data.type === 'relation' && (
+                                    <div className="md:col-span-2 grid gap-4 md:grid-cols-2 border rounded-lg p-4 bg-muted/10">
+                                        <Field label="Source Content Type" required>
+                                            <select
+                                                value={data.relation_source_content_type_id}
+                                                onChange={(event) =>
+                                                    setData('relation_source_content_type_id', event.target.value)
+                                                }
+                                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                            >
+                                                <option value="">Select Content Type</option>
+                                                {contentTypes.map((type) => (
+                                                    <option key={type.id} value={type.id}>
+                                                        {type.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <Error message={errors['options.source_content_type_id']} />
+                                        </Field>
+
+                                        <Field label="Label Field (Label dropdown)" required>
+                                            <Input
+                                                value={data.relation_label_field}
+                                                onChange={(event) =>
+                                                    setData('relation_label_field', event.target.value)
+                                                }
+                                                placeholder="e.g. title, name"
+                                            />
+                                            <Error message={errors['options.label_field']} />
+                                        </Field>
+
+                                        <Field label="Value Field (Value yang disimpan)" required>
+                                            <Input
+                                                value={data.relation_value_field}
+                                                onChange={(event) =>
+                                                    setData('relation_value_field', event.target.value)
+                                                }
+                                                placeholder="e.g. id"
+                                            />
+                                            <Error message={errors['options.value_field']} />
+                                        </Field>
+
+                                        <div className="flex items-center justify-between rounded-lg border px-4 py-3 bg-background">
+                                            <div>
+                                                <Label htmlFor="relation-multiple">
+                                                    Allow Multiple Selection
+                                                </Label>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Allow selecting multiple entries.
+                                                </p>
+                                            </div>
+                                            <Switch
+                                                id="relation-multiple"
+                                                checked={data.relation_is_multiple}
+                                                onCheckedChange={(checked) =>
+                                                    setData('relation_is_multiple', checked)
+                                                }
+                                            />
+                                        </div>
+                                    </div>
                                 )}
 
                                 <Field

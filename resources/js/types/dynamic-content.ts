@@ -15,6 +15,14 @@ export interface DynamicFieldOption {
     value: string;
 }
 
+export interface DynamicFieldRelationConfig {
+    source_content_type_id: string;
+    label_field: string;
+    value_field: string;
+    placeholder?: string | null;
+    is_multiple: boolean;
+}
+
 export interface DynamicFieldDefinition {
     id: string;
     custom_field_group_id: string;
@@ -23,7 +31,7 @@ export interface DynamicFieldDefinition {
     type: string;
     placeholder?: string | null;
     instructions?: string | null;
-    options: DynamicFieldOption[];
+    options: DynamicFieldOption[] | DynamicFieldRelationConfig;
     default_value?: unknown;
     validation_rules?: string[];
     is_required: boolean;
@@ -51,6 +59,7 @@ export interface DynamicContentEntry {
     published_at?: string | null;
     sort_order: number;
     data: Record<string, unknown>;
+    relation_labels?: Record<string, string>;
     created_at?: string | null;
     updated_at?: string | null;
     creator?: {

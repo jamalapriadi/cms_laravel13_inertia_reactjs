@@ -47,7 +47,10 @@ class ContentEntryRequest extends FormRequest
         foreach ($fieldService->activeFieldsForContentType($contentType) as $field) {
             $rules["fields.{$field->name}"] = $fieldService->valueRules($field);
 
-            if (DynamicContent::isMultipleValueType($field->type)) {
+            $isMultiple = DynamicContent::isMultipleValueType($field->type) ||
+                ($field->type === 'relation' && ($field->options['is_multiple'] ?? false));
+
+            if ($isMultiple) {
                 $rules["fields.{$field->name}.*"] = $fieldService->elementRules($field);
             }
         }
@@ -73,7 +76,10 @@ class ContentEntryRequest extends FormRequest
         foreach ($fieldService->activeFieldsForContentType($contentType) as $field) {
             $value = $fields[$field->name] ?? null;
 
-            if (in_array($field->type, ['checkbox', 'gallery'], true)) {
+            $isMultiple = in_array($field->type, ['checkbox', 'gallery'], true) ||
+                ($field->type === 'relation' && ($field->options['is_multiple'] ?? false));
+
+            if ($isMultiple) {
                 $fields[$field->name] = collect(Arr::wrap($value))
                     ->map(fn (mixed $item) => is_string($item) ? trim($item) : $item)
                     ->filter(fn (mixed $item) => $item !== null && $item !== '')

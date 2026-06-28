@@ -28,6 +28,7 @@ final class DynamicContent
             'date',
             'datetime',
             'json',
+            'relation',
         ];
     }
 
@@ -51,6 +52,7 @@ final class DynamicContent
             ['value' => 'date', 'label' => 'Date'],
             ['value' => 'datetime', 'label' => 'Date Time'],
             ['value' => 'json', 'label' => 'JSON'],
+            ['value' => 'relation', 'label' => 'Relation (Dropdown)'],
         ];
     }
 
