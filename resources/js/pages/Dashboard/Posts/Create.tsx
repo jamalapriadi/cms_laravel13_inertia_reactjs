@@ -1,7 +1,8 @@
 import { useDraggable } from '@dnd-kit/core';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { useAutoSaveDraft } from '@/hooks/useAutoSaveDraft';
 
 import {
     Columns2,
@@ -84,6 +85,11 @@ interface Props {
     categories?: any[];
     tags?: any[];
     editorMode?: ContentEditorMode;
+    latestDraft?: {
+        id: number;
+        title: string;
+        updated_at: string;
+    } | null;
 }
 
 const resolveDropTarget = (id: number | string) => {
@@ -138,17 +144,19 @@ export default function Create({
     categories = [],
     tags = [],
     editorMode = DEFAULT_CONTENT_EDITOR,
+    latestDraft = null,
 }: Props) {
     return editorMode === 'classic_editor' ? (
-        <ClassicPostEditor categories={categories} tags={tags} />
+        <ClassicPostEditor categories={categories} tags={tags} latestDraft={latestDraft} />
     ) : (
-        <BlockPostCreate categories={categories} tags={tags} />
+        <BlockPostCreate categories={categories} tags={tags} latestDraft={latestDraft} />
     );
 }
 
 function BlockPostCreate({
     categories = [],
     tags = [],
+    latestDraft = null,
 }: Omit<Props, 'editorMode'>) {
     const [selectedBlock, setSelectedBlock] = useState<BlockInstance | null>(
         null,
@@ -157,6 +165,7 @@ function BlockPostCreate({
     const [dropIndicator, setDropIndicator] = useState<DropIndicator | null>(
         null,
     );
+    const [showDraftBanner, setShowDraftBanner] = useState(!!latestDraft);
 
     /**
      * ✅ BLOCK LIST
@@ -196,7 +205,7 @@ function BlockPostCreate({
     /**
      * ✅ FORM
      */
-    const { data, setData, post, processing, errors } = useForm<PostFormData>({
+    const { data, setData, post, put, processing, errors } = useForm<PostFormData>({
         title: '',
         slug: '',
         excerpt: '',
@@ -209,6 +218,14 @@ function BlockPostCreate({
         published_at: '',
     });
 
+    const { status: autosaveStatus, lastSaved, draftId } = useAutoSaveDraft({
+        resourceType: 'posts',
+        data,
+        setData,
+        hasContent: (d) => d.title.trim() !== '' || d.excerpt.trim() !== '' || (d.content && d.content !== '[]' && d.content !== ''),
+        isEdit: false,
+    });
+
     /**
      * ✅ SYNC CONTENT JSON
      */
@@ -219,11 +236,11 @@ function BlockPostCreate({
     const updateTitle = (title: string) => {
         const shouldSyncSlug = shouldAutoSyncSlug(data.slug, data.title);
 
-        setData('title', title);
-
-        if (shouldSyncSlug) {
-            setData('slug', generateSlug(title));
-        }
+        setData({
+            ...data,
+            title,
+            slug: shouldSyncSlug ? generateSlug(title) : data.slug,
+        });
     };
 
     /**
@@ -280,12 +297,23 @@ function BlockPostCreate({
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        post(store().url, {
-            preserveScroll: true,
-            onStart: () => toast.loading('Saving...', { id: 'post' }),
-            onSuccess: () => toast.success('Post created', { id: 'post' }),
-            onError: () => toast.error('Validation failed', { id: 'post' }),
-        });
+        const currentId = draftId || latestDraft?.id;
+
+        if (currentId) {
+            put(`/my-admin/dashboard/posts/${currentId}`, {
+                preserveScroll: true,
+                onStart: () => toast.loading('Saving...', { id: 'post' }),
+                onSuccess: () => toast.success('Post saved successfully', { id: 'post' }),
+                onError: () => toast.error('Validation failed', { id: 'post' }),
+            });
+        } else {
+            post(store().url, {
+                preserveScroll: true,
+                onStart: () => toast.loading('Saving...', { id: 'post' }),
+                onSuccess: () => toast.success('Post created', { id: 'post' }),
+                onError: () => toast.error('Validation failed', { id: 'post' }),
+            });
+        }
     };
 
     /**
@@ -407,6 +435,30 @@ function BlockPostCreate({
         <>
             <Head title="Create Post" />
 
+            {latestDraft && showDraftBanner && (
+                <div className="flex items-center justify-between bg-yellow-50 border-b border-yellow-200 px-6 py-2.5 text-sm text-yellow-800 shrink-0">
+                    <span>
+                        You have an unsaved draft ("{latestDraft.title || 'Untitled'}") from {latestDraft.updated_at}.
+                    </span>
+                    <div className="flex gap-2">
+                        <Link href={`/my-admin/dashboard/posts/${latestDraft.id}/edit`}>
+                            <Button size="sm" variant="outline" type="button" className="border-yellow-300 text-yellow-800 hover:bg-yellow-100">
+                                Continue editing
+                            </Button>
+                        </Link>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            type="button"
+                            className="text-yellow-800 hover:bg-yellow-100"
+                            onClick={() => setShowDraftBanner(false)}
+                        >
+                            Dismiss
+                        </Button>
+                    </div>
+                </div>
+            )}
+
             <DndContext
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
@@ -427,6 +479,16 @@ function BlockPostCreate({
                         />
 
                         <div className="flex items-center gap-2 xl:ml-auto">
+                            {autosaveStatus === 'saving' && (
+                                <span className="text-xs text-muted-foreground animate-pulse mr-2">Saving draft...</span>
+                            )}
+                            {autosaveStatus === 'saved' && (
+                                <span className="text-xs text-emerald-600 mr-2">Draft saved ({lastSaved})</span>
+                            )}
+                            {autosaveStatus === 'failed' && (
+                                <span className="text-xs text-destructive mr-2">Failed to save draft</span>
+                            )}
+
                             <Select
                                 value={data.status}
                                 onValueChange={(val) => setData('status', val)}

@@ -2,6 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import type React from 'react';
 import { toast } from 'sonner';
+import { useAutoSaveDraft } from '@/hooks/useAutoSaveDraft';
 
 import { update } from '@/actions/App/Http/Controllers/Dashboard/PageController';
 import BlockBuilderWorkspace from '@/components/editor/BlockBuilderWorkspace';
@@ -103,6 +104,17 @@ function BlockPageEdit({ page, blocks }: Omit<Props, 'editorMode' | 'classicCont
         published_at: formatDateTimeLocal(page.published_at),
     });
 
+    const isAutosaveEnabled = page.status === 'draft' || page.status === 'auto-draft';
+    const { status: autosaveStatus, lastSaved } = useAutoSaveDraft({
+        resourceType: 'pages',
+        data,
+        setData,
+        hasContent: () => true,
+        isEdit: true,
+        initialDraftId: page.id,
+        disabled: !isAutosaveEnabled,
+    });
+
     useEffect(() => {
         setData('blocks', JSON.stringify(pageBlocks));
     }, [pageBlocks, setData]);
@@ -137,6 +149,16 @@ function BlockPageEdit({ page, blocks }: Omit<Props, 'editorMode' | 'classicCont
                     />
 
                     <div className="flex items-center gap-2 xl:ml-auto">
+                        {isAutosaveEnabled && autosaveStatus === 'saving' && (
+                            <span className="text-xs text-muted-foreground animate-pulse mr-2">Saving draft...</span>
+                        )}
+                        {isAutosaveEnabled && autosaveStatus === 'saved' && (
+                            <span className="text-xs text-emerald-600 mr-2">Draft saved ({lastSaved})</span>
+                        )}
+                        {isAutosaveEnabled && autosaveStatus === 'failed' && (
+                            <span className="text-xs text-destructive mr-2">Failed to save draft</span>
+                        )}
+
                         <Select
                             value={data.status}
                             onValueChange={(value) => setData('status', value)}

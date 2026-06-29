@@ -2,6 +2,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core';
 import { Head, useForm } from '@inertiajs/react';
+import { useAutoSaveDraft } from '@/hooks/useAutoSaveDraft';
 
 import {
     Columns2,
@@ -243,6 +244,17 @@ function BlockPostEdit({
         published_at: formatDateTimeLocal(post.published_at),
     });
 
+    const isAutosaveEnabled = post.status === 'draft' || post.status === 'auto-draft';
+    const { status: autosaveStatus, lastSaved } = useAutoSaveDraft({
+        resourceType: 'posts',
+        data,
+        setData,
+        hasContent: () => true,
+        isEdit: true,
+        initialDraftId: post.id,
+        disabled: !isAutosaveEnabled,
+    });
+
     /**
      * SYNC BLOCKS TO FORM
      */
@@ -456,6 +468,16 @@ function BlockPostEdit({
                         />
 
                         <div className="flex items-center gap-2 xl:ml-auto">
+                            {isAutosaveEnabled && autosaveStatus === 'saving' && (
+                                <span className="text-xs text-muted-foreground animate-pulse mr-2">Saving draft...</span>
+                            )}
+                            {isAutosaveEnabled && autosaveStatus === 'saved' && (
+                                <span className="text-xs text-emerald-600 mr-2">Draft saved ({lastSaved})</span>
+                            )}
+                            {isAutosaveEnabled && autosaveStatus === 'failed' && (
+                                <span className="text-xs text-destructive mr-2">Failed to save draft</span>
+                            )}
+
                             <Select
                                 value={data.status}
                                 onValueChange={(val) => setData('status', val)}

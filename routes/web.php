@@ -19,7 +19,9 @@ use App\Http\Controllers\Dashboard\MediaController;
 use App\Http\Controllers\Dashboard\MenuController;
 use App\Http\Controllers\Dashboard\OptionController;
 use App\Http\Controllers\Dashboard\PackageController;
+use App\Http\Controllers\Dashboard\PageAutoSaveController;
 use App\Http\Controllers\Dashboard\PageController;
+use App\Http\Controllers\Dashboard\PostAutoSaveController;
 use App\Http\Controllers\Dashboard\PostCategoryController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\ProvinceController;
@@ -171,6 +173,11 @@ Route::group(['middleware' => ['auth', 'verified', 'dashboard.permission'], 'pre
         Route::put('taxonomies/{taxonomy}/{termTaxonomy}', 'update')->name('taxonomies.update');
         Route::delete('taxonomies/{taxonomy}/{termTaxonomy}', 'destroy')->name('taxonomies.destroy');
     });
+
+    Route::post('posts/auto-save', [PostAutoSaveController::class, 'store'])->name('posts.auto-save');
+    Route::put('posts/{post}/auto-save', [PostAutoSaveController::class, 'update'])->name('posts.auto-save-update');
+    Route::post('pages/auto-save', [PageAutoSaveController::class, 'store'])->name('pages.auto-save');
+    Route::put('pages/{page}/auto-save', [PageAutoSaveController::class, 'update'])->name('pages.auto-save-update');
 
     Route::get('posts/usage-guide', [PostController::class, 'usageGuide'])->name('posts.usage-guide');
     Route::resource('posts', PostController::class);

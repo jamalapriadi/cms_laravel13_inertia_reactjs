@@ -34,6 +34,9 @@ class PageController extends Controller
                 ->when($request->filled('status') && $request->status !== 'all', function ($query) use ($request): void {
                     $query->where('status', $request->status);
                 })
+                ->when(! $request->filled('status') || $request->status === 'all', function ($query): void {
+                    $query->whereNotIn('status', ['auto-draft']);
+                })
                 ->latest()
                 ->paginate(10)
                 ->withQueryString();
@@ -63,10 +66,29 @@ class PageController extends Controller
 
     public function create()
     {
+        $latestDraft = Page::where('created_by', auth()->id())
+            ->where('status', 'auto-draft')
+            ->latest('id')
+            ->first();
+
+        $latestDraftData = null;
+        if ($latestDraft && (
+            ($latestDraft->title !== 'Auto Draft' && ! empty($latestDraft->title)) ||
+            ! empty($latestDraft->excerpt) ||
+            (! empty($latestDraft->content) && $latestDraft->content !== '[]')
+        )) {
+            $latestDraftData = [
+                'id' => $latestDraft->id,
+                'title' => $latestDraft->title,
+                'updated_at' => $latestDraft->updated_at->diffForHumans(),
+            ];
+        }
+
         return Inertia::render('Dashboard/Pages/Create', [
             'editorMode' => ContentEditorMode::normalize(
                 get_option('default_content_editor', ContentEditorMode::BLOCK)
             ),
+            'latestDraft' => $latestDraftData,
         ]);
     }
 

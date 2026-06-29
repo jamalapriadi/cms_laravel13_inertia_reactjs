@@ -35,10 +35,12 @@ class PostController extends Controller
 
                 if ($status != 'all') {
                     $posts = $posts->where('status', $request->status);
+                } else {
+                    $posts = $posts->whereNotIn('status', ['trash', 'auto-draft']);
                 }
 
             } else {
-                $posts = $posts->where('status', '!=', 'trash');
+                $posts = $posts->whereNotIn('status', ['trash', 'auto-draft']);
             }
 
             $posts = $posts->paginate(10)
@@ -69,6 +71,25 @@ class PostController extends Controller
 
     public function create()
     {
+        $latestDraft = Post::where('user_id', auth()->id())
+            ->where('status', 'auto-draft')
+            ->where('type', 'post')
+            ->latest('id')
+            ->first();
+
+        $latestDraftData = null;
+        if ($latestDraft && (
+            ($latestDraft->title !== 'Auto Draft' && ! empty($latestDraft->title)) ||
+            ! empty($latestDraft->excerpt) ||
+            (! empty($latestDraft->content) && $latestDraft->content !== '[]')
+        )) {
+            $latestDraftData = [
+                'id' => $latestDraft->id,
+                'title' => $latestDraft->title,
+                'updated_at' => $latestDraft->updated_at->diffForHumans(),
+            ];
+        }
+
         return Inertia::render('Dashboard/Posts/Create', [
             'editorMode' => ContentEditorMode::normalize(
                 get_option('default_content_editor', ContentEditorMode::BLOCK)
@@ -80,6 +101,7 @@ class PostController extends Controller
             'tags' => TermTaxonomy::with('term')
                 ->where('taxonomy', 'tags')
                 ->get(),
+            'latestDraft' => $latestDraftData,
         ]);
     }
 
