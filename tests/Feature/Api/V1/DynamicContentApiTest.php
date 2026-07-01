@@ -6,7 +6,6 @@ use App\Models\CustomFieldGroup;
 use App\Models\Dashboard\Language;
 use App\Models\Dashboard\Media;
 use App\Models\Dashboard\Option;
-use App\Services\Cache\ListCacheService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -455,10 +454,7 @@ test('it caches dynamic content responses separately for each locale', function 
         ->assertSuccessful()
         ->assertJsonPath('data.0.title', 'Testimoni Indonesia');
 
-    $cache = app(ListCacheService::class);
-
-    expect(Cache::get($cache->modulesRegistryKey(), []))->toContain('api.dynamic-content');
-    expect(Cache::get($cache->moduleRegistryKey('api.dynamic-content'), []))->toHaveCount(2);
+    expect(Cache::get('content-cache:registry', []))->toHaveCount(2);
 });
 
 test('it filters dynamic content entries by province slug or province_id', function () {

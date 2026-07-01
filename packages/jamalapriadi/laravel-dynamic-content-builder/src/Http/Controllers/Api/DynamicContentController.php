@@ -2,9 +2,9 @@
 
 namespace Jamalapriadi\DynamicContentBuilder\Http\Controllers\Api;
 
-use App\Services\Cache\ListCacheService;
-use Illuminate\Http\Request;
+use App\Services\Cache\ContentCacheService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Jamalapriadi\DynamicContentBuilder\Http\Requests\Api\DynamicContentIndexRequest;
 use Jamalapriadi\DynamicContentBuilder\Http\Resources\Api\DynamicContentEntryResource;
@@ -19,13 +19,22 @@ class DynamicContentController extends Controller
 
     public function contentTypes(Request $request): JsonResponse
     {
-        $payload = app(ListCacheService::class)->rememberRequest('api.dynamic-content', $request, function (): array {
-            $contentTypes = $this->dynamicContentApiService->listActiveContentTypes();
+        $locale = $request->query('locale') ?: config('app.locale', 'en');
 
-            return [
-                'data' => DynamicContentTypeResource::collection($contentTypes)->resolve(),
-            ];
-        });
+        $payload = app(ContentCacheService::class)->remember(
+            'content-types',
+            $locale,
+            1, // page
+            1000, // per_page
+            $request->query(),
+            function (): array {
+                $contentTypes = $this->dynamicContentApiService->listActiveContentTypes();
+
+                return [
+                    'data' => DynamicContentTypeResource::collection($contentTypes)->resolve(),
+                ];
+            }
+        );
 
         return response()->json([
             'success' => true,
@@ -45,23 +54,34 @@ class DynamicContentController extends Controller
             ], 404);
         }
 
-        $payload = app(ListCacheService::class)->rememberRequest('api.dynamic-content', $request, function () use ($contentType, $request): array {
-            $entries = $this->dynamicContentApiService->paginatePublishedEntries(
-                $contentType,
-                $request->validated(),
-                $request->query('locale')
-            );
+        $locale = $request->query('locale') ?: config('app.locale', 'en');
+        $page = (int) ($request->query('page') ?: 1);
+        $perPage = (int) ($request->query('per_page') ?: 10);
 
-            return [
-                'data' => DynamicContentEntryResource::collection($entries->getCollection())->resolve($request),
-                'meta' => [
-                    'current_page' => $entries->currentPage(),
-                    'per_page' => $entries->perPage(),
-                    'total' => $entries->total(),
-                    'last_page' => $entries->lastPage(),
-                ],
-            ];
-        });
+        $payload = app(ContentCacheService::class)->remember(
+            $contentTypeSlug,
+            $locale,
+            $page,
+            $perPage,
+            $request->query(),
+            function () use ($contentType, $request): array {
+                $entries = $this->dynamicContentApiService->paginatePublishedEntries(
+                    $contentType,
+                    $request->validated(),
+                    $request->query('locale')
+                );
+
+                return [
+                    'data' => DynamicContentEntryResource::collection($entries->getCollection())->resolve($request),
+                    'meta' => [
+                        'current_page' => $entries->currentPage(),
+                        'per_page' => $entries->perPage(),
+                        'total' => $entries->total(),
+                        'last_page' => $entries->lastPage(),
+                    ],
+                ];
+            }
+        );
 
         return response()->json([
             'success' => true,
@@ -82,19 +102,28 @@ class DynamicContentController extends Controller
             ], 404);
         }
 
-        $payload = app(ListCacheService::class)->rememberRequest('api.dynamic-content', $request, function () use ($contentType, $entrySlug, $request): ?array {
-            $entry = $this->dynamicContentApiService->findPublishedEntry(
-                $contentType,
-                $entrySlug,
-                $request->query('locale')
-            );
+        $locale = $request->query('locale') ?: config('app.locale', 'en');
 
-            if (! $entry) {
-                return null;
+        $payload = app(ContentCacheService::class)->remember(
+            $contentTypeSlug,
+            $locale,
+            1, // page
+            1, // per_page
+            array_merge($request->query(), ['entry_slug' => $entrySlug]),
+            function () use ($contentType, $entrySlug, $request): ?array {
+                $entry = $this->dynamicContentApiService->findPublishedEntry(
+                    $contentType,
+                    $entrySlug,
+                    $request->query('locale')
+                );
+
+                if (! $entry) {
+                    return null;
+                }
+
+                return DynamicContentEntryResource::make($entry)->resolve($request);
             }
-
-            return DynamicContentEntryResource::make($entry)->resolve($request);
-        });
+        );
 
         if (! $payload) {
             return response()->json([

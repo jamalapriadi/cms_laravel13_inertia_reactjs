@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Brand;
+use App\Models\ContentEntry;
+use App\Models\ContentEntryTranslation;
+use App\Models\ContentType;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Shop\Category;
@@ -12,6 +15,7 @@ use App\Models\Shop\ProductCollection;
 use App\Models\Shop\ProductStockUnit;
 use App\Observers\BrandObserver;
 use App\Observers\CategoryObserver;
+use App\Observers\ContentCacheObserver;
 use App\Observers\ListCacheObserver;
 use App\Observers\PageObserver;
 use App\Observers\PostObserver;
@@ -45,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
     {
         ProductStockUnit::observe(ProductStockUnitObserver::class);
         $this->registerListCacheObservers();
+        $this->registerContentCacheObservers();
         $this->registerSitemapObservers();
 
         $this->configureDefaults();
@@ -80,6 +85,23 @@ class AppServiceProvider extends ServiceProvider
         foreach (array_keys(config('list-cache.invalidation', [])) as $modelClass) {
             if (class_exists($modelClass) && is_a($modelClass, Model::class, true)) {
                 $modelClass::observe(ListCacheObserver::class);
+            }
+        }
+    }
+
+    private function registerContentCacheObservers(): void
+    {
+        $contentModels = [
+            ContentEntry::class,
+            \Jamalapriadi\DynamicContentBuilder\Models\ContentEntry::class,
+            ContentType::class,
+            \Jamalapriadi\DynamicContentBuilder\Models\ContentType::class,
+            ContentEntryTranslation::class,
+        ];
+
+        foreach ($contentModels as $modelClass) {
+            if (class_exists($modelClass) && is_a($modelClass, Model::class, true)) {
+                $modelClass::observe(ContentCacheObserver::class);
             }
         }
     }
