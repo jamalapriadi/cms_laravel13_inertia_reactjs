@@ -146,6 +146,7 @@ class OptionController extends Controller
             'phone_instansi',
             'whatsapp_instansi',
             'alamat_instansi',
+            'instansi_map',
             'social_media',
             'marketplace',
             'meta_description',

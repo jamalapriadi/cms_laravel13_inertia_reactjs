@@ -458,7 +458,13 @@ class OpenApiController extends Controller
                                                     'phone' => '...',
                                                     'whatsapp' => '...',
                                                     'address' => '...',
+                                                    'map' => '...',
                                                 ],
+                                                'alamat_instansi' => '...',
+                                                'email_instansi' => '...',
+                                                'phone_instansi' => '...',
+                                                'whatsapp_instansi' => '...',
+                                                'instansi_map' => '...',
                                                 'social_media' => [
                                                     'facebook' => '...',
                                                     'instagram' => '...',

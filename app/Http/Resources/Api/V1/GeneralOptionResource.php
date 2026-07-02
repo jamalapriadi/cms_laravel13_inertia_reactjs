@@ -59,7 +59,13 @@ class GeneralOptionResource extends JsonResource
                 'phone' => $this->getValue('phone_instansi'),
                 'whatsapp' => $this->getValue('whatsapp_instansi'),
                 'address' => $this->getValue('alamat_instansi'),
+                'map' => $this->getValue('instansi_map'),
             ],
+            'alamat_instansi' => $this->getValue('alamat_instansi'),
+            'email_instansi' => $this->getValue('email_instansi'),
+            'phone_instansi' => $this->getValue('phone_instansi'),
+            'whatsapp_instansi' => $this->getValue('whatsapp_instansi'),
+            'instansi_map' => $this->getValue('instansi_map'),
             'social_media' => $formattedSocialMedia,
             'marketplace' => $formattedMarketplace,
             'seo' => [

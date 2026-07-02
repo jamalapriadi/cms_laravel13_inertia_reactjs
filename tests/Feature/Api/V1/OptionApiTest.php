@@ -19,6 +19,7 @@ test('it retrieves general configurations with formatted values', function () {
     Option::query()->create(['key' => 'phone_instansi', 'value' => '+628123456789']);
     Option::query()->create(['key' => 'whatsapp_instansi', 'value' => '+628123456789']);
     Option::query()->create(['key' => 'alamat_instansi', 'value' => '123 Tech Street']);
+    Option::query()->create(['key' => 'instansi_map', 'value' => 'https://maps.google.com/...']);
 
     Option::query()->create([
         'key' => 'social_media',
@@ -56,6 +57,12 @@ test('it retrieves general configurations with formatted values', function () {
         ->assertJsonPath('data.contact.phone', '+628123456789')
         ->assertJsonPath('data.contact.whatsapp', '+628123456789')
         ->assertJsonPath('data.contact.address', '123 Tech Street')
+        ->assertJsonPath('data.contact.map', 'https://maps.google.com/...')
+        ->assertJsonPath('data.email_instansi', 'admin@gitatrading-store.com')
+        ->assertJsonPath('data.phone_instansi', '+628123456789')
+        ->assertJsonPath('data.whatsapp_instansi', '+628123456789')
+        ->assertJsonPath('data.alamat_instansi', '123 Tech Street')
+        ->assertJsonPath('data.instansi_map', 'https://maps.google.com/...')
         ->assertJsonPath('data.social_media.facebook', 'https://facebook.com/gitatrading')
         ->assertJsonPath('data.social_media.instagram', 'https://instagram.com/gitatrading')
         ->assertJsonPath('data.social_media.x', null)
@@ -165,7 +172,13 @@ test('it handles missing options safely', function () {
                     'email' => null,
                     'phone' => null,
                     'address' => null,
+                    'map' => null,
                 ],
+                'alamat_instansi' => null,
+                'email_instansi' => null,
+                'phone_instansi' => null,
+                'whatsapp_instansi' => null,
+                'instansi_map' => null,
                 'social_media' => [
                     'facebook' => null,
                     'instagram' => null,
